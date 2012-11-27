@@ -1,0 +1,19 @@
+<package>
+  <description brief="jsk_rviz_plugins">
+
+     jsk_rviz_plugins
+
+  </description>
+  <author>Kei Okada</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/jsk_rviz_plugins</url>
+  <depend package="rviz"/>
+
+  <export>
+    <rviz plugin="${prefix}/plugin_description.xml"/>
+  </export>
+
+</package>
+
+
