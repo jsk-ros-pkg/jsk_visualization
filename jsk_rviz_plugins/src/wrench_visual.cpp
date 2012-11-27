@@ -3,6 +3,7 @@
 #include <OGRE/OgreSceneManager.h>
 
 #include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/billboard_line.h>
 
 #include <ros/ros.h>
 
@@ -28,12 +29,17 @@ namespace jsk_rviz_plugin
 	// set its position and direction relative to its header frame.
 	arrow_force_ = new rviz::Arrow( scene_manager_, frame_node_ );
 	arrow_torque_ = new rviz::Arrow( scene_manager_, frame_node_ );
+        circle_torque_ = new rviz::BillboardLine( scene_manager_, frame_node_ );
+        circle_arrow_torque_ = new rviz::Arrow( scene_manager_, frame_node_ );
     }
 
     WrenchStampedVisual::~WrenchStampedVisual()
     {
 	// Delete the arrow to make it disappear.
-	//delete acceleration_arrow_;
+	delete arrow_force_;
+	delete arrow_torque_;
+	delete circle_torque_;
+	delete circle_arrow_torque_;
 
 	// Destroy the frame node since we don't need it anymore.
 	scene_manager_->destroySceneNode( frame_node_ );
@@ -51,6 +57,23 @@ namespace jsk_rviz_plugin
 
         arrow_force_->setDirection(force);
         arrow_torque_->setDirection(torque);
+        Ogre::Vector3 axis_z(0,0,1);
+        Ogre::Quaternion orientation(axis_z.angleBetween(torque), axis_z.crossProduct(torque.normalisedCopy()));
+        if ( std::isnan(orientation.x) ||
+             std::isnan(orientation.y) ||
+             std::isnan(orientation.z) ) orientation = Ogre::Quaternion::IDENTITY;
+        //circle_arrow_torque_->setScale(Ogre::Vector3(width_, width_, 0.05));
+        circle_arrow_torque_->set(0, width_*0.1, width_*0.1*1.0, width_*0.1*2.0);
+        circle_arrow_torque_->setDirection(orientation * Ogre::Vector3(0,1,0));
+        circle_arrow_torque_->setPosition(orientation * Ogre::Vector3(0.05+torque_length/4, 0, torque_length/2));
+        circle_torque_->clear();
+        circle_torque_->setLineWidth(width_*0.05);
+        for (int i = 4; i <= 32; i++) {
+            Ogre::Vector3 point = Ogre::Vector3((0.05+torque_length/4)*cos(i*2*M_PI/32),
+                                                (0.05+torque_length/4)*sin(i*2*M_PI/32),
+                                                torque_length/2);
+            circle_torque_->addPoint(orientation * point);
+        }
     }
 
     // Position and orientation are passed through to the SceneNode.
@@ -73,6 +96,8 @@ namespace jsk_rviz_plugin
     void WrenchStampedVisual::setTorqueColor( float r, float g, float b, float a )
     {
 	arrow_torque_->setColor( r, g, b, a );
+	circle_torque_->setColor( r, g, b, a );
+	circle_arrow_torque_->setColor( r, g, b, a );
     }
 
     void  WrenchStampedVisual::setScale( float s ) {

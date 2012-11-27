@@ -81,7 +81,7 @@ namespace jsk_rviz_plugin
 	void updateColorAndAlpha();
 
 	// Storage for the list of visuals par each joint intem
-	typedef std::map<std::string, EffortVisual*> MapEffortVisual;
+	typedef std::vector<EffortVisual*> MapEffortVisual;
 	MapEffortVisual visuals_;
 
 	// A node in the Ogre scene tree to be the parent of all our visuals.

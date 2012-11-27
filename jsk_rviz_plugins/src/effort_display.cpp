@@ -545,7 +545,10 @@ namespace jsk_rviz_plugin
     // Clear the visuals by deleting their objects.
     void EffortDisplay::clear()
     {
-	visuals_.clear();
+	for( size_t i = 0; i < visuals_.size(); i++ ) {
+	    delete visuals_[ i ];
+	    visuals_[ i ] = NULL;
+	}
 	tf_filter_->clear();
 	messages_received_ = 0;
 	setStatus( rviz::status_levels::Warn, "Topic", "No messages received" );
@@ -597,8 +600,10 @@ namespace jsk_rviz_plugin
     {
 	BOOST_FOREACH(MapEffortVisual::value_type visual, visuals_)
 	{
-	    visual.second->setColor( color_.r_, color_.g_, color_.b_, alpha_ );
-	    visual.second->setWidth( width_ );
+            if ( visual ) {
+                visual->setColor( color_.r_, color_.g_, color_.b_, alpha_ );
+                visual->setWidth( width_ );
+            }
 	}
     }
 
@@ -615,7 +620,7 @@ namespace jsk_rviz_plugin
 	{
 	    return;
 	}
-#if 0
+
 	// Set the actual variable.
 	history_length_ = length;
 	propertyChanged( history_length_property_ );
@@ -647,7 +652,6 @@ namespace jsk_rviz_plugin
 	// Put the new vector into the member variable version and let the
 	// old one go out of scope.
 	visuals_.swap( new_visuals );
-#endif
     }
 
     void EffortDisplay::subscribe()
@@ -708,28 +712,26 @@ namespace jsk_rviz_plugin
 	ss << messages_received_ << " messages received";
 	setStatus( rviz::status_levels::Ok, "Topic", ss.str() );
 
-	// for all joints...
-	int joint_num = msg->name.size();
+	// We are keeping a circular buffer of visual pointers.  This gets
+	// the next one, or creates and stores it if it was missing.
+	EffortVisual* visual = visuals_[ messages_received_ % history_length_ ];
+	if( visual == NULL )
+	  {
+            visual = new EffortVisual( vis_manager_->getSceneManager(), scene_node_ , urdfModel );
+	    visuals_[ messages_received_ % history_length_ ] = visual;
+	  }
 
+        // set frames for all joints
+	int joint_num = msg->name.size();
 	for (int i = 0; i < joint_num; i++ )
 	{
 	    std::string joint_name = msg->name[i];
-	    double effort = msg->effort[i];
 	    const urdf::Joint* joint = urdfModel->getJoint(joint_name).get();
 	    int joint_type = joint->type;
 	    if ( joint_type == urdf::Joint::REVOLUTE )
 	    {
-		//tf::Transform offset = poseFromJoint(joint);
-		boost::shared_ptr<urdf::JointLimits> limit = joint->limits;
-		double max_effort = limit->effort;
-
-		if ( max_effort != 0.0 )
-		{
-		    effort = std::min(effort / max_effort, 1.0);
-		}
 		// we expects that parent_link_name equals to frame_id.
 		std::string parent_link_name = joint->child_link_name;
-
 		Ogre::Quaternion orientation;
 		Ogre::Vector3 position;
 
@@ -741,14 +743,13 @@ namespace jsk_rviz_plugin
 								    //msg->header.stamp, // ???
 								    position, orientation ))
 		{
-		    ROS_ERROR( "Error transforming from frame '%s' to frame '%s'",
+		    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
 			       parent_link_name.c_str(), fixed_frame_.c_str() );
-		    return;
+		    continue;
 		}
 ;
 		tf::Vector3 axis_joint(joint->axis.x, joint->axis.y, joint->axis.z);
 		tf::Vector3 axis_z(0,0,1);
-
 		tf::Quaternion axis_rotation(tf::tfCross(axis_joint, axis_z), tf::tfAngle(axis_joint, axis_z));
 		if ( std::isnan(axis_rotation.x()) ||
 		     std::isnan(axis_rotation.y()) ||
@@ -756,25 +757,15 @@ namespace jsk_rviz_plugin
 
 		tf::Quaternion axis_orientation(orientation.x, orientation.y, orientation.z, orientation.w);
 		tf::Quaternion axis_rot = axis_orientation * axis_rotation;
-
-		// We are keeping a circular buffer of visual pointers.  This gets
-		// the next one, or creates and stores it if it was missing.
-
-		EffortVisual* visual = visuals_[ parent_link_name ];
-		if( visual == NULL )
-		{
-		    visual  = new EffortVisual( vis_manager_->getSceneManager(), scene_node_ );
-		    visuals_[parent_link_name] = visual;
-		}
-
-		// Now set or update the contents of the chosen visual.
-		visual->setMessage( effort + 0.05 );
-		visual->setFramePosition( position );
-		Ogre::Quaternion fixed_orientation(Ogre::Real(axis_rot.w()), Ogre::Real(axis_rot.x()), Ogre::Real(axis_rot.y()), Ogre::Real(axis_rot.z()));
-		visual->setFrameOrientation( fixed_orientation );
-                visual->setWidth( width_ );
+		Ogre::Quaternion joint_orientation(Ogre::Real(axis_rot.w()), Ogre::Real(axis_rot.x()), Ogre::Real(axis_rot.y()), Ogre::Real(axis_rot.z()));
+		visual->setFramePosition( joint_name, position );
+		visual->setFrameOrientation( joint_name, joint_orientation );
 	    }
 	}
+
+	// Now set or update the contents of the chosen visual.
+        visual->setWidth( width_ );
+	visual->setMessage( msg );
     }
 
     // Override rviz::Display's reset() function to add a call to clear().

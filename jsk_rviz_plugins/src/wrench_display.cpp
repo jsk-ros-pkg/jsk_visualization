@@ -67,7 +67,10 @@ namespace jsk_rviz_plugin
     // Clear the visuals by deleting their objects.
     void WrenchStampedDisplay::clear()
     {
-	visuals_.clear();
+	for( size_t i = 0; i < visuals_.size(); i++ ) {
+	    delete visuals_[ i ];
+	    visuals_[ i ] = NULL;
+	}
 	tf_filter_->clear();
 	messages_received_ = 0;
 	setStatus( rviz::status_levels::Warn, "Topic", "No messages received" );
@@ -137,10 +140,12 @@ namespace jsk_rviz_plugin
     {
 	BOOST_FOREACH(MapWrenchStampedVisual::value_type visual, visuals_)
 	{
-	    visual->setForceColor( force_color_.r_, force_color_.g_, force_color_.b_, alpha_ );
-	    visual->setTorqueColor( torque_color_.r_, torque_color_.g_, torque_color_.b_, alpha_ );            
-	    visual->setScale( scale_ );
-	    visual->setWidth( width_ );
+            if ( visual ) {
+                visual->setForceColor( force_color_.r_, force_color_.g_, force_color_.b_, alpha_ );
+                visual->setTorqueColor( torque_color_.r_, torque_color_.g_, torque_color_.b_, alpha_ );            
+                visual->setScale( scale_ );
+                visual->setWidth( width_ );
+            }
 	}
     }
 

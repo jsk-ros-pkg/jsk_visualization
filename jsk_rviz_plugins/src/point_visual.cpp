@@ -32,7 +32,7 @@ namespace jsk_rviz_plugin
     PointStampedVisual::~PointStampedVisual()
     {
 	// Delete the arrow to make it disappear.
-	//delete acceleration_arrow_;
+	delete point_;
 
 	// Destroy the frame node since we don't need it anymore.
 	scene_manager_->destroySceneNode( frame_node_ );

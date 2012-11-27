@@ -12,6 +12,7 @@ namespace Ogre
 namespace rviz
 {
     class Arrow;
+    class BillboardLine;
 }
 
 namespace jsk_rviz_plugin
@@ -54,6 +55,8 @@ private:
     // The object implementing the wrenchStamped circle
     rviz::Arrow* arrow_force_;
     rviz::Arrow* arrow_torque_;
+    rviz::BillboardLine* circle_torque_;
+    rviz::Arrow* circle_arrow_torque_;
     float scale_, width_;
 
     // A SceneNode whose pose is set to match the coordinate frame of

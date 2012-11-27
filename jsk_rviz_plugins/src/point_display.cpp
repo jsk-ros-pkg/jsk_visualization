@@ -63,7 +63,10 @@ namespace jsk_rviz_plugin
     // Clear the visuals by deleting their objects.
     void PointStampedDisplay::clear()
     {
-	visuals_.clear();
+	for( size_t i = 0; i < visuals_.size(); i++ ) {
+	    delete visuals_[ i ];
+	    visuals_[ i ] = NULL;
+	}
 	tf_filter_->clear();
 	messages_received_ = 0;
 	setStatus( rviz::status_levels::Warn, "Topic", "No messages received" );
@@ -115,8 +118,10 @@ namespace jsk_rviz_plugin
     {
 	BOOST_FOREACH(MapPointStampedVisual::value_type visual, visuals_)
 	{
-	    visual->setColor( color_.r_, color_.g_, color_.b_, alpha_ );
-	    visual->setRadius( radius_ );
+            if ( visual ) {
+                visual->setColor( color_.r_, color_.g_, color_.b_, alpha_ );
+                visual->setRadius( radius_ );
+            }
 	}
     }
 

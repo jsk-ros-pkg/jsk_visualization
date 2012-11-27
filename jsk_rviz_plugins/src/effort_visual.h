@@ -9,8 +9,14 @@ namespace Ogre
     class Quaternion;
 }
 
+namespace urdf
+{
+    class Model;
+}
+
 namespace rviz
 {
+    class Arrow;
     class BillboardLine;
 }
 
@@ -27,7 +33,7 @@ class EffortVisual
 public:
     // Constructor.  Creates the visual stuff and puts it into the
     // scene, but in an unconfigured state.
-    EffortVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
+    EffortVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node, boost::shared_ptr<urdf::Model> urdf_model );
 
     // Destructor.  Removes the visual stuff from the scene.
     virtual ~EffortVisual();
@@ -35,7 +41,7 @@ public:
     // set rainbow color
     void getRainbowColor(float value, Ogre::ColourValue& color);
     // Configure the visual to show the data in the message.
-    void setMessage( const double effort_scale );
+    void setMessage( const sensor_msgs::JointStateConstPtr& msg );
 
     // Set the pose of the coordinate frame the message refers to.
     // These could be done inside setMessage(), but that would require
@@ -45,6 +51,10 @@ public:
     void setFramePosition( const Ogre::Vector3& position );
     void setFrameOrientation( const Ogre::Quaternion& orientation );
 
+    // set the pose of coordinates frame the each joint refers to.
+    void setFramePosition( const std::string joint_name, const Ogre::Vector3& position );
+    void setFrameOrientation( const std::string joint_name, const Ogre::Quaternion& orientation );
+
     // Set the color and alpha of the visual, which are user-editable
     // parameters and therefore don't come from the Effort message.
     void setColor( float r, float g, float b, float a );
@@ -53,7 +63,8 @@ public:
 
 private:
     // The object implementing the effort circle
-    rviz::BillboardLine* effort_circle_;
+    std::map<std::string, rviz::BillboardLine*> effort_circle_;
+    std::map<std::string, rviz::Arrow*> effort_arrow_;
 
     // A SceneNode whose pose is set to match the coordinate frame of
     // the Effort message header.
@@ -63,8 +74,13 @@ private:
     // destroy the ``frame_node_``.
     Ogre::SceneManager* scene_manager_;
 
+    std::map<std::string, Ogre::Vector3> position_;
+    std::map<std::string, Ogre::Quaternion> orientation_;
+
     float width_;
 
+    // The object for urdf model
+    boost::shared_ptr<urdf::Model> urdf_model_;
 };
 
 } // end namespace jsk_rviz_plugin
