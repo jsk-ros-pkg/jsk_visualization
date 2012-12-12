@@ -493,6 +493,7 @@ namespace jsk_rviz_plugin
 	, color_( .8, .2, .8 )       // Default color is bright purple.
 	, alpha_( 1.0 )              // Default alpha is completely opaque.
 	, width_( 0.02 )              // Default width
+	, scale_( 1.0 )              // Default scale
     {
     }
 
@@ -595,6 +596,15 @@ namespace jsk_rviz_plugin
 	causeRender();
     }
 
+    void EffortDisplay::setScale( float scale )
+    {
+	scale_ = scale;
+
+	propertyChanged( scale_property_ );
+	updateColorAndAlpha();
+	causeRender();
+    }
+
     // Set the current color and alpha values for each visual.
     void EffortDisplay::updateColorAndAlpha()
     {
@@ -603,6 +613,7 @@ namespace jsk_rviz_plugin
             if ( visual ) {
                 visual->setColor( color_.r_, color_.g_, color_.b_, alpha_ );
                 visual->setWidth( width_ );
+                visual->setScale( scale_ );
             }
 	}
     }
@@ -765,6 +776,7 @@ namespace jsk_rviz_plugin
 
 	// Now set or update the contents of the chosen visual.
         visual->setWidth( width_ );
+        visual->setScale( scale_ );
 	visual->setMessage( msg );
     }
 
@@ -813,7 +825,16 @@ namespace jsk_rviz_plugin
 								    boost::bind( &EffortDisplay::setWidth, this, _1 ),
 								    parent_category_,
 								    this );
-	setPropertyHelpText( alpha_property_, "Width to drow effort circle" );
+	setPropertyHelpText( width_property_, "Width to drow effort circle" );
+
+	scale_property_ =
+	    property_manager_->createProperty<rviz::FloatProperty>( "Scale",
+								    property_prefix_,
+								    boost::bind( &EffortDisplay::getScale, this ),
+								    boost::bind( &EffortDisplay::setScale, this, _1 ),
+								    parent_category_,
+								    this );
+	setPropertyHelpText( scale_property_, "Scale to drow effort circle" );
 
 	history_length_property_ =
 	    property_manager_->createProperty<rviz::IntProperty>( "History Length",

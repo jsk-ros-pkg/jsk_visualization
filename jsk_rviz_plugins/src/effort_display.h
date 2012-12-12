@@ -53,6 +53,9 @@ namespace jsk_rviz_plugin
 	void setWidth( float width );
 	float getWidth() { return width_; }
 
+	void setScale( float scale );
+	float getScale() { return scale_; }
+
 	void setHistoryLength( int history_length );
 	int getHistoryLength() const { return history_length_; }
 
@@ -95,13 +98,13 @@ namespace jsk_rviz_plugin
 	// User-editable property variables.
 	rviz::Color color_;
 	std::string topic_;
-        float alpha_, width_;
+        float alpha_, width_, scale_;
 	int history_length_;
 
 	// Property objects for user-editable properties.
 	rviz::ColorPropertyWPtr color_property_;
 	rviz::ROSTopicStringPropertyWPtr topic_property_;
-        rviz::FloatPropertyWPtr alpha_property_, width_property_;
+        rviz::FloatPropertyWPtr alpha_property_, width_property_, scale_property_;
 	rviz::IntPropertyWPtr history_length_property_;
 
 	// The object for urdf model

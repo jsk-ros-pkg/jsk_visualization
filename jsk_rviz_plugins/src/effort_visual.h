@@ -61,6 +61,8 @@ public:
 
     void setWidth( float w );
 
+    void setScale( float s );
+
 private:
     // The object implementing the effort circle
     std::map<std::string, rviz::BillboardLine*> effort_circle_;
@@ -77,7 +79,7 @@ private:
     std::map<std::string, Ogre::Vector3> position_;
     std::map<std::string, Ogre::Quaternion> orientation_;
 
-    float width_;
+    float width_, scale_;
 
     // The object for urdf model
     boost::shared_ptr<urdf::Model> urdf_model_;

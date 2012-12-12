@@ -91,7 +91,7 @@ namespace jsk_rviz_plugin
 
 		if ( max_effort != 0.0 )
 		{
-		    effort_scale = std::min(fabs(effort) / max_effort, 1.0) + 0.05;
+		    effort_scale = scale_ * std::min(fabs(effort) / max_effort, 1.0) + 0.05;
 		}
 
                 effort_arrow_[joint_name]->set(0, width_*2, width_*2*1.0, width_*2*2.0);
@@ -146,6 +146,11 @@ namespace jsk_rviz_plugin
     void EffortVisual::setWidth( float w )
     {
         width_ = w;
+    }
+
+    void EffortVisual::setScale( float s )
+    {
+        scale_ = s;
     }
 
 } // end namespace jsk_rviz_plugin
