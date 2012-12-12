@@ -92,7 +92,9 @@ namespace jsk_rviz_plugin
 		if ( max_effort != 0.0 )
 		{
 		    effort_scale = scale_ * std::min(fabs(effort) / max_effort, 1.0) + 0.05;
-		}
+		} else {
+                    effort_scale = scale_ * fabs(effort) + 0.05;
+                }
 
                 effort_arrow_[joint_name]->set(0, width_*2, width_*2*1.0, width_*2*2.0);
                 if ( effort > 0 ) {
