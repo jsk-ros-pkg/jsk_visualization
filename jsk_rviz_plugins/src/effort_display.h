@@ -44,9 +44,6 @@ namespace jsk_rviz_plugin
 	void setTopic(const std::string& topic);
 	const std::string& getTopic() { return topic_; }
 
-	void setColor( const rviz::Color& color );
-	const rviz::Color& getColor() { return color_; }
-
 	void setAlpha( float alpha );
 	float getAlpha() { return alpha_; }
 
@@ -96,13 +93,11 @@ namespace jsk_rviz_plugin
 	int messages_received_;
 
 	// User-editable property variables.
-	rviz::Color color_;
 	std::string topic_;
         float alpha_, width_, scale_;
 	int history_length_;
 
 	// Property objects for user-editable properties.
-	rviz::ColorPropertyWPtr color_property_;
 	rviz::ROSTopicStringPropertyWPtr topic_property_;
         rviz::FloatPropertyWPtr alpha_property_, width_property_, scale_property_;
 	rviz::IntPropertyWPtr history_length_property_;

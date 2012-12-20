@@ -139,12 +139,6 @@ namespace jsk_rviz_plugin
 	orientation_[joint_name] = orientation;
     }
 
-    // Color is passed through to the rviz object.
-    void EffortVisual::setColor( float r, float g, float b, float a )
-    {
-	//effort_circle_->setColor( r, g, b, a );
-    }
-
     void EffortVisual::setWidth( float w )
     {
         width_ = w;

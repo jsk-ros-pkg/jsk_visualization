@@ -490,7 +490,6 @@ namespace jsk_rviz_plugin
 	: Display()
 	, scene_node_( NULL )
 	, messages_received_( 0 )
-	, color_( .8, .2, .8 )       // Default color is bright purple.
 	, alpha_( 1.0 )              // Default alpha is completely opaque.
 	, width_( 0.02 )              // Default width
 	, scale_( 1.0 )              // Default scale
@@ -569,15 +568,6 @@ namespace jsk_rviz_plugin
 	causeRender();
     }
 
-    void EffortDisplay::setColor( const rviz::Color& color )
-    {
-	color_ = color;
-
-	propertyChanged( color_property_ );
-	updateColorAndAlpha();
-	causeRender();
-    }
-
     void EffortDisplay::setAlpha( float alpha )
     {
 	alpha_ = alpha;
@@ -611,7 +601,6 @@ namespace jsk_rviz_plugin
 	BOOST_FOREACH(MapEffortVisual::value_type visual, visuals_)
 	{
             if ( visual ) {
-                visual->setColor( color_.r_, color_.g_, color_.b_, alpha_ );
                 visual->setWidth( width_ );
                 visual->setScale( scale_ );
             }
@@ -799,15 +788,6 @@ namespace jsk_rviz_plugin
 	setPropertyHelpText( topic_property_, "sensor_msgs::Effort topic to subscribe to." );
 	rviz::ROSTopicStringPropertyPtr topic_prop = topic_property_.lock();
 	topic_prop->setMessageType( ros::message_traits::datatype<sensor_msgs::JointState>() );
-
-	color_property_ =
-	    property_manager_->createProperty<rviz::ColorProperty>( "Color",
-								    property_prefix_,
-								    boost::bind( &EffortDisplay::getColor, this ),
-								    boost::bind( &EffortDisplay::setColor, this, _1 ),
-								    parent_category_,
-								    this );
-	setPropertyHelpText( color_property_, "Color to draw effor circle" );
 
 	alpha_property_ =
 	    property_manager_->createProperty<rviz::FloatProperty>( "Alpha",
