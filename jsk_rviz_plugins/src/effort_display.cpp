@@ -486,6 +486,125 @@ public:
 namespace jsk_rviz_plugin
 {
 
+    struct JointInfo {
+        JointInfo();
+
+        bool isEnabled() { return enabled_; }
+
+        std::string name_;
+        bool enabled_;
+
+        ros::Time last_update_;
+
+        rviz::CategoryPropertyWPtr category_;
+        rviz::BoolPropertyWPtr enabled_property_;
+    };
+
+    JointInfo::JointInfo()
+        : enabled_(true)
+    {
+    }
+
+    JointInfo* EffortDisplay::getJointInfo( const std::string& joint)
+    {
+        M_JointInfo::iterator it = joints_.find( joint );
+        if ( it == joints_.end() )
+            {
+                return NULL;
+            }
+
+        return it->second;
+    }
+
+    void EffortDisplay::updateJoints(V_string joints)
+    {
+        std::sort(joints.begin(), joints.end());
+
+        S_JointInfo current_joints;
+
+        {
+            V_string::iterator it = joints.begin();
+            V_string::iterator end = joints.end();
+            for ( ; it != end; ++it )
+                {
+                    const std::string& joint = *it;
+
+                    if ( joint.empty() )
+                        {
+                            continue;
+                        }
+
+                    JointInfo* info = getJointInfo( joint );
+                    if (!info)
+                        {
+                            info = createJoint(joint);
+                        }
+                    else
+                        {
+                            updateJoint(info);
+                        }
+
+                    current_joints.insert( info );
+                }
+        }
+
+        {
+            S_JointInfo to_delete;
+            M_JointInfo::iterator joint_it = joints_.begin();
+            M_JointInfo::iterator joint_end = joints_.end();
+            for ( ; joint_it != joint_end; ++joint_it )
+                {
+                    if ( current_joints.find( joint_it->second ) == current_joints.end() )
+                        {
+                            to_delete.insert( joint_it->second );
+                        }
+                }
+
+            S_JointInfo::iterator delete_it = to_delete.begin();
+            S_JointInfo::iterator delete_end = to_delete.end();
+            for ( ; delete_it != delete_end; ++delete_it )
+                {
+                    deleteJoint( *delete_it, true );
+                }
+        }
+
+    }
+
+    void EffortDisplay::setJointEnabled(JointInfo* joint, bool enabled)
+    {
+        joint->enabled_ = enabled;
+        propertyChanged(joint->enabled_property_);
+    }
+
+    JointInfo* EffortDisplay::createJoint(const std::string &joint)
+    {
+        JointInfo *info = new JointInfo;
+        joints_.insert( std::make_pair( joint, info ) );
+
+        info->name_ = joint;
+        info->last_update_ = ros::Time::now();
+
+        std::string prefix = "Joints.";
+        info->category_ = property_manager_->createCategory( info->name_, "", joints_category_, this);
+
+        prefix += info->name_ + ".";
+
+        info->enabled_property_ = property_manager_->createProperty<rviz::BoolProperty>( "Enabled", prefix, boost::bind( &JointInfo::isEnabled, info), boost::bind(&EffortDisplay::setJointEnabled, this, info, _1), info->category_, this);
+        setPropertyHelpText(info->enabled_property_, "Enable or disable this individual joint.");
+
+        updateJoint(info);
+
+        return info;
+    }
+
+    void EffortDisplay::updateJoint(JointInfo* joint)
+    {
+    }
+
+    void EffortDisplay::deleteJoint(JointInfo* joint, bool delete_properties)
+    {
+    }
+
     EffortDisplay::EffortDisplay()
 	: Display()
 	, scene_node_( NULL )
@@ -493,6 +612,7 @@ namespace jsk_rviz_plugin
 	, alpha_( 1.0 )              // Default alpha is completely opaque.
 	, width_( 0.02 )              // Default width
 	, scale_( 1.0 )              // Default scale
+        , all_enabled_( true )
     {
     }
 
@@ -654,6 +774,23 @@ namespace jsk_rviz_plugin
 	visuals_.swap( new_visuals );
     }
 
+    void EffortDisplay::setAllEnabled(bool enabled)
+    {
+        all_enabled_ = enabled;
+
+        M_JointInfo::iterator it = joints_.begin();
+        M_JointInfo::iterator end = joints_.end();
+        for (; it != end; ++it)
+            {
+                JointInfo* joint = it->second;
+
+                setJointEnabled(joint, enabled);
+            }
+
+        propertyChanged(all_enabled_property_);
+    }
+
+
     void EffortDisplay::subscribe()
     {
 	// If we are not actually enabled, don't do it.
@@ -722,10 +859,19 @@ namespace jsk_rviz_plugin
 	  }
 
         // set frames for all joints
+        V_string joints;
 	int joint_num = msg->name.size();
 	for (int i = 0; i < joint_num; i++ )
 	{
-	    std::string joint_name = msg->name[i];
+                joints.push_back( msg->name[i] );
+	}
+
+        updateJoints(joints);
+
+        for ( M_JointInfo::iterator it = joints_.begin() ; it != joints_.end(); ++it )
+        {
+            std::string joint_name = it->first;
+            JointInfo *joint_info = it->second;
 	    const urdf::Joint* joint = urdfModel->getJoint(joint_name).get();
 	    int joint_type = joint->type;
 	    if ( joint_type == urdf::Joint::REVOLUTE )
@@ -760,8 +906,10 @@ namespace jsk_rviz_plugin
 		Ogre::Quaternion joint_orientation(Ogre::Real(axis_rot.w()), Ogre::Real(axis_rot.x()), Ogre::Real(axis_rot.y()), Ogre::Real(axis_rot.z()));
 		visual->setFramePosition( joint_name, position );
 		visual->setFrameOrientation( joint_name, joint_orientation );
+                visual->setFrameEnabled( joint_name, joint_info->isEnabled() );
 	    }
 	}
+
 
 	// Now set or update the contents of the chosen visual.
         visual->setWidth( width_ );
@@ -824,6 +972,19 @@ namespace jsk_rviz_plugin
 								  parent_category_,
 							    this );
 	setPropertyHelpText( history_length_property_, "Number of prior measurements to display." );
+
+        joints_category_ =
+	    property_manager_->createCategory( "Joints",
+                                               property_prefix_,
+                                               parent_category_,
+                                               this );
+	setPropertyHelpText( joints_category_, "The list of all joints." );
+        rviz::CategoryPropertyPtr cat_prop = joints_category_.lock();
+        cat_prop->collapse();
+        all_enabled_property_ = property_manager_->createProperty<rviz::BoolProperty>( "All Enabled", property_prefix_, boost::bind( &EffortDisplay::getAllEnabled, this ),
+                                                                                       boost::bind( &EffortDisplay::setAllEnabled, this, _1 ), joints_category_, this );
+        setPropertyHelpText(all_enabled_property_, "Whether all the joints should be enabled or not.");
+
     }
 } // end namespace jsk_rviz_plugin
 

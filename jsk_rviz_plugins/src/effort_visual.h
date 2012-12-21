@@ -55,6 +55,8 @@ public:
     void setFramePosition( const std::string joint_name, const Ogre::Vector3& position );
     void setFrameOrientation( const std::string joint_name, const Ogre::Quaternion& orientation );
 
+    void setFrameEnabled( const std::string joint_name, const bool e );
+
     // Set the color and alpha of the visual, which are user-editable
     // parameters and therefore don't come from the Effort message.
     void setColor( float r, float g, float b, float a );
@@ -67,6 +69,7 @@ private:
     // The object implementing the effort circle
     std::map<std::string, rviz::BillboardLine*> effort_circle_;
     std::map<std::string, rviz::Arrow*> effort_arrow_;
+    std::map<std::string, bool> effort_enabled_;
 
     // A SceneNode whose pose is set to match the coordinate frame of
     // the Effort message header.

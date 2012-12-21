@@ -24,6 +24,10 @@ namespace tf
 namespace jsk_rviz_plugin
 {
 
+    struct JointInfo;
+    typedef std::set<JointInfo*> S_JointInfo;
+    typedef std::vector<std::string> V_string;
+
     class EfforVisual;
 
     class EffortDisplay: public rviz::Display
@@ -56,12 +60,25 @@ namespace jsk_rviz_plugin
 	void setHistoryLength( int history_length );
 	int getHistoryLength() const { return history_length_; }
 
+        bool getAllEnabled() { return all_enabled_; }
+        void setAllEnabled(bool enabled);
+
+        void setJointEnabled(JointInfo* joint, bool enabled);
+
+
 	// Overrides of protected virtual functions from Display.  As much
 	// as possible, when Displays are not enabled, they should not be
 	// subscribed to incoming data and should not show anything in the
 	// 3D view.  These functions are where these connections are made
 	// and broken.
     protected:
+        void updateJoints(V_string joints);
+        JointInfo* createJoint(const std::string &joint);
+        void updateJoint(JointInfo* joint);
+        void deleteJoint(JointInfo* joint, bool delete_properties);
+
+        JointInfo* getJointInfo(const std::string &joint);
+
 	virtual void onEnable();
 	virtual void onDisable();
 
@@ -92,15 +109,22 @@ namespace jsk_rviz_plugin
 	tf::MessageFilterJointState* tf_filter_;
 	int messages_received_;
 
+        typedef std::map<std::string, JointInfo*> M_JointInfo;
+        M_JointInfo joints_;
+
 	// User-editable property variables.
 	std::string topic_;
         float alpha_, width_, scale_;
 	int history_length_;
+        bool all_enabled_;
 
 	// Property objects for user-editable properties.
 	rviz::ROSTopicStringPropertyWPtr topic_property_;
         rviz::FloatPropertyWPtr alpha_property_, width_property_, scale_property_;
 	rviz::IntPropertyWPtr history_length_property_;
+
+        rviz::CategoryPropertyWPtr joints_category_;
+        rviz::BoolPropertyWPtr all_enabled_property_;
 
 	// The object for urdf model
 	boost::shared_ptr<urdf::Model> urdfModel;

@@ -34,8 +34,7 @@ namespace jsk_rviz_plugin
 	for (std::map<std::string, boost::shared_ptr<urdf::Joint> >::iterator it = urdf_model_->joints_.begin(); it != urdf_model_->joints_.end(); it ++ ) {
 	    if ( it->second->type == urdf::Joint::REVOLUTE ) {
                 std::string joint_name = it->first;
-                effort_circle_[joint_name] = new rviz::BillboardLine( scene_manager_, frame_node_ );
-                effort_arrow_[joint_name] = new rviz::Arrow( scene_manager_, frame_node_ );
+                effort_enabled_[joint_name] = true;
             }
         }
     }
@@ -85,6 +84,24 @@ namespace jsk_rviz_plugin
 	    int joint_type = joint->type;
 	    if ( joint_type == urdf::Joint::REVOLUTE )
 	    {
+                // enable or disable draw
+                if ( effort_circle_.find(joint_name) != effort_circle_.end() &&
+                     !effort_enabled_[joint_name] ) // enable->disable
+                    {
+                        delete(effort_circle_[joint_name]);
+                        delete(effort_arrow_[joint_name]);
+                        effort_circle_.erase(joint_name);
+                        effort_arrow_.erase(joint_name);
+                    }
+                if ( effort_circle_.find(joint_name) == effort_circle_.end() &&
+                     effort_enabled_[joint_name] ) // disable -> enable
+                    {
+                        effort_circle_[joint_name] = new rviz::BillboardLine( scene_manager_, frame_node_ );
+                        effort_arrow_[joint_name] = new rviz::Arrow( scene_manager_, frame_node_ );
+                    }
+
+                if ( ! effort_enabled_[joint_name] ) continue;
+
 		//tf::Transform offset = poseFromJoint(joint);
 		boost::shared_ptr<urdf::JointLimits> limit = joint->limits;
 		double max_effort = limit->effort, effort_scale = 0.05;
@@ -116,6 +133,11 @@ namespace jsk_rviz_plugin
                 effort_circle_[joint_name]->setColor(color.r, color.g, color.b, color.a);
             }
         }
+    }
+
+    void EffortVisual::setFrameEnabled( const std::string joint_name, const bool e )
+    {
+        effort_enabled_[joint_name] = e;
     }
 
     // Position and orientation are passed through to the SceneNode.
