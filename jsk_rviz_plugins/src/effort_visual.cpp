@@ -104,13 +104,13 @@ namespace jsk_rviz_plugin
 
 		//tf::Transform offset = poseFromJoint(joint);
 		boost::shared_ptr<urdf::JointLimits> limit = joint->limits;
-		double max_effort = limit->effort, effort_scale = 0.05;
+		double max_effort = limit->effort, effort_value = 0.05;
 
 		if ( max_effort != 0.0 )
 		{
-		    effort_scale = scale_ * std::min(fabs(effort) / max_effort, 1.0) + 0.05;
+		    effort_value = std::min(fabs(effort) / max_effort, 1.0) + 0.05;
 		} else {
-                    effort_scale = scale_ * fabs(effort) + 0.05;
+                    effort_value = fabs(effort) + 0.05;
                 }
 
                 effort_arrow_[joint_name]->set(0, width_*2, width_*2*1.0, width_*2*2.0);
@@ -119,16 +119,16 @@ namespace jsk_rviz_plugin
                 } else {
                     effort_arrow_[joint_name]->setDirection(orientation_[joint_name] * Ogre::Vector3( 1,0,0));
                 }
-                effort_arrow_[joint_name]->setPosition(orientation_[joint_name] * Ogre::Vector3(0, 0.05+effort_scale*0.5, 0) + position_[joint_name]);
+                effort_arrow_[joint_name]->setPosition(orientation_[joint_name] * Ogre::Vector3(0, 0.05+effort_value*scale_*0.5, 0) + position_[joint_name]);
                 effort_circle_[joint_name]->clear();
                 effort_circle_[joint_name]->setLineWidth(width_);
                 for (int i = 0; i < 30; i++) {
-                    Ogre::Vector3 point = Ogre::Vector3((0.05+effort_scale*0.5)*sin(i*2*M_PI/32), (0.05+effort_scale*0.5)*cos(i*2*M_PI/32), 0);
+                    Ogre::Vector3 point = Ogre::Vector3((0.05+effort_value*scale_*0.5)*sin(i*2*M_PI/32), (0.05+effort_value*scale_*0.5)*cos(i*2*M_PI/32), 0);
                     if ( effort < 0 ) point.x = -point.x;
                     effort_circle_[joint_name]->addPoint(orientation_[joint_name] * point + position_[joint_name]);
                 }
                 Ogre::ColourValue color;
-                getRainbowColor(effort_scale, color);
+                getRainbowColor(effort_value, color);
                 effort_arrow_[joint_name]->setColor(color.r, color.g, color.b, color.a);
                 effort_circle_[joint_name]->setColor(color.r, color.g, color.b, color.a);
             }
