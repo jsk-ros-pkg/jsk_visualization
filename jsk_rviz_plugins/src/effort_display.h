@@ -72,7 +72,7 @@ namespace jsk_rviz_plugin
 	// 3D view.  These functions are where these connections are made
 	// and broken.
     protected:
-        void updateJoints(V_string joints);
+        //void updateJoints(V_string joints);
         JointInfo* createJoint(const std::string &joint);
         void updateJoint(JointInfo* joint);
         void deleteJoint(JointInfo* joint, bool delete_properties);

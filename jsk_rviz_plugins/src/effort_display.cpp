@@ -490,14 +490,21 @@ namespace jsk_rviz_plugin
         JointInfo();
 
         bool isEnabled() { return enabled_; }
+        void setEffort(double e) { effort_ = e; }
+        double getEffort() { return effort_; }
+        void setMaxEffort(double m) { max_effort_ = m; }
+        double getMaxEffort() { return max_effort_; }
 
         std::string name_;
         bool enabled_;
+        double effort_, max_effort_;
 
         ros::Time last_update_;
 
         rviz::CategoryPropertyWPtr category_;
         rviz::BoolPropertyWPtr enabled_property_;
+        rviz::FloatPropertyWPtr effort_property_;
+        rviz::FloatPropertyWPtr max_effort_property_;
     };
 
     JointInfo::JointInfo()
@@ -516,60 +523,6 @@ namespace jsk_rviz_plugin
         return it->second;
     }
 
-    void EffortDisplay::updateJoints(V_string joints)
-    {
-        std::sort(joints.begin(), joints.end());
-
-        S_JointInfo current_joints;
-
-        {
-            V_string::iterator it = joints.begin();
-            V_string::iterator end = joints.end();
-            for ( ; it != end; ++it )
-                {
-                    const std::string& joint = *it;
-
-                    if ( joint.empty() )
-                        {
-                            continue;
-                        }
-
-                    JointInfo* info = getJointInfo( joint );
-                    if (!info)
-                        {
-                            info = createJoint(joint);
-                        }
-                    else
-                        {
-                            updateJoint(info);
-                        }
-
-                    current_joints.insert( info );
-                }
-        }
-
-        {
-            S_JointInfo to_delete;
-            M_JointInfo::iterator joint_it = joints_.begin();
-            M_JointInfo::iterator joint_end = joints_.end();
-            for ( ; joint_it != joint_end; ++joint_it )
-                {
-                    if ( current_joints.find( joint_it->second ) == current_joints.end() )
-                        {
-                            to_delete.insert( joint_it->second );
-                        }
-                }
-
-            S_JointInfo::iterator delete_it = to_delete.begin();
-            S_JointInfo::iterator delete_end = to_delete.end();
-            for ( ; delete_it != delete_end; ++delete_it )
-                {
-                    deleteJoint( *delete_it, true );
-                }
-        }
-
-    }
-
     void EffortDisplay::setJointEnabled(JointInfo* joint, bool enabled)
     {
         joint->enabled_ = enabled;
@@ -582,6 +535,9 @@ namespace jsk_rviz_plugin
         joints_.insert( std::make_pair( joint, info ) );
 
         info->name_ = joint;
+        info->enabled_ = true;
+        info->effort_ = 0;
+        info->max_effort_ = 0;
         info->last_update_ = ros::Time::now();
 
         std::string prefix = "Joints.";
@@ -592,6 +548,11 @@ namespace jsk_rviz_plugin
         info->enabled_property_ = property_manager_->createProperty<rviz::BoolProperty>( "Enabled", prefix, boost::bind( &JointInfo::isEnabled, info), boost::bind(&EffortDisplay::setJointEnabled, this, info, _1), info->category_, this);
         setPropertyHelpText(info->enabled_property_, "Enable or disable this individual joint.");
 
+        info->effort_property_ = property_manager_->createProperty<rviz::FloatProperty>( "Effort", prefix, boost::bind( &JointInfo::getEffort, info), boost::bind( &JointInfo::setEffort, info, _1), info->category_, this);
+        setPropertyHelpText(info->effort_property_, "Effort value of this joint.");
+
+        info->max_effort_property_ = property_manager_->createProperty<rviz::FloatProperty>( "Max Effort", prefix, boost::bind( &JointInfo::getMaxEffort, info), boost::bind( &JointInfo::setMaxEffort, info, _1), info->category_, this);
+        setPropertyHelpText(info->max_effort_property_, "Max Effort value of this joint.");
         updateJoint(info);
 
         return info;
@@ -858,20 +819,23 @@ namespace jsk_rviz_plugin
 	    visuals_[ messages_received_ % history_length_ ] = visual;
 	  }
 
-        // set frames for all joints
         V_string joints;
-	int joint_num = msg->name.size();
-	for (int i = 0; i < joint_num; i++ )
-	{
-                joints.push_back( msg->name[i] );
-	}
-
-        updateJoints(joints);
-
-        for ( M_JointInfo::iterator it = joints_.begin() ; it != joints_.end(); ++it )
+        int joint_num = msg->name.size();
+        for (int i = 0; i < joint_num; i++ )
         {
-            std::string joint_name = it->first;
-            JointInfo *joint_info = it->second;
+            std::string joint_name = msg->name[i];
+            JointInfo* joint_info = getJointInfo(joint_name);
+            if ( !joint_info ) continue; // skip joints..
+
+            // set effort
+            joint_info->setEffort(msg->effort[i]);
+
+            // update effort property
+            if ( ros::Time::now() - joint_info->last_update_ > ros::Duration(0.2) ) {
+                propertyChanged(joint_info->effort_property_);
+                joint_info->last_update_ = ros::Time::now();
+            }
+
 	    const urdf::Joint* joint = urdfModel->getJoint(joint_name).get();
 	    int joint_type = joint->type;
 	    if ( joint_type == urdf::Joint::REVOLUTE )
@@ -985,6 +949,15 @@ namespace jsk_rviz_plugin
                                                                                        boost::bind( &EffortDisplay::setAllEnabled, this, _1 ), joints_category_, this );
         setPropertyHelpText(all_enabled_property_, "Whether all the joints should be enabled or not.");
 
+	for (std::map<std::string, boost::shared_ptr<urdf::Joint> >::iterator it = urdfModel->joints_.begin(); it != urdfModel->joints_.end(); it ++ ) {
+            boost::shared_ptr<urdf::Joint> joint = it->second;
+	    if ( joint->type == urdf::Joint::REVOLUTE ) {
+                std::string joint_name = it->first;
+		boost::shared_ptr<urdf::JointLimits> limit = joint->limits;
+                joints_[joint_name] = createJoint(joint_name);
+                joints_[joint_name]->setMaxEffort(limit->effort);
+            }
+        }
     }
 } // end namespace jsk_rviz_plugin
 
