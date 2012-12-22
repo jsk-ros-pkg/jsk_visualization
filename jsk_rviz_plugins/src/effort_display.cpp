@@ -602,16 +602,6 @@ namespace jsk_rviz_plugin
 	vis_manager_->getFrameManager()
 	    ->registerFilterForTransformStatusCheck( tf_filter_, this );
 
-
-	// get robot_description
-	std::string urdf_string;
-	update_nh_.getParam("robot_description", urdf_string);
-	urdfModel = boost::shared_ptr<urdf::Model>(new urdf::Model());
-	if (!urdfModel->initString(urdf_string))
-	{
-	    ROS_ERROR("Unable to parse URDF description!");
-	    throw "Unable to parse URDF description!";
-	}
     }
 
     EffortDisplay::~EffortDisplay()
@@ -735,6 +725,46 @@ namespace jsk_rviz_plugin
 	visuals_.swap( new_visuals );
     }
 
+    void EffortDisplay::load()
+    {
+	// get robot_description
+	std::string urdf_string;
+	update_nh_.getParam(description_param_, urdf_string);
+	urdfModel = boost::shared_ptr<urdf::Model>(new urdf::Model());
+	if (!urdfModel->initString(urdf_string))
+	{
+	    ROS_ERROR("Unable to parse URDF description!");
+            setStatus(rviz::status_levels::Error, "URDF", "Unable to parse robot model description!");
+	    return;
+	}
+        setStatus(rviz::status_levels::Ok, "URDF", "Ok");
+
+	for (std::map<std::string, boost::shared_ptr<urdf::Joint> >::iterator it = urdfModel->joints_.begin(); it != urdfModel->joints_.end(); it ++ ) {
+            boost::shared_ptr<urdf::Joint> joint = it->second;
+	    if ( joint->type == urdf::Joint::REVOLUTE ) {
+                std::string joint_name = it->first;
+		boost::shared_ptr<urdf::JointLimits> limit = joint->limits;
+                joints_[joint_name] = createJoint(joint_name);
+                joints_[joint_name]->setMaxEffort(limit->effort);
+            }
+        }
+    }
+
+    void EffortDisplay::setRobotDescription( const std::string& description_param )
+    {
+        description_param_ = description_param;
+
+        propertyChanged(robot_description_property_);
+
+        if ( isEnabled() )
+            {
+                load();
+                unsubscribe();
+                subscribe();
+                causeRender();
+            }
+    }
+
     void EffortDisplay::setAllEnabled(bool enabled)
     {
         all_enabled_ = enabled;
@@ -759,6 +789,12 @@ namespace jsk_rviz_plugin
 	{
 	    return;
 	}
+
+        // if urdf model is not loaded, return
+        if ( ! urdfModel ) {
+	    setStatus( rviz::status_levels::Warn, "URDF", "Valid robot model is not loaded" );
+            return;
+        }
 
 	// Try to subscribe to the current topic name (in ``topic_``).  Make
 	// sure to catch exceptions and set the status to a descriptive
@@ -937,6 +973,10 @@ namespace jsk_rviz_plugin
 							    this );
 	setPropertyHelpText( history_length_property_, "Number of prior measurements to display." );
 
+        robot_description_property_ = property_manager_->createProperty<rviz::StringProperty>( "Robot Description", property_prefix_, boost::bind( &EffortDisplay::getRobotDescription, this ), boost::bind( &EffortDisplay::setRobotDescription, this, _1 ), parent_category_, this );
+        rviz::setPropertyHelpText(robot_description_property_, "Name of the parameter to search for to load the robot description.");
+
+
         joints_category_ =
 	    property_manager_->createCategory( "Joints",
                                                property_prefix_,
@@ -949,15 +989,6 @@ namespace jsk_rviz_plugin
                                                                                        boost::bind( &EffortDisplay::setAllEnabled, this, _1 ), joints_category_, this );
         setPropertyHelpText(all_enabled_property_, "Whether all the joints should be enabled or not.");
 
-	for (std::map<std::string, boost::shared_ptr<urdf::Joint> >::iterator it = urdfModel->joints_.begin(); it != urdfModel->joints_.end(); it ++ ) {
-            boost::shared_ptr<urdf::Joint> joint = it->second;
-	    if ( joint->type == urdf::Joint::REVOLUTE ) {
-                std::string joint_name = it->first;
-		boost::shared_ptr<urdf::JointLimits> limit = joint->limits;
-                joints_[joint_name] = createJoint(joint_name);
-                joints_[joint_name]->setMaxEffort(limit->effort);
-            }
-        }
     }
 } // end namespace jsk_rviz_plugin
 

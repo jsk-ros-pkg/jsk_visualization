@@ -60,6 +60,10 @@ namespace jsk_rviz_plugin
 	void setHistoryLength( int history_length );
 	int getHistoryLength() const { return history_length_; }
 
+        void load();
+        void setRobotDescription( const std::string& description_param );
+        std::string& getRobotDescription() { return description_param_; }
+
         bool getAllEnabled() { return all_enabled_; }
         void setAllEnabled(bool enabled);
 
@@ -113,7 +117,7 @@ namespace jsk_rviz_plugin
         M_JointInfo joints_;
 
 	// User-editable property variables.
-	std::string topic_;
+	std::string topic_, description_param_;
         float alpha_, width_, scale_;
 	int history_length_;
         bool all_enabled_;
@@ -123,6 +127,7 @@ namespace jsk_rviz_plugin
         rviz::FloatPropertyWPtr alpha_property_, width_property_, scale_property_;
 	rviz::IntPropertyWPtr history_length_property_;
 
+        rviz::StringPropertyWPtr robot_description_property_;
         rviz::CategoryPropertyWPtr joints_category_;
         rviz::BoolPropertyWPtr all_enabled_property_;
 
