@@ -20,4 +20,11 @@
       Displays from geometry_msgs/PointStamped message
     </description>
   </class>
+  <class name="jsk_rviz_plugin/AmbientSound"
+         type="jsk_rviz_plugin::AmbientSoundDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays from hark_msgs/HarkPower message
+    </description>
+  </class>
 </library>
