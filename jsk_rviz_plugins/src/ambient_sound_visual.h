@@ -53,6 +53,7 @@ public:
   void setWidth( float w );
   void setScale( float s );
   void setBias( float b );
+  void setGrad( float g );
 
 private:
   // The object implementing the actual arrow shape
@@ -69,7 +70,7 @@ private:
   
   Ogre::Vector3 position_;
   Ogre::Quaternion orientation_;
-  float width_,scale_,bias_;
+  float width_,scale_,bias_,grad_;
 };
 // END_TUTORIAL
 

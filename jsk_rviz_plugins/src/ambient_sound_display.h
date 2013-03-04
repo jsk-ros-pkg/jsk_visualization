@@ -53,6 +53,10 @@ public:
 
   void setBias( float bias );
   float getBias() const { return bias_; }
+
+  void setGrad( float grad );
+  float getGrad() const { return grad_; }
+
   // Overrides of protected virtual functions from Display.  As much
   // as possible, when Displays are not enabled, they should not be
   // subscribed to incoming data and should not show anything in the
@@ -95,7 +99,7 @@ private:
   std::string topic_;
   float alpha_;
   int history_length_;
-  float width_,scale_,bias_;
+  float width_,scale_,bias_,grad_;
 
   // Property objects for user-editable properties.
   rviz::ColorPropertyWPtr color_property_;
@@ -105,6 +109,7 @@ private:
   rviz::FloatPropertyWPtr width_property_;
   rviz::FloatPropertyWPtr scale_property_;
   rviz::FloatPropertyWPtr bias_property_;
+  rviz::FloatPropertyWPtr grad_property_;
 };
 // END_TUTORIAL
 

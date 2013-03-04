@@ -142,6 +142,15 @@ namespace jsk_rviz_plugin
         causeRender();
     }/*}}}*/
 
+    void AmbientSoundDisplay::setGrad( float grad )/*{{{*/
+    {
+        grad_ = grad;
+        
+        propertyChanged( grad_property_ );
+        updateColorAndAlpha();
+        causeRender();
+    }/*}}}*/
+
     // Set the current color and alpha values for each visual.
     void AmbientSoundDisplay::updateColorAndAlpha()/*{{{*/
     {
@@ -289,6 +298,7 @@ namespace jsk_rviz_plugin
         visual->setWidth( width_ );
         visual->setScale( scale_ );
         visual->setBias ( bias_ );
+        visual->setGrad ( grad_ );
         visual->setMessage( msg );
     }/*}}}*/
 
@@ -361,6 +371,15 @@ namespace jsk_rviz_plugin
                     this );
         setPropertyHelpText( scale_property_, "Scale of line" );
         
+        grad_property_ = 
+            property_manager_->createProperty<rviz::FloatProperty>( "Grad",
+                    property_prefix_,
+                    boost::bind( &AmbientSoundDisplay::getGrad, this ),
+                    boost::bind( &AmbientSoundDisplay::setGrad, this, _1 ),
+                    parent_category_,
+                    this );
+        setPropertyHelpText( grad_property_, "Graduation" );
+
         bias_property_ = 
             property_manager_->createProperty<rviz::FloatProperty>( "Bias",
                     property_prefix_,
