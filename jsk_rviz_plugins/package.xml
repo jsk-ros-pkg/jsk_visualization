@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>jsk_rviz_plugin</name>
+  <name>jsk_rviz_plugins</name>
   <version>0.0.9</version>
-  <description>The jsk_rviz_plugin package</description>
+  <description>The jsk_rviz_plugins package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://ros.org/wiki/jsk_rviz_plugin</url> -->
+  <!-- <url type="website">http://ros.org/wiki/jsk_rviz_plugins</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
