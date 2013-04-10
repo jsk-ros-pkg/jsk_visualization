@@ -43,7 +43,7 @@ namespace jsk_rviz_plugin
         scene_manager_->destroySceneNode( frame_node_ );
     }/*}}}*/
 
-    void AmbientSoundVisual::setMessage( const hark_msgs::HarkPower::ConstPtr& msg )/*{{{*/
+    void AmbientSoundVisual::setMessage( const jsk_hark_msgs::HarkPower::ConstPtr& msg )/*{{{*/
     {
         int directions = msg->directions;
         std::vector<float> powers = msg->powers;

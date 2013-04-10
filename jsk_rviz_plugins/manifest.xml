@@ -9,7 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/jsk_rviz_plugins</url>
   <depend package="rviz"/>
-  <depend package="hark_msgs"/>
+  <depend package="jsk_hark_msgs"/>
 
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>

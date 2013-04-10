@@ -1,7 +1,7 @@
 #ifndef __AMBIENT_SOUND_VISUAL__
 #define __AMBIENT_SOUND_VISUAL__
 
-#include <hark_msgs/HarkPower.h>
+#include <jsk_hark_msgs/HarkPower.h>
 
 namespace Ogre
 {
@@ -36,7 +36,7 @@ public:
   virtual ~AmbientSoundVisual();
 
   // Configure the visual to show the data in the message.
-  void setMessage( const hark_msgs::HarkPower::ConstPtr& msg );
+  void setMessage( const jsk_hark_msgs::HarkPower::ConstPtr& msg );
 
   // Set the pose of the coordinate frame the message refers to.
   // These could be done inside setMessage(), but that would require

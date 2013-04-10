@@ -3,7 +3,7 @@
 
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
-#include <hark_msgs/HarkPower.h>
+#include <jsk_hark_msgs/HarkPower.h>
 #include <rviz/display.h>
 
 namespace Ogre
@@ -68,7 +68,7 @@ protected:
 
   // Function to handle an incoming ROS message.
 private:
-  void incomingMessage( const hark_msgs::HarkPower::ConstPtr& msg );
+  void incomingMessage( const jsk_hark_msgs::HarkPower::ConstPtr& msg );
 
   // Internal helpers which do the work of subscribing and
   // unsubscribing from the ROS topic.
@@ -90,8 +90,8 @@ private:
   Ogre::SceneNode* scene_node_;
 
   // Data input: Subscriber and tf message filter.
-  message_filters::Subscriber<hark_msgs::HarkPower> sub_;
-  tf::MessageFilter<hark_msgs::HarkPower>* tf_filter_;
+  message_filters::Subscriber<jsk_hark_msgs::HarkPower> sub_;
+  tf::MessageFilter<jsk_hark_msgs::HarkPower>* tf_filter_;
   int messages_received_;
 
   // User-editable property variables.
