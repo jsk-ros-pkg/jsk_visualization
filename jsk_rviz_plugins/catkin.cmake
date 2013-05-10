@@ -1,3 +1,6 @@
+# these plugins should be uploaded to upstream repository
+# https://github.com/ros-visualization/rviz/pull/634
+
 # http://ros.org/doc/groovy/api/catkin/html/user_guide/supposed.html
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_rviz_plugins)
