@@ -8,6 +8,16 @@ project(jsk_rviz_plugins)
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS rviz)
 
+catkin_package(
+    DEPENDS rviz
+    CATKIN-DEPENDS # TODO
+    INCLUDE_DIRS # TODO include
+    LIBRARIES # TODO
+)
+
+
+set(ROS_BUILD_TYPE Release)
+
 # include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 # TODO: fill in what other packages will need to use this package
 ## LIBRARIES: libraries you create in this project that dependent projects also need
@@ -39,17 +49,8 @@ set(SOURCE_FILES
   ${MOC_FILES}
 )
 
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 add_library(jsk_rviz_plugins ${SOURCE_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES})
-
-catkin_package(
-    DEPENDS rviz
-    CATKIN-DEPENDS # TODO
-    INCLUDE_DIRS # TODO include
-    LIBRARIES # TODO
-)
-
 
 install(FILES plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
