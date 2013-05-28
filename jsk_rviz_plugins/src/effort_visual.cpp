@@ -35,6 +35,8 @@ namespace jsk_rviz_plugin
 	    if ( it->second->type == urdf::Joint::REVOLUTE ) {
                 std::string joint_name = it->first;
                 effort_enabled_[joint_name] = true;
+            } else {
+                ROS_DEBUG("%s is disabled (type: %d)", it->first.c_str(), it->second->type);
             }
         }
     }
@@ -112,6 +114,8 @@ namespace jsk_rviz_plugin
 		} else {
                     effort_value = fabs(effort) + 0.05;
                 }
+
+                ROS_DEBUG("%s effort %f, max_effort %f, effort_value %f", joint_name.c_str(), effort, limit->effort, effort_value);
 
                 effort_arrow_[joint_name]->set(0, width_*2, width_*2*1.0, width_*2*2.0);
                 if ( effort > 0 ) {
