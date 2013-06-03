@@ -2,11 +2,15 @@
 #define __AMBIENT_SOUND_VISUAL__
 
 #include <jsk_hark_msgs/HarkPower.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreQuaternion.h>
 
 namespace Ogre
 {
-class Vector3;
-class Quaternion;
+class SceneManager;
+class SceneNode;
+//class Vector3;
+//class Quaternion;
 }
 
 namespace rviz
@@ -70,6 +74,9 @@ private:
   
   Ogre::Vector3 position_;
   Ogre::Quaternion orientation_;
+
+  //std::map<std::string, Ogre::Vector3> position_;
+  //std::map<std::string, Ogre::Quaternion> orientation_;
   float width_,scale_,bias_,grad_;
 };
 // END_TUTORIAL

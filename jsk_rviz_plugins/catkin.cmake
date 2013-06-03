@@ -8,6 +8,13 @@ project(jsk_rviz_plugins)
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS rviz)
 
+find_package(catkin COMPONENTS jsk_hark_msgs)
+if(NOT jsk_hark_msgs_FOUND)
+  message("-- could not found jsk_hark_msgs (catkin) package, use rospack to find jsk_hark_msgs dir")
+  execute_process(COMMAND rospack find jsk_hark_msgs OUTPUT_VARIABLE jsk_hark_msgs_PACKAGE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(jsk_hark_msgs_INCLUDE_DIRS ${jsk_hark_msgs_PACKAGE_PATH}/build/devel/include)
+endif()
+
 catkin_package(
     DEPENDS rviz
     CATKIN-DEPENDS # TODO
@@ -18,7 +25,8 @@ catkin_package(
 
 set(ROS_BUILD_TYPE Release)
 
-# include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+include_directories(src ${jsk_hark_msgs_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+
 # TODO: fill in what other packages will need to use this package
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
@@ -34,12 +42,15 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 #set(SOURCE_FILES src/effort_display.cpp src/effort_visual.cpp src/wrench_display.cpp src/wrench_visual.cpp src/point_display.cpp src/point_visual.cpp src/ambient_sound_display.cpp src/ambient_sound_visual.cpp)
 qt4_wrap_cpp(MOC_FILES
+  src/ambient_sound_display_groovy.h
   src/wrench_display_groovy.h
   src/point_display_groovy.h
   src/effort_display_groovy.h
 )
 
 set(SOURCE_FILES
+  src/ambient_sound_display_groovy.cpp
+  src/ambient_sound_visual.cpp
   src/wrench_display_groovy.cpp
   src/wrench_visual.cpp
   src/point_display_groovy.cpp

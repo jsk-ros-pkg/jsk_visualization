@@ -41,7 +41,7 @@ find_package(wxWidgets REQUIRED)
 include(${wxWidgets_USE_FILE})
 include_directories( ${wxWidgets_INCLUDE_DIRS} )
 
-set(SOURCE_FILES src/effort_display.cpp src/effort_visual.cpp src/wrench_display.cpp src/wrench_visual.cpp src/point_display.cpp src/point_visual.cpp src/ambient_sound_display.cpp src/ambient_sound_visual.cpp)
+set(SOURCE_FILES src/ambient_sound_display.cpp src/ambient_sound_visual.cpp src/effort_display.cpp src/effort_visual.cpp src/wrench_display.cpp src/wrench_visual.cpp src/point_display.cpp src/point_visual.cpp src/ambient_sound_display.cpp src/ambient_sound_visual.cpp)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(jsk_rviz_plugins ${SOURCE_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES})
