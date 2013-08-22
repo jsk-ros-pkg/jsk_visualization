@@ -144,7 +144,7 @@ namespace jsk_rviz_plugin
         visuals_.rset_capacity(history_length_property_->getInt());
     }/*}}}*/
 
-    bool validateFloats( const jsk_hark_msgs::HarkPower& msg )
+    bool AmbientSoundDisplay::validateFloats( const jsk_hark_msgs::HarkPower& msg )
     {
         std::vector<float>::const_iterator it = msg.powers.begin();
         for (; it < msg.powers.end(); ++it) {
