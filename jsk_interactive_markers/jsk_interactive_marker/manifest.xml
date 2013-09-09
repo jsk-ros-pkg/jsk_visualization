@@ -1,0 +1,17 @@
+<package>
+  <description brief="interactive_marker">
+
+     interactive_marker
+
+  </description>
+  <author>furuta</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/interactive_marker</url>
+
+  <depend package="roseus" />
+  <depend package="visualization_msgs" />
+  <depend package="interactive_marker_helpers" />
+</package>
+
+

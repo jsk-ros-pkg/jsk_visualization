@@ -1,0 +1,15 @@
+<stack name="jsk_interactive_markers" version="0.1">
+  <description brief="jsk_interactive_markers">
+
+     jsk_interactive_markers
+
+  </description>
+  <author>Yusuke Furuta</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+
+  <url>http://ros.org/wiki/jsk_interactive_markers</url>
+
+</stack>
+
+

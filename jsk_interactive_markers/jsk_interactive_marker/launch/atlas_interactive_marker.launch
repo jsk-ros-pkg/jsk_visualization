@@ -1,0 +1,16 @@
+<launch>
+  <node pkg="atlas_interactive_marker" type="interactive_marker_interface" name="atlas_manipulation_interactive_marker" >
+    <param name="base_frame" type="string" value="/utorso"/>
+    <param name="move_menu" type="boolean" value="true"/>
+    <param name="grasp_menu" type="boolean" value="true"/>
+    <param name="stop_grasp_menu" type="boolean" value="true"/>
+    <param name="set_origin_menu" type="boolean" value="true"/>
+    <param name="set_origin_to_rhand_menu" type="boolean" value="true"/>
+    <param name="set_origin_to_lhand_menu" type="boolean" value="true"/>
+    <param name="reset_marker_pos_menu" type="boolean" value="true"/>
+    <param name="manipulation_mode_menu" type="boolean" value="true"/>
+    <param name="select_arm_menu" type="boolean" value="true"/>
+    <param name="ik_mode_menu" type="boolean" value="true"/>
+    <param name="publish_marker_menu" type="boolean" value="true"/>
+  </node>
+</launch>
