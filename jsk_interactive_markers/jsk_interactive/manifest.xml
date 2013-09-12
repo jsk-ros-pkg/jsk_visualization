@@ -12,12 +12,11 @@
   <depend package="visualization_msgs"/>
   <depend package="interactive_marker_helpers"/>
   <depend package="interactive_marker_interface"/>
-  <depend package="interactive_marker"/>
   <depend package="arm_navigation_msgs"/>
   <depend package="actionlib"/>
   <depend package="dynamic_tf_publisher"/>
   <depend package="geometry_msgs"/>
-  <depend package="atlas_interactive_marker"/>
+  <depend package="jsk_interactive_marker"/>
 </package>
 
 

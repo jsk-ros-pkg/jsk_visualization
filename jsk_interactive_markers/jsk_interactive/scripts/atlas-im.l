@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(ros::load-ros-manifest "atlas_interactive")
+(ros::load-ros-manifest "jsk_interactive")
 
 (require :robot-im "package://jsk_interactive/scripts/robot-im.l")
 

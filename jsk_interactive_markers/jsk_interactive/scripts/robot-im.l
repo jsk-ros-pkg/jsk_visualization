@@ -1,35 +1,32 @@
 #!/usr/bin/env roseus
 
-(setq *server-nodename* "atlas_manipulation_interactive_marker")
-
-(ros::load-ros-manifest "atlas_interactive")
+(ros::load-ros-manifest "jsk_interactive")
 (load "package://roseus/euslisp/actionlib.l")
-(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
-(load "package://jsk_interactive/scripts/task3.l")
+;;(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 (load "models/arrow-object.l")
-
-(setq marker-sequence nil)
 
 (defclass robot-im
   :slots
   (ri robot
+      head-target-coords
       origin-coords target-coords old-coords
       moving-arm ik-rotation-axis constraint-move
       server-nodename
       base-frame
+      marker-sequence
       ))
 
 
 (defmethod robot-im
   (:init
    (&key ((:robot r)) ((:ri i)) ((:base-frame bf) "/base_link")
-	 ((:server-nodename sn) "/interactive_marker_manipulation"))
+	 ((:server-nodename sn) "/jsk_interactive_marker_manipulation"))
    (setq robot r)
    (setq ri i)
    (setq base-frame bf)
    (setq server-nodename sn)
 
-   (ros::roseus "read_marker_sample")
+   (ros::roseus sn)
    (setq *tfb* (instance ros::transform-broadcaster :init))
 
    (ros::advertise (format nil "~A/marker_list" server-nodename)
@@ -42,10 +39,10 @@
 		   visualization_msgs::Marker)
 
    (ros::subscribe (format nil "~A/pose" server-nodename)
-		   atlas_interactive_marker::MarkerPose #'send self :pose-callback)
+		   jsk_interactive_marker::MarkerPose #'send self :pose-callback)
 
    (ros::subscribe (format nil "~A/move_flag" server-nodename)
-		   atlas_interactive_marker::MarkerMenu #'send self :move-callback)
+		   jsk_interactive_marker::MarkerMenu #'send self :move-callback)
 
    ;;3dmouse move
    (ros::subscribe "/spacenav/joy"
@@ -70,7 +67,11 @@
    (send origin-coords :translate #f(500 0 0))
    (setq old-coords (send target-coords :copy-worldcoords))
 
-   (objects (list robot target-coords origin-coords))
+   (setq head-target-coords (instance arrow-object :init))
+   (send head-target-coords :translate #f(500 0 0)) ;; initial pose
+
+
+   (objects (list robot target-coords origin-coords head-target-coords))
    (send *irtviewer* :draw-objects)
    (send self :set-marker-pose-robot (send target-coords :worldcoords))
 
@@ -190,7 +191,7 @@
 	 (setq reset-coord (send add-coords :copy-worldcoords))
 	 )
        )
-     (objects (list robot origin-coords target-coords))
+     (objects (list robot origin-coords target-coords head-target-coords))
      
      (print "exe")
      (setq vector-list (reverse vector-list))
@@ -244,136 +245,171 @@
    (&optional (arm :rarm))
    (send ri :stop-grasp moving-arm))
 
+
+  (:look-at 
+   (coords)
+   (send robot :angle-vector (send ri :state :potentio-vector))
+   (send robot :head :look-at coords)
+   (send ri :angle-vector (send robot :angle-vector))
+   (send ri :wait-interpolation)
+   )
+
+
   (:move-callback
    ( msg )
-   (case (send msg :menu)
-     ;;grasp callback
-     (1
-      (send self :start-grasp moving-arm))
-     (31
-      (send self :stop-grasp moving-arm))
-
-     ;;pick up
-     (32
-      (print "under construction"))
-
-     (2
-      (send self :set-origin))
-
-     ;;reset target coords
-     (3
-      (send target-coords :move-to old-coords :world)
-      (send self :set-marker-pose-robot (send target-coords :worldcoords))
-      )
-
-     ;;set origin to hand
-     (33
-      (print "set origin to rhand")
-      (send self :set-origin-to-hand :rarm))
-     (34
-      (print "set origin to lhand")
-      (send self :set-origin-to-hand :larm))
-
-     ;;change ik-rotation-axis
-     (36
-      (print "set ik-rotation-axis t")
-      (setq ik-rotation-axis t)
-      )
-     (37
-      (print "set ik-rotation-axis nil")
-      (setq ik-rotation-axis nil)
-      )
-
-     #| don't use now
-     (4 (send *force-arrow* :scale :x 1)
-     (send *force-arrow* :scale :y 1)
-     (send *force-arrow* :scale :z 0)
+   (setq a (send msg :menu))
+   (print a)
+   (setq b msg)
+   (let ((menu (send msg :menu)))
+   ;;(case (send msg :menu)
+     (cond
+      ((eq menu jsk_interactive_marker::MarkerMenu::*START_GRASP*)
+       (print "start grasp")
+       (send self :start-grasp moving-arm))
      )
-     (5
-     (setq *force-flag* nil)
-     (set-marker-pose target-coords)
      )
-     (6
-     (setq *force-flag* t)
-     (set-marker-pose *force-coord*)
-     (send *force-arrow* :scale :x 1)
-     (send *force-arrow* :scale :y 1)
-     (send *force-arrow* :scale :z 1)
-     )
-     |#
+     ;; 	  ;;grasp callback
+     ;; 	  ((eval jsk_interactive_marker::MarkerMenu::*START_GRASP*)
+     ;; 	   (send self :start-grasp moving-arm))
+     ;; ((eval jsk_interactive_marker::MarkerMenu::*STOP_GRASP*)
+     ;;  (send self :stop-grasp moving-arm))
+
+     ;; ;;pick up
+     ;; ((eval jsk_interactive_marker::MarkerMenu::*PICK*)
+     ;;  (print "under construction"))
+
+     ;; ((eval jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
+     ;;  (send self :set-origin))
+
+     ;; ((eval jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
+     ;;  (print "aaaaaa"))
+
+     ;; (jsk_interactive_marker::MarkerMenu::*RESET_COORDS*
+     ;;  (print "aaaaab"))
+
+     ;; ;;reset target coords
+     ;; (2
+     ;;  ;;(eval jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
+     ;;  (send target-coords :move-to old-coords :world)
+     ;;  (send self :set-marker-pose-robot (send target-coords :worldcoords))
+     ;;  )
+
+     ;; ;;set origin to hand
+     ;; ((eval jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
+     ;;  (print "set origin to rhand")
+     ;;  (send self :set-origin-to-hand :rarm))
+     ;; (34
+     ;;  (print "set origin to lhand")
+     ;;  (send self :set-origin-to-hand :larm))
+
+     ;; ;;change ik-rotation-axis
+     ;; (36
+     ;;  (print "set ik-rotation-axis t")
+     ;;  (setq ik-rotation-axis t)
+     ;;  )
+     ;; (37
+     ;;  (print "set ik-rotation-axis nil")
+     ;;  (setq ik-rotation-axis nil)
+     ;;  )
+
+     ;; #| don't use now
+     ;; (4 (send *force-arrow* :scale :x 1)
+     ;; (send *force-arrow* :scale :y 1)
+     ;; (send *force-arrow* :scale :z 0)
+     ;; )
+     ;; (5
+     ;; (setq *force-flag* nil)
+     ;; (set-marker-pose target-coords)
+     ;; )
+     ;; (6
+     ;; (setq *force-flag* t)
+     ;; (set-marker-pose *force-coord*)
+     ;; (send *force-arrow* :scale :x 1)
+     ;; (send *force-arrow* :scale :y 1)
+     ;; (send *force-arrow* :scale :z 1)
+     ;; )
+     ;; |#
 
 
-     (0
-      (send self :pose-move))
+     ;; (0
+     ;;  (send self :pose-move))
 
-     ;;force-move
-     (7
-      (marker-teaching)
-      (force-move)
-      )
-     (9
-      ;;	    (reset-teaching)
-      (reset-marker-sequence)
-      )
-     (8
-      (setq *reproduce-mode* t)
-      ;;	    (teached-move)
-      (set-interactive-markers)
-      )
-     #|
-     (12
-     (setq *force-flag* t)
-     (set-marker-pose *force-coord*)
-     )
-     (13
-     (setq *force-flag* nil)
-     (set-marker-pose target-coords)
-     )
-     |#
+     ;; ;;force-move
+     ;; (7
+     ;;  (marker-teaching)
+     ;;  (force-move)
+     ;;  )
+     ;; (9
+     ;;  ;;	    (reset-teaching)
+     ;;  (reset-marker-sequence)
+     ;;  )
+     ;; (8
+     ;;  (setq *reproduce-mode* t)
+     ;;  ;;	    (teached-move)
+     ;;  (set-interactive-markers)
+     ;;  )
+     ;; #|
+     ;; (12
+     ;; (setq *force-flag* t)
+     ;; (set-marker-pose *force-coord*)
+     ;; )
+     ;; (13
+     ;; (setq *force-flag* nil)
+     ;; (set-marker-pose target-coords)
+     ;; )
+     ;; |#
 
-     ;;changeControllArm
-     (20
-      (setq moving-arm :rarm)
-      )
-     (21
-      (setq moving-arm :larm)
-      )
-     (22
-      (setq moving-arm :arms)
-      )
+     ;; ;;changeControllArm
+     ;; (20
+     ;;  (setq moving-arm :rarm)
+     ;;  )
+     ;; (21
+     ;;  (setq moving-arm :larm)
+     ;;  )
+     ;; (22
+     ;;  (setq moving-arm :arms)
+     ;;  )
      
-     ;;change constraint
-     (23
-      (setq constraint-move t)
-      )
-     (24
-      (setq constraint-move nil)
-      )
+     ;; ;;change constraint
+     ;; (23
+     ;;  (setq constraint-move t)
+     ;;  )
+     ;; (24
+     ;;  (setq constraint-move nil)
+     ;;  )
 
-     (40
-      (send self :publish-target-arrow-obj)
-      (send self :publish-origin-arrow-obj)
+     ;; (40
+     ;;  (send self :publish-target-arrow-obj)
+     ;;  (send self :publish-origin-arrow-obj)
    
 
 
-      )
-     )
+     ;;  )
+     ;; )
+   (send *irtviewer* :draw-objects)
    )
   
 
   (:pose-callback 
    ( msg )
+   (setq a msg)
    (print (list "callback" msg))
    (let* ((pose (send msg :pose))
 	  (cds (ros::tf-pose-stamped->coords pose))
-	  (trs (send target-coords :copy-worldcoords))
 	  )
-     (setq cds-old (send target-coords :copy-worldcoords))
-     (send target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
-     (send target-coords :transform cds)
-     (send *irtviewer* :draw-objects)
-     )
-   )
+     (cond
+      ((equal (send msg :marker_name) "head_point_goal")
+       (send head-target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
+       (send head-target-coords :transform cds)
+       (send self :look-at (send head-target-coords :worldpos))
+       )
+
+      (t
+       (send target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
+       (send target-coords :transform cds)
+       (send *irtviewer* :draw-objects)
+       )
+      )))
   
   (:joy-callback
    (msg)
@@ -407,7 +443,7 @@
 
   (:set-marker-pose 
    ( coords &key (frame base-frame) (markers) (server server-nodename))
-   (let ((req (instance interactive_marker_interface::SetPoseRequest :init))
+   (let ((req (instance jsk_interactive_marker::SetPoseRequest :init))
 	 (msg (ros::coords->tf-pose-stamped coords frame)))
      (send req :pose msg)
      (send req :markers markers)
@@ -418,7 +454,7 @@
 
   (:set-markers 
    ( coords &key (frame base-frame) (markers) (server server-nodename) (marker_name 0))
-   (let ((req (instance interactive_marker::MarkerSetPoseRequest :init))
+   (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
 	 (msg (ros::coords->tf-pose-stamped coords frame)))
      (send req :marker_name marker_name)
      (send req :pose msg)
@@ -429,7 +465,7 @@
   
   (:del-markers 
    ( coords &key (frame base-frame) (markers) (server server-nodename) (marker_name 0))
-   (let ((req (instance interactive_marker::MarkerSetPoseRequest :init))
+   (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
 	 (msg (ros::coords->tf-pose-stamped coords frame)))
      (send req :marker_name marker_name)
      (send req :pose msg)
@@ -440,7 +476,7 @@
 
   (:reset-marker-pose 
    ( &key (server server-nodename))
-   (let ((req (instance interactive_marker_interface::SetPoseRequest :init)))
+   (let ((req (instance jsk_interactive_marker::SetPoseRequest :init)))
      (ros::service-call (format nil "~A/reset_pose" server)
 			req)
      ))
