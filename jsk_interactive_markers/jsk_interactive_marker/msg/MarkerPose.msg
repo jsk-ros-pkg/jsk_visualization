@@ -1,2 +1,2 @@
 geometry_msgs/PoseStamped pose
-int8 marker_name
+string marker_name

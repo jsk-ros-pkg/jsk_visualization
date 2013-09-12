@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="atlas_interactive_marker" type="interactive_marker_interface" name="pr2_manipulation_interactive_marker" >
+  <node pkg="jsk_interactive_marker" type="interactive_marker_interface" name="jsk_interactive_marker_manipulation" output="screen">
     <param name="base_frame" type="string" value="/base_link"/>
     <param name="move_menu" type="boolean" value="true"/>
     <param name="grasp_menu" type="boolean" value="true"/>
@@ -10,7 +10,7 @@
     <param name="reset_marker_pos_menu" type="boolean" value="true"/>
     <param name="select_arm_menu" type="boolean" value="true"/>
     <param name="ik_mode_menu" type="boolean" value="true"/>
-    <param name="force_mode_menu" type="boolean" value="true"/>
+    <param name="force_mode_menu" type="boolean" value="false"/>
     <param name="publish_marker_menu" type="boolean" value="true"/>
   </node>
 </launch>
