@@ -22,6 +22,8 @@ class InteractiveMarkerInterface {
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void pub_marker_menu(std::string marker,int menu);
+  
+  void pub_marker_menuCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu );
 
   void moveCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
     pub_marker_menu(feedback->marker_name,0);
@@ -148,6 +150,8 @@ class InteractiveMarkerInterface {
   bool reset_cb ( jsk_interactive_marker::SetPose::Request &req,
                   jsk_interactive_marker::SetPose::Response &res );
 
+  void loadMeshes(XmlRpc::XmlRpcValue v);
+
  private:
 
   ros::NodeHandle nh_;
@@ -229,5 +233,17 @@ class InteractiveMarkerInterface {
   ControlState control_state_;
 
   geometry_msgs::PoseStamped head_goal_pose_;
+
+  std::string head_link_frame_;
+  std::string head_mesh_;
+  
+  struct MeshProperty{
+    std::string link_name;
+    std::string mesh_file;
+    geometry_msgs::Quaternion orientation;
+
+  };
+  std::vector< MeshProperty > rhand_mesh_, lhand_mesh;
+
 };
 
