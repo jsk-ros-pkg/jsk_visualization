@@ -1,0 +1,19 @@
+r_hand:
+  - link: "/r_gripper_palm_link"
+    mesh: "package://pr2_description/meshes/gripper_v0/gripper_palm.dae"
+  
+  - link: "/r_gripper_l_finger_tip_link"
+    mesh: "package://pr2_description/meshes/gripper_v0/l_finger_tip.dae"
+
+  - link: "/r_gripper_l_finger_link"
+    mesh: "package://pr2_description/meshes/gripper_v0/l_finger.dae"
+
+  - link: "/r_gripper_r_finger_tip_link"
+    mesh: "package://pr2_description/meshes/gripper_v0/l_finger_tip.dae"
+    orient: {x: 1.0, y: 0.0, z: 0.0, w: 0.0}
+
+  - link: "/r_gripper_r_finger_link"
+    mesh: "package://pr2_description/meshes/gripper_v0/l_finger.dae"
+    orient: {x: 1.0, y: 0.0, z: 0.0, w: 0.0}
+
+
