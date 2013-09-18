@@ -20,73 +20,13 @@
 class InteractiveMarkerInterface {
  public:
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int type );
 
   void pub_marker_menu(std::string marker,int menu);
   
   void pub_marker_menuCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu );
 
-  void moveCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,0);
-  }
-  void graspCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,1);
-  }
-
-  void stopGraspCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,31);
-  }
-
-  void pickCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,32);
-  }
-
-  void setoriginCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,2);
-  }
-  void setoriginRhandCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,33);
-  }
-  void setoriginLhandCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,34);
-  }
-
-  void resetCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name, jsk_interactive_marker::MarkerMenu::RESET_COORDS);
-  }
-
-  void noForceCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
-  {    pub_marker_menu(feedback->marker_name,4);
-
-  }
-
-  void forceMoveCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,7);
-  }
-
-  void resetForceCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,10);
-  }
-
-  void manipCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,35);
-  }
-
-  void publishMarkerCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,40);
-  }
-
-  void StartTeachingCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,9);
-  }
-
-  void AutoMoveCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,8);
-  }
-
-  void StopTeachingCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    pub_marker_menu(feedback->marker_name,14);
-
-  }
+  void pub_marker_menuCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu, int type);
 
   void IMSizeLargeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
@@ -109,6 +49,8 @@ class InteractiveMarkerInterface {
   
   void targetPointMenuCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
+  void lookAutomaticallyMenuCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+
   void ConstraintCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void modeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
@@ -116,10 +58,12 @@ class InteractiveMarkerInterface {
   void ikmodeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void updateHeadGoal( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void updateBase( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+
+  visualization_msgs::InteractiveMarker makeBaseMarker( const char *name, const geometry_msgs::PoseStamped &stamped, float scale, bool fixed);
+
 
   void changeMarkerForceMode( std::string mk_name , int im_mode);
-
-
 
   void initControlMarkers(void);
 
@@ -144,8 +88,8 @@ class InteractiveMarkerInterface {
   bool markers_del_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
 			jsk_interactive_marker::MarkerSetPose::Response &res );
 
-  bool set_cb ( jsk_interactive_marker::SetPose::Request &req,
-                jsk_interactive_marker::SetPose::Response &res );
+  bool set_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
+                jsk_interactive_marker::MarkerSetPose::Response &res );
 
   bool reset_cb ( jsk_interactive_marker::SetPose::Request &req,
                   jsk_interactive_marker::SetPose::Response &res );
@@ -178,6 +122,10 @@ class InteractiveMarkerInterface {
 
   interactive_markers::MenuHandler menu_head_;
   interactive_markers::MenuHandler::EntryHandle head_target_handle_;
+  interactive_markers::MenuHandler::EntryHandle head_auto_look_handle_;
+
+  interactive_markers::MenuHandler menu_base_;
+
   // parameters
   std::string marker_name;
   std::string server_name;
@@ -206,7 +154,7 @@ class InteractiveMarkerInterface {
 
   struct ControlState{
   ControlState() : posture_r_(false), posture_l_(false), torso_on_(false), head_on_(false),
-      projector_on_(false), init_head_goal_(false), base_on_(false) {}
+      projector_on_(false), init_head_goal_(false), base_on_(true) {}
 
     void print()
     {
@@ -221,6 +169,7 @@ class InteractiveMarkerInterface {
     bool torso_on_;
     bool head_on_;
     bool projector_on_;
+    bool look_auto_on_;
     bool init_head_goal_;
     bool base_on_;
     bool planar_only_;

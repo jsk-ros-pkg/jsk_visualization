@@ -16,19 +16,18 @@ uint8 MOVE_CONSTRAINT_T=23
 uint8 MOVE_CONSTRAINT_NIL=24
 uint8 PUBLISH_MARKER=40
 uint8 MANIP_MODE=35
-# uint8
+uint8 DELETE_FORCE=4
+uint8 HEAD_TARGET_POINT=41
+uint8 LOOK_AUTO=42
 
-# uint8
-# uint8
-# uint8
-# uint8
-# uint8
-
-# uint8 HEAD_MARKER=1
-# uint8 RHAND_MARKER=2
-# uint8 LHAND_MARKER=3
-# uint8 RLEG_MARKER=4
-# uint8 LLEG_MARKER=5
+uint8 GENERAL=0
+uint8 HEAD_MARKER=1
+uint8 RHAND_MARKER=2
+uint8 LHAND_MARKER=3
+uint8 RLEG_MARKER=4
+uint8 LLEG_MARKER=5
+uint8 BASE_MARKER=6
 
 int8 menu
+int8 type
 string marker_name
