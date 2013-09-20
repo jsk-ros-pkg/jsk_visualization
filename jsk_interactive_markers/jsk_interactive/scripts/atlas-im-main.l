@@ -6,6 +6,6 @@
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 (my-init)
 
-(setq *atlas-im* (instance atlas-im :init :robot *atlas* :ri *ri* :base-frame "/utorso"))
+(setq *atlas-im* (instance atlas-im :init :robot *atlas* :ri *ri* :base-frame "/odom"))
 
 (send *atlas-im* :main-loop)

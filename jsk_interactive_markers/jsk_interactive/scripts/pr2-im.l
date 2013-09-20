@@ -18,7 +18,7 @@
   (:set-marker-pose-robot
    (coords &rest args)
    (if args
-       (send self :set-marker-pose (send (send self :get-base-coords) :transformation coords :local) args)
+       (send* self :set-marker-pose (send (send self :get-base-coords) :transformation coords :local) args)
      (send self :set-marker-pose (send (send self :get-base-coords) :transformation coords :local))
      )
    )

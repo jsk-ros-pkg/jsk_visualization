@@ -13,6 +13,7 @@
       base-target-coords
       origin-coords target-coords old-coords
       moving-arm ik-rotation-axis constraint-move
+      use-torso
       server-nodename
       base-frame
       marker-sequence
@@ -30,6 +31,7 @@
 
    (ros::roseus sn)
    (setq *tfb* (instance ros::transform-broadcaster :init))
+   (setq *tfl* (instance ros::transform-listener :init))
 
    (ros::advertise (format nil "~A/marker_list" server-nodename)
 		   visualization_msgs::MarkerArray)
@@ -63,6 +65,7 @@
    (setq moving-arm :rarm)
    (setq ik-rotation-axis t)
    (setq auto-look t)
+   (setq use-torso nil)
 
    (setq target-coords (instance arrow-object :init))
    (send target-coords :translate #f(500 0 0)) ;; initial pose
@@ -122,6 +125,27 @@
    (send robot :worldcoords)
    )
 
+  (:solve-ik
+   (target-coords &key (move-arm :rarm) (rotation-axis t) (debug-view nil) (use-torso nil))
+   (cond
+    ((equal move-arm :arms)
+     (unless
+	 (send robot :rarm
+	       :inverse-kinematics (car target-coords)
+	       :rotation-axis rotation-axis :debug-view debug-view)
+       (return-from :solve-ik nil)
+       )
+     (send robot :larm
+	   :inverse-kinematics (cadr target-coords)
+	   :rotation-axis rotation-axis :debug-view debug-view)
+     )
+
+    (t
+     (send robot move-arm
+	   :inverse-kinematics target-coords
+	   :rotation-axis rotation-axis :debug-view debug-view)
+     )))
+
   (:pose-move
    (&key (mem t))
    (let ((inter-num 10)(vector-list nil)
@@ -136,10 +160,10 @@
      (setq reset-coords (send origin-coords :copy-worldcoords))
      (setq old-coords (send origin-coords :copy-worldcoords))
 
-     (when auto-look
-       (send self :look-at (send old-coords :worldpos))
-       (send head-target-coords :locate (send old-coords :worldpos) :world)
-       )
+     ;; (when auto-look
+     ;;   (send self :look-at (send old-coords :worldpos) :wait t)
+     ;;   (send head-target-coords :locate (send old-coords :worldpos) :world)
+     ;;   )
 
      ;;inter-num で分割して送る
      (block interpolation
@@ -154,21 +178,19 @@
 
 	 (case moving-arm
 	   (:rarm
-	    (unless (send robot :rarm
-			  :inverse-kinematics handle-r-world
-			  ;;:link-list link-list-r
-			  ;;:move-target move-target-r
-			  :rotation-axis ik-rotation-axis :debug-view nil)
+	    (unless
+		(send self :solve-ik handle-r-world :move-arm :rarm
+		      :rotation-axis ik-rotation-axis :use-torso use-torso)
 	      (send target-coords :move-to reset-coords :world)
-	      ;;(set-marker-pose-utorso reset-coord)
 	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
 	      (return-from interpolation)
 	      ))
-	   
+
 	   (:larm
-	    (unless (send robot :larm :inverse-kinematics handle-l-world
-			  :rotation-axis ik-rotation-axis :debug-view nil)
+	    (unless
+		(send self :solve-ik handle-l-world :move-arm :larm
+		      :rotation-axis ik-rotation-axis :use-torso use-torso)
 	      (send target-coords :move-to reset-coords :world)
 	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
@@ -176,15 +198,9 @@
 	      ))
 	   
 	   (t
-	    (unless (send robot :rarm :inverse-kinematics handle-r-world
-			  :rotation-axis ik-rotation-axis :debug-view nil)
-	      (send target-coords :move-to reset-coords :world)
-	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
-	      (print "can't solve IK")
-	      (return-from interpolation)
-	      )
-	    (unless (send robot :larm :inverse-kinematics handle-l-world
-			  :rotation-axis ik-rotation-axis :debug-view nil)
+	    (unless
+		(send self :solve-ik (list handle-r-world handle-l-world) :move-arm :arms
+		      :rotation-axis ik-rotation-axis :use-torso use-torso)
 	      (send target-coords :move-to reset-coords :world)
 	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
@@ -192,7 +208,7 @@
 	      )
 	    )
 	   )
-	 
+
 	 (when auto-look
 	   (send robot :head :look-at
 		 (send add-coords :worldpos))
@@ -209,7 +225,7 @@
      
      (print "exe")
      (setq vector-list (reverse vector-list))
-     ;;(print vector-list)
+
      (unless (null vector-list)
        (print "sending vector list...")
        (setq tmp-vec vector-list)
@@ -217,6 +233,7 @@
        (send ri :wait-interpolation)
        (print "done")
        )
+
      ;;robotへの反映
      (send robot :angle-vector (send ri :state :potentio-vector))
      
@@ -260,12 +277,13 @@
    (send ri :stop-grasp moving-arm))
 
 
-  (:look-at 
-   (coords)
+  (:look-at
+   (coords &key (wait t))
    (send robot :angle-vector (send ri :state :potentio-vector))
    (send robot :head :look-at coords)
    (send ri :angle-vector (send robot :angle-vector))
-   (send ri :wait-interpolation)
+   (if wait
+       (send ri :wait-interpolation))
    )
 
   (:move-to
@@ -286,6 +304,7 @@
 	((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
 	 (print "base move")
 	 (send self :move-to (send base-target-coords :worldcoords))
+	 (send self :set-marker-pose-robot (make-coords) :marker-name (send msg :marker_name))
 	 )
 	)
        )
@@ -300,7 +319,7 @@
 	((eq menu jsk_interactive_marker::MarkerMenu::*HEAD_TARGET_POINT*)
 	 (setq auto-look nil)
 	 (print "look target point")
-	 (send self :set-marker-pose-robot (send head-target-coords :worldcoords) :marker_name (send msg :marker_name))
+	 (send self :set-marker-pose-robot (send head-target-coords :worldcoords) :marker-name "head_point_goal")
 	 )
 	)
        )
@@ -343,6 +362,16 @@
 	((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_NIL*)
 	 (print "set ik-rotation-axis nil")
 	 (setq ik-rotation-axis nil)
+	 )
+
+	;;change use-torso
+	((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_T*)
+	 (print "use torso t")
+	 (setq use-torso t)
+	 )
+	((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_NIL*)
+	 (print "use torso nil")
+	 (setq use-torso nil)
 	 )
 	
 	#| don't use now
@@ -436,7 +465,6 @@
        (send base-target-coords :transform cds)
        ;;(send self :look-at (send head-target-coords :worldpos))
        )
-      
       ((equal (send msg :marker_name) "head_point_goal")
        (send head-target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
        (send head-target-coords :transform cds)
@@ -478,7 +506,7 @@
   (:set-marker-pose-robot
    (coords &rest args)
    (if args
-       (send self :set-marker-pose coords args) 
+       (send* self :set-marker-pose coords args) 
      (send self :set-marker-pose coords) 
      ))
 
