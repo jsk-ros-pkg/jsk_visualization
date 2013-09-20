@@ -174,6 +174,23 @@ void InteractiveMarkerInterface::ConstraintCb( const visualization_msgs::Interac
 
 }
 
+void InteractiveMarkerInterface::useTorsoCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+{
+  if(feedback->menu_entry_id == use_torso_t_menu_){
+    menu_handler.setCheckState( use_torso_t_menu_ , interactive_markers::MenuHandler::CHECKED );
+    menu_handler.setCheckState( use_torso_nil_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+    pub_marker_menuCb(feedback, jsk_interactive_marker::MarkerMenu::USE_TORSO_T);
+  }else{
+    menu_handler.setCheckState( use_torso_t_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+    menu_handler.setCheckState( use_torso_nil_menu_ , interactive_markers::MenuHandler::CHECKED );
+    pub_marker_menuCb(feedback, jsk_interactive_marker::MarkerMenu::USE_TORSO_NIL);
+  }
+
+  menu_handler.reApply( *server_ );
+  server_->applyChanges();
+
+}
+
 void InteractiveMarkerInterface::modeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
   menu_handler.setCheckState( h_mode_last, interactive_markers::MenuHandler::UNCHECKED );
@@ -503,7 +520,8 @@ void InteractiveMarkerInterface::initControlMarkers(void){
   if(control_state_.base_on_ ){
     geometry_msgs::PoseStamped ps;
     ps.pose.orientation.w = 1;
-    ps.header.frame_id = "base_link";
+    //ps.header.frame_id = "base_link";
+    ps.header.frame_id = move_base_frame;
     ps.header.stamp = ros::Time(0);
     //server_->insert(im_helpers::makeBaseMarker( "base_control", ps, 0.75, false),
     //boost::bind( &InteractiveMarkerInterface::updateBase, this, _1 ));
@@ -741,6 +759,17 @@ void InteractiveMarkerInterface::initHandler(void){
     h_mode_last3 = h_mode_ikmode;
   }
 
+  pnh_.param("use_torso_menu", use_menu, false );
+  if(use_menu){
+    use_torso_menu_ = menu_handler.insert( "use_torso" );
+
+    use_torso_t_menu_ = menu_handler.insert( use_torso_menu_, "Use Torso", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
+    menu_handler.setCheckState( use_torso_t_menu_, interactive_markers::MenuHandler::UNCHECKED );
+    use_torso_nil_menu_ = menu_handler.insert( use_torso_menu_, "Not Use Troso", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
+    menu_handler.setCheckState( use_torso_nil_menu_, interactive_markers::MenuHandler::CHECKED );
+  }
+
+
 
   interactive_markers::MenuHandler::EntryHandle sub_menu_handle_im_size;
   sub_menu_handle_im_size = menu_handler.insert( "IMsize" );
@@ -756,6 +785,7 @@ void InteractiveMarkerInterface::initHandler(void){
 
 
 
+
   //--------- menu_handler 1 ---------------
   menu_handler1.insert("ForceMode",boost::bind( &InteractiveMarkerInterface::changeForceModeCb1, this, _1));
 
@@ -765,7 +795,6 @@ void InteractiveMarkerInterface::initHandler(void){
 
   /*
     sub_menu_handle = menu_handler2.insert( "SelectArm" );
-    
     h_mode_last = menu_handler2.insert( sub_menu_handle, "RightArm", boost::bind( &InteractiveMarkerInterface::modeCb,this, _1 ));
     if(use_arm==0){
     menu_handler2.setCheckState( h_mode_last, interactive_markers::MenuHandler::CHECKED );
@@ -981,6 +1010,7 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~"), tf
   pnh_.param("marker_name", marker_name, std::string ( "100") );
   pnh_.param("server_name", server_name, std::string ("") );
   pnh_.param("base_frame", base_frame, std::string ("/base_link") );
+  pnh_.param("move_base_frame", move_base_frame, std::string ("/base_link") );
   pnh_.param("target_frame", target_frame, std::string ("") );
   //pnh_.param("fix_marker", fix_marker, true);
 

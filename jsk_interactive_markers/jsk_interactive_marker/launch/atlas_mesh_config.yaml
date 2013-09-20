@@ -1,0 +1,4 @@
+r_hand:
+  - link: "/r_gripper_palm_link"
+    mesh: "package://atlas/meshes/r_hand.dae"
+  

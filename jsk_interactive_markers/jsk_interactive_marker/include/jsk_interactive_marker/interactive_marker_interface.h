@@ -56,6 +56,7 @@ class InteractiveMarkerInterface {
   void modeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void ikmodeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void useTorsoCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void updateHeadGoal( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void updateBase( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
@@ -130,11 +131,18 @@ class InteractiveMarkerInterface {
   std::string marker_name;
   std::string server_name;
   std::string base_frame;
+  std::string move_base_frame;
   std::string target_frame;
   bool fix_marker;
   interactive_markers::MenuHandler::EntryHandle h_mode_last;
   interactive_markers::MenuHandler::EntryHandle h_mode_last2;
   interactive_markers::MenuHandler::EntryHandle h_mode_last3;
+
+  interactive_markers::MenuHandler::EntryHandle use_torso_menu_;
+  interactive_markers::MenuHandler::EntryHandle use_torso_t_menu_;
+  interactive_markers::MenuHandler::EntryHandle use_torso_nil_menu_;
+
+
   int h_mode_rightarm;
   int h_mode_constrained;
   int h_mode_ikmode;
