@@ -60,6 +60,7 @@ class InteractiveMarkerInterface {
 
   void updateHeadGoal( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void updateBase( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void updateFinger( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, std::string hand);
 
   visualization_msgs::InteractiveMarker makeBaseMarker( const char *name, const geometry_msgs::PoseStamped &stamped, float scale, bool fixed);
 
@@ -126,6 +127,8 @@ class InteractiveMarkerInterface {
   interactive_markers::MenuHandler::EntryHandle head_auto_look_handle_;
 
   interactive_markers::MenuHandler menu_base_;
+  interactive_markers::MenuHandler menu_finger_r_;
+  interactive_markers::MenuHandler menu_finger_l_;
 
   // parameters
   std::string marker_name;
@@ -162,7 +165,7 @@ class InteractiveMarkerInterface {
 
   struct ControlState{
   ControlState() : posture_r_(false), posture_l_(false), torso_on_(false), head_on_(false),
-      projector_on_(false), init_head_goal_(false), base_on_(true) {}
+      projector_on_(false), init_head_goal_(false), base_on_(true),  r_finger_on_(false), l_finger_on_(false) {}
 
     void print()
     {
@@ -181,6 +184,8 @@ class InteractiveMarkerInterface {
     bool init_head_goal_;
     bool base_on_;
     bool planar_only_;
+    bool r_finger_on_;
+    bool l_finger_on_;
     GripperState dual_grippers_;
     GripperState r_gripper_;
     GripperState l_gripper_;
@@ -190,6 +195,8 @@ class InteractiveMarkerInterface {
   ControlState control_state_;
 
   geometry_msgs::PoseStamped head_goal_pose_;
+
+  std::string hand_type_;
 
   std::string head_link_frame_;
   std::string head_mesh_;

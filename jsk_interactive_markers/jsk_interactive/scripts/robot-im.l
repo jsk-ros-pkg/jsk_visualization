@@ -17,6 +17,7 @@
       server-nodename
       base-frame
       marker-sequence
+      r-finger-rpy l-finger-rpy
       ))
 
 
@@ -66,6 +67,10 @@
    (setq ik-rotation-axis t)
    (setq auto-look t)
    (setq use-torso nil)
+   
+   ;;initialize with invalid value
+   (setq r-finger-rpy (list 10 0 0))
+   (setq l-finger-rpy (list 10 0 0))
 
    (setq target-coords (instance arrow-object :init))
    (send target-coords :translate #f(500 0 0)) ;; initial pose
@@ -276,6 +281,10 @@
    (&optional (arm :rarm))
    (send ri :stop-grasp moving-arm))
 
+  (:harf-grasp
+   (&optional (arm :rarm))
+   )
+
 
   (:look-at
    (coords &key (wait t))
@@ -306,6 +315,10 @@
 	 (send self :move-to (send base-target-coords :worldcoords))
 	 (send self :set-marker-pose-robot (make-coords) :marker-name (send msg :marker_name))
 	 )
+	((eq menu jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
+	 (print "reset base marker")
+	 (send self :set-marker-pose-robot (make-coords) :marker-name (send msg :marker_name))
+	 )
 	)
        )
 
@@ -323,11 +336,44 @@
 	 )
 	)
        )
+
+      ;; FINGER MARKER
+      ((eq type jsk_interactive_marker::MarkerMenu::*RFINGER_MARKER*)
+       (cond
+	((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
+	 (print "update finger rarm")
+	 (send self :update-finger :rarm)
+	 )
+	((eq menu jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
+	 (print "reset finger marker")
+	 (send self :reset-finger :rarm)
+	 )
+	)
+       )
+
+      ((eq type jsk_interactive_marker::MarkerMenu::*LFINGER_MARKER*)
+       (cond
+	((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
+	 (print "update finger larm")
+	 (send self :update-finger :larm)
+	 )
+	((eq menu jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
+	 (print "reset finger marker")
+	 (send self :reset-finger :larm)
+	 )
+	)
+       )
+
+
       (t
        (cond
 	((eq menu jsk_interactive_marker::MarkerMenu::*START_GRASP*)
 	 (print "start grasp")
 	 (send self :start-grasp moving-arm))
+
+	((eq menu jsk_interactive_marker::MarkerMenu::*HARF_GRASP*)
+	 (print "harf grasp")
+	 (send self :harf-grasp moving-arm))
 
 	((eq menu jsk_interactive_marker::MarkerMenu::*STOP_GRASP*)
 	 (print "stop grasp")
@@ -450,7 +496,67 @@
      )
    )
 
-  
+  (:set-hand-marker-pose 
+   ()
+   )
+
+  (:close-finger
+   (arm rad)
+   (print rad)
+   )
+
+  (:update-finger
+   (arm)
+   )
+
+  (:reset-finger
+   (arm)
+   )
+
+  (:finger-callback
+   (cds arm)
+   (let* ((rpy (elt (rpy-angle (send cds :rot)) 0))
+	  (r (elt rpy 0))
+	  (p (elt rpy 1))
+	  old-rpy
+	  old-r old-p
+	  )
+     (cond
+      ((equal arm :rarm)
+       (setq old-rpy r-finger-rpy)
+       )
+      ((equal arm :larm)
+       (setq old-rpy l-finger-rpy)
+       )
+      )
+     (setq old-r (elt old-rpy 0))
+     (setq old-p (elt old-rpy 1))
+      
+     ;;(print rpy)
+     (when (< (abs (- old-r r)) 1.0e-6)
+       (cond
+	((> r 3)
+	 (send self :close-finger arm (- p old-p))
+	 )
+
+	((> r -3)
+	 (send self :close-finger arm (- (- p old-p)))
+	 )
+
+	((< r -3)
+	 (send self :close-finger arm (- p old-p))
+	 )
+
+	))
+     (cond
+      ((equal arm :rarm)
+       (setq r-finger-rpy rpy)
+       )
+      ((equal arm :larm)
+       (setq l-finger-rpy rpy)
+       )
+     ))
+   )
 
   (:pose-callback 
    ( msg )
@@ -465,6 +571,15 @@
        (send base-target-coords :transform cds)
        ;;(send self :look-at (send head-target-coords :worldpos))
        )
+      ;;rfinger
+      ((equal (send msg :type) jsk_interactive_marker::MarkerPose::*RFINGER_MARKER*)
+       (send self :finger-callback cds :rarm)
+       )
+
+      ((equal (send msg :type) jsk_interactive_marker::MarkerPose::*LFINGER_MARKER*)
+       (send self :finger-callback cds :larm)
+       )
+
       ((equal (send msg :marker_name) "head_point_goal")
        (send head-target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
        (send head-target-coords :transform cds)
@@ -475,6 +590,7 @@
        (send target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
        (send target-coords :transform cds)
        (send *irtviewer* :draw-objects)
+       (send self :set-hand-marker-pose)
        )
       )))
   

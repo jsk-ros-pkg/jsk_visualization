@@ -5,6 +5,8 @@ uint8 LHAND_MARKER=3
 uint8 RLEG_MARKER=4
 uint8 LLEG_MARKER=5
 uint8 BASE_MARKER=6
+uint8 RFINGER_MARKER=7
+uint8 LFINGER_MARKER=8
 
 int8 type
 geometry_msgs/PoseStamped pose
