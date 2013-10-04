@@ -1,6 +1,5 @@
 #include <jsk_interactive_marker/interactive_marker_utils.h>
 
-
 visualization_msgs::InteractiveMarker makeFingerControlMarker(const char *name, geometry_msgs::PoseStamped ps){
   visualization_msgs::InteractiveMarker int_marker;
   int_marker.name = name;

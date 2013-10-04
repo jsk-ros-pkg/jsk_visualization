@@ -29,6 +29,7 @@ rosbuild_gensrv()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 
 rosbuild_add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp)
+rosbuild_add_executable(urdf_model_marker src/urdf_model_marker.cpp)
 #rosbuild_add_executable(interactive_marker_interface_both_arm src/interactive_marker_interface_both_arm.cpp)
 #rosbuild_add_executable(button_interactive_marker_interface src/button_interactive_marker_interface.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
