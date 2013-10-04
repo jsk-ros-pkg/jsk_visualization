@@ -13,6 +13,7 @@
   <depend package="visualization_msgs" />
   <depend package="interactive_marker_helpers" />
   <depend package="dynamic_tf_publisher" />
+  <rosdep name="eigen" />
 </package>
 
 
