@@ -25,3 +25,5 @@ visualization_msgs::Marker makeSandiaFinger1Marker(std::string frame_id);
 visualization_msgs::Marker makeSandiaFinger2Marker(std::string frame_id);
 
 visualization_msgs::InteractiveMarker makeSandiaHandInteractiveMarker(geometry_msgs::PoseStamped ps, std::string hand, int finger, int link);
+
+std::string getModelFilePath(std::string path);

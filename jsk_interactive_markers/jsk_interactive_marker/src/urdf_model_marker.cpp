@@ -1,8 +1,8 @@
 #include "urdf_parser/urdf_parser.h"
 #include <iostream>
-#include <fstream>
 #include <interactive_markers/tools.h>
 #include <jsk_interactive_marker/urdf_model_marker.h>
+#include <jsk_interactive_marker/interactive_marker_utils.h>
 #include <dynamic_tf_publisher/SetDynamicTF.h>
 #include <Eigen/Geometry>
 
@@ -12,49 +12,29 @@ using namespace std;
 void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root){
   visualization_msgs::InteractiveMarkerControl control;
   if(root){
-    control.orientation.w = 1;
-    control.orientation.x = 1;
-    control.orientation.y = 0;
-    control.orientation.z = 0;
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
-
-    control.orientation.w = 1;
-    control.orientation.x = 0;
-    control.orientation.y = 1;
-    control.orientation.z = 0;
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
-
-    control.orientation.w = 1;
-    control.orientation.x = 0;
-    control.orientation.y = 0;
-    control.orientation.z = 1;
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
-    return;
+    im_helpers::add6DofControl(int_marker,false);
   }else{
     boost::shared_ptr<Joint> parent_joint = link->parent_joint;
     Eigen::Vector3f origin_x(1,0,0);
     Eigen::Vector3f dest_x(parent_joint->axis.x, parent_joint->axis.y, parent_joint->axis.z);
     Eigen::Quaternionf qua;
+
+    qua.setFromTwoVectors(origin_x, dest_x);
+    control.orientation.x = qua.x();
+    control.orientation.y = qua.y();
+    control.orientation.z = qua.z();
+    control.orientation.w = qua.w();
+
     switch(parent_joint->type){
     case Joint::REVOLUTE:
       control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-      qua.setFromTwoVectors(origin_x, dest_x);
-      control.orientation.x = qua.x();
-      control.orientation.y = qua.y();
-      control.orientation.z = qua.z();
-      control.orientation.w = qua.w();
-
       int_marker.controls.push_back(control);
       break;
+    case Joint::PRISMATIC:
+      control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+      int_marker.controls.push_back(control);
+      break;
+
     default:
       break;
 
@@ -129,17 +109,12 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   }else{
     parent_link_frame_name_ = link->parent_joint->parent_link_name;
   }
-
-  ps.header.frame_id = "/" + parent_link_frame_name_;
+  //ps.header.frame_id = "/" + parent_link_frame_name_;
+  ps.header.frame_id =  parent_link_frame_name_;
 
   if(!root){
-    //double r, p, y;
     double x, y, z, w;
-    //link->parent_joint->parent_to_joint_origin_transform.rotation.getRPY(r,p,y);
     link->parent_joint->parent_to_joint_origin_transform.rotation.getQuaternion(x,y,z,w);
-    //cout << r << p << y << endl;
-    //TODO add rpy
-
     ps.pose.position.x = link->parent_joint->parent_to_joint_origin_transform.position.x;
     ps.pose.position.y = link->parent_joint->parent_to_joint_origin_transform.position.y;
     ps.pose.position.z = link->parent_joint->parent_to_joint_origin_transform.position.z;
@@ -147,13 +122,8 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     ps.pose.orientation.y = y;
     ps.pose.orientation.z = z;
     ps.pose.orientation.w = w;
-    cout << "x" << ps.pose.position.x << endl;
-    cout << "y" << ps.pose.position.y << endl;
-    cout << "z" << ps.pose.position.z << endl;
-
 
     dynamic_tf_publisher::SetDynamicTF SetTf;
-  
     SetTf.request.freq = 10;
     SetTf.request.cur_tf.header.stamp = ros::Time::now();
     SetTf.request.cur_tf.header.frame_id = parent_link_frame_name_;
@@ -161,24 +131,22 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     SetTf.request.cur_tf.transform.translation.x = link->parent_joint->parent_to_joint_origin_transform.position.x;
     SetTf.request.cur_tf.transform.translation.y = link->parent_joint->parent_to_joint_origin_transform.position.y;
     SetTf.request.cur_tf.transform.translation.z = link->parent_joint->parent_to_joint_origin_transform.position.z;
-    //SetTf.request.cur_tf.transform.rotation = feedback->pose.orientation;
-    SetTf.request.cur_tf.transform.rotation.w = 1;
 
+    SetTf.request.cur_tf.transform.rotation = ps.pose.orientation;
+
+    dynamic_tf_publisher_client.call(SetTf);
+  }else{
+    dynamic_tf_publisher::SetDynamicTF SetTf;
+    SetTf.request.freq = 10;
+    SetTf.request.cur_tf.header.stamp = ros::Time::now();
+    SetTf.request.cur_tf.header.frame_id = parent_link_frame_name_;
+    SetTf.request.cur_tf.child_frame_id = link_frame_name_;
+    SetTf.request.cur_tf.transform.rotation.w = 1;
     dynamic_tf_publisher_client.call(SetTf);
   }
 
-  /*  tf::Transform transform;
-  transform.setOrigin( tf::Vector3(0,0,0));
-  transform.setRotation( tf::Quaternion(0,0,0,1));
-  cout << "tf" << "parent:" << parent_link_frame_name_  << "  link:" << link_frame_name_ << endl;
-  tfb_.sendTransform(tf::StampedTransform(transform, ros::Time::now(), parent_link_frame_name_, link_frame_name_));
-*/
-  cout << "parent:" << parent_link_frame_name_  << "  link:" << link_frame_name_ << endl;
-
   visualization_msgs::InteractiveMarker int_marker;
-
   int_marker.header = ps.header;
-  cout << int_marker.header << endl;
 
   int_marker.name = link_frame_name_;
   int_marker.scale = 1.0;
@@ -192,13 +160,19 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   if(link->visual->geometry.get() != NULL && link->visual->geometry->type == Geometry::MESH){
     boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link->visual->geometry);
     model_mesh_ = mesh->filename;
+    model_mesh_ = getModelFilePath(model_mesh_);
 
-    //TODO find model under GAZEBO_MODEL_PATH
-    model_mesh_.erase(0,8);
-    //model_mesh_ = "package://hrpsys_gazebo_tutorials/environment_models/" + model_mesh_;
-    model_mesh_ = "package://hrpsys_gazebo_tutorials/robot_models/" + model_mesh_;
+    double x, y, z, w;
+    link->visual->origin.rotation.getQuaternion(x,y,z,w);
+    ps.pose.orientation.x = x;
+    ps.pose.orientation.y = y;
+    ps.pose.orientation.z = z;
+    ps.pose.orientation.w = w;
 
-    cout << model_mesh_ << endl;
+    ps.pose.position.x = link->visual->origin.position.x;
+    ps.pose.position.y = link->visual->origin.position.y;
+    ps.pose.position.z = link->visual->origin.position.z;
+
 
     visualization_msgs::InteractiveMarkerControl meshControl = makeMeshMarkerControl(model_mesh_, ps, scale_factor);
     int_marker.controls.push_back( meshControl );
@@ -212,52 +186,15 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   //menu_head_.apply(*server_, link_frame_name_);
   server_->applyChanges();
 
-  cout << "Link" << link->name << endl;
+  cout << "Link:" << link->name << endl;
 
   for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++)
     addChildLinkNames(*child, false);
 }
 
-void UrdfModelMarker::addChildJointNames(boost::shared_ptr<const Link> link, ofstream& os)
-{
-  double r, p, y;
-  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
-    (*child)->parent_joint->parent_to_joint_origin_transform.rotation.getRPY(r,p,y);
-    /*
-      os << "\"" << link->name << "\" -> \"" << (*child)->parent_joint->name 
-      << "\" [label=\"xyz: "
-      << (*child)->parent_joint->parent_to_joint_origin_transform.position.x << " " 
-      << (*child)->parent_joint->parent_to_joint_origin_transform.position.y << " " 
-      << (*child)->parent_joint->parent_to_joint_origin_transform.position.z << " " 
-      << "\\nrpy: " << r << " " << p << " " << y << "\"]" << endl;
-      os << "\"" << (*child)->parent_joint->name << "\" -> \"" << (*child)->name << "\"" << endl;*/
-    addChildJointNames(*child, os);
-  }
-}
-
-
-
-void UrdfModelMarker::printTree(boost::shared_ptr<const Link> link, string file)
-{
-  //std::ofstream os;
-  //os.open(file.c_str());
-  //os << "digraph G {" << endl;
-
-  //os << "node [shape=box];" << endl;
-  addChildLinkNames(link, true);
-
-  //os << "node [shape=ellipse, color=blue, fontcolor=blue];" << endl;
-  //addChildJointNames(link, os);
-
-  //os << "}" << endl;
-  //os.close();
-}
-
-
 
 int UrdfModelMarker::main(std::string file)
 {
-
   // get the entire file
   std::string xml_string;
   std::fstream xml_file(file.c_str(), std::fstream::in);
@@ -269,8 +206,8 @@ int UrdfModelMarker::main(std::string file)
     }
   xml_file.close();
   
-  std::cout << "model_file:" << file;
-  //std::cout << xml_string;
+  std::cout << "model_file:" << file << std::endl;
+
   boost::shared_ptr<ModelInterface> model = parseURDF(xml_string);
   if (!model){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
@@ -278,41 +215,14 @@ int UrdfModelMarker::main(std::string file)
   }
   string output = model->getName();
 
-  // print entire tree to file
-  printTree(model->getRoot(), output+".gv");
+  addChildLinkNames(model->getRoot(), true);
 
-  visualization_msgs::InteractiveMarker int_marker;
-  int_marker.header.frame_id = "/ROOT_link";
-
-  //int_marker.header.stamp = ros::Time::now();
-  int_marker.name = "test";
-  int_marker.scale = 1.0;
-  int_marker.description = "test^^^^-------------------^^^^^test";
-  //im_helpers::add6DofControl(int_marker,false);
-  im_helpers::add6DofControl(int_marker,false);
-  //visualization_msgs::InteractiveMarkerControl control;
-  //int_marker.controls.push_back(control);
-  //server_->insert(int_marker);
-  server_->applyChanges();
-  //ros::spin();
-  /*
-  ros::Rate loop_rate(10);
-  while(ros::ok()){
-    ros::spinOnce();
-    loop_rate.sleep();
-    }*/
-  //cout << "Created file " << output << ".gv" << endl;
-
-  //string command = "dot -Tpdf "+output+".gv  -o "+output+".pdf";
-  //system(command.c_str());
-  //cout << "Created file " << output << ".pdf" << endl;
   return 0;
 }
 
 
 UrdfModelMarker::UrdfModelMarker (string file) : nh_(), pnh_("~"), tfl_(nh_) {
   pnh_.param("server_name", server_name, std::string ("") );
-  
 
   if ( server_name == "" ) {
     server_name = ros::this_node::getName();
@@ -334,7 +244,6 @@ UrdfModelMarker::UrdfModelMarker (string file) : nh_(), pnh_("~"), tfl_(nh_) {
   */
   server_.reset( new interactive_markers::InteractiveMarkerServer(server_name, "sid", false) );
   main(file);
-  //ros::spin();
 }
 
 
@@ -342,9 +251,9 @@ UrdfModelMarker::UrdfModelMarker (string file) : nh_(), pnh_("~"), tfl_(nh_) {
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "jsk_model_marker_interface");
-  //UrdfModelMarker umm("/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/environment_models/room73b2-cupboard-left-0/model.urdf");
-  UrdfModelMarker umm("/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/robot_models/SampleRobot/SampleRobot.urdf");
-  //  UrdfModelMarker umm2("/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/environment_models/simple-box/model.urdf");
+  UrdfModelMarker umm("/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/environment_models/room73b2-cupboard-left-0/model.urdf");
+  UrdfModelMarker umm2("/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/robot_models/SampleRobot/SampleRobot.urdf");
+  UrdfModelMarker umm3("/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/environment_models/simple-box/model.urdf");
 
   ros::spin();
   return 0;

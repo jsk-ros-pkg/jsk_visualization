@@ -1,4 +1,11 @@
 #include <jsk_interactive_marker/interactive_marker_utils.h>
+#include <boost/filesystem/operations.hpp>
+#include <iostream>
+#include <stdlib.h>
+
+using namespace boost;
+using namespace boost::filesystem;
+
 
 visualization_msgs::InteractiveMarker makeFingerControlMarker(const char *name, geometry_msgs::PoseStamped ps){
   visualization_msgs::InteractiveMarker int_marker;
@@ -190,4 +197,42 @@ visualization_msgs::Marker makeSandiaFinger2Marker(std::string frame_id){
   marker.color.b = 0.0;
 
   return marker;
+}
+
+
+std::string getModelFilePath(std::string path){
+  std::string gazebo_model_path="";
+  
+  FILE* fp;
+  char buf[256];
+
+  //set $GAZEBO_MODEL_PATH
+  if ((fp = popen("echo $GAZEBO_MODEL_PATH", "r")) == NULL) {
+    std::cout << "popen error" << std::endl;
+  }
+  while (fgets(buf, sizeof(buf), fp) != NULL) {
+    gazebo_model_path += buf;
+  }
+  pclose(fp);
+  if( path.find("model://", 0) == 0 ){
+    path.erase(0,9);
+    size_t current = 0, found;
+    while((found = gazebo_model_path.find_first_of(":", current)) != std::string::npos){
+      std::string search_path = std::string(gazebo_model_path, current, found - current);
+      current = found + 1;
+      recursive_directory_iterator iter = recursive_directory_iterator(search_path);
+      recursive_directory_iterator end = recursive_directory_iterator();
+      for (; iter != end; ++iter) {
+	if (is_regular_file(*iter)) {
+	  int locate = iter->path().string().find( path, 0 );
+	  if( locate != std::string::npos){
+	    //for example file:///hoge/fuga.dae
+	    return "file://" + iter->path().string();
+	  }
+	}
+      }
+    }
+  }
+  return path;
+
 }
