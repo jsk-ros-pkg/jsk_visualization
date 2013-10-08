@@ -42,25 +42,44 @@ void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker
   }
 }
 
-void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string parent_frame_id, string frame_id){
-  tf::Transform transform;
-  geometry_msgs::Point point =  feedback->pose.position;
-  transform.setOrigin( tf::Vector3(point.x, point.y, point.z));
-  geometry_msgs::Quaternion qua =  feedback->pose.orientation;
-  transform.setRotation( tf::Quaternion(qua.x, qua.y, qua.z, qua.w));
+geometry_msgs::Transform UrdfModelMarker::Pose2Transform( const geometry_msgs::Pose pose_msg){
+  geometry_msgs::Transform tf_msg;
+  tf_msg.translation.x = pose_msg.position.x;
+  tf_msg.translation.y = pose_msg.position.y;
+  tf_msg.translation.z = pose_msg.position.z;
+  tf_msg.rotation = pose_msg.orientation;
+  return tf_msg;
+}
 
+geometry_msgs::Pose UrdfModelMarker::UrdfPose2Pose( const urdf::Pose pose){
+  geometry_msgs::Pose p_msg;
+  double x, y, z, w;
+  pose.rotation.getQuaternion(x,y,z,w);
+  p_msg.orientation.x = x;
+  p_msg.orientation.y = y;
+  p_msg.orientation.z = z;
+  p_msg.orientation.w = w;
+
+  p_msg.position.x = pose.position.x;
+  p_msg.position.y = pose.position.y;
+  p_msg.position.z = pose.position.z;
+
+  return p_msg;
+}
+
+
+void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform){
   dynamic_tf_publisher::SetDynamicTF SetTf;
-  
   SetTf.request.freq = 10;
   SetTf.request.cur_tf.header.stamp = ros::Time::now();
   SetTf.request.cur_tf.header.frame_id = parent_frame_id;
   SetTf.request.cur_tf.child_frame_id = frame_id;
-  SetTf.request.cur_tf.transform.translation.x = feedback->pose.position.x;
-  SetTf.request.cur_tf.transform.translation.y = feedback->pose.position.y;
-  SetTf.request.cur_tf.transform.translation.z = feedback->pose.position.z;
-  SetTf.request.cur_tf.transform.rotation = feedback->pose.orientation;
-
+  SetTf.request.cur_tf.transform = transform;
   dynamic_tf_publisher_client.call(SetTf);
+}
+
+void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string parent_frame_id, string frame_id){
+  CallSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(feedback->pose));
   cout << "parent:" << parent_frame_id << " frame:" << frame_id <<endl;
 }
 
@@ -71,7 +90,7 @@ visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerCont
   meshMarker.mesh_resource = mesh_resource;
   meshMarker.mesh_use_embedded_materials = !use_color;
   meshMarker.type = visualization_msgs::Marker::MESH_RESOURCE;
-
+  
   meshMarker.scale.x = scale;
   meshMarker.scale.y = scale;
   meshMarker.scale.z = scale;
@@ -103,47 +122,19 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   string link_frame_name_ = link->name;
   string parent_link_frame_name_;
 
+  link_frame_name_ = model_name_ + "/" + link_frame_name_;
+
   if(root){
-    //need slash ? 
-    parent_link_frame_name_ = "root";
+    parent_link_frame_name_ = frame_id_;
+    ps.pose = root_pose_;
   }else{
     parent_link_frame_name_ = link->parent_joint->parent_link_name;
+    parent_link_frame_name_ = model_name_ + "/" + parent_link_frame_name_;
+    ps.pose = UrdfPose2Pose(link->parent_joint->parent_to_joint_origin_transform);
   }
-  //ps.header.frame_id = "/" + parent_link_frame_name_;
   ps.header.frame_id =  parent_link_frame_name_;
 
-  if(!root){
-    double x, y, z, w;
-    link->parent_joint->parent_to_joint_origin_transform.rotation.getQuaternion(x,y,z,w);
-    ps.pose.position.x = link->parent_joint->parent_to_joint_origin_transform.position.x;
-    ps.pose.position.y = link->parent_joint->parent_to_joint_origin_transform.position.y;
-    ps.pose.position.z = link->parent_joint->parent_to_joint_origin_transform.position.z;
-    ps.pose.orientation.x = x;
-    ps.pose.orientation.y = y;
-    ps.pose.orientation.z = z;
-    ps.pose.orientation.w = w;
-
-    dynamic_tf_publisher::SetDynamicTF SetTf;
-    SetTf.request.freq = 10;
-    SetTf.request.cur_tf.header.stamp = ros::Time::now();
-    SetTf.request.cur_tf.header.frame_id = parent_link_frame_name_;
-    SetTf.request.cur_tf.child_frame_id = link_frame_name_;
-    SetTf.request.cur_tf.transform.translation.x = link->parent_joint->parent_to_joint_origin_transform.position.x;
-    SetTf.request.cur_tf.transform.translation.y = link->parent_joint->parent_to_joint_origin_transform.position.y;
-    SetTf.request.cur_tf.transform.translation.z = link->parent_joint->parent_to_joint_origin_transform.position.z;
-
-    SetTf.request.cur_tf.transform.rotation = ps.pose.orientation;
-
-    dynamic_tf_publisher_client.call(SetTf);
-  }else{
-    dynamic_tf_publisher::SetDynamicTF SetTf;
-    SetTf.request.freq = 10;
-    SetTf.request.cur_tf.header.stamp = ros::Time::now();
-    SetTf.request.cur_tf.header.frame_id = parent_link_frame_name_;
-    SetTf.request.cur_tf.child_frame_id = link_frame_name_;
-    SetTf.request.cur_tf.transform.rotation.w = 1;
-    dynamic_tf_publisher_client.call(SetTf);
-  }
+  CallSetDynamicTf(parent_link_frame_name_, link_frame_name_, Pose2Transform(ps.pose));
 
   visualization_msgs::InteractiveMarker int_marker;
   int_marker.header = ps.header;
@@ -153,26 +144,16 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   int_marker.description = link_frame_name_;
   int_marker.pose = ps.pose;
 
+  //move Marker
   addMoveMarkerControl(int_marker, link, root);
 
-  //model Mesh
+  //model Mesh Marker
   string model_mesh_ = "";
   if(link->visual->geometry.get() != NULL && link->visual->geometry->type == Geometry::MESH){
     boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link->visual->geometry);
     model_mesh_ = mesh->filename;
     model_mesh_ = getModelFilePath(model_mesh_);
-
-    double x, y, z, w;
-    link->visual->origin.rotation.getQuaternion(x,y,z,w);
-    ps.pose.orientation.x = x;
-    ps.pose.orientation.y = y;
-    ps.pose.orientation.z = z;
-    ps.pose.orientation.w = w;
-
-    ps.pose.position.x = link->visual->origin.position.x;
-    ps.pose.position.y = link->visual->origin.position.y;
-    ps.pose.position.z = link->visual->origin.position.z;
-
+    ps.pose = UrdfPose2Pose(link->visual->origin);
 
     visualization_msgs::InteractiveMarkerControl meshControl = makeMeshMarkerControl(model_mesh_, ps, scale_factor);
     int_marker.controls.push_back( meshControl );
@@ -192,42 +173,22 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     addChildLinkNames(*child, false);
 }
 
+UrdfModelMarker::UrdfModelMarker ()
+{}
 
-int UrdfModelMarker::main(std::string file)
-{
-  // get the entire file
-  std::string xml_string;
-  std::fstream xml_file(file.c_str(), std::fstream::in);
-  while ( xml_file.good() )
-    {
-      std::string line;
-      std::getline( xml_file, line);
-      xml_string += (line + "\n");
-    }
-  xml_file.close();
-  
-  std::cout << "model_file:" << file << std::endl;
-
-  boost::shared_ptr<ModelInterface> model = parseURDF(xml_string);
-  if (!model){
-    std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
-    return -1;
-  }
-  string output = model->getName();
-
-  addChildLinkNames(model->getRoot(), true);
-
-  return 0;
-}
-
-
-UrdfModelMarker::UrdfModelMarker (string file) : nh_(), pnh_("~"), tfl_(nh_) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_) {
   pnh_.param("server_name", server_name, std::string ("") );
 
   if ( server_name == "" ) {
     server_name = ros::this_node::getName();
   }
   dynamic_tf_publisher_client = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf");
+
+  server_ = server;
+  model_name_ = model_name;
+  model_file_ = model_file;
+  frame_id_ = frame_id;
+  root_pose_ = root_pose;
 
   /*
     pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
@@ -242,19 +203,80 @@ UrdfModelMarker::UrdfModelMarker (string file) : nh_(), pnh_("~"), tfl_(nh_) {
     serv_reset_ = pnh_.advertiseService("reset_pose",
     &InteractiveMarkerInterface::reset_cb, this);
   */
-  server_.reset( new interactive_markers::InteractiveMarkerServer(server_name, "sid", false) );
-  main(file);
-}
 
+  model_file_ = getFilePathFromRosPath(model_file_);
+
+  // get the entire file
+  std::string xml_string;
+  std::fstream xml_file(model_file_.c_str(), std::fstream::in);
+  while ( xml_file.good() )
+    {
+      std::string line;
+      std::getline( xml_file, line);
+      xml_string += (line + "\n");
+    }
+  xml_file.close();
+
+  std::cout << "model_file:" << model_file_ << std::endl;
+
+  boost::shared_ptr<ModelInterface> model = parseURDF(xml_string);
+  if (!model){
+    std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
+    return;
+  }
+
+  addChildLinkNames(model->getRoot(), true);
+  return;
+
+}
 
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "jsk_model_marker_interface");
-  UrdfModelMarker umm("/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/environment_models/room73b2-cupboard-left-0/model.urdf");
-  UrdfModelMarker umm2("/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/robot_models/SampleRobot/SampleRobot.urdf");
-  UrdfModelMarker umm3("/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/environment_models/simple-box/model.urdf");
+  ros::NodeHandle n;
+  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
+  server.reset( new interactive_markers::InteractiveMarkerServer("jsk_model_marker_interface", "", false) );
+
+  ros::NodeHandle pnh_("~");
+
+  XmlRpc::XmlRpcValue v;
+  pnh_.param("model_config", v, v);
+  for(int i=0; i< v.size(); i++){
+    XmlRpc::XmlRpcValue model = v[i];
+    std::cout << "name:" << model["name"] <<endl;
+    geometry_msgs::Pose p = getPose(model["pose"]);
+    new UrdfModelMarker(model["name"], model["model"], model["frame-id"], p, server);
+  }
 
   ros::spin();
   return 0;
+}
+
+
+geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val){
+  geometry_msgs::Pose p;
+  XmlRpc::XmlRpcValue pos = val["position"];
+  p.position.x = getXmlValue(pos["x"]);
+  p.position.y = getXmlValue(pos["y"]);
+  p.position.z = getXmlValue(pos["z"]);
+
+  XmlRpc::XmlRpcValue ori = val["orientation"];
+  p.orientation.x = getXmlValue(ori["x"]);
+  p.orientation.y = getXmlValue(ori["y"]);
+  p.orientation.z = getXmlValue(ori["z"]);
+  p.orientation.w = getXmlValue(ori["w"]);
+
+  return p;
+}
+
+double getXmlValue( XmlRpc::XmlRpcValue val ){
+  switch(val.getType()){
+  case XmlRpc::XmlRpcValue::TypeInt:
+    return (double)((int)val);
+  case XmlRpc::XmlRpcValue::TypeDouble:
+    return (double)val;
+  default:
+    return 0;
+  }
 }

@@ -2,6 +2,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <iostream>
 #include <stdlib.h>
+#include <ros/package.h>
 
 using namespace boost;
 using namespace boost::filesystem;
@@ -234,5 +235,27 @@ std::string getModelFilePath(std::string path){
     }
   }
   return path;
+}
 
+//convert package:// path to full path
+std::string getFilePathFromRosPath( std::string rospath){
+  std::string path = rospath;
+  if (path.find("package://") == 0){
+      path.erase(0, strlen("package://"));
+      size_t pos = path.find("/");
+      if (pos == std::string::npos){
+	std::cout << "Could not parse package:// format" <<std::endl;
+	return "";
+      }
+      std::string package = path.substr(0, pos);
+      path.erase(0, pos);
+      std::string package_path = ros::package::getPath(package);
+      if (package_path.empty())
+	{
+	  std::cout <<  "Package [" + package + "] does not exist" << std::endl;
+	}
+ 
+      path = package_path + path;
+    }
+  return path;
 }
