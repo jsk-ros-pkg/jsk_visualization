@@ -1,24 +1,40 @@
-- name: "SampleRobot"
-  model: "/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/robot_models/SampleRobot/SampleRobot.urdf"
-  frame-id: "root"
-  pose:
-   position: {x: 1.0, y: 0.0, z: 0.0}
-   orientation : {x: 1.0, y: 0.0, z: 0.0, w: 0.0}
+# - name: "SampleRobot"
+#   model: "/home/furuta/ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_tutorials/robot_models/SampleRobot/SampleRobot.urdf"
+#   frame-id: "root"
+#   pose:
+#    position: {x: 1.0, y: 0.0, z: 0.0}
+#    orientation : {x: 1.0, y: 0.0, z: 0.0, w: 0.0}
 
 
-- name: "CupBoard"
-  model: "package://hrpsys_gazebo_tutorials/environment_models/room73b2-cupboard-left-0/model.urdf"
-  frame-id: "root"
+# - name: "CupBoard"
+#   model: "package://hrpsys_gazebo_tutorials/environment_models/room73b2-cupboard-left-0/model.urdf"
+#   frame-id: "root"
+#   pose:
+#     position: {x: 3.0, y: 0.0, z: 0.0}
+#     orientation : {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+
+
+# - name: "Box"
+#   model: "package://hrpsys_gazebo_tutorials/environment_models/simple-box/model.urdf"
+#   frame-id: "root"
+#   pose:
+#     position: {x: 0.0, y: 0.0, z: 3.0}
+#     orientation : {x: 0.0, y: 1.0, z: 1.0, w: 1.0}
+
+
+- name: "Fridge"
+  model: "package://hrpsys_gazebo_tutorials/environment_models/room73b2-hitachi-fiesta-refrigerator-0/model.urdf"
+  frame-id: "eng2/7f"
   pose:
-    position: {x: 3.0, y: 0.0, z: 0.0}
+    position: {x: 0.0, y: 0.0, z: 0.0}
     orientation : {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
 
 
-- name: "Box"
-  model: "package://hrpsys_gazebo_tutorials/environment_models/simple-box/model.urdf"
-  frame-id: "root"
-  pose:
-    position: {x: 0.0, y: 0.0, z: 3.0}
-    orientation : {x: 0.0, y: 1.0, z: 1.0, w: 1.0}
+# - name: "Fridge1"
+#   model: "package://hrpsys_gazebo_tutorials/environment_models/room73b2-hitachi-fiesta-refrigerator-1/model.urdf"
+#   frame-id: "eng2/7f"
+#   pose:
+#     position: {x: 0.0, y: 0.0, z: 0.0}
+#     orientation : {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
 
 

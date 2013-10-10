@@ -32,18 +32,24 @@ class UrdfModelMarker {
   UrdfModelMarker();
 
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
+
+  void publishMarkerPose ( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string parent_frame_id, string frame_id);
+
+
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale, const std_msgs::ColorRGBA &color, bool use_color);
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale);
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale, const std_msgs::ColorRGBA &color);
 
-  void addChildLinkNames(boost::shared_ptr<const Link> link, bool root);
+  void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init);
 
   geometry_msgs::Transform Pose2Transform(geometry_msgs::Pose pose_msg);
   geometry_msgs::Pose UrdfPose2Pose( const urdf::Pose pose);
   void CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform);
 
   int main(string file);
+
+  void graspPointCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
  private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
@@ -54,6 +60,8 @@ class UrdfModelMarker {
   ros::ServiceServer serv_set_;
   ros::ServiceServer serv_markers_set_;
   ros::ServiceServer serv_markers_del_;
+
+  interactive_markers::MenuHandler model_menu_;
 
   tf::TransformListener tfl_;
   tf::TransformBroadcaster tfb_;
@@ -66,11 +74,22 @@ class UrdfModelMarker {
   std::string move_base_frame;
   std::string target_frame;
 
+
+  boost::shared_ptr<ModelInterface> model;
   std::string model_name_;
   std::string frame_id_;
   std::string model_file_;
   geometry_msgs::Pose root_pose_;
 
+
+  struct linkProperty{
+    linkProperty(){
+      displayMoveMarker = 0;
+    }
+    
+    bool displayMoveMarker;
+  };
+  map<string, linkProperty> linkMarkerMap;
 };
 
 geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);

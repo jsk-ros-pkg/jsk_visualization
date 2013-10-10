@@ -34,10 +34,8 @@ void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker
       control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
       int_marker.controls.push_back(control);
       break;
-
     default:
       break;
-
     }
   }
 }
@@ -78,10 +76,36 @@ void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, 
   dynamic_tf_publisher_client.call(SetTf);
 }
 
-void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string parent_frame_id, string frame_id){
-  CallSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(feedback->pose));
-  cout << "parent:" << parent_frame_id << " frame:" << frame_id <<endl;
+void UrdfModelMarker::publishMarkerPose( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+    jsk_interactive_marker::MarkerPose mp;
+    mp.pose.header = feedback->header;
+    mp.pose.pose = feedback->pose;
+    mp.marker_name = feedback->marker_name;
+
+    pub_.publish( mp );
 }
+
+void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string parent_frame_id, string frame_id){
+  switch ( feedback->event_type ){
+  case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
+    CallSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(feedback->pose));
+    cout << "parent:" << parent_frame_id << " frame:" << frame_id <<endl;
+    publishMarkerPose(feedback);
+    
+    break;
+  case visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK:
+    cout << "clicked" << " frame:" << frame_id <<endl;
+    linkMarkerMap[frame_id].displayMoveMarker ^= true;
+    addChildLinkNames(model->getRoot(), true, false);
+    break;
+  }
+}
+
+void UrdfModelMarker::graspPointCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+  
+  addChildLinkNames(model->getRoot(), true, false); 
+}
+
 
 visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale, const std_msgs::ColorRGBA &color, bool use_color){
   visualization_msgs::Marker meshMarker;
@@ -114,7 +138,7 @@ visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerCont
 }
 
 
-void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool root)
+void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init)
 {
   geometry_msgs::PoseStamped ps;
 
@@ -134,18 +158,33 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   }
   ps.header.frame_id =  parent_link_frame_name_;
 
-  CallSetDynamicTf(parent_link_frame_name_, link_frame_name_, Pose2Transform(ps.pose));
+  if(init){
+    CallSetDynamicTf(parent_link_frame_name_, link_frame_name_, Pose2Transform(ps.pose));
+    //linkMarkerMap.insert( map<string, struct>::value_type( link_frame_name_, false ) );
+    linkProperty lp;
+    linkMarkerMap.insert( map<string, linkProperty>::value_type( link_frame_name_, lp ) );
+  }
 
   visualization_msgs::InteractiveMarker int_marker;
   int_marker.header = ps.header;
 
   int_marker.name = link_frame_name_;
   int_marker.scale = 1.0;
-  int_marker.description = link_frame_name_;
+  //int_marker.description = link_frame_name_;
   int_marker.pose = ps.pose;
 
+  if(!init){
+    visualization_msgs::InteractiveMarker old_marker;
+    if(server_->get(link_frame_name_, old_marker)){
+      int_marker.pose = old_marker.pose;
+    }
+  }
+
   //move Marker
-  addMoveMarkerControl(int_marker, link, root);
+  //if(linkMarkerMap[link_frame_name_]){
+  if(linkMarkerMap[link_frame_name_].displayMoveMarker){
+    addMoveMarkerControl(int_marker, link, root);
+  }
 
   //model Mesh Marker
   string model_mesh_ = "";
@@ -160,18 +199,22 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   }
 
   server_->insert(int_marker);
-
   server_->setCallback( int_marker.name,
 			boost::bind( &UrdfModelMarker::proc_feedback, this, _1, parent_link_frame_name_, link_frame_name_) );
 
-  //menu_head_.apply(*server_, link_frame_name_);
+
+
+  model_menu_.apply(*server_, link_frame_name_);
   server_->applyChanges();
 
   cout << "Link:" << link->name << endl;
 
-  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++)
-    addChildLinkNames(*child, false);
+  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
+    addChildLinkNames(*child, false, init);
+  }
 }
+
+
 
 UrdfModelMarker::UrdfModelMarker ()
 {}
@@ -190,6 +233,8 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   frame_id_ = frame_id;
   root_pose_ = root_pose;
 
+  pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
+
   /*
     pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
     pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("move_flag", 1);
@@ -203,6 +248,9 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
     serv_reset_ = pnh_.advertiseService("reset_pose",
     &InteractiveMarkerInterface::reset_cb, this);
   */
+  model_menu_.insert( "Grasp Point",
+		      boost::bind( &UrdfModelMarker::graspPointCB, this, _1 ) );
+
 
   model_file_ = getFilePathFromRosPath(model_file_);
 
@@ -219,13 +267,13 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
 
   std::cout << "model_file:" << model_file_ << std::endl;
 
-  boost::shared_ptr<ModelInterface> model = parseURDF(xml_string);
+  model = parseURDF(xml_string);
   if (!model){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
     return;
   }
 
-  addChildLinkNames(model->getRoot(), true);
+  addChildLinkNames(model->getRoot(), true, true);
   return;
 
 }
