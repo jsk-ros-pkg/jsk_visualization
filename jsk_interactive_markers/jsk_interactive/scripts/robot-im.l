@@ -24,11 +24,15 @@
 (defmethod robot-im
   (:init
    (&key ((:robot r)) ((:ri i)) ((:base-frame bf) "/base_link")
-	 ((:server-nodename sn) "/jsk_interactive_marker_manipulation"))
+	 ((:server-nodename sn) "/jsk_interactive_marker_manipulation")
+	 ((:urdf-model-nodename umn) "/jsk_model_marker_interface")
+
+	 )
    (setq robot r)
    (setq ri i)
    (setq base-frame bf)
    (setq server-nodename sn)
+   (setq urdf-model-nodename umn)
 
    (ros::roseus sn)
    (setq *tfb* (instance ros::transform-broadcaster :init))
@@ -48,6 +52,18 @@
 
    (ros::subscribe (format nil "~A/move_flag" server-nodename)
 		   jsk_interactive_marker::MarkerMenu #'send self :move-callback)
+
+   #|
+   (ros::subscribe (format nil "~A/pose" urdf-model-nodename)
+   jsk_interactive_marker::MarkerPose #'send self :model-pose-callback)
+
+   (ros::subscribe (format nil "~A/move_flag" urdf-model-nodename)
+   jsk_interactive_marker::MarkerMenu #'send self :model-move-callback)
+   |#
+   
+   (ros::subscribe (format nil "~A/move_object" urdf-model-nodename)
+		   jsk_interactive_marker::MoveObject #'send self :model-move-object-callback)
+   
 
    ;;3dmouse move
    (ros::subscribe "/spacenav/joy"
@@ -156,6 +172,8 @@
    (let ((inter-num 10)(vector-list nil)
 	 handle-r handle-l hadle-r-world handle-l-world
 	 new-coords reset-coords old-coords add-coords)
+     ;;reset-coords add-coords)
+
      ;;モデルへの反映
      (send robot :angle-vector (send ri :state :potentio-vector))
      (setq handle-r (make-cascoords :coords (send origin-coords :transformation (send robot :rarm :end-coords))))
@@ -163,6 +181,7 @@
 
      (setq new-coords (send target-coords :copy-worldcoords))
      (setq reset-coords (send origin-coords :copy-worldcoords))
+     ;;     (setq reset-coords (send old-coords :copy-worldcoords))
      (setq old-coords (send origin-coords :copy-worldcoords))
 
      ;; (when auto-look
@@ -201,7 +220,6 @@
 	      (print "can't solve IK")
 	      (return-from interpolation)
 	      ))
-	   
 	   (t
 	    (unless
 		(send self :solve-ik (list handle-r-world handle-l-world) :move-arm :arms
@@ -261,6 +279,125 @@
      (send origin-coords :move-to target-coords :world)
 
      (send self :set-marker-pose-robot (send target-coords :worldcoords))
+     (send self :set-origin)
+     )
+   )
+
+  (:pose-move-object
+   (&optional (target-cds target-coords)
+	      (origin-cds origin-coords)
+	      &key (mem t) (arm :arms))
+   (let ((inter-num 10)(vector-list nil)
+	 handle-r handle-l hadle-r-world handle-l-world
+	 new-coords reset-coords old-coords add-coords)
+     ;;reset-coords add-coords)
+
+     ;;モデルへの反映
+     (send robot :angle-vector (send ri :state :potentio-vector))
+     (setq handle-r (make-cascoords :coords (send origin-cds :transformation (send robot :rarm :end-coords))))
+     (setq handle-l (make-cascoords :coords (send origin-cds :transformation (send robot :larm :end-coords))))
+
+     (setq new-coords (send target-cds :copy-worldcoords))
+     (setq reset-coords (send origin-cds :copy-worldcoords))
+     ;;     (setq reset-coords (send old-coords :copy-worldcoords))
+     (setq old-coords (send origin-cds :copy-worldcoords))
+
+     ;; (when auto-look
+     ;;   (send self :look-at (send old-coords :worldpos) :wait t)
+     ;;   (send head-target-cds :locate (send old-coords :worldpos) :world)
+     ;;   )
+
+     ;;inter-num で分割して送る
+     (block interpolation
+       (dotimes (i inter-num)
+	 (setq add-coords (instance arrow-object :init))
+	 (setq handle-r-world (send handle-r :copy-worldcoords))
+	 (setq handle-l-world (send handle-l :copy-worldcoords))
+	 (send add-coords :move-to (midcoords (/ (+ i 1) (float inter-num)) old-coords new-coords))
+
+	 (send handle-r-world :transform add-coords :world)
+	 (send handle-l-world :transform add-coords :world)
+
+	 (case arm
+	   (:rarm
+	    (unless
+		(send self :solve-ik handle-r-world :move-arm :rarm
+		      :rotation-axis ik-rotation-axis :use-torso use-torso)
+	      (send target-cds :move-to reset-coords :world)
+	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
+	      (print "can't solve IK")
+	      (return-from interpolation)
+	      ))
+
+	   (:larm
+	    (unless
+		(send self :solve-ik handle-l-world :move-arm :larm
+		      :rotation-axis ik-rotation-axis :use-torso use-torso)
+	      (send target-cds :move-to reset-coords :world)
+	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
+	      (print "can't solve IK")
+	      (return-from interpolation)
+	      ))
+	   (t
+	    (unless
+		(send self :solve-ik (list handle-r-world handle-l-world) :move-arm :arms
+		      :rotation-axis ik-rotation-axis :use-torso use-torso)
+	      (send target-cds :move-to reset-coords :world)
+	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
+	      (print "can't solve IK")
+	      (return-from interpolation)
+	      )
+	    )
+	   )
+
+	 ;;	 (when auto-look
+	 (when t
+	   (send robot :head :look-at
+		 (send add-coords :worldpos))
+	   (send head-target-coords :locate (send add-coords :worldpos) :world)
+	   )
+	 (push (send robot :angle-vector) vector-list)
+	 (objects (list robot origin-cds add-coords))
+	 (print add-coords)
+	 (send *irtviewer* :draw-objects)
+	 (setq reset-coord (send add-coords :copy-worldcoords))
+	 )
+       )
+     (objects (list robot origin-cds target-cds head-target-coords base-target-coords))
+     
+     (print "exe")
+     (setq vector-list (reverse vector-list))
+
+     (unless (null vector-list)
+       (print "sending vector list...")
+       (setq tmp-vec vector-list)
+       (send ri :angle-vector-sequence vector-list (make-sequence 'list (length vector-list) :initial-element 500))
+       (send ri :wait-interpolation)
+       (print "done")
+       )
+
+     ;;robotへの反映
+     (send robot :angle-vector (send ri :state :potentio-vector))
+     
+     (setq renew-arrow-coord-r (send (send robot :rarm :end-coords) :copy-worldcoords))
+     (send renew-arrow-coord-r :transform (send handle-r :inverse-transformation))
+     (setq renew-arrow-coord-l (send (send robot :larm :end-coords) :copy-worldcoords))
+     (send renew-arrow-coord-l :transform (send handle-l :inverse-transformation))
+
+     (case moving-arm
+       (:rarm
+	(send target-cds :move-to renew-arrow-coord-r :world)
+	)
+       (:larm
+	(send target-cds :move-to renew-arrow-coord-l :world)
+	)
+       (t
+	(send target-cds :move-to (midcoords 0.5 renew-arrow-coord-r renew-arrow-coord-l) :world)
+	))
+     (setq old-coords (send target-cds :copy-worldcoords))
+     (send origin-cds :move-to target-cds :world)
+
+     (send self :set-marker-pose-robot (send target-cds :worldcoords))
      (send self :set-origin)
      )
    )
@@ -531,7 +668,7 @@
       )
      (setq old-r (elt old-rpy 0))
      (setq old-p (elt old-rpy 1))
-      
+     
      ;;(print rpy)
      (when (< (abs (- old-r r)) 1.0e-6)
        (cond
@@ -555,7 +692,7 @@
       ((equal arm :larm)
        (setq l-finger-rpy rpy)
        )
-     ))
+      ))
    )
 
   (:pose-callback 
@@ -618,6 +755,66 @@
      ;;(print target-coords)
      )
    )
+
+  (:model-pose-callback
+   ( msg )
+   (setq a msg)
+   (print (list "callback" msg))
+
+   (let* ((pose (send msg :pose))
+	  (cds (ros::tf-pose-stamped->coords pose))
+	  )
+     (print cds)
+     #|
+     (send target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
+     (send target-coords :transform cds)
+     (send *irtviewer* :draw-objects)
+     (send self :set-hand-marker-pose)
+     |#
+     )
+   )
+
+  (:model-move-object-callback
+   (msg)
+   (let ((origin (ros::tf-pose-stamped->coords (send msg :origin)))
+	 (goal (ros::tf-pose-stamped->coords (send msg :goal)))
+	 (grasp (ros::tf-pose->coords (send msg :graspPose))))
+     (setq tmp-msg msg)
+     (print (list "callback" msg))
+     (print (list "callback" origin))
+     (print (list "callback" goal))
+     (setq a origin)
+     (send self :model-move-object msg)
+#|
+     
+     (print (list "test" (send origin :worldcoords)))
+
+     (setq base->origin (send *tfl* :lookup-transform "base_link" (send origin :name)  (ros::time 0)))
+     (send origin :transform base->origin :world)
+     (send goal :transform base->origin :world)
+     (send grasp :transform origin :world)
+     (setq a origin)
+     ;;(send self :pose-move origin goal)
+     
+     ;;grasp
+
+     ;;   (send self :solve-ik (list handle-r-world handle-l-world) :move-arm :arms
+     ;;	 :rotation-axis ik-rotation-axis :use-torso use-torso)
+     (send self :solve-ik grasp :move-arm :rarm :rotation-axis nil)
+     (send ri :angle-vector (send robot :angle-vector) 5000)
+     (send ri :wait-interpolation)
+
+     (setq b grasp)
+
+     ;;grasp
+
+     ;;:rotation-axis ik-rotation-axis :use-torso use-torso)
+
+     (send self :pose-move-object origin goal :arm :rarm)
+|#
+     )
+   )
+
   
   (:set-marker-pose-robot
    (coords &rest args)
