@@ -6,18 +6,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_rviz_plugins)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS rviz)
-
-find_package(catkin COMPONENTS jsk_hark_msgs)
-if(NOT jsk_hark_msgs_FOUND)
-  message("-- could not found jsk_hark_msgs (catkin) package, use rospack to find jsk_hark_msgs dir")
-  execute_process(COMMAND rospack find jsk_hark_msgs OUTPUT_VARIABLE jsk_hark_msgs_PACKAGE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(jsk_hark_msgs_INCLUDE_DIRS ${jsk_hark_msgs_PACKAGE_PATH}/build/devel/include)
-endif()
+find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs)
 
 catkin_package(
     DEPENDS rviz
-    CATKIN-DEPENDS # TODO
+    CATKIN-DEPENDS jsk_hark_msgs
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
@@ -25,7 +18,7 @@ catkin_package(
 
 set(ROS_BUILD_TYPE Release)
 
-include_directories(src ${jsk_hark_msgs_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
 # TODO: fill in what other packages will need to use this package
 ## LIBRARIES: libraries you create in this project that dependent projects also need
@@ -63,6 +56,7 @@ set(SOURCE_FILES
 add_library(jsk_rviz_plugins ${SOURCE_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES})
 set_target_properties(jsk_rviz_plugins PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+add_dependencies(jsk_rviz_plugins jsk_hark_msgs_gencpp)
 
 install(FILES plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
