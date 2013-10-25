@@ -4,6 +4,8 @@
 
 (require :robot-im "package://jsk_interactive/scripts/robot-im.l")
 
+(load "models/room73b2-hitachi-fiesta-refrigerator-object.l")
+
 (defclass pr2-im
   :super robot-im
   )
@@ -48,22 +50,22 @@
 	 (goal (ros::tf-pose-stamped->coords (send msg :goal)))
 	 (grasp (ros::tf-pose->coords (send msg :graspPose))))
      (setq tmp-msg msg)
-     (print (list "callback" msg))
      (print (list "callback" origin))
      (print (list "callback" goal))
-     (setq a origin)
      (print (list "test" (send origin :worldcoords)))
 
-     (setq base->origin (send *tfl* :lookup-transform "base_link" (send origin :name)  (ros::time 0)))
+     (setq base->origin (send *tfl* :lookup-transform "/base_link" (send origin :name)  (ros::time 0)))
      (unless base->origin
        (return-from :model-move-object-callback)
        )
 
+     ;;when open door
+     ;;(send grasp :rotate -pi :z)
+     (print grasp)
+
      (send origin :transform base->origin :world)
      (send goal :transform base->origin :world)
-     ;;(send grasp :transform origin :world)
      (setq a origin)
-     ;;(send self :pose-move origin goal)
 
      (setq origin-base (send (send robot :worldcoords) :copy-worldcoords))
      (print "origin")
@@ -79,8 +81,8 @@
 	       :move-arm :rarm
 	       :debug-view nil
 	       :use-base 0.00001
-	       :base-range (list :min #f(-100000 -10000 -300)
-				 :max #f( 100000  10000  300)))
+	       :base-range (list :min #f(-10000000000 -10000000000 -300)
+				 :max #f( 10000000000  10000000000  300)))
 	 (objects (list robot grasp-coords))
 	 )
        )
@@ -91,6 +93,13 @@
      (setq goal-base (send origin-base :transformation (send robot :worldcoords)))
      (print origin-base)
      (print goal-base)
+     
+     ;;reset pose
+     (send robot :reset-pose)
+     (send ri :angle-vector (send robot :angle-vector) 5000)
+     (send ri :wait-interpolation)
+
+
      (send ri :move-to goal-base :frame-id "/base_footprint")
      (setq goal-coords  goal-base)
 
@@ -100,14 +109,20 @@
      (send self :solve-ik grasp-coords :move-arm :rarm)
      (send ri :angle-vector (send robot :angle-vector) 5000)
      (send ri :wait-interpolation)
+     (send self :start-grasp :rarm)
 
-     (setq b grasp)
+     (setq b grasp-coords)
+     (setq e grasp)
+     (setq c origin)
+     (setq d goal)
 
-     ;;grasp
+     (setq *fridge* (room73b2-hitachi-fiesta-refrigerator))
+     (send *fridge* :locate #f(1000 0 0))
+     (send *fridge* :rotate pi :z)
+     
+     (objects (list goal origin grasp-coords *pr2* *fridge*))
 
-     ;;:rotation-axis ik-rotation-axis :use-torso use-torso)
-
-     (send self :pose-move-object origin goal :arm :rarm)
+     (send self :pose-move-object goal origin :arm :rarm)
 
      )
    )

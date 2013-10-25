@@ -17,6 +17,7 @@
    (send-super* :init args)
    (send robot :hand :rarm :angle-vector (send ri :hand :rarm :state :potentio-vector))
    (send robot :hand :larm :angle-vector (send ri :hand :larm :state :potentio-vector))
+
    )
 
   (:start-grasp
@@ -24,13 +25,12 @@
    (cond
     ((equal arm :arms) (send self :start-grasp :rarm) (send self :start-grasp :larm))
     (t
-     (send robot :hand arm :angle-vector #f(0 90 40 0 90 40 0 90 40 0 45 45))
-     ;;(hand-model2real :time 7000)
-     (send ri :hand arm :angle-vector (send robot :hand arm :angle-vector) 7000)
+     ;;test for torque control
+     (send ri :hand arm :send-command :effort 1.0)
+     ;;(send robot :hand arm :angle-vector #f(0 90 40 0 90 40 0 90 40 0 45 45))
+     ;;(send ri :hand arm :angle-vector (send robot :hand arm :angle-vector) 7000)
      ))
    )
-  
-  
 
   (:stop-grasp
    (&optional (arm :rarm))
@@ -200,15 +200,13 @@
      )
    )
 
-
-  
-
   (:move-to
    (coords)
    (let* ((pos (send coords :worldpos))
 	  (x (elt pos 0))
 	  (y (elt pos 1))
 	  (deg (rad2deg (elt (car (rpy-angle (send coords :worldrot))) 0))))
+     (start-walk)
      (ros::ros-warn "go-pos ~A[mm] ~A[mm] ~A[deg]" x y deg)
      (send ri :go-pos (/ x 1000) (/ y 1000) deg)
      )
