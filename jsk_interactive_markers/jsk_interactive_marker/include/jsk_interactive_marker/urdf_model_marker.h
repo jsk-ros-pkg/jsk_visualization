@@ -17,6 +17,7 @@
 #include <jsk_interactive_marker/MoveObject.h>
 
 #include <std_msgs/Int8.h>
+#include <sensor_msgs/JointState.h>
 
 #include "urdf_parser/urdf_parser.h"
 #include <iostream>
@@ -29,15 +30,18 @@ class UrdfModelMarker {
  public:
   //  UrdfModelMarker(string file);
   UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
   UrdfModelMarker();
 
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
+  void addInvisibleMeshMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, const std_msgs::ColorRGBA &color);
   void addGraspPointControl(visualization_msgs::InteractiveMarker &int_marker, std::string link_frame_name_);
 
   void publishMarkerPose ( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void publishMarkerMenu( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu );
   void publishMoveObject( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void publishJointState();
+
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string parent_frame_id, string frame_id);
 
   void graspPoint_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string link_name);
@@ -50,8 +54,10 @@ class UrdfModelMarker {
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale);
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale, const std_msgs::ColorRGBA &color);
 
+  void getJointState(boost::shared_ptr<const Link> link, sensor_msgs::JointState &js);
   void setOriginalPose(boost::shared_ptr<const Link> link);
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init);
+  void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index);
 
   geometry_msgs::Transform Pose2Transform(geometry_msgs::Pose pose_msg);
   geometry_msgs::Pose UrdfPose2Pose( const urdf::Pose pose);
@@ -67,6 +73,7 @@ class UrdfModelMarker {
   ros::Publisher pub_;
   ros::Publisher pub_move_;
   ros::Publisher pub_move_object_;
+  ros::Publisher pub_joint_state_;
   ros::ServiceServer serv_reset_;
   ros::ServiceServer serv_set_;
   ros::ServiceServer serv_markers_set_;
@@ -91,6 +98,7 @@ class UrdfModelMarker {
   std::string frame_id_;
   std::string model_file_;
   geometry_msgs::Pose root_pose_;
+  double scale_factor_;
 
   struct graspPoint{
     graspPoint(){
@@ -112,6 +120,9 @@ class UrdfModelMarker {
     //pose from frame_id
     geometry_msgs::Pose pose;
     geometry_msgs::Pose origin;
+    geometry_msgs::Pose initial_pose;
+    urdf::Vector3 joint_axis;
+    
   };
   map<string, linkProperty> linkMarkerMap;
 };
