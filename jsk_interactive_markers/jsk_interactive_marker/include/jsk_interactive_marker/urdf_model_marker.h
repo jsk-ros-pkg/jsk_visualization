@@ -30,7 +30,7 @@ class UrdfModelMarker {
  public:
   //  UrdfModelMarker(string file);
   UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, bool robot_mode, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
   UrdfModelMarker();
 
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
@@ -40,13 +40,15 @@ class UrdfModelMarker {
   void publishMarkerPose ( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void publishMarkerMenu( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu );
   void publishMoveObject( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
-  void publishJointState();
+  void publishJointState( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string parent_frame_id, string frame_id);
 
   void graspPoint_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string link_name);
   void moveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void setPoseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void hideMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void hideAllMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
 
 
@@ -99,6 +101,7 @@ class UrdfModelMarker {
   std::string model_file_;
   geometry_msgs::Pose root_pose_;
   double scale_factor_;
+  bool robot_mode_;
 
   struct graspPoint{
     graspPoint(){

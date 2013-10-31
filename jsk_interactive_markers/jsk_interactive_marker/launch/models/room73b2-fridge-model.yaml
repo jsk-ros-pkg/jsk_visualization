@@ -1,6 +1,7 @@
 - name: "Fridge"
   model: "package://hrpsys_gazebo_tutorials/environment_models/room73b2-hitachi-fiesta-refrigerator-0/model.urdf"
   frame-id: "eng2/7f"
+  robot: false
   pose: 
     position: 
         x: 5.56579828262
