@@ -1,0 +1,10 @@
+--- /opt/ros/groovy/share/atlas_description/urdf/atlas_v3.urdf	2013-10-30 14:27:53.393726281 +0900
++++ atlas_v3.urdf	2013-10-31 20:52:36.981633629 +0900
+@@ -577,6 +577,7 @@
+         </collision>
+     </link>
+     -->
++    <link name="head"/>
+ 
+     <joint name="back_bkx" type="revolute">
+         <origin xyz="0 0 0.05" rpy="0 -0 0" />
