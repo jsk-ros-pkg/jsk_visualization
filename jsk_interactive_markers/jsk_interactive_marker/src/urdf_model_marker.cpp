@@ -378,10 +378,25 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
       }
       linkMarkerMap[link_frame_name_].joint_angle = jointAngle;
       jointAngleAllRange = jointAngle + linkMarkerMap[link_frame_name_].rotation_count * M_PI * 2;
+      //check joint limit
+      /*
       if(parent_joint->type == Joint::REVOLUTE && parent_joint->limits != NULL){
-	parent_joint->limits->lower;
-	  jointAngleAllRange =
+	bool changeMarkerAngle = false;
+	if(jointAngleAllRange < parent_joint->limits->lower){
+	  jointAngleAllRange = parent_joint->limits->lower;
+	  changeMarkerAngle = true;
+	}
+	if(jointAngleAllRange > parent_joint->limits->upper){
+	  jointAngleAllRange = parent_joint->limits->upper;
+	  changeMarkerAngle = true;
+	}
+	
+	if(changeMarkerAngle){
+	  setJointAngle(link, jointAngleAllRange);
+	}
       }
+      */
+      
       //js.position.push_back(jointAngle);
       js.position.push_back(jointAngleAllRange);
       js.name.push_back(parent_joint->name);
@@ -397,6 +412,53 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
     getJointState(*child, js);
   }
   return;
+}
+
+void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double joint_angle){
+  string link_frame_name_ =  model_name_ + "/" + link->name;
+  boost::shared_ptr<Joint> parent_joint = link->parent_joint;
+
+  if(parent_joint == NULL){
+    return;
+  }
+
+  KDL::Frame initialFrame;
+  KDL::Frame presentFrame;
+  KDL::Rotation rot;
+  KDL::Vector rotVec;
+  KDL::Vector jointVec;
+
+  bool changeAngle = false;
+  std_msgs::Header link_header;
+
+  int rotation_count = 0;
+  if(joint_angle > M_PI){
+    rotation_count = (int)(joint_angle + M_PI) / (M_PI * 2);
+    joint_angle -= rotation_count * M_PI * 2;
+  }else if(joint_angle < -M_PI){
+    rotation_count = (int)(- joint_angle + M_PI) / (M_PI * 2);
+    joint_angle += rotation_count * M_PI * 2;
+  }
+  linkMarkerMap[link_frame_name_].joint_angle = joint_angle;
+  linkMarkerMap[link_frame_name_].rotation_count = rotation_count;
+
+  tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, initialFrame);
+  tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, presentFrame);
+  jointVec = KDL::Vector(linkMarkerMap[link_frame_name_].joint_axis.x,
+			 linkMarkerMap[link_frame_name_].joint_axis.y,
+			 linkMarkerMap[link_frame_name_].joint_axis.z);
+  cout << joint_angle << endl;
+  presentFrame.M = KDL::Rotation::Rot(jointVec, joint_angle) * initialFrame.M;
+  tf::PoseKDLToMsg(presentFrame, linkMarkerMap[link_frame_name_].pose);
+
+  link_header.stamp = ros::Time::now();
+  //link_header.frame_id = model_name_ + "/" + parent_joint->parent_link_name;
+  link_header.frame_id = linkMarkerMap[link_frame_name_].frame_id;
+  server_->setPose(link_frame_name_, linkMarkerMap[link_frame_name_].pose, link_header);
+  server_->applyChanges();
+  CallSetDynamicTf(linkMarkerMap[link_frame_name_].frame_id, link_frame_name_, Pose2Transform(linkMarkerMap[link_frame_name_].pose));
+  
+    
 }
 
 void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js)
@@ -427,6 +489,8 @@ void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const se
       if(!changeAngle){
 	break;
       }
+      setJointAngle(link, jointAngle);
+      /*
       tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, initialFrame);
       tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, presentFrame);
       jointVec = KDL::Vector(linkMarkerMap[link_frame_name_].joint_axis.x,
@@ -435,14 +499,14 @@ void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const se
       cout << jointAngle << endl;
       presentFrame.M = KDL::Rotation::Rot(jointVec, jointAngle) * initialFrame.M;
       tf::PoseKDLToMsg(presentFrame, linkMarkerMap[link_frame_name_].pose);
-      
+
       link_header = js->header;
       //link_header.frame_id = model_name_ + "/" + parent_joint->parent_link_name;
       link_header.frame_id = linkMarkerMap[link_frame_name_].frame_id;
       server_->setPose(link_frame_name_, linkMarkerMap[link_frame_name_].pose, link_header);
       server_->applyChanges();
       CallSetDynamicTf(linkMarkerMap[link_frame_name_].frame_id, link_frame_name_, Pose2Transform(linkMarkerMap[link_frame_name_].pose));
-
+      */
       break;
       /*
       
