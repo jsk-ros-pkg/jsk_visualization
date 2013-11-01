@@ -57,6 +57,7 @@ class UrdfModelMarker {
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale, const std_msgs::ColorRGBA &color);
 
   void getJointState(boost::shared_ptr<const Link> link, sensor_msgs::JointState &js);
+  void setJointState(boost::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js);
   void setOriginalPose(boost::shared_ptr<const Link> link);
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init);
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index);
@@ -68,6 +69,11 @@ class UrdfModelMarker {
   int main(string file);
 
   void graspPointCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void jointMoveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void resetMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  
+  void resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg);
+  
  private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
@@ -76,6 +82,9 @@ class UrdfModelMarker {
   ros::Publisher pub_move_;
   ros::Publisher pub_move_object_;
   ros::Publisher pub_joint_state_;
+  
+  ros::Subscriber sub_reset_joints_;
+
   ros::ServiceServer serv_reset_;
   ros::ServiceServer serv_set_;
   ros::ServiceServer serv_markers_set_;
@@ -120,13 +129,16 @@ class UrdfModelMarker {
     }
     bool displayMoveMarker;
     graspPoint gp;
+    string frame_id;
     //pose from frame_id
     geometry_msgs::Pose pose;
     geometry_msgs::Pose origin;
     geometry_msgs::Pose initial_pose;
     urdf::Vector3 joint_axis;
-    
+    double joint_angle;
+    int rotation_count;
   };
+
   map<string, linkProperty> linkMarkerMap;
 };
 

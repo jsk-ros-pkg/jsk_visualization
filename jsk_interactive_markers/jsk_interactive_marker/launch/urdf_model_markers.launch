@@ -1,8 +1,7 @@
 <launch>
-  <arg name="models" default="$(find jsk_interactive_marker)/launch/urdf_model_markers.yaml" />
-
+  <arg name="models" default="$(find jsk_interactive_marker)/launch/models/urdf_model_markers.yaml" />
   <node pkg="jsk_interactive_marker" type="urdf_model_marker" name="jsk_model_marker_interface" output="screen">
     <rosparam command="load" param="model_config" file="$(arg models)"/>
   </node>
-  <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher" output="screen"/>
+  <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_for_urdf_marker" output="screen"/>
 </launch>

@@ -1052,7 +1052,7 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~"), tf
   }
 
   pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
-  pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("move_flag", 1);
+  pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1);
 
   serv_set_ = pnh_.advertiseService("set_pose",
 				    &InteractiveMarkerInterface::set_cb, this);
