@@ -50,23 +50,14 @@
    (ros::subscribe (format nil "~A/pose" server-nodename)
 		   jsk_interactive_marker::MarkerPose #'send self :pose-callback)
 
-   (ros::subscribe (format nil "~A/move_flag" server-nodename)
+   (ros::subscribe (format nil "~A/marker_menu" server-nodename)
 		   jsk_interactive_marker::MarkerMenu #'send self :move-callback)
 
-   #|
-   (ros::subscribe (format nil "~A/pose" urdf-model-nodename)
-   jsk_interactive_marker::MarkerPose #'send self :model-pose-callback)
-
-   (ros::subscribe (format nil "~A/move_flag" urdf-model-nodename)
-   jsk_interactive_marker::MarkerMenu #'send self :model-move-callback)
-   |#
-   
    (ros::subscribe (format nil "~A/move_object" urdf-model-nodename)
 		   jsk_interactive_marker::MoveObject #'send self :model-move-object-callback)
-   
 
    ;;3dmouse move
-   (ros::subscribe "/spacenav/joy"
+   (ros::subscribe "~A/spacenav/joy"
 		   sensor_msgs::Joy #'send self :joy-callback)
 
    #|
