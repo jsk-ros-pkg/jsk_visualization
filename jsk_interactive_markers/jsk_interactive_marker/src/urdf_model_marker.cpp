@@ -379,7 +379,8 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
       linkMarkerMap[link_frame_name_].joint_angle = jointAngle;
       jointAngleAllRange = jointAngle + linkMarkerMap[link_frame_name_].rotation_count * M_PI * 2;
       //check joint limit
-      /*
+      cout << jointAngleAllRange << endl;
+
       if(parent_joint->type == Joint::REVOLUTE && parent_joint->limits != NULL){
 	bool changeMarkerAngle = false;
 	if(jointAngleAllRange < parent_joint->limits->lower){
@@ -395,7 +396,7 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
 	  setJointAngle(link, jointAngleAllRange);
 	}
       }
-      */
+
       
       //js.position.push_back(jointAngle);
       js.position.push_back(jointAngleAllRange);
@@ -437,8 +438,12 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
     joint_angle -= rotation_count * M_PI * 2;
   }else if(joint_angle < -M_PI){
     rotation_count = (int)(- joint_angle + M_PI) / (M_PI * 2);
-    joint_angle += rotation_count * M_PI * 2;
+    joint_angle -= rotation_count * M_PI * 2;
   }
+
+  //  cout << "joint" << joint_angle << endl;
+  //cout << "rot" << rotation_count << endl;
+
   linkMarkerMap[link_frame_name_].joint_angle = joint_angle;
   linkMarkerMap[link_frame_name_].rotation_count = rotation_count;
 
@@ -451,7 +456,7 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
   presentFrame.M = KDL::Rotation::Rot(jointVec, joint_angle) * initialFrame.M;
   tf::PoseKDLToMsg(presentFrame, linkMarkerMap[link_frame_name_].pose);
 
-  link_header.stamp = ros::Time::now();
+  link_header.stamp = ros::Time(0);
   //link_header.frame_id = model_name_ + "/" + parent_joint->parent_link_name;
   link_header.frame_id = linkMarkerMap[link_frame_name_].frame_id;
   server_->setPose(link_frame_name_, linkMarkerMap[link_frame_name_].pose, link_header);
