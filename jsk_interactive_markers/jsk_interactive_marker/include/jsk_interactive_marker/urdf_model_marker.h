@@ -131,6 +131,7 @@ class UrdfModelMarker {
     bool displayMoveMarker;
     graspPoint gp;
     string frame_id;
+    string movable_link;
     //pose from frame_id
     geometry_msgs::Pose pose;
     geometry_msgs::Pose origin;

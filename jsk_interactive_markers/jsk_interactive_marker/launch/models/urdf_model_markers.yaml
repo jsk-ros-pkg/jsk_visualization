@@ -1,4 +1,4 @@
-- name: "SamplePR2"
+- name: "PR2"
   model: "package://pr2_mechanism_model/pr2.urdf"
   frame-id: "map"
   robot: true
