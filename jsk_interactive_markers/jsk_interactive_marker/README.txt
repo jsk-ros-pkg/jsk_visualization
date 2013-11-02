@@ -32,4 +32,6 @@ roslaunch jsk_interactive_marker urdf_model_markers.launch models:=`rospack find
 
 # The sample code written in Euslisp is in jsk_interactive.
 # To run the sample, type the following command.
-rosrun roseus roseus `rospack find jsk_interactive`/euslisp/sample-pr2-joint.l
+rosrun roseus roseus `rospack find jsk_interactive`/euslisp/joint_marker_control/sample-pr2-joint.l
+# or
+rosrun roseus roseus `rospack find jsk_interactive`/euslisp/joint_marker_control/altas-joint.l
