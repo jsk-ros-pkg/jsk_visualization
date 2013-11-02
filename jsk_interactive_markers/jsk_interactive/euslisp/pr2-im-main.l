@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 
 (ros::load-ros-manifest "jsk_interactive")
-(load "package://jsk_interactive/scripts/pr2-im.l")
+(load "package://jsk_interactive/euslisp/pr2-im.l")
 (load "package://pr2eus/pr2-interface.l")
 
 (pr2)

@@ -57,7 +57,7 @@
 		   jsk_interactive_marker::MoveObject #'send self :model-move-object-callback)
 
    ;;3dmouse move
-   (ros::subscribe "~A/spacenav/joy"
+   (ros::subscribe (format nil "~A/spacenav/joy" server-nodename)
 		   sensor_msgs::Joy #'send self :joy-callback)
 
    #|

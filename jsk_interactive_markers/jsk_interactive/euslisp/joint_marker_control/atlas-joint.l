@@ -7,6 +7,7 @@
 (atlas-init-ex)
 ;; (set-user)
 (real2model)
+(model2real :time 5000 :wait t)
 (fix-leg)
 
 (defun joint-state-callback
@@ -78,4 +79,4 @@
    (ros::spin-once)
    (ros::sleep)
    (unless (ros::ok) (return)))
-  )
+  )n

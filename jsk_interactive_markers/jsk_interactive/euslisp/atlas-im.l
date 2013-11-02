@@ -2,7 +2,7 @@
 
 (ros::load-ros-manifest "jsk_interactive")
 
-(require :robot-im "package://jsk_interactive/scripts/robot-im.l")
+(require :robot-im "package://jsk_interactive/euslisp/robot-im.l")
 
 (defclass atlas-im
   :super robot-im
