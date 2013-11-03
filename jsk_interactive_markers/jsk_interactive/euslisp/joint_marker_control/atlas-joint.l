@@ -77,6 +77,8 @@
   ()
   (while t
    (ros::spin-once)
+   (x::window-main-one)
    (ros::sleep)
+
    (unless (ros::ok) (return)))
-  )n
+  )

@@ -60,6 +60,19 @@
    (ros::subscribe (format nil "~A/spacenav/joy" server-nodename)
 		   sensor_msgs::Joy #'send self :joy-callback)
 
+
+   ;;urdf marker move
+   (ros::subscribe (format nil "~A/~A/joint_states" urdf-model-nodename (send robot :name))
+		   sensor_msgs::JointState #'send self :joint-state-callback)
+
+   (ros::subscribe (format nil "~A/marker_menu" urdf-model-nodename)
+		   jsk_interactive_marker::MarkerMenu #'send self :urdf-menu-callback)
+
+   (ros::advertise (format nil "~A/~A/reset_joint_states" urdf-model-nodename (send robot :name))
+		   sensor_msgs::JointState)
+
+
+
    #|
    (ros::advertise (format nil "~A/force_marker" server-nodename)
    visualization_msgs::Marker)
@@ -418,7 +431,7 @@
    (coords &key (wait t))
    (send robot :angle-vector (send ri :state :potentio-vector))
    (send robot :head :look-at coords)
-   (send ri :angle-vector (send robot :angle-vector))
+   (send ri :angle-vector (send robot :angle-vector) 5000)
    (if wait
        (send ri :wait-interpolation))
    )
@@ -623,6 +636,59 @@
      (send *irtviewer* :draw-objects)
      )
    )
+
+
+  (:urdf-menu-callback
+   ( msg )
+   (let ((menu (send msg :menu)))
+     (cond
+      ((eq menu jsk_interactive_marker::MarkerMenu::*JOINT_MOVE*)
+       (if (y-or-n-p)
+	   (send ri :angle-vector (send robot :angle-vector) 5000)
+	 (warn "canceled~%")
+	 ))
+      ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_JOINT*)
+       (real2model)
+       (let ((joint-angles nil)
+	     (joint-names nil)
+	     (joint-list (send robot :joint-list))
+	     (joint-state-msg 
+	      (instance sensor_msgs::JointState :init 
+			:header (instance std_msgs::header :init 
+					  :stamp (ros::time-now)))))
+	 (dotimes (x (length joint-list))
+	   (push (deg2rad (send (elt joint-list x) :joint-angle)) joint-angles)
+	   (push (send (elt joint-list x) :name) joint-names)
+	   )
+	 (send joint-state-msg :position joint-angles)
+	 (send joint-state-msg :name joint-names)
+
+	 (ros::publish (format nil "~A/~A/reset_joint_states" server-nodename (send robot :name))
+		       joint-state-msg)
+	 ))
+
+      )
+     )
+   )
+
+  (:joint-state-callback
+   (msg)
+   (let ((joint-names (send msg :name))
+	 (joint-angles (send msg :position))
+	 joint-name joint-angle
+	 )
+     (dotimes (x (length joint-names))
+       (setq joint-name (elt joint-names x))
+       (setq joint-angle (rad2deg (elt joint-angles x)))
+       (when (find-method robot (intern (string-upcase joint-name) *keyword-package*))
+	 (send robot (intern (string-upcase joint-name) *keyword-package*)
+	       :joint-angle joint-angle)
+	 )
+       )
+     (send *irtviewer* :draw-objects)
+     )
+   )
+
 
   (:set-hand-marker-pose 
    ()
