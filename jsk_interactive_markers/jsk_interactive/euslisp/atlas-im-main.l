@@ -5,6 +5,7 @@
 
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 
+
 (atlas-init-ex)
 (real2model)
 (model2real :time 5000 :wait t)
