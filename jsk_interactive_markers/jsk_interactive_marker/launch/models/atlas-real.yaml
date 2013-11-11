@@ -1,5 +1,5 @@
 - name: "atlas"
-  model: "package://jsk_interactive_marker/urdf/atlas_v3.urdf"
+  model: "package://hrpsys_gazebo_atlas/build/atlas_v3.jsk.urdf"
   frame-id: "pelvis"
   robot: true
   scale: 1.0
