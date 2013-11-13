@@ -26,5 +26,7 @@ visualization_msgs::Marker makeSandiaFinger2Marker(std::string frame_id);
 
 visualization_msgs::InteractiveMarker makeSandiaHandInteractiveMarker(geometry_msgs::PoseStamped ps, std::string hand, int finger, int link);
 
-std::string getModelFilePath(std::string path);
+std::string getRosPathFromModelPath(std::string path);
+std::string getRosPathFromFullPath(std::string path);
+std::string getFullPathFromModelPath(std::string path);
 std::string getFilePathFromRosPath( std::string rospath);

@@ -98,6 +98,8 @@ class InteractiveMarkerInterface {
 
   void loadMeshes(XmlRpc::XmlRpcValue v);
 
+  void makeIMVisible(visualization_msgs::InteractiveMarker &im);
+
  private:
 
   ros::NodeHandle nh_;
@@ -125,6 +127,8 @@ class InteractiveMarkerInterface {
   interactive_markers::MenuHandler menu_head_;
   interactive_markers::MenuHandler::EntryHandle head_target_handle_;
   interactive_markers::MenuHandler::EntryHandle head_auto_look_handle_;
+
+  interactive_markers::MenuHandler menu_head_target_;
 
   interactive_markers::MenuHandler menu_base_;
   interactive_markers::MenuHandler menu_finger_r_;

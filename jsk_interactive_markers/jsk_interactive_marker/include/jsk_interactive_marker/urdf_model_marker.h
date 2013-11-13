@@ -117,6 +117,10 @@ class UrdfModelMarker {
     graspPoint(){
       displayMoveMarker = false;
       displayGraspPoint = false;
+      pose.orientation.x = 0;
+      pose.orientation.y = 0;
+      pose.orientation.z = 0;
+      pose.orientation.w = 1;
     }
     bool displayGraspPoint;
     bool displayMoveMarker;

@@ -4,13 +4,14 @@
 
   <include file="$(find jsk_interactive_marker)/launch/pr2_interactive_marker.launch"/>
 
-  <node pkg="roseus" type="roseus" name="eus_interactive" args="$(find jsk_interactive)/scripts/pr2-im-main.l " output="screen">
+  <node pkg="roseus" type="roseus" name="eus_interactive" args="$(find jsk_interactive)/euslisp/pr2-im-main.l " output="screen">
     <!--
     <remap from="joint_states" to="joints_set"/>
     -->
   </node>
-
+  <!--
   <node pkg="rviz" type="rviz" name="rviz_for_interactive_operation" args="-d $(find jsk_interactive_marker)/launch/jsk_interactive.vcg"/>
+  -->
   <!--
   <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" args="_source_list:='[joints_set]'">
     <param name="use_gui" type="boolean" value="true"/>

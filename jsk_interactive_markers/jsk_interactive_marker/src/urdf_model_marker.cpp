@@ -166,21 +166,21 @@ void UrdfModelMarker::publishMoveObject( const visualization_msgs::InteractiveMa
   //jsk_interactive_marker::MoveObject m;
   jsk_interactive_marker::MarkerMenu m;
   /*
-  m.goal.pose.header = feedback->header;
-  m.goal.pose.pose = feedback->pose;
+    m.goal.pose.header = feedback->header;
+    m.goal.pose.pose = feedback->pose;
 
-  m.origin.pose.header = feedback->header;
-  m.origin.pose.pose = linkMarkerMap[feedback->marker_name].origin;
+    m.origin.pose.header = feedback->header;
+    m.origin.pose.pose = linkMarkerMap[feedback->marker_name].origin;
 
-  m.graspPose = linkMarkerMap[feedback->marker_name].gp.pose;
-  pub_move_.publish(m);*/
+    m.graspPose = linkMarkerMap[feedback->marker_name].gp.pose;
+    pub_move_.publish(m);*/
 }
 
 void UrdfModelMarker::publishJointState( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-    sensor_msgs::JointState js;
-    js.header = feedback->header;
-    getJointState(model->getRoot(), js);
-    pub_joint_state_.publish( js );
+  sensor_msgs::JointState js;
+  js.header = feedback->header;
+  getJointState(model->getRoot(), js);
+  pub_joint_state_.publish( js );
 }
 
 
@@ -225,6 +225,7 @@ void UrdfModelMarker::graspPointCB( const visualization_msgs::InteractiveMarkerF
   p.position.x = graspVec.x();
   p.position.y = graspVec.y();
   p.position.z = graspVec.z();
+  p.orientation = linkMarkerMap[feedback->marker_name].gp.pose.orientation;
   linkMarkerMap[feedback->marker_name].gp.pose = p;
   
   linkMarkerMap[feedback->marker_name].gp.displayGraspPoint = true;
@@ -245,20 +246,20 @@ void UrdfModelMarker::resetMarkerCB( const visualization_msgs::InteractiveMarker
 
 
 /*
-void UrdfModelMarker::moveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+  void UrdfModelMarker::moveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   publishMarkerPose(feedback);
   publishMarkerMenu(feedback, jsk_interactive_marker::MarkerMenu::MOVE);
-}
+  }
 
-void UrdfModelMarker::setPoseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+  void UrdfModelMarker::setPoseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   publishMarkerPose(feedback);
   publishMarkerMenu(feedback, jsk_interactive_marker::MarkerMenu::SET_ORIGIN);
-}
+  }
 */
 /*
-void UrdfModelMarker::jointStatesCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+  void UrdfModelMarker::jointStatesCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   publishJointState();
-}
+  }
 */
 void UrdfModelMarker::moveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   jsk_interactive_marker::MoveObject mo;
@@ -375,8 +376,8 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
       linkMarkerMap[link_frame_name_].joint_angle = jointAngle;
       jointAngleAllRange = jointAngle + linkMarkerMap[link_frame_name_].rotation_count * M_PI * 2;
       //check joint limit
-      cout << "aa" << linkMarkerMap[link_frame_name_].rotation_count << endl;
-      cout << jointAngleAllRange << endl;
+      //cout << "aa" << linkMarkerMap[link_frame_name_].rotation_count << endl;
+      //cout << jointAngleAllRange << endl;
 
       if(parent_joint->type == Joint::REVOLUTE && parent_joint->limits != NULL){
 	bool changeMarkerAngle = false;
@@ -480,8 +481,6 @@ void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const se
     switch(parent_joint->type){
     case Joint::REVOLUTE:
     case Joint::CONTINUOUS:
-      //cout << js->name << endl;
-
       for(int i=0; i< js->name.size(); i++){
 	if(js->name[i] == parent_joint->name){
 	  jointAngle = js->position[i];
@@ -493,41 +492,7 @@ void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const se
 	break;
       }
       setJointAngle(link, jointAngle);
-      /*
-      tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, initialFrame);
-      tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, presentFrame);
-      jointVec = KDL::Vector(linkMarkerMap[link_frame_name_].joint_axis.x,
-			     linkMarkerMap[link_frame_name_].joint_axis.y,
-			     linkMarkerMap[link_frame_name_].joint_axis.z);
-      cout << jointAngle << endl;
-      presentFrame.M = KDL::Rotation::Rot(jointVec, jointAngle) * initialFrame.M;
-      tf::PoseKDLToMsg(presentFrame, linkMarkerMap[link_frame_name_].pose);
-
-      link_header = js->header;
-      //link_header.frame_id = model_name_ + "/" + parent_joint->parent_link_name;
-      link_header.frame_id = linkMarkerMap[link_frame_name_].frame_id;
-      server_->setPose(link_frame_name_, linkMarkerMap[link_frame_name_].pose, link_header);
-      server_->applyChanges();
-      CallSetDynamicTf(linkMarkerMap[link_frame_name_].frame_id, link_frame_name_, Pose2Transform(linkMarkerMap[link_frame_name_].pose));
-      */
       break;
-      /*
-      
-
-      tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, initialFrame);
-      tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].pose, presentFrame);
-      rot = initialFrame.M.Inverse() * presentFrame.M;
-      jointAngle = rot.GetRotAngle(rotVec);
-      jointVec = KDL::Vector(linkMarkerMap[link_frame_name_].joint_axis.x,
-			     linkMarkerMap[link_frame_name_].joint_axis.y,
-			     linkMarkerMap[link_frame_name_].joint_axis.z);
-      if( KDL::dot(rotVec,jointVec) < 0){
-	jointAngle = - jointAngle;
-      }
-      //js.position.push_back(jointAngle);
-      //js.name.push_back(parent_joint->name);
-      break;
-      */
     case Joint::PRISMATIC:
       //TODO
       break;
@@ -644,7 +609,9 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   if(link->visual.get() != NULL && link->visual->geometry.get() != NULL && link->visual->geometry->type == Geometry::MESH){
     boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link->visual->geometry);
     string model_mesh_ = mesh->filename;
-    model_mesh_ = getModelFilePath(model_mesh_);
+    //model_mesh_ = getModelFilePath(model_mesh_);
+    model_mesh_ = getRosPathFromModelPath(model_mesh_);
+    
     ps.pose = UrdfPose2Pose(link->visual->origin);
     cout << "mesh_file:" << model_mesh_ << endl;
 
@@ -751,8 +718,12 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   */
 
   if(robot_mode_){
-    model_menu_.insert( "Move" ,
+    interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
+    sub_menu_move_ = model_menu_.insert( "Move" );
+    model_menu_.insert( sub_menu_move_, "Yes", 
 			boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
+    //    model_menu_.insert( "Move" ,
+    //boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
     model_menu_.insert( "Reset Marker Pose",
 			boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
   }else{

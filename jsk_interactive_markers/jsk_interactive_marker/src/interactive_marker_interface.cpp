@@ -259,16 +259,7 @@ void InteractiveMarkerInterface::updateHeadGoal( const visualization_msgs::Inter
 			  << " menu_entry_id " << feedback->menu_entry_id);
       break;
     case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
-      proc_feedback(feedback);
-
-      /*      geometry_msgs::PointStamped ps;
-	      ps.point = feedback-> pose.position;
-	      ps.header.frame_id = feedback->header.frame_id;
-	      ps.header.stamp = now;
-	      head_goal_pose_.pose = feedback->pose;
-	      head_goal_pose_.header = feedback->header;
-	      //mechanism_.pointHeadAction(ps, head_pointing_frame_, false);
-	      */
+      proc_feedback(feedback, jsk_interactive_marker::MarkerPose::HEAD_MARKER);
       break;
     }
 }
@@ -467,29 +458,34 @@ void InteractiveMarkerInterface::initBodyMarkers(void){
 
   //for head
   ps.header.frame_id = head_link_frame_;
-  server_->insert(im_helpers::makeMeshMarker(head_link_frame_, head_mesh_,
-					     ps, scale_factor));
+  visualization_msgs::InteractiveMarker im =
+    im_helpers::makeMeshMarker(head_link_frame_, head_mesh_, ps, scale_factor);
+  makeIMVisible(im);
+  server_->insert(im);
   menu_head_.apply(*server_, head_link_frame_);
 
 
   if(hand_type_ == "sandia_hand"){
-
       geometry_msgs::PoseStamped ps;
       ps.header.stamp = ros::Time(0);
 
       ps.header.frame_id = "/right_f0_base";
       for(int i=0;i<4;i++){
 	for(int j=0;j<3;j++){
-	  server_->insert(makeSandiaHandInteractiveMarker(ps, "right", i, j),
-			  boost::bind( &InteractiveMarkerInterface::updateFinger, this, _1, "rhand"));
+	  visualization_msgs::InteractiveMarker fingerIm = 
+	    makeSandiaHandInteractiveMarker(ps, "right", i, j);
+	  makeIMVisible(fingerIm);
+	  server_->insert(fingerIm, boost::bind( &InteractiveMarkerInterface::updateFinger, this, _1, "rhand"));
 	}
       }
 
       ps.header.frame_id = "/left_f0_base";
       for(int i=0;i<4;i++){
 	for(int j=0;j<3;j++){
-	  server_->insert(makeSandiaHandInteractiveMarker(ps, "left", i, j),
-			  boost::bind( &InteractiveMarkerInterface::updateFinger, this, _1, "lhand"));
+	  visualization_msgs::InteractiveMarker fingerIm = 
+	    makeSandiaHandInteractiveMarker(ps, "left", i, j);
+	  makeIMVisible(fingerIm);
+	  server_->insert(fingerIm, boost::bind( &InteractiveMarkerInterface::updateFinger, this, _1, "lhand"));
 	}
       }
 
@@ -498,63 +494,12 @@ void InteractiveMarkerInterface::initBodyMarkers(void){
     for(int i=0; i<rhand_mesh_.size(); i++){
       ps.header.frame_id = rhand_mesh_[i].link_name;
       ps.pose.orientation = rhand_mesh_[i].orientation;
-      server_->insert(im_helpers::makeMeshMarker( rhand_mesh_[i].link_name, rhand_mesh_[i].mesh_file, ps, scale_factor));
-      //,
-      //boost::bind( &PR2MarkerControl::gripperButtonCB, this, _1, "toggle"), 
-      //visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK);
-      //menu_head_.apply(*server_, rhand_mesh_[i].link_name);
+      visualization_msgs::InteractiveMarker handIm =
+	im_helpers::makeMeshMarker( rhand_mesh_[i].link_name, rhand_mesh_[i].mesh_file, ps, scale_factor);
+      makeIMVisible(handIm);
+      server_->insert(handIm);
     }
   }
-
-
-  /*
-    ps.header.frame_id = "/r_gripper_palm_link";
-    if (r_gripper_type_ == "pr2") ps.pose.position.x = mesh_offset;
-    else ps.pose.position.x = 0.0;
-    ps.pose.orientation = q_identity;
-    server_.insert(makeMeshMarker( "r_gripper_palm_link", r_gripper_palm_path, ps, scale_factor),
-    boost::bind( &PR2MarkerControl::gripperButtonCB, this, _1, "toggle"), 
-    visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK);
-    menu_gripper_close_.apply(server_, "r_gripper_palm_link");
-  
-    ps.header.frame_id = "/r_gripper_l_finger_link";
-    ps.pose.position.x = mesh_offset/2;
-    ps.pose.orientation = q_identity;
-    server_.insert(makeMeshMarker( "r_gripper_l_finger_link", r_gripper_finger_path, ps, scale_factor),
-    boost::bind( &PR2MarkerControl::gripperButtonCB, this, _1, "toggle"), 
-    visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK);
-    menu_gripper_close_.apply(server_, "r_gripper_l_finger_link");
-  
-    ps.header.frame_id = "/r_gripper_l_finger_tip_link";
-    ps.pose.position.x = mesh_offset/4;
-    ps.pose.orientation = q_identity;
-    server_.insert(makeMeshMarker( "r_gripper_l_finger_tip_link", r_gripper_fingertip_path, ps, scale_factor*1.02),
-    boost::bind( &PR2MarkerControl::gripperButtonCB, this, _1, "toggle"), 
-    visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK);
-    menu_gripper_close_.apply(server_, "r_gripper_l_finger_tip_link");
-  
-    ps.header.frame_id = "/r_gripper_r_finger_link";
-    ps.pose.position.x = mesh_offset/2;
-    if (r_gripper_type_ == "pr2") ps.pose.orientation = q_rotateX180;
-    else ps.pose.orientation = q_identity;
-    server_.insert(makeMeshMarker( "r_gripper_r_finger_link", r_gripper_finger_path, ps, scale_factor),
-    boost::bind( &PR2MarkerControl::gripperButtonCB, this, _1, "toggle"), 
-    visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK);
-    menu_gripper_close_.apply(server_, "r_gripper_r_finger_link");
-  
-    ps.header.frame_id = "/r_gripper_r_finger_tip_link";
-    ps.pose.position.x = mesh_offset/4;
-    if (r_gripper_type_ == "pr2") ps.pose.orientation = q_rotateX180;
-    else ps.pose.orientation = q_identity;
-    server_.insert(makeMeshMarker( "r_gripper_r_finger_tip_link", r_gripper_fingertip_path, ps, scale_factor*1.02),
-    boost::bind( &PR2MarkerControl::gripperButtonCB, this, _1, "toggle"), 
-    visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK);
-    menu_gripper_close_.apply(server_, "r_gripper_r_finger_tip_link");
-  
-    // Try to clean up
-    ps.pose.orientation = q_identity;
-  */
-
 }
 
 
@@ -563,7 +508,11 @@ void InteractiveMarkerInterface::initControlMarkers(void){
   if(control_state_.head_on_ && control_state_.init_head_goal_){
     control_state_.init_head_goal_ = false;
     head_goal_pose_.header.stamp = ros::Time(0);
-    server_->insert(im_helpers::makeHeadGoalMarker( "head_point_goal", head_goal_pose_, 0.1),
+    
+    visualization_msgs::InteractiveMarker HeadGoalIm =
+      im_helpers::makeHeadGoalMarker( "head_point_goal", head_goal_pose_, 0.1);
+    makeIMVisible(HeadGoalIm);
+    server_->insert(HeadGoalIm,
 		    boost::bind( &InteractiveMarkerInterface::updateHeadGoal, this, _1));
   }
   if(!control_state_.head_on_){
@@ -574,22 +523,18 @@ void InteractiveMarkerInterface::initControlMarkers(void){
   if(control_state_.base_on_ ){
     geometry_msgs::PoseStamped ps;
     ps.pose.orientation.w = 1;
-    //ps.header.frame_id = "base_link";
     ps.header.frame_id = move_base_frame;
     ps.header.stamp = ros::Time(0);
-    //server_->insert(im_helpers::makeBaseMarker( "base_control", ps, 0.75, false),
-    //boost::bind( &InteractiveMarkerInterface::updateBase, this, _1 ));
-    server_->insert(InteractiveMarkerInterface::makeBaseMarker( "base_control", ps, 0.75, false),
+    visualization_msgs::InteractiveMarker baseIm =
+      InteractiveMarkerInterface::makeBaseMarker( "base_control", ps, 0.75, false);
+    makeIMVisible(baseIm);
+    server_->insert(baseIm,
 		    boost::bind( &InteractiveMarkerInterface::updateBase, this, _1 ));
 
     menu_base_.apply(*server_,"base_control");
   }else{
     server_->erase("base_control");
   }
-
-
-
-
 
   if(control_state_.r_finger_on_){
     geometry_msgs::PoseStamped ps;
@@ -633,9 +578,7 @@ visualization_msgs::InteractiveMarker InteractiveMarkerInterface::makeBaseMarker
   control.orientation.x = 1;
   control.orientation.y = 0;
   control.orientation.z = 0;
-  // control.name = "rotate_x";
-  // control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  // mk.controls.push_back(control);
+
   control.name = "move_x";
   control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
   mk.controls.push_back(control);
@@ -647,17 +590,11 @@ visualization_msgs::InteractiveMarker InteractiveMarkerInterface::makeBaseMarker
   control.name = "rotate_z";
   control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
   mk.controls.push_back(control);
-  // control.name = "move_z";
-  // control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
-  // mk.controls.push_back(control);
 
   control.orientation.w = 1;
   control.orientation.x = 0;
   control.orientation.y = 0;
   control.orientation.z = 1;
-  //control.name = "rotate_y";
-  //control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  //mk.controls.push_back(control);
   control.name = "move_y";
   control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
   mk.controls.push_back(control);
@@ -849,6 +786,10 @@ void InteractiveMarkerInterface::initHandler(void){
   head_auto_look_handle_ = menu_head_.insert( "Look Automatically", boost::bind( &InteractiveMarkerInterface::lookAutomaticallyMenuCB,
 										 this, _1 ) );
   menu_head_.setCheckState(head_auto_look_handle_, interactive_markers::MenuHandler::CHECKED);
+  
+  menu_head_target_.insert( "Look At",
+			    boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE, jsk_interactive_marker::MarkerMenu::HEAD_MARKER));
+
 
   /*
     projector_handle_ = menu_head_.insert("Projector", boost::bind( &InteractiveMarkerInterface::projectorMenuCB,
@@ -889,7 +830,6 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
   case 0:
     changeMarkerMoveMode( mk_name, im_mode , 0.5);
     break;
-
   case 1:
   case 2:
     changeMarkerMoveMode( mk_name, im_mode , 0.3);
@@ -903,15 +843,14 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
 void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int im_mode, float mk_size){
   geometry_msgs::PoseStamped pose;
   pose.header.frame_id = base_frame;
+  pose.pose.orientation.w = 1.0;
   changeMarkerMoveMode( mk_name, im_mode , mk_size, pose);
 }
 
 void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int im_mode, float mk_size, geometry_msgs::PoseStamped dist_pose){
   ROS_INFO("changeMarkerMoveMode  marker:%s  mode:%d\n",mk_name.c_str(),im_mode);
   interactive_markers::MenuHandler reset_handler;
-  //    menu_handler2 = reset_handler;
-  // menu_handler1 = reset_handler;
-  // menu_handler = reset_handler;
+
   geometry_msgs::PoseStamped pose;
   if ( target_frame != "" ) {
     tf::StampedTransform stf;
@@ -929,15 +868,20 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
   }
 
   visualization_msgs::InteractiveMarker mk;
-    
   //0:normal move  1:operationModel 2:operationalModelFirst
 
   switch(im_mode){
   case 0:
+    pose.header.stamp = ros::Time(0);
     mk = im_helpers::make6DofMarker(mk_name.c_str(), pose, mk_size,
 				    true, false );
     //mk.description = mk_name.c_str();
-      
+
+    makeIMVisible(mk);
+    // add the control to the interactive marker
+    //mk.controls.push_back( box_control );
+    //TEST
+
     server_->insert( mk );
     server_->setCallback( mk.name,
 			  boost::bind( &InteractiveMarkerInterface::proc_feedback, this, _1) );
@@ -948,7 +892,7 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
     mk = im_helpers::make6DofMarker(mk_name.c_str(), pose, mk_size,
 				    true, false );
     mk.description = mk_name.c_str();
-      
+    makeIMVisible(mk);
     server_->insert( mk );
     server_->setCallback( mk.name,
 			  boost::bind( &InteractiveMarkerInterface::proc_feedback, this, _1) );
@@ -960,6 +904,7 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
     mk = im_helpers::make6DofMarker(mk_name.c_str(), pose, mk_size,
 				    true, false );
     mk.description = mk_name.c_str();
+    makeIMVisible(mk);
       
     server_->insert( mk );
     server_->setCallback( mk.name,
@@ -979,9 +924,9 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
     break;
   }
 
-  std::list<visualization_msgs::InteractiveMarker>::iterator it = imlist.begin(); // イテレータ
+  std::list<visualization_msgs::InteractiveMarker>::iterator it = imlist.begin();
 
-  while( it != imlist.end() )  // listの末尾まで
+  while( it != imlist.end() )
     {
       if(it->name == mk_name.c_str()){
 	imlist.erase(it);
@@ -990,8 +935,6 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
       it++;
     }
   imlist.push_back( mk );
-
-    
 }
 
 void InteractiveMarkerInterface::changeMarkerOperationModelMode( std::string mk_name ){
@@ -1063,7 +1006,8 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~"), tf
   serv_reset_ = pnh_.advertiseService("reset_pose",
 				      &InteractiveMarkerInterface::reset_cb, this);
 
-  server_.reset( new interactive_markers::InteractiveMarkerServer(server_name, "sid", false) );
+  //server_.reset( new interactive_markers::InteractiveMarkerServer(server_name, "sid", false) );
+  server_.reset( new interactive_markers::InteractiveMarkerServer(server_name));
 
   pnh_.param<std::string>("head_link_frame", head_link_frame_, "head_tilt_link");
   pnh_.param<std::string>("head_mesh", head_mesh_, "package://pr2_description/meshes/head_v0/head_tilt.dae");
@@ -1223,6 +1167,12 @@ bool InteractiveMarkerInterface::reset_cb ( jsk_interactive_marker::SetPose::Req
   return true;
 }
 
+
+void InteractiveMarkerInterface::makeIMVisible(visualization_msgs::InteractiveMarker &im){
+  for(int i=0; i<im.controls.size(); i++){
+    im.controls[i].always_visible = true;
+  }
+}
 
 int main(int argc, char** argv)
 {

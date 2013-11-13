@@ -200,12 +200,45 @@ visualization_msgs::Marker makeSandiaFinger2Marker(std::string frame_id){
   return marker;
 }
 
+std::string getRosPathFromModelPath(std::string path){
+  return getRosPathFromFullPath(getFullPathFromModelPath(path));
+}
 
-std::string getModelFilePath(std::string path){
+std::string getRosPathFromFullPath(std::string path){
+  std::string ros_package_path = "";
+  FILE* fp;
+  char buf[1000000];
+
+  //set $ROS_PACKAGE_PATH
+  if ((fp = popen("echo $ROS_PACKAGE_PATH", "r")) == NULL) {
+    std::cout << "popen error" << std::endl;
+  }
+  while (fgets(buf, sizeof(buf), fp) != NULL) {
+    ros_package_path += buf;
+  }
+  pclose(fp);
+
+  if( path.find("file://", 0) == 0 ){
+    path.erase(0,7);
+    size_t current = 0, found;
+    while((found = ros_package_path.find_first_of(":", current)) != std::string::npos){
+      std::string search_path = std::string(ros_package_path, current, found - current);
+      current = found + 1;
+      
+      if( path.find(search_path, 0) == 0){
+	path.erase(0, search_path.length() + 1);
+	return "package://" + path;
+      }
+    }
+  }
+  return path;
+}
+
+std::string getFullPathFromModelPath(std::string path){
   std::string gazebo_model_path="";
   
   FILE* fp;
-  char buf[256];
+  char buf[1000000];
 
   //set $GAZEBO_MODEL_PATH
   if ((fp = popen("echo $GAZEBO_MODEL_PATH", "r")) == NULL) {

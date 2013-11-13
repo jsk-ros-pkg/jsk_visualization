@@ -774,10 +774,11 @@
        (send self :finger-callback cds :larm)
        )
 
-      ((equal (send msg :marker_name) "head_point_goal")
+      ((equal (send msg :type) jsk_interactive_marker::MarkerPose::*HEAD_MARKER*)
+       ;;((equal (send msg :marker_name) "head_point_goal")
        (send head-target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
        (send head-target-coords :transform cds)
-       (send self :look-at (send head-target-coords :worldpos))
+       ;;(send self :look-at (send head-target-coords :worldpos))
        )
 
       (t
