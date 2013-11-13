@@ -1,4 +1,4 @@
-if(NOT ("$ENV{ROS_Distributions}" STREQUAL "electric" OR "$ENV{ROS_DISTRO}" STREQUAL "fuerte"))
+if(NOT USE_ROSBUILD)
   include(catkin.cmake)
   return()
 endif()
