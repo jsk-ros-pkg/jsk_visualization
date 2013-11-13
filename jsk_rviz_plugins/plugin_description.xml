@@ -27,4 +27,11 @@
       Displays from hark_msgs/HarkPower message
     </description>
   </class>
+  <class name="jsk_rviz_plugin/PublishTopic"
+         type="jsk_rviz_plugin::PublishTopic"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to publish a topic.
+    </description>
+  </class>
 </library>
