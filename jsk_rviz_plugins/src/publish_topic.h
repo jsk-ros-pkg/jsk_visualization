@@ -8,7 +8,7 @@
 class QLineEdit;
 class QPushButton;
 
-namespace jsk_rviz_plugins
+namespace jsk_rviz_plugin
 {
   class PublishTopic: public rviz::Panel
     {

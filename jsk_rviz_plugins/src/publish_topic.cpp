@@ -12,7 +12,7 @@
 
 #include "publish_topic.h"
 
-namespace jsk_rviz_plugins
+namespace jsk_rviz_plugin
 {
 
   // BEGIN_TUTORIAL
@@ -134,5 +134,5 @@ namespace jsk_rviz_plugins
 // loadable by pluginlib::ClassLoader must have these two lines
 // compiled in its .cpp file, outside of any namespace scope.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::PublishTopic, rviz::Panel )
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugin::PublishTopic, rviz::Panel )
 // END_TUTORIAL

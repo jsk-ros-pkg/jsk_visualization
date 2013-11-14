@@ -41,8 +41,12 @@ find_package(wxWidgets REQUIRED)
 include(${wxWidgets_USE_FILE})
 include_directories( ${wxWidgets_INCLUDE_DIRS} src )
 
+qt4_wrap_cpp(MOC_FILES
+  src/publish_topic.h
+  src/cancel_action.h
+)
 
-set(SOURCE_FILES src/ambient_sound_display_groovy.cpp src/ambient_sound_visual.cpp src/publish_topic.cpp)
+set(SOURCE_FILES src/cancel_action.cpp src/publish_topic.cpp ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(jsk_rviz_plugins ${SOURCE_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES})
