@@ -24,7 +24,11 @@ namespace jsk_rviz_plugin
     //Text Box and Add Button to add new topic
     QHBoxLayout* topic_layout = new QHBoxLayout;
     output_topic_editor_ = new QLineEdit;
-    topic_layout->addWidget( output_topic_editor_ );
+    //topic_layout->addWidget( output_topic_editor_ );
+
+    add_topic_box_ = new QComboBox;
+    initComboBox();
+    topic_layout->addWidget( add_topic_box_ );
 
     QPushButton* add_topic_button_ = new QPushButton("Add Action");
     topic_layout->addWidget( add_topic_button_ );
@@ -44,6 +48,25 @@ namespace jsk_rviz_plugin
 
     connect( send_topic_button_, SIGNAL( clicked() ), this, SLOT( sendTopic ()));
     connect( add_topic_button_, SIGNAL( clicked() ), this, SLOT( addTopic() ));
+  }
+
+  void CancelAction::initComboBox(){
+    add_topic_box_->addItem("");
+    ros::master::V_TopicInfo topics;
+    ros::master::getTopics (topics);
+    ros::master::V_TopicInfo::iterator it = topics.begin();
+    while( it != topics.end()){
+      if(it->datatype == "actionlib_msgs/GoalID"){
+	std::string action_name = it->name;
+	std::string delete_string = "/cancel";
+	std::string::size_type index = action_name.find_last_of(delete_string);
+	if(index != std::string::npos){
+	  action_name.erase(index - delete_string.length() + 1);
+	  add_topic_box_->addItem(action_name.c_str());
+	}
+      }
+      it ++;
+    }
   }
 
 
@@ -69,10 +92,12 @@ namespace jsk_rviz_plugin
 
   void CancelAction::addTopic()
   {
-    output_topic_ = output_topic_editor_->text();
+    //output_topic_ = output_topic_editor_->text();
+    output_topic_ = add_topic_box_->currentText();
     if( output_topic_ != "" ){
+      add_topic_box_->setCurrentIndex( 0 );
       addTopicList(output_topic_.toStdString());
-      output_topic_editor_->setText("");
+      //output_topic_editor_->setText("");
     }
     Q_EMIT configChanged();
   }

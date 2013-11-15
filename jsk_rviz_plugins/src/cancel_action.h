@@ -21,6 +21,7 @@ Q_OBJECT
   public:
       CancelAction( QWidget* parent = 0 );
 
+      
       virtual void load( const rviz::Config& config );
       virtual void save( rviz::Config config ) const;
 
@@ -34,6 +35,7 @@ Q_OBJECT
 
       void sendTopic();
       void addTopic();
+      void initComboBox();
 
       void addTopicList(std::string topic_name);
 
@@ -46,9 +48,9 @@ Q_OBJECT
 
       QPushButton* add_topic_button_;
 
-      QPushButton* send_topic_button_;
+      QComboBox* add_topic_box_;
 
-      QLabel* tmp_topic_list_;
+      QPushButton* send_topic_button_;
 
       QSignalMapper *m_sigmap;
 
@@ -72,6 +74,6 @@ Q_OBJECT
 
     };
 
-} // end namespace rviz_plugin_tutorials
+}
 
 #endif // TELEOP_PANEL_H
