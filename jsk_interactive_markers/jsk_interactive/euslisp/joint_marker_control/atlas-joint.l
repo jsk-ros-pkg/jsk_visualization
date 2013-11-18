@@ -90,6 +90,6 @@
    (unless (ros::ok) (return)))
   )
 
-(set-user)
+;;(set-user)
 (reset-marker-pose)
 (start-loop)
