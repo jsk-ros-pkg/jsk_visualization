@@ -1,0 +1,16 @@
+- name: "Drill"
+  model: "package://gazebo_worlds/objects/14_4v_cordless_drill.urdf"
+  frame-id: "odom"
+  scale: 0.001
+  robot: false
+  registration: true
+  pose: 
+    position: 
+        x: 1.0
+        y: 0.0
+        z: 0.0
+    orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0

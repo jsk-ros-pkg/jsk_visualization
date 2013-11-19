@@ -30,7 +30,7 @@ class UrdfModelMarker {
  public:
   //  UrdfModelMarker(string file);
   UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, bool robot_mode, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, bool robot_mode, bool registration, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
   UrdfModelMarker();
 
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
@@ -72,6 +72,8 @@ class UrdfModelMarker {
   void graspPointCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void jointMoveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void resetMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+
+  void registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   
   void resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg);
   
@@ -112,6 +114,7 @@ class UrdfModelMarker {
   geometry_msgs::Pose root_pose_;
   double scale_factor_;
   bool robot_mode_;
+  bool registration_;
 
   struct graspPoint{
     graspPoint(){

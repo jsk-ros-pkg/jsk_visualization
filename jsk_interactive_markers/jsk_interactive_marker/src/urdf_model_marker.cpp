@@ -17,6 +17,9 @@ void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker
   visualization_msgs::InteractiveMarkerControl control;
   if(root){
     im_helpers::add6DofControl(int_marker,false);
+    for(int i=0; i<int_marker.controls.size(); i++){
+      int_marker.controls[i].always_visible = true;
+    }
   }else{
     boost::shared_ptr<Joint> parent_joint = link->parent_joint;
     Eigen::Vector3f origin_x(1,0,0);
@@ -243,6 +246,12 @@ void UrdfModelMarker::resetMarkerCB( const visualization_msgs::InteractiveMarker
   
   publishMarkerMenu(feedback, jsk_interactive_marker::MarkerMenu::RESET_JOINT);
 }
+
+void UrdfModelMarker::registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+  
+  publishJointState(feedback);
+}
+
 
 
 /*
@@ -680,7 +689,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 UrdfModelMarker::UrdfModelMarker ()
 {}
 
-UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, bool robot_mode, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, bool robot_mode, bool registration, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_) {
   pnh_.param("server_name", server_name, std::string ("") );
 
   if ( server_name == "" ) {
@@ -696,6 +705,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   root_pose_ = root_pose;
   scale_factor_ = scale_factor;
   robot_mode_ = robot_mode;
+  registration_ = registration;
 
   pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
   pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1);
@@ -716,24 +726,30 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
     serv_reset_ = pnh_.advertiseService("reset_pose",
     &InteractiveMarkerInterface::reset_cb, this);
   */
-
-  if(robot_mode_){
-    interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
-    sub_menu_move_ = model_menu_.insert( "Move" );
-    model_menu_.insert( sub_menu_move_, "Yes", 
-			boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
-    //    model_menu_.insert( "Move" ,
-    //boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
-    model_menu_.insert( "Reset Marker Pose",
-			boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
+  if(registration_){
+    model_menu_.insert( "Registration",
+			boost::bind( &UrdfModelMarker::registrationCB, this, _1) );
   }else{
-    model_menu_.insert( "Grasp Point",
-			boost::bind( &UrdfModelMarker::graspPointCB, this, _1 ) );
-    model_menu_.insert( "Move",
-			boost::bind( &UrdfModelMarker::moveCB, this, _1 ) );
-    model_menu_.insert( "Set as present pose",
-			boost::bind( &UrdfModelMarker::setPoseCB, this, _1 ) );
+
+    if(robot_mode_){
+      interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
+      sub_menu_move_ = model_menu_.insert( "Move" );
+      model_menu_.insert( sub_menu_move_, "Yes", 
+			  boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
+      //    model_menu_.insert( "Move" ,
+      //boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
+      model_menu_.insert( "Reset Marker Pose",
+			  boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
+    }else{
+      model_menu_.insert( "Grasp Point",
+			  boost::bind( &UrdfModelMarker::graspPointCB, this, _1 ) );
+      model_menu_.insert( "Move",
+			  boost::bind( &UrdfModelMarker::moveCB, this, _1 ) );
+      model_menu_.insert( "Set as present pose",
+			  boost::bind( &UrdfModelMarker::setPoseCB, this, _1 ) );
+    }
   }
+
   model_menu_.insert( "Hide Marker" ,
 		      boost::bind( &UrdfModelMarker::hideMarkerCB, this, _1) );
   model_menu_.insert( "Hide All Marker" ,
@@ -786,7 +802,11 @@ int main(int argc, char** argv)
     if(model.hasMember("scale")){
       scale_factor = getXmlValue(model["scale"]);
     }
-    new UrdfModelMarker(model["name"], model["model"], model["frame-id"], p, scale_factor, model["robot"], server);
+    bool registration = false;
+    if(model.hasMember("registration")){
+      registration = model["registration"];
+    }
+    new UrdfModelMarker(model["name"], model["model"], model["frame-id"], p, scale_factor, model["robot"], registration, server);
   }
 
   ros::spin();
