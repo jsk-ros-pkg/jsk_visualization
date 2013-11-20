@@ -11,7 +11,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+set(ROS_BUILD_TYPE Debug)
 
 rosbuild_init()
 
@@ -44,9 +44,10 @@ include_directories( ${wxWidgets_INCLUDE_DIRS} src )
 qt4_wrap_cpp(MOC_FILES
   src/publish_topic.h
   src/cancel_action.h
+  src/select_point_cloud_publish_action.h
 )
 
-set(SOURCE_FILES src/cancel_action.cpp src/publish_topic.cpp ${MOC_FILES})
+set(SOURCE_FILES src/cancel_action.cpp src/publish_topic.cpp src/select_point_cloud_publish_action.cpp ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(jsk_rviz_plugins ${SOURCE_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES})
