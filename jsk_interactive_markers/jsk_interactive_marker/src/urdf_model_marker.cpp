@@ -816,10 +816,20 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "jsk_model_marker_interface");
   ros::NodeHandle n;
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
-  server.reset( new interactive_markers::InteractiveMarkerServer("jsk_model_marker_interface", "", false) );
-
   ros::NodeHandle pnh_("~");
+
+  string server_name;
+  pnh_.param("server_name", server_name, std::string ("") );
+  if ( server_name == "" ) {
+    server_name = ros::this_node::getName();
+  }
+
+
+  
+  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
+  server.reset( new interactive_markers::InteractiveMarkerServer(server_name, "", false) );
+
+
 
   XmlRpc::XmlRpcValue v;
   pnh_.param("model_config", v, v);

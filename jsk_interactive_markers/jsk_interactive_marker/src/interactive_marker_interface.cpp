@@ -635,6 +635,7 @@ void InteractiveMarkerInterface::initHandler(void){
       menu_handler.insert( sub_menu_move_,"Plan",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::PLAN));
       menu_handler.insert( sub_menu_move_,"Execute",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::EXECUTE));
       menu_handler.insert( sub_menu_move_,"Plan & Execute",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::PLAN_EXECUTE));
+      menu_handler.insert( sub_menu_move_,"Cancel", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::CANCEL_PLAN));
     }else{
       menu_handler.insert("Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
     }

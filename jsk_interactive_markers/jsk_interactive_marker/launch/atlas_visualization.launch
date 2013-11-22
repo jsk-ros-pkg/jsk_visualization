@@ -1,0 +1,6 @@
+<launch>
+  <arg name="models" default="$(find jsk_interactive_marker)/launch/models/atlas-visualization.yaml" />
+  <node pkg="jsk_interactive_marker" type="urdf_model_marker" name="jsk_ik_visualization" output="screen">
+    <rosparam command="load" param="model_config" file="$(arg models)"/>
+  </node>
+</launch>
