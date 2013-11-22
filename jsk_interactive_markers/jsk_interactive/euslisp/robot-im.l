@@ -8,12 +8,15 @@
   :slots
   (ri robot
       auto-look
+      planned-angle-vector
       head-target-coords
       base-target-coords
       origin-coords target-coords old-coords
       moving-arm ik-rotation-axis constraint-move
       use-torso use-fullbody
       server-nodename
+      visualization-nodename
+      visualization-robot
       base-frame
       marker-sequence
       r-finger-rpy l-finger-rpy
@@ -25,13 +28,16 @@
    (&key ((:robot r)) ((:ri i)) ((:base-frame bf) "/base_link")
 	 ((:server-nodename sn) "/jsk_interactive_marker_manipulation")
 	 ((:urdf-model-nodename umn) "/jsk_model_marker_interface")
-
+	 ((:visualization-nodename vn) "/jsk_ik_visualization")
+	 ((:visualization-robot vr) "/atlas_visualization")
 	 )
    (setq robot r)
    (setq ri i)
    (setq base-frame bf)
    (setq server-nodename sn)
    (setq urdf-model-nodename umn)
+   (setq visualization-nodename vn)
+   (setq visualization-robot vr)
 
    (ros::roseus sn)
    (setq *tfb* (instance ros::transform-broadcaster :init))
@@ -59,17 +65,20 @@
    (ros::subscribe (format nil "~A/spacenav/joy" server-nodename)
 		   sensor_msgs::Joy #'send self :joy-callback)
 
+   (ros::advertise (format nil "~A/~A/reset_joint_states" visualization-nodename visualization-robot)
+		   sensor_msgs::JointState)
+
 
    ;;urdf marker move
    #|
    (ros::subscribe (format nil "~A/~A/joint_states" urdf-model-nodename (send robot :name))
-		   sensor_msgs::JointState #'send self :joint-state-callback)
+   sensor_msgs::JointState #'send self :joint-state-callback)
 
    (ros::subscribe (format nil "~A/marker_menu" urdf-model-nodename)
-		   jsk_interactive_marker::MarkerMenu #'send self :urdf-menu-callback)
+   jsk_interactive_marker::MarkerMenu #'send self :urdf-menu-callback)
 
    (ros::advertise (format nil "~A/~A/reset_joint_states" urdf-model-nodename (send robot :name))
-		   sensor_msgs::JointState)
+   sensor_msgs::JointState)
    |#
 
 
@@ -174,7 +183,7 @@
      )))
 
   (:pose-move
-   (&key (mem t))
+   (&key (mem t) (move t))
    (let ((inter-num 10)(vector-list nil)
 	 handle-r handle-l hadle-r-world handle-l-world
 	 new-coords reset-coords old-coords add-coords)
@@ -257,10 +266,18 @@
      
      (print "exe")
      (setq vector-list (reverse vector-list))
-
+     
+     ;;just plan
+     (unless move
+       (setq planned-angle-vector vector-list)
+       (send self :publish-joint-states (car (last planned-angle-vector)))
+       (return-from :pose-move)
+       )
+     (setq planned-angle-vector nil)
      (unless (null vector-list)
        (print "sending vector list...")
        (setq tmp-vec vector-list)
+
        (send ri :angle-vector-sequence vector-list (make-sequence 'list (length vector-list) :initial-element 500))
        (send ri :wait-interpolation)
        (print "done")
@@ -292,6 +309,72 @@
      )
    )
 
+  (:planned-move
+   nil
+   (let (handle-r handle-l hadle-r-world handle-l-world
+		  new-coords reset-coords old-coords add-coords)
+
+     (if (null planned-angle-vector)
+	 (return-from :planned-move nil)
+       )
+     (print "sending vector list...")
+     (send robot :angle-vector (send ri :state :potentio-vector))
+     
+     (setq handle-r (make-cascoords :coords (send origin-coords :transformation (send robot :rarm :end-coords))))
+     (setq handle-l (make-cascoords :coords (send origin-coords :transformation (send robot :larm :end-coords))))
+     (send ri :angle-vector-sequence planned-angle-vector (make-sequence 'list (length planned-angle-vector) :initial-element 500))
+     (send ri :wait-interpolation)
+     (print "done")
+
+     ;;robotへの反映
+     (send robot :angle-vector (send ri :state :potentio-vector))
+     
+     (setq renew-arrow-coord-r (send (send robot :rarm :end-coords) :copy-worldcoords))
+     (send renew-arrow-coord-r :transform (send handle-r :inverse-transformation))
+     (setq renew-arrow-coord-l (send (send robot :larm :end-coords) :copy-worldcoords))
+     (send renew-arrow-coord-l :transform (send handle-l :inverse-transformation))
+     
+     (case moving-arm
+       (:rarm
+	(send target-coords :move-to renew-arrow-coord-r :world)
+	)
+       (:larm
+	(send target-coords :move-to renew-arrow-coord-l :world)
+	)
+       (t
+	(send target-coords :move-to (midcoords 0.5 renew-arrow-coord-r renew-arrow-coord-l) :world)
+	))
+     (setq old-coords (send target-coords :copy-worldcoords))
+     (send origin-coords :move-to target-coords :world)
+
+     (send self :set-marker-pose-robot (send target-coords :worldcoords))
+     (send self :set-origin)
+     )
+   )
+  
+  
+  (:publish-joint-states
+   nil
+   (let ((joint-angles nil)
+	 (joint-names nil)
+	 (joint-list (send robot :joint-list))
+	 (joint-state-msg
+	  (instance sensor_msgs::JointState :init
+		    :header (instance std_msgs::header :init
+				      :stamp (ros::time-now)))))
+     (dotimes (x (length joint-list))
+       (push (deg2rad (send (elt joint-list x) :joint-angle)) joint-angles)
+       (push (send (elt joint-list x) :name) joint-names)
+       )
+     (send joint-state-msg :position joint-angles)
+     (send joint-state-msg :name joint-names)
+
+     (ros::publish (format nil "~A/~A/reset_joint_states" visualization-nodename visualization-robot)
+		   joint-state-msg)
+     )
+   )
+
+  
   (:pose-move-object
    (&optional (target-cds target-coords)
 	      (origin-cds origin-coords)
@@ -594,6 +677,24 @@
 	((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
 	 (send self :pose-move))
 
+	((eq menu jsk_interactive_marker::MarkerMenu::*PLAN_EXECUTE*)
+	 (send self :pose-move))
+
+	((eq menu jsk_interactive_marker::MarkerMenu::*PLAN*)
+	 (send self :pose-move :move nil))
+
+	((eq menu jsk_interactive_marker::MarkerMenu::*EXECUTE*)
+	 (send self :planned-move)
+	 )
+
+	((eq menu jsk_interactive_marker::MarkerMenu::*CANCEL_PLAN*)
+	 (setq planned-angle-vector nil)
+	 (send robot :angle-vector (send ri :state :potentio-vector))
+	 (send self :publish-joint-states)
+	 )
+
+
+
 	;;force-move
 	;;      (7
 	;;       (marker-teaching)
@@ -861,7 +962,7 @@
      (print (list "callback" goal))
      (setq a origin)
      (send self :model-move-object msg)
-#|
+     #|
      
      (print (list "test" (send origin :worldcoords)))
 
@@ -887,7 +988,7 @@
      ;;:rotation-axis ik-rotation-axis :use-torso use-torso)
 
      (send self :pose-move-object origin goal :arm :rarm)
-|#
+     |#
      )
    )
 
