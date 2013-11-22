@@ -158,11 +158,11 @@ void InteractiveMarkerInterface::ConstraintCb( const visualization_msgs::Interac
 
   switch(h_mode_last2-h_mode_constrained){
   case 0:
-    pub_marker_menu(feedback->marker_name,23);
+    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::MOVE_CONSTRAINT_T);
     ROS_INFO("send 23");
     break;
   case 1:
-    pub_marker_menu(feedback->marker_name,24);
+    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::MOVE_CONSTRAINT_NIL);
     ROS_INFO("send 24");
     break;
   default:
@@ -180,13 +180,19 @@ void InteractiveMarkerInterface::useTorsoCb( const visualization_msgs::Interacti
   if(feedback->menu_entry_id == use_torso_t_menu_){
     menu_handler.setCheckState( use_torso_t_menu_ , interactive_markers::MenuHandler::CHECKED );
     menu_handler.setCheckState( use_torso_nil_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+    menu_handler.setCheckState( use_fullbody_menu_ , interactive_markers::MenuHandler::UNCHECKED );
     pub_marker_menuCb(feedback, jsk_interactive_marker::MarkerMenu::USE_TORSO_T);
-  }else{
+  }else if(feedback->menu_entry_id == use_torso_nil_menu_){
     menu_handler.setCheckState( use_torso_t_menu_ , interactive_markers::MenuHandler::UNCHECKED );
     menu_handler.setCheckState( use_torso_nil_menu_ , interactive_markers::MenuHandler::CHECKED );
+    menu_handler.setCheckState( use_fullbody_menu_ , interactive_markers::MenuHandler::UNCHECKED );
     pub_marker_menuCb(feedback, jsk_interactive_marker::MarkerMenu::USE_TORSO_NIL);
+  }else{
+    menu_handler.setCheckState( use_torso_t_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+    menu_handler.setCheckState( use_torso_nil_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+    menu_handler.setCheckState( use_fullbody_menu_ , interactive_markers::MenuHandler::CHECKED );
+    pub_marker_menuCb(feedback, jsk_interactive_marker::MarkerMenu::USE_FULLBODY);
   }
-
   menu_handler.reApply( *server_ );
   server_->applyChanges();
 
@@ -200,16 +206,16 @@ void InteractiveMarkerInterface::modeCb( const visualization_msgs::InteractiveMa
 
   switch(h_mode_last-h_mode_rightarm){
   case 0:
-    pub_marker_menu(feedback->marker_name,20);
-    ROS_INFO("send 20");
+    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM);
+    ROS_INFO("move Rarm");
     break;
   case 1:
-    pub_marker_menu(feedback->marker_name,21);
-    ROS_INFO("send 21");
+    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM);
+    ROS_INFO("move Larm");
     break;
   case 2:
-    pub_marker_menu(feedback->marker_name,22);
-    ROS_INFO("send 22");
+    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS);
+    ROS_INFO("move Arms");
     break;
   default:
     ROS_INFO("Switching Arm Error");
@@ -228,11 +234,11 @@ void InteractiveMarkerInterface::ikmodeCb( const visualization_msgs::Interactive
 
   switch(h_mode_last3-h_mode_ikmode){
   case 0:
-    pub_marker_menu(feedback->marker_name,36);
+    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::IK_ROTATION_AXIS_T);
     ROS_INFO("send 36");
     break;
   case 1:
-    pub_marker_menu(feedback->marker_name,37);
+    pub_marker_menu(feedback->marker_name ,jsk_interactive_marker::MarkerMenu::IK_ROTATION_AXIS_NIL);
     ROS_INFO("send 37");
     break;
   default:
@@ -259,7 +265,7 @@ void InteractiveMarkerInterface::updateHeadGoal( const visualization_msgs::Inter
 			  << " menu_entry_id " << feedback->menu_entry_id);
       break;
     case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
-      proc_feedback(feedback, jsk_interactive_marker::MarkerPose::HEAD_MARKER);
+      //proc_feedback(feedback, jsk_interactive_marker::MarkerPose::HEAD_MARKER);
       break;
     }
 }
@@ -504,7 +510,7 @@ void InteractiveMarkerInterface::initBodyMarkers(void){
 
 
 void InteractiveMarkerInterface::initControlMarkers(void){
-
+  //Head Marker
   if(control_state_.head_on_ && control_state_.init_head_goal_){
     control_state_.init_head_goal_ = false;
     head_goal_pose_.header.stamp = ros::Time(0);
@@ -514,12 +520,13 @@ void InteractiveMarkerInterface::initControlMarkers(void){
     makeIMVisible(HeadGoalIm);
     server_->insert(HeadGoalIm,
 		    boost::bind( &InteractiveMarkerInterface::updateHeadGoal, this, _1));
+    menu_head_target_.apply(*server_,"head_point_goal");
   }
   if(!control_state_.head_on_){
     server_->erase("head_point_goal");
   }
 
-
+  //Base Marker
   if(control_state_.base_on_ ){
     geometry_msgs::PoseStamped ps;
     ps.pose.orientation.w = 1;
@@ -536,7 +543,8 @@ void InteractiveMarkerInterface::initControlMarkers(void){
     server_->erase("base_control");
   }
 
-  if(control_state_.r_finger_on_){
+  //finger Control Marker
+  if(use_finger_marker_ && control_state_.r_finger_on_){
     geometry_msgs::PoseStamped ps;
     ps.header.stamp = ros::Time(0);
     ps.header.frame_id = "/right_f0_base";
@@ -548,7 +556,7 @@ void InteractiveMarkerInterface::initControlMarkers(void){
     server_->erase("right_finger");
   }
 
-  if(control_state_.l_finger_on_){
+  if(use_finger_marker_ && control_state_.l_finger_on_){
     geometry_msgs::PoseStamped ps;
     ps.header.stamp = ros::Time(0);
     ps.header.frame_id = "/left_f0_base";
@@ -615,7 +623,14 @@ void InteractiveMarkerInterface::initHandler(void){
     
   pnh_.param("move_menu", use_menu, false );
   if(use_menu){
-    menu_handler.insert("Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
+    pnh_.param("move_safety_menu", use_menu, false );
+    if(use_menu){
+      interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
+      sub_menu_move_ = menu_handler.insert( "Move" );
+      menu_handler.insert( sub_menu_move_,"Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
+    }else{
+      menu_handler.insert("Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
+    }
   }
     
   pnh_.param("force_move_menu", use_menu, false );
@@ -704,24 +719,27 @@ void InteractiveMarkerInterface::initHandler(void){
 
   pnh_.param("ik_mode_menu", use_menu, false );
   if(use_menu){
-    sub_menu_handle_ik = menu_handler.insert( "IKmode" );
+    sub_menu_handle_ik = menu_handler.insert( "IK mode" );
 
-    h_mode_last3 = menu_handler.insert( sub_menu_handle_ik, "Rotate t", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
+    h_mode_last3 = menu_handler.insert( sub_menu_handle_ik, "Don't Allow Rotation", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
     menu_handler.setCheckState( h_mode_last3, interactive_markers::MenuHandler::CHECKED );
     h_mode_ikmode = h_mode_last3;
-    h_mode_last3 = menu_handler.insert( sub_menu_handle_ik, "Rotate nil", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
+    h_mode_last3 = menu_handler.insert( sub_menu_handle_ik, "Allow Rotation", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
     menu_handler.setCheckState( h_mode_last3, interactive_markers::MenuHandler::UNCHECKED );
     h_mode_last3 = h_mode_ikmode;
   }
 
   pnh_.param("use_torso_menu", use_menu, false );
   if(use_menu){
-    use_torso_menu_ = menu_handler.insert( "use_torso" );
+    use_torso_menu_ = menu_handler.insert( "Links To Use" );
 
-    use_torso_t_menu_ = menu_handler.insert( use_torso_menu_, "Use Torso", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
-    menu_handler.setCheckState( use_torso_t_menu_, interactive_markers::MenuHandler::UNCHECKED );
-    use_torso_nil_menu_ = menu_handler.insert( use_torso_menu_, "Not Use Troso", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
-    menu_handler.setCheckState( use_torso_nil_menu_, interactive_markers::MenuHandler::CHECKED );
+    use_torso_nil_menu_ = menu_handler.insert( use_torso_menu_, "Arm", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
+    menu_handler.setCheckState( use_torso_nil_menu_, interactive_markers::MenuHandler::UNCHECKED );
+    use_torso_t_menu_ = menu_handler.insert( use_torso_menu_, "Arm and Torso", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
+    menu_handler.setCheckState( use_torso_t_menu_, interactive_markers::MenuHandler::CHECKED );
+    use_fullbody_menu_ = menu_handler.insert( use_torso_menu_, "Fullbody", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
+    menu_handler.setCheckState( use_fullbody_menu_, interactive_markers::MenuHandler::UNCHECKED );
+
   }
 
 
@@ -788,7 +806,8 @@ void InteractiveMarkerInterface::initHandler(void){
   menu_head_.setCheckState(head_auto_look_handle_, interactive_markers::MenuHandler::CHECKED);
   
   menu_head_target_.insert( "Look At",
-			    boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE, jsk_interactive_marker::MarkerMenu::HEAD_MARKER));
+			    boost::bind( &InteractiveMarkerInterface::proc_feedback, this, _1, jsk_interactive_marker::MarkerPose::HEAD_MARKER));
+  //boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE, jsk_interactive_marker::MarkerMenu::HEAD_MARKER));
 
 
   /*
@@ -804,20 +823,18 @@ void InteractiveMarkerInterface::initHandler(void){
 
 
   /* base move menu*/
+  pnh_.param("use_base_marker", use_menu, false );
+  control_state_.base_on_ = use_menu;
+
   menu_base_.insert("Base Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE, jsk_interactive_marker::MarkerMenu::BASE_MARKER));
   menu_base_.insert("Reset Marker Position",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::RESET_COORDS, jsk_interactive_marker::MarkerMenu::BASE_MARKER));
 
   /*finger move menu*/
+  pnh_.param("use_finger_marker", use_finger_marker_, false );
+
   menu_finger_r_.insert("Move Finger",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE, jsk_interactive_marker::MarkerMenu::RFINGER_MARKER));
   menu_finger_r_.insert("Reset Marker",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::RESET_COORDS, jsk_interactive_marker::MarkerMenu::RFINGER_MARKER));
-    
-  use_torso_menu_ = menu_handler.insert( "use_torso" );
 
-  use_torso_t_menu_ = menu_handler.insert( use_torso_menu_, "Use Torso", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
-  menu_handler.setCheckState( use_torso_t_menu_, interactive_markers::MenuHandler::UNCHECKED );
-  use_torso_nil_menu_ = menu_handler.insert( use_torso_menu_, "Not Use Troso", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
-  menu_handler.setCheckState( use_torso_nil_menu_, interactive_markers::MenuHandler::CHECKED );
-    
   menu_finger_l_.insert("Move Finger",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE, jsk_interactive_marker::MarkerMenu::LFINGER_MARKER));
   menu_finger_l_.insert("Reset Marker",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::RESET_COORDS, jsk_interactive_marker::MarkerMenu::LFINGER_MARKER));
 

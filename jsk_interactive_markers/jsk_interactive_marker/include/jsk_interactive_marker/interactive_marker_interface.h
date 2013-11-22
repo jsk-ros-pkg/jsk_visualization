@@ -148,6 +148,7 @@ class InteractiveMarkerInterface {
   interactive_markers::MenuHandler::EntryHandle use_torso_menu_;
   interactive_markers::MenuHandler::EntryHandle use_torso_t_menu_;
   interactive_markers::MenuHandler::EntryHandle use_torso_nil_menu_;
+  interactive_markers::MenuHandler::EntryHandle use_fullbody_menu_;
 
 
   int h_mode_rightarm;
@@ -195,6 +196,7 @@ class InteractiveMarkerInterface {
     GripperState l_gripper_;
   };
 
+  bool use_finger_marker_;
 
   ControlState control_state_;
 

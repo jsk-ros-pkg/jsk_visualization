@@ -2,7 +2,6 @@
 
 (ros::load-ros-manifest "jsk_interactive")
 (load "package://roseus/euslisp/actionlib.l")
-;;(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 (load "models/arrow-object.l")
 
 (defclass robot-im
@@ -13,7 +12,7 @@
       base-target-coords
       origin-coords target-coords old-coords
       moving-arm ik-rotation-axis constraint-move
-      use-torso
+      use-torso use-fullbody
       server-nodename
       base-frame
       marker-sequence
@@ -62,6 +61,7 @@
 
 
    ;;urdf marker move
+   #|
    (ros::subscribe (format nil "~A/~A/joint_states" urdf-model-nodename (send robot :name))
 		   sensor_msgs::JointState #'send self :joint-state-callback)
 
@@ -70,6 +70,7 @@
 
    (ros::advertise (format nil "~A/~A/reset_joint_states" urdf-model-nodename (send robot :name))
 		   sensor_msgs::JointState)
+   |#
 
 
 
@@ -86,7 +87,8 @@
    (setq moving-arm :rarm)
    (setq ik-rotation-axis t)
    (setq auto-look t)
-   (setq use-torso nil)
+   (setq use-torso t)
+   (setq use-fullbody nil)
    
    ;;initialize with invalid value
    (setq r-finger-rpy (list 10 0 0))
@@ -151,7 +153,7 @@
    )
 
   (:solve-ik
-   (target-coords &key (move-arm :rarm) (rotation-axis t) (debug-view nil) (use-torso nil))
+   (target-coords &key (move-arm :rarm) (rotation-axis t) (debug-view nil) (use-torso nil) (use-fullbody nil))
    (cond
     ((equal move-arm :arms)
      (unless
@@ -208,7 +210,8 @@
 	   (:rarm
 	    (unless
 		(send self :solve-ik handle-r-world :move-arm :rarm
-		      :rotation-axis ik-rotation-axis :use-torso use-torso)
+		      :rotation-axis ik-rotation-axis
+		      :use-torso use-torso :use-fullbody use-fullbody)
 	      (send target-coords :move-to reset-coords :world)
 	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
@@ -218,7 +221,8 @@
 	   (:larm
 	    (unless
 		(send self :solve-ik handle-l-world :move-arm :larm
-		      :rotation-axis ik-rotation-axis :use-torso use-torso)
+		      :rotation-axis ik-rotation-axis
+		      :use-torso use-torso :use-fullbody use-fullbody)
 	      (send target-coords :move-to reset-coords :world)
 	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
@@ -227,7 +231,8 @@
 	   (t
 	    (unless
 		(send self :solve-ik (list handle-r-world handle-l-world) :move-arm :arms
-		      :rotation-axis ik-rotation-axis :use-torso use-torso)
+		      :rotation-axis ik-rotation-axis 
+		      :use-torso use-torso :use-fullbody use-fullbody)
 	      (send target-coords :move-to reset-coords :world)
 	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
@@ -294,7 +299,6 @@
    (let ((inter-num 10)(vector-list nil)
 	 handle-r handle-l hadle-r-world handle-l-world
 	 new-coords reset-coords old-coords add-coords)
-     ;;reset-coords add-coords)
 
      ;;モデルへの反映
      (send robot :angle-vector (send ri :state :potentio-vector))
@@ -306,12 +310,7 @@
      ;;     (setq reset-coords (send old-coords :copy-worldcoords))
      (setq old-coords (send origin-cds :copy-worldcoords))
 
-     ;; (when auto-look
-     ;;   (send self :look-at (send old-coords :worldpos) :wait t)
-     ;;   (send head-target-cds :locate (send old-coords :worldpos) :world)
-     ;;   )
-
-     ;;inter-num で分割して送る
+     ;;interpolation
      (block interpolation
        (dotimes (i inter-num)
 	 (setq add-coords (instance arrow-object :init))
@@ -326,7 +325,8 @@
 	   (:rarm
 	    (unless
 		(send self :solve-ik handle-r-world :move-arm :rarm
-		      :rotation-axis ik-rotation-axis :use-torso use-torso)
+		      :rotation-axis ik-rotation-axis 
+		      :use-torso use-torso :use-fullbody use-fullbody)
 	      (send target-cds :move-to reset-coords :world)
 	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
@@ -336,7 +336,8 @@
 	   (:larm
 	    (unless
 		(send self :solve-ik handle-l-world :move-arm :larm
-		      :rotation-axis ik-rotation-axis :use-torso use-torso)
+		      :rotation-axis ik-rotation-axis 
+		      :use-torso use-torso :use-fullbody use-fullbody)
 	      (send target-cds :move-to reset-coords :world)
 	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
@@ -345,7 +346,8 @@
 	   (t
 	    (unless
 		(send self :solve-ik (list handle-r-world handle-l-world) :move-arm :arms
-		      :rotation-axis ik-rotation-axis :use-torso use-torso)
+		      :rotation-axis ik-rotation-axis
+		      :use-torso use-torso :use-fullbody use-fullbody)
 	      (send target-cds :move-to reset-coords :world)
 	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
@@ -525,21 +527,25 @@
 	 (print "under construction"))
 
 	((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
-	 (send self :set-origin))
+	 (send self :set-origin)
+	 (send self :set-hand-marker-pose))
 
 	;;reset target coords
 	((eq menu jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
 	 (send target-coords :move-to old-coords :world)
 	 (send self :set-marker-pose-robot (send target-coords :worldcoords))
+	 (send self :set-hand-marker-pose)
 	 )
 
 	;;set origin to hand
 	((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
 	 (print "set origin to rhand")
-	 (send self :set-origin-to-hand :rarm))
+	 (send self :set-origin-to-hand :rarm)
+	 (send self :set-hand-marker-pose))
 	((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_LHAND*)
 	 (print "set origin to lhand")
-	 (send self :set-origin-to-hand :larm))
+	 (send self :set-origin-to-hand :larm)
+	 (send self :set-hand-marker-pose))
 	
 	;;change ik-rotation-axis
 	((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_T*)
@@ -555,12 +561,18 @@
 	((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_T*)
 	 (print "use torso t")
 	 (setq use-torso t)
+	 (setq use-fullbody nil)
 	 )
 	((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_NIL*)
 	 (print "use torso nil")
 	 (setq use-torso nil)
+	 (setq use-fullbody nil)
 	 )
-	
+
+	((eq menu jsk_interactive_marker::MarkerMenu::*USE_FULLBODY*)
+	 (print "use torso nil")
+	 (setq use-fullbody t)
+	 )
 	#| don't use now
 	(4 (send *force-arrow* :scale :x 1)
 	(send *force-arrow* :scale :y 1)
@@ -610,13 +622,19 @@
 
 	;;changeControllArm
 	((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_RARM*)
+	 (print "move rarm")
 	 (setq moving-arm :rarm)
+	 (send self :set-hand-marker-pose)
 	 )
 	((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_LARM*)
+	 (print "move larm")
 	 (setq moving-arm :larm)
+	 (send self :set-hand-marker-pose)
 	 )
 	((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_ARMS*)
+	 (print "move arms")
 	 (setq moving-arm :arms)
+	 (send self :set-hand-marker-pose)
 	 )
 	
 	;;change constraint
@@ -752,7 +770,7 @@
       ))
    )
 
-  (:pose-callback 
+  (:pose-callback
    ( msg )
    (setq a msg)
    (print (list "callback" msg))
@@ -778,7 +796,7 @@
        ;;((equal (send msg :marker_name) "head_point_goal")
        (send head-target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
        (send head-target-coords :transform cds)
-       ;;(send self :look-at (send head-target-coords :worldpos))
+       (send self :look-at (send head-target-coords :worldpos))
        )
 
       (t

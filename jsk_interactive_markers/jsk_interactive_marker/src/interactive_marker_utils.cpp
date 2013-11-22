@@ -30,6 +30,7 @@ visualization_msgs::InteractiveMarker makeFingerControlMarker(const char *name, 
 
 }
 
+/*
 
 visualization_msgs::InteractiveMarker makeSandiaHandMarker(geometry_msgs::PoseStamped ps){
   visualization_msgs::InteractiveMarker int_marker;
@@ -88,7 +89,7 @@ visualization_msgs::InteractiveMarker makeSandiaHandMarker(geometry_msgs::PoseSt
 
 }
 
-
+*/
 
 
 visualization_msgs::InteractiveMarker makeSandiaHandInteractiveMarker(geometry_msgs::PoseStamped ps, std::string hand, int finger, int link){
@@ -104,9 +105,11 @@ visualization_msgs::InteractiveMarker makeSandiaHandInteractiveMarker(geometry_m
   
   int_marker.name = ss.str() + "Marker";
   int_marker.header.frame_id = ss.str();
-  int_marker.header.frame_id = "odom";
+  //  std::string frame_id = "odom";
+  std::string frame_id = "utorso";
+  int_marker.header.frame_id = frame_id;
   std::cout << ss.str() << std::endl;
-  std::string frame_id = "odom";
+
   //frame_id = ss.str();
   switch(link){
   case 0:
@@ -125,7 +128,6 @@ visualization_msgs::InteractiveMarker makeSandiaHandInteractiveMarker(geometry_m
   int_marker.controls.push_back(control);
 
   return int_marker;
-
 }
 
 
