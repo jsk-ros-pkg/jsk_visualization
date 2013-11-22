@@ -221,8 +221,8 @@
 		(send self :solve-ik handle-r-world :move-arm :rarm
 		      :rotation-axis ik-rotation-axis
 		      :use-torso use-torso :use-fullbody use-fullbody)
-	      (send target-coords :move-to reset-coords :world)
-	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
+	      ;;(send target-coords :move-to reset-coords :world)
+	      ;;(send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
 	      (return-from interpolation)
 	      ))
@@ -232,8 +232,8 @@
 		(send self :solve-ik handle-l-world :move-arm :larm
 		      :rotation-axis ik-rotation-axis
 		      :use-torso use-torso :use-fullbody use-fullbody)
-	      (send target-coords :move-to reset-coords :world)
-	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
+	      ;;(send target-coords :move-to reset-coords :world)
+	      ;;(send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
 	      (return-from interpolation)
 	      ))
@@ -242,8 +242,8 @@
 		(send self :solve-ik (list handle-r-world handle-l-world) :move-arm :arms
 		      :rotation-axis ik-rotation-axis 
 		      :use-torso use-torso :use-fullbody use-fullbody)
-	      (send target-coords :move-to reset-coords :world)
-	      (send self :set-marker-pose-robot (send reset-coords :worldcoords))
+	      ;;(send target-coords :move-to reset-coords :world)
+	      ;;(send self :set-marker-pose-robot (send reset-coords :worldcoords))
 	      (print "can't solve IK")
 	      (return-from interpolation)
 	      )
@@ -269,10 +269,12 @@
      
      ;;just plan
      (unless move
+       (print "finished planning")
        (setq planned-angle-vector vector-list)
-       (send self :publish-joint-states (car (last planned-angle-vector)))
+       (send self :publish-joint-states)
        (return-from :pose-move)
        )
+     (print "hoge")
      (setq planned-angle-vector nil)
      (unless (null vector-list)
        (print "sending vector list...")

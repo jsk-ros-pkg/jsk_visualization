@@ -428,7 +428,7 @@
        (send* self :set-marker-pose (send (send self :get-base-coords) :transformation coords :local) args)
      (send self :set-marker-pose (send (send self :get-base-coords) :transformation coords :local))
      ))
-
+#|
   (:get-base-coords
    ()
    ;;(caddr (send robot :torso))
@@ -437,6 +437,24 @@
      (setq coords (send (send (caddr (send robot :torso)) :worldcoords) :copy-worldcoords))
      (dotimes (i 5)
        (setq torso->odom (send *tfl* :lookup-transform "utorso" "odom" (ros::time 0)))
+       (when torso->odom
+	 (send coords :transform torso->odom)
+	 (return))
+       )
+     ;;   (caddr (send robot :torso))
+     coords
+     )
+   )
+|#
+  ;;fixed flamae is foot?
+  (:get-base-coords
+   ()
+   ;;(caddr (send robot :torso))
+   ;;(send *tfl* :lookup-transform "utorso" "odom" (ros::time 0))
+   (let (coords torso->odom)
+     (setq coords (send (send robot :r_foot_lk :worldcoords) :copy-worldcoords))
+     (dotimes (i 5)
+       (setq torso->odom (send *tfl* :lookup-transform "r_foot" "odom" (ros::time 0)))
        (when torso->odom
 	 (send coords :transform torso->odom)
 	 (return))
