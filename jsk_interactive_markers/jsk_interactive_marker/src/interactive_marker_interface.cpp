@@ -625,9 +625,16 @@ void InteractiveMarkerInterface::initHandler(void){
   if(use_menu){
     pnh_.param("move_safety_menu", use_menu, false );
     if(use_menu){
+      /*
       interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
       sub_menu_move_ = menu_handler.insert( "Move" );
       menu_handler.insert( sub_menu_move_,"Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
+      */
+      interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
+      sub_menu_move_ = menu_handler.insert( "Move" );
+      menu_handler.insert( sub_menu_move_,"Plan",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::PLAN));
+      menu_handler.insert( sub_menu_move_,"Execute",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::EXECUTE));
+      menu_handler.insert( sub_menu_move_,"Plan & Execute",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::PLAN_EXECUTE));
     }else{
       menu_handler.insert("Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
     }
