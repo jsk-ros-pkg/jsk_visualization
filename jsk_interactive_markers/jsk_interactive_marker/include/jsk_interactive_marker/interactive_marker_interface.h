@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 
 #include <tf/tf.h>
-#include <tf/transform_listener.h>
+//#include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
 
 #include <interactive_markers/interactive_marker_server.h>
@@ -112,7 +112,7 @@ class InteractiveMarkerInterface {
   ros::ServiceServer serv_markers_set_;
   ros::ServiceServer serv_markers_del_;
 
-  tf::TransformListener tfl_;
+  //tf::TransformListener tfl_;
 
   interactive_markers::MenuHandler menu_handler;
   interactive_markers::MenuHandler menu_handler1;

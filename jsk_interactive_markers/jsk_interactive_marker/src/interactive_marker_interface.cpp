@@ -322,6 +322,7 @@ void InteractiveMarkerInterface::changeMarkerForceMode( std::string mk_name , in
   geometry_msgs::PoseStamped pose;
   pose.header.frame_id = base_frame;
   if ( target_frame != "" ) {
+  /*
     tf::StampedTransform stf;
     geometry_msgs::TransformStamped mtf;
     tfl_.lookupTransform(target_frame, base_frame,
@@ -332,6 +333,7 @@ void InteractiveMarkerInterface::changeMarkerForceMode( std::string mk_name , in
     pose.pose.position.z = mtf.transform.translation.z;
     pose.pose.orientation = mtf.transform.rotation;
     pose.header = mtf.header;
+  */
   }
   visualization_msgs::InteractiveMarker mk;
   //    mk.name = marker_name.c_str();
@@ -877,7 +879,9 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
   interactive_markers::MenuHandler reset_handler;
 
   geometry_msgs::PoseStamped pose;
+
   if ( target_frame != "" ) {
+    /*
     tf::StampedTransform stf;
     geometry_msgs::TransformStamped mtf;
     tfl_.lookupTransform(target_frame, base_frame,
@@ -888,6 +892,7 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
     pose.pose.position.z = mtf.transform.translation.z;
     pose.pose.orientation = mtf.transform.rotation;
     pose.header = mtf.header;
+  */
   }else{
     pose = dist_pose;
   }
@@ -967,6 +972,7 @@ void InteractiveMarkerInterface::changeMarkerOperationModelMode( std::string mk_
   menu_handler = reset_handler;
   geometry_msgs::PoseStamped pose;
   pose.header.frame_id = base_frame;
+  /*
   if ( target_frame != "" ) {
     tf::StampedTransform stf;
     geometry_msgs::TransformStamped mtf;
@@ -978,7 +984,7 @@ void InteractiveMarkerInterface::changeMarkerOperationModelMode( std::string mk_
     pose.pose.position.z = mtf.transform.translation.z;
     pose.pose.orientation = mtf.transform.rotation;
     pose.header = mtf.header;
-  }
+    }*/
 
   visualization_msgs::InteractiveMarker mk =
     im_helpers::make6DofMarker(mk_name.c_str(), pose, 0.5,
@@ -1007,7 +1013,8 @@ void InteractiveMarkerInterface::changeMarkerOperationModelMode( std::string mk_
 }
 
 
-InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~"), tfl_(nh_) {
+//InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~"), tfl_(nh_) {
+InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
   pnh_.param("marker_name", marker_name, std::string ( "100") );
   pnh_.param("server_name", server_name, std::string ("") );
   pnh_.param("base_frame", base_frame, std::string ("/base_link") );
@@ -1172,10 +1179,11 @@ bool InteractiveMarkerInterface::reset_cb ( jsk_interactive_marker::SetPose::Req
   geometry_msgs::PoseStamped pose;
   pose.header.frame_id = base_frame;
   if ( target_frame != "" ) {
+    /*
     tf::StampedTransform stf;
     geometry_msgs::TransformStamped mtf;
     tfl_.lookupTransform(base_frame, target_frame,
-			 ros::Time(0), stf);
+    ros::Time(0), stf);
     tf::transformStampedTFToMsg(stf, mtf);
     pose.pose.position.x = mtf.transform.translation.x;
     pose.pose.position.y = mtf.transform.translation.y;
@@ -1185,6 +1193,7 @@ bool InteractiveMarkerInterface::reset_cb ( jsk_interactive_marker::SetPose::Req
     // pose.header.stamp = ros::Time::Now();
     // pose.header.frame_id = target_frame;
     server_->setPose(marker_name, pose.pose, pose.header);
+    */
   } else {
     server_->setPose(marker_name, pose.pose);
   }

@@ -140,7 +140,7 @@ geometry_msgs::Pose UrdfModelMarker::UrdfPose2Pose( const urdf::Pose pose){
 
 void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform){
   dynamic_tf_publisher::SetDynamicTF SetTf;
-  SetTf.request.freq = 10;
+  SetTf.request.freq = 1;
   SetTf.request.cur_tf.header.stamp = ros::Time::now();
   SetTf.request.cur_tf.header.frame_id = parent_frame_id;
   SetTf.request.cur_tf.child_frame_id = frame_id;

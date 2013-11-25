@@ -451,12 +451,12 @@
    ()
    ;;(caddr (send robot :torso))
    ;;(send *tfl* :lookup-transform "utorso" "odom" (ros::time 0))
-   (let (coords torso->odom)
+   (let (coords torso->map)
      (setq coords (send (send robot :r_foot_lk :worldcoords) :copy-worldcoords))
      (dotimes (i 5)
-       (setq torso->odom (send *tfl* :lookup-transform "r_foot" "odom" (ros::time 0)))
-       (when torso->odom
-	 (send coords :transform torso->odom)
+       (setq torso->map (send *tfl* :lookup-transform "r_foot" "map" (ros::time 0)))
+       (when torso->map
+	 (send coords :transform torso->map)
 	 (return))
        )
      ;;   (caddr (send robot :torso))

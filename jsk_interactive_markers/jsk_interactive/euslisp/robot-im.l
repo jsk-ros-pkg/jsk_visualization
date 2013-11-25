@@ -136,8 +136,8 @@
    (print "initialized")
    (print "start loop")
    (do-until-key
-    (send self :publish-target-arrow-tf)
-    (send self :publish-origin-arrow-tf)
+    ;;(send self :publish-target-arrow-tf)
+    ;;(send self :publish-origin-arrow-tf)
 
     (ros::spin-once)
     (x::window-main-one)
@@ -756,6 +756,9 @@
       )
      (send *irtviewer* :draw-objects)
      )
+   (send self :publish-target-arrow-tf)
+   (send self :publish-origin-arrow-tf)
+   
    )
 
 
@@ -908,7 +911,11 @@
        (send *irtviewer* :draw-objects)
        (send self :set-hand-marker-pose)
        )
-      )))
+      ))
+   (send self :publish-target-arrow-tf)
+   (send self :publish-origin-arrow-tf)
+
+   )
   
   (:joy-callback
    (msg)

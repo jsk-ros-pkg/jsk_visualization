@@ -11,6 +11,6 @@
 (model2real :time 5000 :wait t)
 (fix-leg)
 
-(setq *atlas-im* (instance atlas-im :init :robot *atlas* :ri *ri* :base-frame "/odom"))
+(setq *atlas-im* (instance atlas-im :init :robot *atlas* :ri *ri* :base-frame "/map"))
 
 (send *atlas-im* :main-loop)
