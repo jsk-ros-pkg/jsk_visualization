@@ -7,9 +7,15 @@
 
 
 (atlas-init-ex :view nil)
+;;(atlas-init-ex)
 (real2model)
 (model2real :time 5000 :wait t)
 (fix-leg)
+
+(when (and (boundp '*irtviewer*) *irtviewer*)
+  (send *irtviewer* :change-background #f(0.3 0.7 0.3))
+  (send *irtviewer* :title "Interactive Marker Endcoords")
+  (send *irtviewer* :draw-objects))
 
 (setq *atlas-im* (instance atlas-im :init :robot *atlas* :ri *ri* :base-frame "/map"))
 

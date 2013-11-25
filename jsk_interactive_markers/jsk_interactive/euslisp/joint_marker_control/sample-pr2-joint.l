@@ -21,7 +21,7 @@
 	      :joint-angle joint-angle)
 	)
       )
-    (send *irtviewer* :draw-objects)
+    (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     )
   )
 

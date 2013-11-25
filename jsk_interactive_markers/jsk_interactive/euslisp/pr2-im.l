@@ -122,13 +122,13 @@
 	   :revert-if-fail nil
 	   )
      (send robot :rarm :move-end-pos #f(-100 0 0))
-     (send *irtviewer* :draw-objects)
+     (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 ;     (send self :solve-ik grasp-coords :move-arm :rarm)
      (send ri :angle-vector (send robot :angle-vector) 5000)
      (send ri :wait-interpolation)
 
      (send robot :rarm :move-end-pos #f(100 0 0))
-     (send *irtviewer* :draw-objects)
+     (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
      (send ri :angle-vector (send robot :angle-vector) 2000)
      (send ri :wait-interpolation)
      (send self :start-grasp :rarm)

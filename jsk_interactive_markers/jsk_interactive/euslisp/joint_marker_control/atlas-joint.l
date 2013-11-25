@@ -5,9 +5,15 @@
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 
 (atlas-init-ex :view nil)
+;;(atlas-init-ex)
 ;; (set-user)
 (real2model)
 (model2real :time 5000 :wait t)
+
+(when (and (boundp '*irtviewer*) *irtviewer*)
+  (send *irtviewer* :change-background #f(0.3 0.3 0.7))
+  (send *irtviewer* :title "Interactive Marker Joints")
+  (send *irtviewer* :draw-objects))
 
 (defun joint-state-callback
   (msg)
@@ -20,7 +26,7 @@
       (setq joint-angle (rad2deg (elt joint-angles x)))
       (send *atlas* (intern (string-upcase joint-name) *keyword-package*)
 	    :joint-angle joint-angle)
-      (send *irtviewer* :draw-objects)
+      (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
       )
     )
@@ -29,7 +35,7 @@
 (defun reset-marker-pose
   ()
   (real2model)
-  (send *irtviewer* :draw-objects)
+  (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (let ((joint-angles nil)
 	(joint-names nil)
 	(joint-list (send *atlas* :joint-list))

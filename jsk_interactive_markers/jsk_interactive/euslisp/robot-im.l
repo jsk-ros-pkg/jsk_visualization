@@ -117,8 +117,8 @@
    (send base-target-coords :translate #f(0 0 0)) ;; initial pose
 
 
-   (objects (list robot target-coords origin-coords head-target-coords base-target-coords))
-   (send *irtviewer* :draw-objects)
+   (when (boundp '*irtviewer*) (objects (list robot target-coords origin-coords head-target-coords base-target-coords)))
+   (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
    (send self :set-marker-pose-robot (send target-coords :worldcoords))
 
    (send robot :angle-vector (send ri :state :potentio-vector))
@@ -162,7 +162,7 @@
    )
 
   (:solve-ik
-   (target-coords &key (move-arm :rarm) (rotation-axis t) (debug-view nil) (use-torso nil) (use-fullbody nil))
+   (target-coords &key (move-arm :rarm) (rotation-axis t) (debug-view t) (use-torso nil) (use-fullbody nil))
    (cond
     ((equal move-arm :arms)
      (unless
@@ -256,13 +256,13 @@
 	   (send head-target-coords :locate (send add-coords :worldpos) :world)
 	   )
 	 (push (send robot :angle-vector) vector-list)
-	 (objects (list robot origin-coords add-coords))
+	 (when (boundp '*irtviewer*) (objects (list robot origin-coords add-coords)))
 	 (print add-coords)
-	 (send *irtviewer* :draw-objects)
+	 (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 	 (setq reset-coord (send add-coords :copy-worldcoords))
 	 )
        )
-     (objects (list robot origin-coords target-coords head-target-coords base-target-coords))
+     (when (boundp '*irtviewer*) (objects (list robot origin-coords target-coords head-target-coords base-target-coords)))
      
      (print "exe")
      (setq vector-list (reverse vector-list))
@@ -448,13 +448,13 @@
 	   (send head-target-coords :locate (send add-coords :worldpos) :world)
 	   )
 	 (push (send robot :angle-vector) vector-list)
-	 (objects (list robot origin-cds add-coords))
+	 (when (boundp '*irtviewer*) (objects (list robot origin-cds add-coords)))
 	 (print add-coords)
-	 (send *irtviewer* :draw-objects)
+	 (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 	 (setq reset-coord (send add-coords :copy-worldcoords))
 	 )
        )
-     (objects (list robot origin-cds target-cds head-target-coords base-target-coords))
+     (when (boundp '*irtviewer*) (objects (list robot origin-cds target-cds head-target-coords base-target-coords)))
      
      (print "exe")
      (setq vector-list (reverse vector-list))
@@ -754,7 +754,7 @@
 	)
        )
       )
-     (send *irtviewer* :draw-objects)
+     (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
      )
    (send self :publish-target-arrow-tf)
    (send self :publish-origin-arrow-tf)
@@ -809,7 +809,7 @@
 	       :joint-angle joint-angle)
 	 )
        )
-     (send *irtviewer* :draw-objects)
+     (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
      )
    )
 
@@ -908,7 +908,7 @@
       (t
        (send target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
        (send target-coords :transform cds)
-       (send *irtviewer* :draw-objects)
+       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
        (send self :set-hand-marker-pose)
        )
       ))
@@ -937,7 +937,7 @@
 
      (send target-coords :transform coords rotate-origin-coords)
      (send self :set-marker-pose-robot target-coords)
-     (send *irtviewer* :draw-objects)
+     (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
      ;;(print target-coords)
      )
    )
@@ -954,7 +954,7 @@
      #|
      (send target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
      (send target-coords :transform cds)
-     (send *irtviewer* :draw-objects)
+     (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
      (send self :set-hand-marker-pose)
      |#
      )
