@@ -4,7 +4,7 @@
 (ros::roseus "atlas-test")
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 
-(atlas-init-ex)
+(atlas-init-ex :view nil)
 ;; (set-user)
 (real2model)
 (model2real :time 5000 :wait t)
