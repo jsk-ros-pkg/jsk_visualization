@@ -90,7 +90,8 @@
   ()
   (while t
    (ros::spin-once)
-   (x::window-main-one)
+   (unless (or (null x::*display*) (= x::*display* 0))
+     (x::window-main-one))
    (ros::sleep)
 
    (unless (ros::ok) (return)))
