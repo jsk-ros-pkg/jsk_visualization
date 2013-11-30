@@ -42,6 +42,9 @@
    (ros::roseus sn)
    (setq *tfb* (instance ros::transform-broadcaster :init))
    (setq *tfl* (instance ros::transform-listener :init))
+   
+   ;;check if tf is published
+   (send self :get-base-coords)
 
    (ros::advertise (format nil "~A/marker_list" server-nodename)
 		   visualization_msgs::MarkerArray)
@@ -133,14 +136,14 @@
    (send self :publish-target-arrow-obj)
    (send self :publish-origin-arrow-obj)
 
-   (print "initialized")
-   (print "start loop")
+   (ros::ros-info "finish initializing and start loop")
    (do-until-key
     ;;(send self :publish-target-arrow-tf)
     ;;(send self :publish-origin-arrow-tf)
 
     (ros::spin-once)
-    (x::window-main-one)
+    (unless (or (null x::*display*) (= x::*display* 0))
+      (x::window-main-one))
     (ros::sleep)
     (unless (ros::ok) (return)))
    )
@@ -274,7 +277,6 @@
        (send self :publish-joint-states)
        (return-from :pose-move)
        )
-     (print "hoge")
      (setq planned-angle-vector nil)
      (unless (null vector-list)
        (print "sending vector list...")

@@ -453,11 +453,18 @@
    ;;(send *tfl* :lookup-transform "utorso" "odom" (ros::time 0))
    (let (coords torso->map)
      (setq coords (send (send robot :r_foot_lk :worldcoords) :copy-worldcoords))
-     (dotimes (i 5)
+     (while t
        (setq torso->map (send *tfl* :lookup-transform "r_foot" "map" (ros::time 0)))
-       (when torso->map
+       (cond
+	(torso->map
 	 (send coords :transform torso->map)
-	 (return))
+	 (return)
+	 )
+	(t
+	 (ros::ros-info "r_foot -> map cannnot transform yet")
+	 (ros::sleep)
+	 )
+       )
        )
      ;;   (caddr (send robot :torso))
      coords
