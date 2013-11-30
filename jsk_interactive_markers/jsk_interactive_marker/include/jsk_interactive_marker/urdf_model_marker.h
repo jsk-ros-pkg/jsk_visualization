@@ -30,7 +30,7 @@ class UrdfModelMarker {
  public:
   //  UrdfModelMarker(string file);
   UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
   UrdfModelMarker();
 
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
@@ -50,7 +50,8 @@ class UrdfModelMarker {
   void hideMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void hideAllMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
-
+  void hideModelMarkerCB( const std_msgs::EmptyConstPtr &msg);
+  void showModelMarkerCB( const std_msgs::EmptyConstPtr &msg);
 
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale, const std_msgs::ColorRGBA &color, bool use_color);
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale);
@@ -87,6 +88,8 @@ class UrdfModelMarker {
   ros::Publisher pub_joint_state_;
   
   ros::Subscriber sub_reset_joints_;
+  ros::Subscriber hide_marker_;
+  ros::Subscriber show_marker_;
 
   ros::ServiceServer serv_reset_;
   ros::ServiceServer serv_set_;
@@ -116,6 +119,7 @@ class UrdfModelMarker {
   bool robot_mode_;
   bool registration_;
   string mode_;
+  string fixed_link_;
 
   struct graspPoint{
     graspPoint(){
@@ -135,8 +139,10 @@ class UrdfModelMarker {
   struct linkProperty{
     linkProperty(){
       displayMoveMarker = false;
+      displayModelMarker = true;
     }
     bool displayMoveMarker;
+    bool displayModelMarker;
     graspPoint gp;
     string frame_id;
     string movable_link;

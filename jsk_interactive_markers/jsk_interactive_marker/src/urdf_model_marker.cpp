@@ -140,7 +140,7 @@ geometry_msgs::Pose UrdfModelMarker::UrdfPose2Pose( const urdf::Pose pose){
 
 void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform){
   dynamic_tf_publisher::SetDynamicTF SetTf;
-  SetTf.request.freq = 1;
+  SetTf.request.freq = 10;
   SetTf.request.cur_tf.header.stamp = ros::Time::now();
   SetTf.request.cur_tf.header.frame_id = parent_frame_id;
   SetTf.request.cur_tf.child_frame_id = frame_id;
@@ -190,6 +190,38 @@ void UrdfModelMarker::publishJointState( const visualization_msgs::InteractiveMa
 void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg){
   setJointState(model->getRoot(), msg);
   addChildLinkNames(model->getRoot(), true, false);
+
+  if(mode_ == "visualization"){
+    //fix fixed_link of Marker on fixed_link of Robot
+    string marker_name =  model_name_ + "/" + model->getRoot()->name;
+
+    tf::StampedTransform stf_robot;
+    tfl_.lookupTransform(fixed_link_, model->getRoot()->name,
+			 ros::Time(0), stf_robot);
+
+    tf::StampedTransform stf_marker;
+    tfl_.lookupTransform(marker_name, model_name_ + "/" + fixed_link_,
+			 ros::Time(0), stf_marker);
+    
+    KDL::Frame robotFrame;
+    KDL::Frame markerFrame;
+    KDL::Frame robotMarkerFrame;
+    tf::TransformTFToKDL(stf_robot, robotFrame);
+    tf::TransformTFToKDL(stf_marker, markerFrame);
+    
+    robotMarkerFrame = robotFrame * markerFrame;
+
+    //TODO set Link
+    geometry_msgs::Pose pose;
+    pose.position.y = 1;
+    pose.orientation.w = 1;
+
+
+    server_->setPose(marker_name, pose);
+    linkMarkerMap[marker_name].pose = pose;
+    CallSetDynamicTf(frame_id_, marker_name, Pose2Transform(pose));
+    addChildLinkNames(model->getRoot(), true, false);
+  }
 }
 
 
@@ -305,6 +337,29 @@ void UrdfModelMarker::hideAllMarkerCB( const visualization_msgs::InteractiveMark
     }
   addChildLinkNames(model->getRoot(), true, false);
 }
+
+void UrdfModelMarker::hideModelMarkerCB( const std_msgs::EmptyConstPtr &msg){
+  map<string, linkProperty>::iterator it = linkMarkerMap.begin();
+  while( it != linkMarkerMap.end() )
+    {
+      (*it).second.displayModelMarker = false;
+      ++it;
+    }
+  addChildLinkNames(model->getRoot(), true, false);
+}
+
+void UrdfModelMarker::showModelMarkerCB( const std_msgs::EmptyConstPtr &msg){
+  map<string, linkProperty>::iterator it = linkMarkerMap.begin();
+  while( it != linkMarkerMap.end() )
+    {
+      (*it).second.displayModelMarker = true;
+      ++it;
+    }
+  addChildLinkNames(model->getRoot(), true, false);
+
+}
+
+
 
 
 void UrdfModelMarker::graspPoint_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string link_name){
@@ -590,93 +645,106 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     }
   }
 
-  //move Marker
-
-
-  if(linkMarkerMap[link_frame_name_].displayMoveMarker){
-    addMoveMarkerControl(int_marker, link, root);
-  }
-
-
-  //model Mesh Marker
-  std_msgs::ColorRGBA color;
-  switch(color_index %3){
-  case 0:
-    color.r = (double)0xFF / 0xFF;
-    color.g = (double)0xC3 / 0xFF;
-    color.b = (double)0x00 / 0xFF;
-    break;
-  case 1:
-    color.r = (double)0x58 / 0xFF;
-    color.g = (double)0x0E / 0xFF;
-    color.b = (double)0xAD / 0xFF;
-    break;
-  case 2:
-    color.r = (double)0x0C / 0xFF;
-    color.g = (double)0x5A / 0xFF;
-    color.b = (double)0xA6 / 0xFF;
-    break;
-  }
-  color.a = 1.0;
-
-  if(link->visual.get() != NULL && link->visual->geometry.get() != NULL && link->visual->geometry->type == Geometry::MESH){
-    boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link->visual->geometry);
-    string model_mesh_ = mesh->filename;
-    //model_mesh_ = getModelFilePath(model_mesh_);
-    model_mesh_ = getRosPathFromModelPath(model_mesh_);
-    
-    ps.pose = UrdfPose2Pose(link->visual->origin);
-    cout << "mesh_file:" << model_mesh_ << endl;
-
-    visualization_msgs::InteractiveMarkerControl meshControl;
-    if(use_color){
-      meshControl = makeMeshMarkerControl(model_mesh_, ps, scale_factor_, color);
-    }else{
-      meshControl = makeMeshMarkerControl(model_mesh_, ps, scale_factor_);
-    }
-    int_marker.controls.push_back( meshControl );
-
-    server_->insert(int_marker);
-    server_->setCallback( int_marker.name,
-			  boost::bind( &UrdfModelMarker::proc_feedback, this, _1, parent_link_frame_name_, link_frame_name_) );
-
-    model_menu_.apply(*server_, link_frame_name_);
+  //hide marker
+  if(!linkMarkerMap[link_frame_name_].displayModelMarker){
+    server_->erase(link_frame_name_);
+    server_->erase(model_name_ + "/" + link->name + "/grasp"); //grasp marker
   }else{
-    boost::shared_ptr<Joint> parent_joint = link->parent_joint;
-    if(parent_joint != NULL){
-      if(parent_joint->type==Joint::REVOLUTE || parent_joint->type==Joint::REVOLUTE){
-	addInvisibleMeshMarkerControl(int_marker, link, color);
-	server_->insert(int_marker);
-	server_->setCallback( int_marker.name,
-			      boost::bind( &UrdfModelMarker::proc_feedback, this, _1, parent_link_frame_name_, link_frame_name_) );
-	model_menu_.apply(*server_, link_frame_name_);
-      }
+
+
+    //move Marker  
+    if(linkMarkerMap[link_frame_name_].displayMoveMarker){
+      addMoveMarkerControl(int_marker, link, root);
     }
 
-  }
-  if(!robot_mode_){
-    //add Grasp Point Marker
-    if(linkMarkerMap[link_frame_name_].gp.displayGraspPoint){
-      visualization_msgs::InteractiveMarker grasp_int_marker;
-      double grasp_scale_factor = 1.02;
-      string grasp_link_frame_name_ = model_name_ + "/" + link->name + "/grasp";
-      string grasp_parent_link_frame_name_ = model_name_ + "/" + link->name;
 
-      geometry_msgs::PoseStamped grasp_ps;
-      grasp_ps.pose = linkMarkerMap[link_frame_name_].gp.pose;
-      grasp_ps.header.frame_id =  grasp_parent_link_frame_name_;
+    //model Mesh Marker
+    std_msgs::ColorRGBA color;
+    if(mode_ == "visualization"){
+      color.r = (double)0xFF / 0xFF;
+      color.g = (double)0xFF / 0xFF;
+      color.b = (double)0x00 / 0xFF;
+      color.a = 0.5;
+    }else{
+      switch(color_index %3){
+      case 0:
+	color.r = (double)0xFF / 0xFF;
+	color.g = (double)0xC3 / 0xFF;
+	color.b = (double)0x00 / 0xFF;
+	break;
+      case 1:
+	color.r = (double)0x58 / 0xFF;
+	color.g = (double)0x0E / 0xFF;
+	color.b = (double)0xAD / 0xFF;
+	break;
+      case 2:
+	color.r = (double)0x0C / 0xFF;
+	color.g = (double)0x5A / 0xFF;
+	color.b = (double)0xA6 / 0xFF;
+	break;
+      }
+      color.a = 1.0;
+    }
 
-      grasp_int_marker.header = grasp_ps.header;
-      grasp_int_marker.name = grasp_link_frame_name_;
-      grasp_int_marker.scale = 1.0;
-      grasp_int_marker.pose = grasp_ps.pose;
+    if(link->visual.get() != NULL && link->visual->geometry.get() != NULL && link->visual->geometry->type == Geometry::MESH){
+      boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link->visual->geometry);
+      string model_mesh_ = mesh->filename;
+      //model_mesh_ = getModelFilePath(model_mesh_);
+      model_mesh_ = getRosPathFromModelPath(model_mesh_);
+    
+      ps.pose = UrdfPose2Pose(link->visual->origin);
+      cout << "mesh_file:" << model_mesh_ << endl;
 
-      addGraspPointControl(grasp_int_marker, link_frame_name_);
+      visualization_msgs::InteractiveMarkerControl meshControl;
+      if(use_color){
+	meshControl = makeMeshMarkerControl(model_mesh_, ps, scale_factor_, color);
+      }else{
+	meshControl = makeMeshMarkerControl(model_mesh_, ps, scale_factor_);
+      }
+      int_marker.controls.push_back( meshControl );
 
-      server_->insert(grasp_int_marker);
-      server_->setCallback( grasp_int_marker.name,
-			    boost::bind( &UrdfModelMarker::graspPoint_feedback, this, _1, link_frame_name_));
+      server_->insert(int_marker);
+      server_->setCallback( int_marker.name,
+			    boost::bind( &UrdfModelMarker::proc_feedback, this, _1, parent_link_frame_name_, link_frame_name_) );
 
+      model_menu_.apply(*server_, link_frame_name_);
+    }else{
+      boost::shared_ptr<Joint> parent_joint = link->parent_joint;
+      if(parent_joint != NULL){
+	if(parent_joint->type==Joint::REVOLUTE || parent_joint->type==Joint::REVOLUTE){
+	  addInvisibleMeshMarkerControl(int_marker, link, color);
+	  server_->insert(int_marker);
+	  server_->setCallback( int_marker.name,
+				boost::bind( &UrdfModelMarker::proc_feedback, this, _1, parent_link_frame_name_, link_frame_name_) );
+	  model_menu_.apply(*server_, link_frame_name_);
+	}
+      }
+
+    }
+    if(!robot_mode_){
+      //add Grasp Point Marker
+      if(linkMarkerMap[link_frame_name_].gp.displayGraspPoint){
+	visualization_msgs::InteractiveMarker grasp_int_marker;
+	double grasp_scale_factor = 1.02;
+	string grasp_link_frame_name_ = model_name_ + "/" + link->name + "/grasp";
+	string grasp_parent_link_frame_name_ = model_name_ + "/" + link->name;
+
+	geometry_msgs::PoseStamped grasp_ps;
+	grasp_ps.pose = linkMarkerMap[link_frame_name_].gp.pose;
+	grasp_ps.header.frame_id =  grasp_parent_link_frame_name_;
+
+	grasp_int_marker.header = grasp_ps.header;
+	grasp_int_marker.name = grasp_link_frame_name_;
+	grasp_int_marker.scale = 1.0;
+	grasp_int_marker.pose = grasp_ps.pose;
+
+	addGraspPointControl(grasp_int_marker, link_frame_name_);
+
+	server_->insert(grasp_int_marker);
+	server_->setCallback( grasp_int_marker.name,
+			      boost::bind( &UrdfModelMarker::graspPoint_feedback, this, _1, link_frame_name_));
+
+      }
     }
   }
   server_->applyChanges();
@@ -693,7 +761,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 UrdfModelMarker::UrdfModelMarker ()
 {}
 
-UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_) {
   pnh_.param("server_name", server_name, std::string ("") );
 
   if ( server_name == "" ) {
@@ -711,6 +779,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   robot_mode_ = robot_mode;
   registration_ = registration;
   mode_ = mode;
+  fixed_link_ = fixed_link;
 
   pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
   pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1);
@@ -720,6 +789,8 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
 
   sub_reset_joints_ = pnh_.subscribe<sensor_msgs::JointState> (model_name_ + "/reset_joint_states", 1, boost::bind( &UrdfModelMarker::resetJointStatesCB, this, _1));
   
+  hide_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/hide_marker", 1, boost::bind( &UrdfModelMarker::hideModelMarkerCB, this, _1));
+  show_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/show_marker", 1, boost::bind( &UrdfModelMarker::showModelMarkerCB, this, _1));
 
   /*
     serv_set_ = pnh_.advertiseService("set_pose",
@@ -773,17 +844,6 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
       model_menu_.insert( "Hide All Marker" ,
 			  boost::bind( &UrdfModelMarker::hideAllMarkerCB, this, _1) );
   }
-
-
-  if(registration_){
-  }else{
-
-    if(robot_mode_){
-    }else{
-    }
-  }
-
-
 
   model_file_ = getFilePathFromRosPath(model_file_);
 
@@ -843,19 +903,25 @@ int main(int argc, char** argv)
     }
     string mode = "model";
     bool registration = false;
+    string fixed_link = "";
     if(model.hasMember("registration")){
       registration = model["registration"];
       mode = "registration";
+      if(model.hasMember("fixed-link")){
+	fixed_link.assign( model["fixed-link"]);
+	//fixed_link = model["fixed-link"];
+      }
     }
 
     if(model["robot"]){
       mode = "robot";
     }
     if(model.hasMember("mode")){
+      mode.assign(model["mode"]);
       //mode = model["mode"];
     }
-
-    new UrdfModelMarker(model["name"], model["model"], model["frame-id"], p, scale_factor, model["mode"], model["robot"], registration, server);
+    
+    new UrdfModelMarker(model["name"], model["model"], model["frame-id"], p, scale_factor, mode , model["robot"], registration,fixed_link, server);
   }
 
   ros::spin();
