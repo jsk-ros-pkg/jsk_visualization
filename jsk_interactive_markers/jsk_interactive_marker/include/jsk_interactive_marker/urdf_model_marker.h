@@ -118,6 +118,7 @@ class UrdfModelMarker {
   double scale_factor_;
   bool robot_mode_;
   bool registration_;
+  bool use_dynamic_tf_;
   string mode_;
   string fixed_link_;
 

@@ -149,7 +149,9 @@ void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, 
   SetTf.request.cur_tf.header.frame_id = parent_frame_id;
   SetTf.request.cur_tf.child_frame_id = frame_id;
   SetTf.request.cur_tf.transform = transform;
-  dynamic_tf_publisher_client.call(SetTf);
+  if (use_dynamic_tf_){
+      dynamic_tf_publisher_client.call(SetTf);
+  }
 }
 
 void UrdfModelMarker::publishMarkerPose( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
@@ -766,14 +768,19 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 UrdfModelMarker::UrdfModelMarker ()
 {}
 
-UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
   pnh_.param("server_name", server_name, std::string ("") );
 
   if ( server_name == "" ) {
     server_name = ros::this_node::getName();
   }
-  dynamic_tf_publisher_client = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf");
-  ros::service::waitForService("set_dynamic_tf", -1);
+  
+  pnh_.getParam("use_dynamic_tf", use_dynamic_tf_);
+  if (use_dynamic_tf_) {
+      dynamic_tf_publisher_client = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf");
+      ros::service::waitForService("set_dynamic_tf", -1);
+  }
+  std::cerr << "use_dynamic_tf_ is " << use_dynamic_tf_ << std::endl;
 
   server_ = server;
   model_name_ = model_name;
@@ -880,14 +887,26 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   xml_file.close();
 
   std::cout << "model_file:" << model_file_ << std::endl;
-
   model = parseURDF(xml_string);
   if (!model){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
     return;
   }
 
+
   addChildLinkNames(model->getRoot(), true, true);
+
+  // wait for joint\statelistner
+  if ( pub_joint_state_.getNumSubscribers() == 0 ) {
+      ROS_WARN_STREAM("urdf_model_marker wait for joint_state_subscriber .... ");
+      ros::Duration(1.0).sleep();
+  }
+  ROS_WARN_STREAM("urdf_model_marker publish joint_state_subscriber, done");
+  // start JointState
+  sensor_msgs::JointState js;
+  getJointState(model->getRoot(), js);
+  pub_joint_state_.publish( js );
+
   return;
 
 }
