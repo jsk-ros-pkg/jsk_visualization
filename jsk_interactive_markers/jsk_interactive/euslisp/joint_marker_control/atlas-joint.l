@@ -32,9 +32,9 @@
     )
   )
 
-(defun reset-marker-pose
+
+(defun model2marker
   ()
-  (real2model)
   (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (let ((joint-angles nil)
 	(joint-names nil)
@@ -52,7 +52,19 @@
 
     (ros::publish (format nil "~A/atlas/reset_joint_states" server-nodename)
 		  joint-state-msg)
-    ))
+    )
+  )
+
+  
+
+
+
+
+(defun reset-marker-pose
+  ()
+  (real2model)
+  (model2marker)
+)
 
 
 (defun marker-menu-callback
@@ -69,6 +81,17 @@
      ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_JOINT*)
       (reset-marker-pose)
      )
+     ;;stand pose
+     ((eq menu 100)
+      (send *atlas* :stand-pose)
+      (model2marker)
+      )
+
+     ;;manip pose
+     ((eq menu 101)
+      (send *atlas* :reset-manip-pose)
+      (model2marker)
+      )
     ))
 )
 
