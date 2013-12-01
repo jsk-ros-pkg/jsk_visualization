@@ -807,6 +807,8 @@ void InteractiveMarkerInterface::initHandler(void){
 
   //menu_head_.insert("Take Snapshot", boost::bind( &InteractiveMarkerInterface::snapshotCB, this ) );
 
+
+
   head_target_handle_ = menu_head_.insert( "Target Point", 
 					   boost::bind( &InteractiveMarkerInterface::targetPointMenuCB, this, _1 ) );
   menu_head_.setCheckState(head_target_handle_, interactive_markers::MenuHandler::UNCHECKED);
@@ -1046,6 +1048,7 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
 
   pnh_.param<std::string>("hand_type", hand_type_, "GENERIC");
 
+  pnh_.param("use_head_marker", use_body_marker_, false );
 
   XmlRpc::XmlRpcValue v;
   pnh_.param("mesh_config", v, v);
@@ -1056,7 +1059,9 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
   head_goal_pose_.header.frame_id = base_frame;
 
   initHandler();
-  initBodyMarkers();
+  if(use_body_marker_){
+    initBodyMarkers();
+  }
   initControlMarkers();
   changeMarkerMoveMode(marker_name.c_str(),0);
 }

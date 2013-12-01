@@ -38,11 +38,13 @@ void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker
     //cout << qua.x() << qua.y() << qua.z() << qua.w() << endl;
 
     //cout << parent_joint->type << endl;
+    int_marker.scale = 0.5;
 
     switch(parent_joint->type){
     case Joint::REVOLUTE:
     case Joint::CONTINUOUS:
       control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+      //interactive_markers::makeDisc ( int_marker, control, 1);
       int_marker.controls.push_back(control);
       break;
     case Joint::PRISMATIC:
