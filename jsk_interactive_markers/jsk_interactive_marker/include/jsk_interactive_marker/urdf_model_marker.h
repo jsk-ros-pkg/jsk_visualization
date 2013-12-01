@@ -41,6 +41,7 @@ class UrdfModelMarker {
   void publishMarkerMenu( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu );
   void publishMoveObject( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void publishJointState( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void republishJointState( sensor_msgs::JointState js);
 
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string parent_frame_id, string frame_id);
 

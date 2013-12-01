@@ -180,6 +180,7 @@ class InteractiveMarkerInterface {
                       posture_l_, posture_r_, torso_on_, base_on_, head_on_, projector_on_ );
     }
 
+
     bool posture_r_;
     bool posture_l_;
     bool torso_on_;
@@ -197,6 +198,8 @@ class InteractiveMarkerInterface {
   };
 
   bool use_finger_marker_;
+  bool use_body_marker_;
+
 
   ControlState control_state_;
 

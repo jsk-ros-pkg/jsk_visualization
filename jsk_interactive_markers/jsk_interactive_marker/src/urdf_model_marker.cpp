@@ -192,10 +192,16 @@ void UrdfModelMarker::publishJointState( const visualization_msgs::InteractiveMa
   pub_joint_state_.publish( js );
 }
 
+void UrdfModelMarker::republishJointState( sensor_msgs::JointState js){
+  js.header.stamp = ros::Time::now();
+  pub_joint_state_.publish( js );
+}
+
 
 void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg){
   setJointState(model->getRoot(), msg);
   addChildLinkNames(model->getRoot(), true, false);
+  republishJointState(*msg);
 
   if(mode_ == "visualization"){
     //fix fixed_link of Marker on fixed_link of Robot
