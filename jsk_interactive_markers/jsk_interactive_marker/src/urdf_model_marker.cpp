@@ -280,6 +280,7 @@ void UrdfModelMarker::jointMoveCB( const visualization_msgs::InteractiveMarkerFe
 
 void UrdfModelMarker::resetMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   
+  publishJointState(feedback);
   publishMarkerMenu(feedback, jsk_interactive_marker::MarkerMenu::RESET_JOINT);
 }
 
