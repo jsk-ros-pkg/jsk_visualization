@@ -13,6 +13,8 @@ using namespace urdf;
 using namespace std;
 
 
+
+
 void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root){
   visualization_msgs::InteractiveMarkerControl control;
   if(root){
@@ -826,6 +828,22 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
       //boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
       model_menu_.insert( "Reset Marker Pose",
 			  boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
+      
+      
+
+      interactive_markers::MenuHandler::EntryHandle sub_menu_pose_;
+      sub_menu_pose_ = model_menu_.insert( "Special Pose" );
+
+      model_menu_.insert( sub_menu_pose_, "Stand Pose",
+			  boost::bind( &UrdfModelMarker::publishMarkerMenu, this, _1, 100) );
+
+      model_menu_.insert( sub_menu_pose_, "Manip Pose",
+			  boost::bind( &UrdfModelMarker::publishMarkerMenu, this, _1, 101) );
+
+      model_menu_.insert( "Reset Marker Pose",
+			  boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
+
+
       model_menu_.insert( "Hide Marker" ,
 			  boost::bind( &UrdfModelMarker::hideMarkerCB, this, _1) );
       model_menu_.insert( "Hide All Marker" ,
