@@ -198,6 +198,22 @@ void InteractiveMarkerInterface::useTorsoCb( const visualization_msgs::Interacti
 
 }
 
+void InteractiveMarkerInterface::usingIKCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+{
+  if(feedback->menu_entry_id == start_ik_menu_){
+    menu_handler.setCheckState( start_ik_menu_ , interactive_markers::MenuHandler::CHECKED );
+    menu_handler.setCheckState( stop_ik_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+    pub_marker_menuCb(feedback, jsk_interactive_marker::MarkerMenu::PLAN);
+  }else if(feedback->menu_entry_id == stop_ik_menu_){
+    menu_handler.setCheckState( start_ik_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+    menu_handler.setCheckState( stop_ik_menu_ , interactive_markers::MenuHandler::CHECKED );
+    pub_marker_menuCb(feedback, jsk_interactive_marker::MarkerMenu::CANCEL_PLAN);
+  }
+  menu_handler.reApply( *server_ );
+  server_->applyChanges();
+
+}
+
 void InteractiveMarkerInterface::modeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
   menu_handler.setCheckState( h_mode_last, interactive_markers::MenuHandler::UNCHECKED );
@@ -642,7 +658,19 @@ void InteractiveMarkerInterface::initHandler(void){
       menu_handler.insert("Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
     }
   }
-    
+  
+  pnh_.param("change_using_ik_menu", use_menu, false );
+  if(use_menu){
+  interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
+  sub_menu_move_ = menu_handler.insert( "Whether To Use IK" );
+  start_ik_menu_ = menu_handler.insert( sub_menu_move_,"Start IK",boost::bind( &InteractiveMarkerInterface::usingIKCb, this, _1));
+  menu_handler.setCheckState( start_ik_menu_, interactive_markers::MenuHandler::CHECKED );
+
+  stop_ik_menu_ = menu_handler.insert( sub_menu_move_,"Stop IK",boost::bind( &InteractiveMarkerInterface::usingIKCb, this, _1));
+  menu_handler.setCheckState( stop_ik_menu_, interactive_markers::MenuHandler::UNCHECKED );
+  }
+
+
   pnh_.param("force_move_menu", use_menu, false );
   if(use_menu){
     menu_handler.insert("Force Move", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::FORCE_MOVE));

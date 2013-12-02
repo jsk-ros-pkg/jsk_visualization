@@ -58,6 +58,8 @@ class InteractiveMarkerInterface {
   void ikmodeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void useTorsoCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
+  void usingIKCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+
   void updateHeadGoal( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void updateBase( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void updateFinger( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, std::string hand);
@@ -150,6 +152,9 @@ class InteractiveMarkerInterface {
   interactive_markers::MenuHandler::EntryHandle use_torso_nil_menu_;
   interactive_markers::MenuHandler::EntryHandle use_fullbody_menu_;
 
+
+  interactive_markers::MenuHandler::EntryHandle start_ik_menu_;
+  interactive_markers::MenuHandler::EntryHandle stop_ik_menu_;
 
   int h_mode_rightarm;
   int h_mode_constrained;
