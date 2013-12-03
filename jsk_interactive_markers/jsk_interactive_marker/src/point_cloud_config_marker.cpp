@@ -223,7 +223,7 @@ void PointCloudConfigMarker::updateBoxInteractiveMarker(){
   visualization_msgs::InteractiveMarker boxIM = makeBoxInteractiveMarker(marker_control_config, marker_name);
 
   server_->insert(boxIM,
-		  boost::bind( &PointCloudConfigMarker::moveBoxCb, this, _1 ));
+      boost::bind( &PointCloudConfigMarker::moveBoxCb, this, _1 ));
   menu_handler.apply(*server_, marker_name);
   server_->applyChanges();
 }
@@ -250,11 +250,11 @@ PointCloudConfigMarker::PointCloudConfigMarker () : nh_(), pnh_("~") {
   updateBoxInter_markers::MenuHandler::EntryHandle sub_menu_move_;
   sub_menu_move_ = model_menu_.insert( "Move" );
   model_menu_.insert( sub_menu_move_, "Yes", 
-		      boost::bind( &PointCloudConfigMarker::jointMoveCB, this, _1) );
+          boost::bind( &PointCloudConfigMarker::jointMoveCB, this, _1) );
   //    model_menu_.insert( "Move" ,
   //boost::bind( &PointCloudConfigMarker::jointMoveCB, this, _1) );
   model_menu_.insert( "Reset Marker Pose",
-		      boost::bind( &PointCloudConfigMarker::resetMarkerCB, this, _1) );
+          boost::bind( &PointCloudConfigMarker::resetMarkerCB, this, _1) );
   */
   
   return;
