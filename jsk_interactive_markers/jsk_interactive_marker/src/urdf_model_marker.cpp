@@ -134,7 +134,7 @@ geometry_msgs::Pose UrdfModelMarker::UrdfPose2Pose( const urdf::Pose pose){
   p_msg.orientation.y = y;
   p_msg.orientation.z = z;
   p_msg.orientation.w = w;
-
+  
   p_msg.position.x = pose.position.x;
   p_msg.position.y = pose.position.y;
   p_msg.position.z = pose.position.z;
@@ -242,9 +242,9 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
   case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
     linkMarkerMap[frame_id].pose = feedback->pose;
     CallSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(feedback->pose));
-    cout << "parent:" << parent_frame_id << " frame:" << frame_id <<endl;
+    //cout << "parent:" << parent_frame_id << " frame:" << frame_id <<endl;
     publishMarkerPose(feedback);
-    publishJointState(feedback);
+    //publishJointState(feedback);
     break;
   case visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK:
     cout << "clicked" << " frame:" << frame_id << mode_ << endl;
@@ -285,6 +285,7 @@ void UrdfModelMarker::graspPointCB( const visualization_msgs::InteractiveMarkerF
 
 void UrdfModelMarker::jointMoveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   publishJointState(feedback);
+  sleep(0.5);
   publishMarkerMenu(feedback, jsk_interactive_marker::MarkerMenu::JOINT_MOVE);
 }
 
