@@ -8,7 +8,7 @@
 ;;(atlas-init-ex :set-reset-pose nil)
 ;; (set-user)
 (real2model)
-(model2real :time 5000 :wait t)
+;;(model2real :time 5000 :wait t)
 
 (when (and (boundp '*irtviewer*) *irtviewer*)
   (send *irtviewer* :change-background #f(0.3 0.3 0.7))
@@ -54,11 +54,6 @@
 		  joint-state-msg)
     )
   )
-
-  
-
-
-
 
 (defun reset-marker-pose
   ()
