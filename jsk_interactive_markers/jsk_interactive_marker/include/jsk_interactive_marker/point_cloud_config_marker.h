@@ -6,12 +6,17 @@
 #include <jsk_interactive_marker/SetPose.h>
 #include <jsk_interactive_marker/MarkerSetPose.h>
 
+#include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/Empty.h>
+
+
 class PointCloudConfigMarker{
  public:
   struct MarkerControlConfig{
-    MarkerControlConfig(){
+    MarkerControlConfig(): marker_id(0), resolution_(0.1){
+      
     }
-    MarkerControlConfig(double s){
+    MarkerControlConfig(double s): marker_id(0), resolution_(0.1){
       size.x = s;
       size.y = s;
       size.z = s;
@@ -37,15 +42,23 @@ class PointCloudConfigMarker{
   void changeBoxSizeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
 
   void updateBoxInteractiveMarker();
-
+  void publishCurrentPose(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void publishCurrentPose(const geometry_msgs::PoseStamped::ConstPtr &pose);
+  void updatePoseCB(const geometry_msgs::PoseStamped::ConstPtr &pose);
+  void addBoxCB(const std_msgs::Empty::ConstPtr &msg);
   interactive_markers::MenuHandler makeMenuHandler();
   PointCloudConfigMarker ();
  private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
-
+  visualization_msgs::InteractiveMarkerFeedbackConstPtr latest_feedback_;
   ros::Publisher pub_;
+  ros::Publisher current_pose_pub_;
+  
+  
+  ros::Subscriber pose_update_sub_;
+  ros::Subscriber add_box_sub_;
 
   interactive_markers::MenuHandler menu_handler;
   interactive_markers::MenuHandler::EntryHandle resolution_menu_;

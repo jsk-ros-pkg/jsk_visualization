@@ -19,7 +19,7 @@ visualization_msgs::Marker PointCloudConfigMarker::makeBoxMarker(geometry_msgs::
 
 visualization_msgs::InteractiveMarker PointCloudConfigMarker::makeBoxInteractiveMarker(MarkerControlConfig mconfig, std::string name){
   visualization_msgs::InteractiveMarker mk;
-  mk.header.frame_id = "/map";
+  mk.header.frame_id = "/pelvis";
   std::string description;
   std::stringstream ss;
   ss << "x:" << mconfig.pose.position.x ;
@@ -122,11 +122,24 @@ interactive_markers::MenuHandler PointCloudConfigMarker::makeMenuHandler(){
   return mh;
 }
 
+void PointCloudConfigMarker::publishCurrentPose(const geometry_msgs::PoseStamped::ConstPtr &pose)
+{
+  current_pose_pub_.publish(pose);
+}
+
+void PointCloudConfigMarker::publishCurrentPose(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
+{
+  geometry_msgs::PoseStamped pose_stamped;
+  pose_stamped.header = feedback->header;
+  pose_stamped.pose = feedback->pose;
+  current_pose_pub_.publish(pose_stamped);
+}
 
 void PointCloudConfigMarker::moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
   std::cout << "moved" << std::endl;
-  //publishMarkerMsg( feedback );
+  publishCurrentPose(feedback);
+  latest_feedback_ = feedback;
 }
 
 void PointCloudConfigMarker::changeResolutionCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
@@ -145,7 +158,7 @@ void PointCloudConfigMarker::changeResolutionCb( const visualization_msgs::Inter
 
   menu_handler.reApply( *server_ );
   server_->applyChanges();
-
+  latest_feedback_ = feedback;
 
 }
 
@@ -196,6 +209,7 @@ void PointCloudConfigMarker::publishMarkerMsg( const visualization_msgs::Interac
   visualization_msgs::Marker marker = makeMarkerMsg(feedback);
   marker.id = marker_control_config.marker_id++;
   pub_.publish(marker);
+  latest_feedback_ = feedback;
 }
 
 
@@ -207,7 +221,7 @@ void PointCloudConfigMarker::cancelCb( const visualization_msgs::InteractiveMark
   marker.id = --marker_control_config.marker_id;
   marker.action = visualization_msgs::Marker::DELETE;
   pub_.publish(marker);
-
+  latest_feedback_ = feedback;
 }
 
 void PointCloudConfigMarker::clearCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
@@ -217,6 +231,7 @@ void PointCloudConfigMarker::clearCb( const visualization_msgs::InteractiveMarke
   marker.id = -1;
   marker.action = visualization_msgs::Marker::DELETE;
   pub_.publish(marker);
+  latest_feedback_ = feedback;
 }
 
 void PointCloudConfigMarker::updateBoxInteractiveMarker(){
@@ -226,6 +241,25 @@ void PointCloudConfigMarker::updateBoxInteractiveMarker(){
       boost::bind( &PointCloudConfigMarker::moveBoxCb, this, _1 ));
   menu_handler.apply(*server_, marker_name);
   server_->applyChanges();
+}
+
+void PointCloudConfigMarker::updatePoseCB(const geometry_msgs::PoseStamped::ConstPtr &pose) {
+  //ROS_INFO("get new pose");
+  server_->setPose(marker_name, pose->pose);
+  server_->applyChanges();
+  publishCurrentPose(pose);
+  // manually update the latest_feedback_
+  visualization_msgs::InteractiveMarkerFeedback::Ptr feedback(new visualization_msgs::InteractiveMarkerFeedback);
+  feedback->pose = pose->pose;
+  feedback->header = pose->header;
+  latest_feedback_ = feedback;
+}
+
+void PointCloudConfigMarker::addBoxCB(const std_msgs::Empty::ConstPtr &msg) {
+  ROS_INFO("add!");
+  visualization_msgs::Marker marker = makeMarkerMsg(latest_feedback_);
+  marker.id = marker_control_config.marker_id++;
+  pub_.publish(marker);
 }
 
 PointCloudConfigMarker::PointCloudConfigMarker () : nh_(), pnh_("~") {
@@ -239,8 +273,12 @@ PointCloudConfigMarker::PointCloudConfigMarker () : nh_(), pnh_("~") {
   server_.reset( new interactive_markers::InteractiveMarkerServer(server_name));
   
   pub_ =  pnh_.advertise<visualization_msgs::Marker> ("get", 1);
+  current_pose_pub_ = pnh_.advertise<geometry_msgs::PoseStamped> ("current_pose", 1);
+  pose_update_sub_ = pnh_.subscribe("update_pose", 1, &PointCloudConfigMarker::updatePoseCB,
+                                    this);
+  add_box_sub_ = pnh_.subscribe("add_box", 1, &PointCloudConfigMarker::addBoxCB, this);
   menu_handler = makeMenuHandler();
-
+  
   marker_control_config = MarkerControlConfig(size_);
 
   updateBoxInteractiveMarker();
