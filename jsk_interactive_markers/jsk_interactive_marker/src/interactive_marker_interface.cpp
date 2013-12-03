@@ -664,10 +664,10 @@ void InteractiveMarkerInterface::initHandler(void){
   interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
   sub_menu_move_ = menu_handler.insert( "Whether To Use IK" );
   start_ik_menu_ = menu_handler.insert( sub_menu_move_,"Start IK",boost::bind( &InteractiveMarkerInterface::usingIKCb, this, _1));
-  menu_handler.setCheckState( start_ik_menu_, interactive_markers::MenuHandler::CHECKED );
+  menu_handler.setCheckState( start_ik_menu_, interactive_markers::MenuHandler::UNCHECKED );
 
   stop_ik_menu_ = menu_handler.insert( sub_menu_move_,"Stop IK",boost::bind( &InteractiveMarkerInterface::usingIKCb, this, _1));
-  menu_handler.setCheckState( stop_ik_menu_, interactive_markers::MenuHandler::UNCHECKED );
+  menu_handler.setCheckState( stop_ik_menu_, interactive_markers::MenuHandler::CHECKED );
   }
 
 
