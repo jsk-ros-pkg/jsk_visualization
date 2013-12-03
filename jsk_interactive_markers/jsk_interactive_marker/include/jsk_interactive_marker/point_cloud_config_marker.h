@@ -8,8 +8,22 @@
 
 class PointCloudConfigMarker{
  public:
-  visualization_msgs::Marker makeBoxMarker(double size);
-  visualization_msgs::InteractiveMarker makeBoxInteractiveMarker(double size, std::string name);
+  struct MarkerControlConfig{
+    MarkerControlConfig(){
+    }
+    MarkerControlConfig(double s){
+      size.x = s;
+      size.y = s;
+      size.z = s;
+    }
+    geometry_msgs::Pose pose;
+    geometry_msgs::Vector3 size;
+    int marker_id;
+    double resolution_;
+  };
+
+  visualization_msgs::Marker makeBoxMarker(geometry_msgs::Vector3 size);
+  visualization_msgs::InteractiveMarker makeBoxInteractiveMarker(MarkerControlConfig mconfig, std::string name);
   void moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
 
   visualization_msgs::Marker makeMarkerMsg( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
@@ -19,6 +33,10 @@ class PointCloudConfigMarker{
   void clearCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
 
   void changeResolutionCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void changeBoxSize(geometry_msgs::Vector3 size);
+  void changeBoxSizeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+
+  void updateBoxInteractiveMarker();
 
   interactive_markers::MenuHandler makeMenuHandler();
   PointCloudConfigMarker ();
@@ -35,11 +53,16 @@ class PointCloudConfigMarker{
   interactive_markers::MenuHandler::EntryHandle resolution_10cm_menu_;
   interactive_markers::MenuHandler::EntryHandle resolution_5cm_menu_;
 
+  interactive_markers::MenuHandler::EntryHandle box_size_menu_;
+  interactive_markers::MenuHandler::EntryHandle checked_box_size_menu_;
+  interactive_markers::MenuHandler::EntryHandle box_size_100_menu_;
+  interactive_markers::MenuHandler::EntryHandle box_size_50_menu_;
+  interactive_markers::MenuHandler::EntryHandle box_size_25_menu_;
+
 
   std::string server_name;
   std::string marker_name;
-  double size_;
-  int marker_id;
-  double resolution_;
 
+  double size_;
+  MarkerControlConfig marker_control_config;
 };
