@@ -129,6 +129,7 @@ visualization_msgs::Marker PointCloudConfigMarker::makeMarkerMsg( const visualiz
   if(marker.color.b > 1.0){marker.color.b = 1.0;}
   marker.color.a = 0.1;
   marker.header = feedback->header;
+  return marker;
 }
 
 void PointCloudConfigMarker::publishMarkerMsg( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
@@ -139,6 +140,9 @@ void PointCloudConfigMarker::publishMarkerMsg( const visualization_msgs::Interac
 
 
 void PointCloudConfigMarker::cancelCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+  if(marker_id == 0){
+    return;
+  }
   visualization_msgs::Marker marker = makeMarkerMsg(feedback);
   marker.id = --marker_id;
   marker.action = visualization_msgs::Marker::DELETE;
@@ -147,6 +151,8 @@ void PointCloudConfigMarker::cancelCb( const visualization_msgs::InteractiveMark
 }
 
 void PointCloudConfigMarker::clearCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+  marker_id = 0;
+  
   visualization_msgs::Marker marker = makeMarkerMsg(feedback);
   marker.id = -1;
   marker.action = visualization_msgs::Marker::DELETE;
