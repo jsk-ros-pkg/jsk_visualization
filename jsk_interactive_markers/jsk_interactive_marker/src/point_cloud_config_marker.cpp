@@ -17,17 +17,35 @@ visualization_msgs::Marker PointCloudConfigMarker::makeBoxMarker(geometry_msgs::
   return marker;
 }
 
+visualization_msgs::Marker PointCloudConfigMarker::makeTextMarker(geometry_msgs::Vector3 size){
+  visualization_msgs::Marker marker;
+  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  marker.text = "hello world";
+  marker.scale.z = 0.1;
+  marker.scale.y = 0.1;
+  marker.scale.x = 0.1;
+  marker.color.r = 0.0;
+  marker.color.g = 0.0;
+  marker.color.b = 0.0;
+  marker.color.a = 1.0;
+  return marker;
+}
+
 visualization_msgs::InteractiveMarker PointCloudConfigMarker::makeBoxInteractiveMarker(MarkerControlConfig mconfig, std::string name){
   visualization_msgs::InteractiveMarker mk;
   mk.header.frame_id = "/pelvis";
+  if (latest_feedback_) {
+    mk.pose = latest_feedback_->pose;
+  }
+  //mk.pose = 
   std::string description;
   std::stringstream ss;
-  ss << "x:" << mconfig.pose.position.x ;
-     // << "y:" << mconfig.pose.position.y <<
-     // << "z:" << mconfig.pose.position.z;
-  ss >> description;
-  mk.description = description;
-
+  ss << "size: (" << mconfig.size.x
+     << ", " << mconfig.size.y
+     << ", " << mconfig.size.z << ")" << std::endl;
+  ss << "resolution: " << mconfig.resolution_ << std::endl;
+  description = ss.str();
+  
   mk.header.stamp = ros::Time(0);
   mk.name = name;
   //mk.scale = size * 1.05;
@@ -39,6 +57,14 @@ visualization_msgs::InteractiveMarker PointCloudConfigMarker::makeBoxInteractive
   controlBox.markers.push_back( makeBoxMarker(mconfig.size) );
   mk.controls.push_back( controlBox );
 
+  visualization_msgs::InteractiveMarkerControl textBox;
+  textBox.always_visible = true;
+  textBox.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+  visualization_msgs::Marker text_marker = makeTextMarker(mconfig.size);
+  text_marker.text = description;
+  textBox.markers.push_back( text_marker );
+  mk.controls.push_back( textBox );
+  
   visualization_msgs::InteractiveMarkerControl controlArrow;
   controlArrow.always_visible = true;
   controlArrow.orientation.w = 1;
@@ -137,7 +163,7 @@ void PointCloudConfigMarker::publishCurrentPose(const visualization_msgs::Intera
 
 void PointCloudConfigMarker::moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  std::cout << "moved" << std::endl;
+  //std::cout << "moved" << std::endl;
   publishCurrentPose(feedback);
   latest_feedback_ = feedback;
 }
@@ -160,6 +186,12 @@ void PointCloudConfigMarker::changeResolutionCb( const visualization_msgs::Inter
   server_->applyChanges();
   latest_feedback_ = feedback;
 
+}
+
+
+void PointCloudConfigMarker::changeBoxResolution(const std_msgs::Float32::ConstPtr &msg){
+  marker_control_config.resolution_ = msg->data;
+  updateBoxInteractiveMarker();
 }
 
 void PointCloudConfigMarker::changeBoxSize(geometry_msgs::Vector3 size){
@@ -192,9 +224,9 @@ visualization_msgs::Marker PointCloudConfigMarker::makeMarkerMsg( const visualiz
   visualization_msgs::Marker marker;
   marker.type = visualization_msgs::Marker::CUBE;
   marker.pose = feedback->pose;
-  marker.scale.x = size_;
-  marker.scale.y = size_;
-  marker.scale.z = size_;
+  marker.scale.x = marker_control_config.size.x;
+  marker.scale.y = marker_control_config.size.y;
+  marker.scale.z = marker_control_config.size.z;
   marker.color.r =   marker_control_config.resolution_;
   marker.color.g =   marker_control_config.resolution_ * 10;
   if(marker.color.g > 1.0){marker.color.g = 1.0;}
@@ -236,7 +268,7 @@ void PointCloudConfigMarker::clearCb( const visualization_msgs::InteractiveMarke
 
 void PointCloudConfigMarker::updateBoxInteractiveMarker(){
   visualization_msgs::InteractiveMarker boxIM = makeBoxInteractiveMarker(marker_control_config, marker_name);
-
+  
   server_->insert(boxIM,
       boost::bind( &PointCloudConfigMarker::moveBoxCb, this, _1 ));
   menu_handler.apply(*server_, marker_name);
@@ -277,6 +309,8 @@ PointCloudConfigMarker::PointCloudConfigMarker () : nh_(), pnh_("~") {
   pose_update_sub_ = pnh_.subscribe("update_pose", 1, &PointCloudConfigMarker::updatePoseCB,
                                     this);
   add_box_sub_ = pnh_.subscribe("add_box", 1, &PointCloudConfigMarker::addBoxCB, this);
+  change_box_size_sub_ = pnh_.subscribe("change_size", 1, &PointCloudConfigMarker::changeBoxSize, this);
+  change_box_resolution_sub_ = pnh_.subscribe("change_resolution", 1, &PointCloudConfigMarker::changeBoxResolution, this);  
   menu_handler = makeMenuHandler();
   
   marker_control_config = MarkerControlConfig(size_);

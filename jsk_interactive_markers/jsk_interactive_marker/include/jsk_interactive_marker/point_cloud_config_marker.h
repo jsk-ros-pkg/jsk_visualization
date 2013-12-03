@@ -8,6 +8,7 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <std_msgs/Empty.h>
+#include <std_msgs/Float32.h>
 
 
 class PointCloudConfigMarker{
@@ -28,6 +29,7 @@ class PointCloudConfigMarker{
   };
 
   visualization_msgs::Marker makeBoxMarker(geometry_msgs::Vector3 size);
+  visualization_msgs::Marker makeTextMarker(geometry_msgs::Vector3 size);
   visualization_msgs::InteractiveMarker makeBoxInteractiveMarker(MarkerControlConfig mconfig, std::string name);
   void moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
 
@@ -40,8 +42,10 @@ class PointCloudConfigMarker{
   void changeResolutionCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void changeBoxSize(geometry_msgs::Vector3 size);
   void changeBoxSizeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  
 
   void updateBoxInteractiveMarker();
+  void changeBoxResolution(const std_msgs::Float32::ConstPtr &msg);
   void publishCurrentPose(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void publishCurrentPose(const geometry_msgs::PoseStamped::ConstPtr &pose);
   void updatePoseCB(const geometry_msgs::PoseStamped::ConstPtr &pose);
@@ -59,6 +63,8 @@ class PointCloudConfigMarker{
   
   ros::Subscriber pose_update_sub_;
   ros::Subscriber add_box_sub_;
+  ros::Subscriber change_box_size_sub_;
+  ros::Subscriber change_box_resolution_sub_;
 
   interactive_markers::MenuHandler menu_handler;
   interactive_markers::MenuHandler::EntryHandle resolution_menu_;
