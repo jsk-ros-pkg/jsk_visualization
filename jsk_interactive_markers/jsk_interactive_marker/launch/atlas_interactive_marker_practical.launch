@@ -3,10 +3,11 @@
     <param name="base_frame" type="string" value="/map"/>
     <param name="move_base_frame" type="string" value="/r_foot"/>
     <param name="change_using_ik_menu" type="boolean" value="true"/>
-<!--
-    <param name="move_menu" type="boolean" value="true"/>
-    <param name="move_safety_menu" type="boolean" value="true"/>
--->
+    <!--
+	<param name="move_menu" type="boolean" value="true"/>
+	<param name="move_safety_menu" type="boolean" value="true"/>
+    -->
+    <param name="touch_move_menu" type="boolean" value="true"/>
     <param name="grasp_menu" type="boolean" value="false"/>
     <param name="stop_grasp_menu" type="boolean" value="false"/>
     <param name="harf_grasp_menu" type="boolean" value="false"/>

@@ -670,6 +670,11 @@ void InteractiveMarkerInterface::initHandler(void){
   menu_handler.setCheckState( stop_ik_menu_, interactive_markers::MenuHandler::CHECKED );
   }
 
+  pnh_.param("touch_move_menu", use_menu, false );
+  if(use_menu){
+    menu_handler.insert("Touch It", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCH));
+  }
+
 
   pnh_.param("force_move_menu", use_menu, false );
   if(use_menu){

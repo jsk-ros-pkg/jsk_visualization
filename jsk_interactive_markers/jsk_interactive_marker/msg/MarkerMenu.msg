@@ -30,6 +30,7 @@ uint8 LOOK_AUTO=31
 
 uint8 MANIP_MODE=40
 uint8 PICK=41
+uint8 TOUCH=42
 
 uint8 PLAN=50
 uint8 EXECUTE=51
