@@ -254,14 +254,23 @@ void PointCloudConfigMarker::cancelCb( const visualization_msgs::InteractiveMark
   latest_feedback_ = feedback;
 }
 
-void PointCloudConfigMarker::clearCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+
+void PointCloudConfigMarker::clearBox(){
   marker_control_config.marker_id = 0;
   
-  visualization_msgs::Marker marker = makeMarkerMsg(feedback);
+  visualization_msgs::Marker marker = makeMarkerMsg(latest_feedback_);
   marker.id = -1;
   marker.action = visualization_msgs::Marker::DELETE;
   pub_.publish(marker);
+}
+
+void PointCloudConfigMarker::clearBoxCB( const std_msgs::Empty::ConstPtr &msg) {
+  clearBox();
+}
+
+void PointCloudConfigMarker::clearCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
   latest_feedback_ = feedback;
+  clearBox();
 }
 
 void PointCloudConfigMarker::updateBoxInteractiveMarker(){
@@ -307,6 +316,7 @@ PointCloudConfigMarker::PointCloudConfigMarker () : nh_(), pnh_("~") {
   pose_update_sub_ = pnh_.subscribe("update_pose", 1, &PointCloudConfigMarker::updatePoseCB,
                                     this);
   add_box_sub_ = pnh_.subscribe("add_box", 1, &PointCloudConfigMarker::addBoxCB, this);
+  clear_box_sub_ = pnh_.subscribe("clear_box", 1, &PointCloudConfigMarker::clearBoxCB, this);
   change_box_size_sub_ = pnh_.subscribe("change_size", 1, &PointCloudConfigMarker::changeBoxSize, this);
   change_box_resolution_sub_ = pnh_.subscribe("change_resolution", 1, &PointCloudConfigMarker::changeBoxResolution, this);  
   menu_handler = makeMenuHandler();

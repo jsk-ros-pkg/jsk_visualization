@@ -38,6 +38,8 @@ class PointCloudConfigMarker{
   void publishMarkerMsg( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void cancelCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void clearCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void clearBoxCB( const std_msgs::Empty::ConstPtr &msg);
+  void clearBox();
 
   void changeResolutionCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void changeBoxSize(geometry_msgs::Vector3 size);
@@ -63,6 +65,7 @@ class PointCloudConfigMarker{
   
   ros::Subscriber pose_update_sub_;
   ros::Subscriber add_box_sub_;
+  ros::Subscriber clear_box_sub_;
   ros::Subscriber change_box_size_sub_;
   ros::Subscriber change_box_resolution_sub_;
 
