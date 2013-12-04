@@ -244,7 +244,7 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
     CallSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(feedback->pose));
     //cout << "parent:" << parent_frame_id << " frame:" << frame_id <<endl;
     publishMarkerPose(feedback);
-    //publishJointState(feedback);
+    publishJointState(feedback);
     break;
   case visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK:
     cout << "clicked" << " frame:" << frame_id << mode_ << endl;
@@ -857,8 +857,8 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
       model_menu_.insert( sub_menu_pose_, "Manip Pose",
 			  boost::bind( &UrdfModelMarker::publishMarkerMenu, this, _1, 101) );
 
-      model_menu_.insert( "Reset Marker Pose",
-			  boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
+      //model_menu_.insert( "Reset Marker Pose",
+      //boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
 
 
       model_menu_.insert( "Hide Marker" ,
