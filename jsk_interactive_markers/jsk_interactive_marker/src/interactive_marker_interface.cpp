@@ -658,7 +658,7 @@ void InteractiveMarkerInterface::initHandler(void){
       menu_handler.insert("Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
     }
   }
-  
+
   pnh_.param("change_using_ik_menu", use_menu, false );
   if(use_menu){
   interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
@@ -670,10 +670,14 @@ void InteractiveMarkerInterface::initHandler(void){
   menu_handler.setCheckState( stop_ik_menu_, interactive_markers::MenuHandler::CHECKED );
   }
 
-  pnh_.param("touch_move_menu", use_menu, false );
-  if(use_menu){
-    menu_handler.insert("Touch It", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCH));
-  }
+  //menu_handler.insert("Touch It", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCH));
+
+  interactive_markers::MenuHandler::EntryHandle sub_menu_handle_touch_it;
+  sub_menu_handle_touch_it = menu_handler.insert( "Touch It" );
+
+  menu_handler.insert( sub_menu_handle_touch_it, "Preview", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_PREV));
+  menu_handler.insert( sub_menu_handle_touch_it, "Execute", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_EXEC));
+  menu_handler.insert( sub_menu_handle_touch_it, "Cancel", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_CANCEL));
 
 
   pnh_.param("force_move_menu", use_menu, false );

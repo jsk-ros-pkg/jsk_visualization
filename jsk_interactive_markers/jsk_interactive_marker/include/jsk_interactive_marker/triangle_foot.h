@@ -14,7 +14,9 @@ class TriangleFoot{
   visualization_msgs::Marker makeFootMarker(geometry_msgs::Pose pose);
   visualization_msgs::InteractiveMarker makeInteractiveMarker();
   void moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void reverseTriangleCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void updateBoxInteractiveMarker();
+  interactive_markers::MenuHandler makeMenuHandler();
 
   TriangleFoot ();
  private:
@@ -25,6 +27,7 @@ class TriangleFoot{
   std::string server_name;
   std::string marker_name;
 
+  interactive_markers::MenuHandler menu_handler;
   double size_;
-
+  bool reverse;
 };
