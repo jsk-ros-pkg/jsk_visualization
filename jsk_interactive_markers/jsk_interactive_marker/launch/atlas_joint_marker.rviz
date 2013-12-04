@@ -6,14 +6,8 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /InteractiveMarkers1
-        - /TF1
-        - /InteractiveMarkers2
-        - /Marker1
-        - /Marker2
-        - /MarkerArray1
       Splitter Ratio: 0.5
-    Tree Height: 460
+    Tree Height: 498
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -35,8 +29,8 @@ Panels:
     SyncSource: ""
   - Class: jsk_rviz_plugin/CancelAction
     Name: CancelAction
-    Topic: /larm_controller/follow_joint_trajectory_action
-    topics: ""
+    Topic: ""
+    topics: ~
 Visualization Manager:
   Class: ""
   Displays:
@@ -61,7 +55,7 @@ Visualization Manager:
     - Class: rviz/InteractiveMarkers
       Enable Transparency: true
       Enabled: true
-      Name: InteractiveMarkers
+      Name: PlanningModel
       Show Axes: false
       Show Descriptions: true
       Show Visual Aids: false
@@ -84,7 +78,7 @@ Visualization Manager:
     - Class: rviz/InteractiveMarkers
       Enable Transparency: true
       Enabled: true
-      Name: InteractiveMarkers
+      Name: IK target
       Show Axes: false
       Show Descriptions: true
       Show Visual Aids: false
@@ -333,6 +327,10 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        left_grasp_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         left_led_frame:
           Alpha: 1
           Show Axes: false
@@ -375,6 +373,58 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        post_spindle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        post_spindle_cal_pitch:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        post_spindle_cal_roll:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        post_spindle_cal_x:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        post_spindle_cal_y:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        post_spindle_cal_z:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_pitch:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_roll:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_x:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_y:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_yaw:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        pre_spindle_cal_z:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         r_clav:
           Alpha: 1
           Show Axes: false
@@ -576,6 +626,10 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        right_grasp_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         right_led_frame:
           Alpha: 1
           Show Axes: false
@@ -617,7 +671,7 @@ Visualization Manager:
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /jsk_interactive_marker_manipulation/marker
-      Name: Marker
+      Name: Target of IK
       Namespaces:
         {}
       Queue Size: 100
@@ -625,23 +679,171 @@ Visualization Manager:
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /jsk_interactive_marker_manipulation/origin_marker
-      Name: Marker
+      Name: Origin of IK
       Namespaces:
         {}
       Queue Size: 100
       Value: true
-    - Class: rviz/MarkerArray
+    - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /collision_detector_marker_array
-      Name: MarkerArray
+      Marker Topic: visualization_marker
+      Name: FootstepMarker
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Max Color: 255; 255; 255
+      Max Intensity: 17457
+      Min Color: 0; 0; 0
+      Min Intensity: 752
+      Name: ROI PointCloud
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /pointcloud_roi/voxel_grid_decoder/output
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: ROIPointCloud Interactive
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /pointcloud_roi/roi_point_cloud_config_marker/update
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /pointcloud_roi/voxel_grid_manager/add_grid
+      Name: ROI of Pointcloud
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Camera
+      Enabled: false
+      Image Rendering: background and overlay
+      Image Topic: /head_resized/image_rect
+      Name: Head Camera
+      Overlay Alpha: 1
+      Queue Size: 2
+      Transport Hint: compressed
+      Value: false
+      Visibility:
+        FootstepMarker: true
+        Grid: true
+        IK target: true
+        Image: true
+        Left Fish Eye: true
+        Left Hand Camera: true
+        Origin of IK: true
+        PlanningModel: true
+        ROI of Pointcloud: true
+        ROIPointCloud Interactive: true
+        ROS PointCloud: true
+        Right Hand Camera: true
+        RobotModel: true
+        TF: true
+        Target of IK: true
+        Value: true
+      Zoom Factor: 1
+    - Class: rviz/Camera
+      Enabled: false
+      Image Rendering: background and overlay
+      Image Topic: /lhand_resized/image
+      Name: Left Hand Camera
+      Overlay Alpha: 0.5
+      Queue Size: 2
+      Transport Hint: raw
+      Value: false
+      Visibility:
+        FootstepMarker: true
+        Grid: true
+        Head Camera: true
+        IK target: true
+        Image: true
+        Left Fish Eye: true
+        Origin of IK: true
+        PlanningModel: true
+        ROI of Pointcloud: true
+        ROIPointCloud Interactive: true
+        ROS PointCloud: true
+        Right Hand Camera: true
+        RobotModel: true
+        TF: true
+        Target of IK: true
+        Value: true
+      Zoom Factor: 1
+    - Class: rviz/Camera
+      Enabled: false
+      Image Rendering: background and overlay
+      Image Topic: /rhand_resized/image
+      Name: Right Hand Camera
+      Overlay Alpha: 0.5
+      Queue Size: 2
+      Transport Hint: raw
+      Value: false
+      Visibility:
+        FootstepMarker: true
+        Grid: true
+        Head Camera: true
+        IK target: true
+        Image: true
+        Left Fish Eye: true
+        Left Hand Camera: true
+        Origin of IK: true
+        PlanningModel: true
+        ROI of Pointcloud: true
+        ROIPointCloud Interactive: true
+        ROS PointCloud: true
+        RobotModel: true
+        TF: true
+        Target of IK: true
+        Value: true
+      Zoom Factor: 1
+    - Class: rviz/Image
+      Enabled: false
+      Image Topic: ""
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Left Fish Eye
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Value: false
+    - Class: rviz/Image
+      Enabled: false
+      Image Topic: ""
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Right Fish Eye
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: /odom
+    Fixed Frame: /map
   Name: root
   Tools:
     - Class: rviz/Interact
@@ -661,27 +863,37 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.28521
+      Distance: 4.71657
       Focal Point:
-        X: -0.286415
-        Y: 0.383605
-        Z: 0.0857145
+        X: -1.33187
+        Y: 0.579361
+        Z: 0.713979
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.0497971
+      Pitch: 0.2754
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.66543
+      Yaw: 6.01859
     Saved: ~
 Window Geometry:
   CancelAction:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 1027
+  Head Camera:
+    collapsed: false
+  Height: 1056
   Hide Left Dock: false
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd0000000400000000000001dc00000360fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c00610079007301000000410000025b000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001800430061006e00630065006c0041006300740069006f006e01000002a2000000ff0000007600ffffff000000010000010f000002abfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000041000002ab000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d0065010000000000000780000002f600fffffffb0000000800540069006d006501000000000000045000000000000000000000059e0000036000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Left Fish Eye:
+    collapsed: false
+  Left Hand Camera:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd0000000400000000000001dc00000396fc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000002800000281000000dd00fffffffa000000020100000003fb0000000a0049006d0061006700650200000a25000001f6000001dc0000017ffb000000160048006500610064002000430061006d006500720061020000054100000122000001dc0000017ffb000000100044006900730070006c0061007900730100000000000001dc0000010f00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001800430061006e00630065006c0041006300740069006f006e01000002af0000010f0000006400fffffffb00000020004c006500660074002000480061006e0064002000430061006d00650072006100000002520000009c0000001600fffffffb0000002200520069006700680074002000480061006e0064002000430061006d00650072006100000002c8000000f60000001600fffffffb0000001a004c00650066007400200046006900730068002000450079006500000002520000009c0000001600fffffffb0000001c0052006900670068007400200046006900730068002000450079006500000002c8000000f60000001600ffffff000000010000010f000002abfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000041000002ab000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003efc0100000002fb0000000800540069006d006501000000000000073f000002f600fffffffb0000000800540069006d006501000000000000045000000000000000000000055d0000039600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Right Fish Eye:
+    collapsed: false
+  Right Hand Camera:
+    collapsed: false
   Selection:
     collapsed: false
   Time:
@@ -690,6 +902,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 1920
-  X: 0
-  Y: 27
+  Width: 1855
+  X: 1978
+  Y: 24
