@@ -14,10 +14,10 @@
 class PointCloudConfigMarker{
  public:
   struct MarkerControlConfig{
-    MarkerControlConfig(): marker_id(0), resolution_(0.1){
+    MarkerControlConfig(): marker_id(0), resolution_(0.05){
       
     }
-    MarkerControlConfig(double s): marker_id(0), resolution_(0.1){
+    MarkerControlConfig(double s): marker_id(0), resolution_(0.05){
       size.x = s;
       size.y = s;
       size.z = s;
@@ -69,6 +69,7 @@ class PointCloudConfigMarker{
   interactive_markers::MenuHandler menu_handler;
   interactive_markers::MenuHandler::EntryHandle resolution_menu_;
   interactive_markers::MenuHandler::EntryHandle checked_resolution_menu_;
+  interactive_markers::MenuHandler::EntryHandle resolution_20cm_menu_;
   interactive_markers::MenuHandler::EntryHandle resolution_10cm_menu_;
   interactive_markers::MenuHandler::EntryHandle resolution_5cm_menu_;
 

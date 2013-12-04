@@ -106,23 +106,18 @@ interactive_markers::MenuHandler PointCloudConfigMarker::makeMenuHandler(){
 
 
   resolution_menu_ = mh.insert( "Resolution" );
-  resolution_10cm_menu_ = mh.insert( resolution_menu_, "20cm", boost::bind( &PointCloudConfigMarker::changeResolutionCb, this, _1));
-  mh.setCheckState( resolution_10cm_menu_, interactive_markers::MenuHandler::CHECKED );
-
-  marker_control_config.resolution_ = 0.1;
-  checked_resolution_menu_ = resolution_10cm_menu_;
+  resolution_20cm_menu_ = mh.insert( resolution_menu_, "20cm", boost::bind( &PointCloudConfigMarker::changeResolutionCb, this, _1));
+  mh.setCheckState( resolution_20cm_menu_, interactive_markers::MenuHandler::UNCHECKED );
 
 
   resolution_10cm_menu_ = mh.insert( resolution_menu_, "10cm", boost::bind( &PointCloudConfigMarker::changeResolutionCb, this, _1));
-  mh.setCheckState( resolution_10cm_menu_, interactive_markers::MenuHandler::CHECKED );
-
-  marker_control_config.resolution_ = 0.1;
-  checked_resolution_menu_ = resolution_10cm_menu_;
+  mh.setCheckState( resolution_10cm_menu_, interactive_markers::MenuHandler::UNCHECKED );
 
 
  resolution_5cm_menu_ = mh.insert( resolution_menu_, "5cm", boost::bind( &PointCloudConfigMarker::changeResolutionCb, this, _1));
-  mh.setCheckState( resolution_5cm_menu_, interactive_markers::MenuHandler::UNCHECKED );
-
+  mh.setCheckState( resolution_5cm_menu_, interactive_markers::MenuHandler::CHECKED );
+  marker_control_config.resolution_ = 0.05;
+  checked_resolution_menu_ = resolution_5cm_menu_;
   //box size menu
   box_size_menu_ = mh.insert( "Box Size" );
   // 100x100x100
@@ -177,6 +172,9 @@ void PointCloudConfigMarker::changeResolutionCb( const visualization_msgs::Inter
 
   }else if(feedback->menu_entry_id == resolution_5cm_menu_){
       marker_control_config.resolution_ = 0.05;
+  }
+  else if(feedback->menu_entry_id == resolution_20cm_menu_){
+      marker_control_config.resolution_ = 0.2;
   }
     std::cout <<"resolution:" <<   marker_control_config.resolution_ << std::endl;
 
