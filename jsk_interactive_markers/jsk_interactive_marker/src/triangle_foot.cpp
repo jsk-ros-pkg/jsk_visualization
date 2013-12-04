@@ -39,11 +39,11 @@ visualization_msgs::Marker TriangleFoot::makeTriangleMarker(){
 visualization_msgs::Marker TriangleFoot::makeRFootMarker(){
   geometry_msgs::Pose pose;
   if(reverse){
-    pose.position.x = 0.65;
+    pose.position.x = -0.65;
     pose.position.y = 0.65;
     pose.position.z = -0.910;
   }else{
-    pose.position.x = 0.8;
+    pose.position.x = -0.8;
     pose.position.y = 0.0;
     pose.position.z = -0.910;
   }
@@ -53,11 +53,11 @@ visualization_msgs::Marker TriangleFoot::makeRFootMarker(){
 visualization_msgs::Marker TriangleFoot::makeLFootMarker(){
   geometry_msgs::Pose pose;
   if(reverse){
-    pose.position.x = 0.65;
+    pose.position.x = -0.65;
     pose.position.y = 0.35;
     pose.position.z = -0.910;
   }else{
-    pose.position.x = 0.8;
+    pose.position.x = -0.8;
     pose.position.y = -0.3;
     pose.position.z = -0.910;
   }
@@ -109,7 +109,7 @@ void TriangleFoot::moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbac
 }
 
 void TriangleFoot::reverseTriangleCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
-  reverse ^= reverse;
+  reverse ^= true;
   updateBoxInteractiveMarker();
 }
 
