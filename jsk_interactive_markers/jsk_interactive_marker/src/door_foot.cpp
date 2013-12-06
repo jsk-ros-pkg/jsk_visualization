@@ -83,6 +83,51 @@ visualization_msgs::Marker DoorFoot::makeKnobMarker(){
   return marker;
 }
 
+visualization_msgs::Marker DoorFoot::makeKnobMarker(int position){
+  double size = 0.01;
+  visualization_msgs::Marker marker;
+  marker.type = visualization_msgs::Marker::CUBE;
+  marker.scale.x = 0.02;
+  marker.scale.y = size;
+  marker.scale.z = 0.03;
+  
+  marker.pose.position.x = -0.07;
+  marker.pose.position.y = 0.914 - marker.scale.y/2 - position * size;
+  marker.pose.position.z = 0.9398;//37 in
+  marker.pose.orientation.w = 1.0;
+  
+  switch(position % 5){
+  case 0:
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+    break;
+  case 1:
+    marker.color.r = 0.5;
+    marker.color.g = 0.0;
+    marker.color.b = 0.5;
+    break;
+  case 2:
+    marker.color.r = 0.0;
+    marker.color.g = 0.0;
+    marker.color.b = 1.0;
+    break;
+  case 3:
+    marker.color.r = 0.0;
+    marker.color.g = 0.5;
+    marker.color.b = 0.7;
+    break;
+  case 4:
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+    break;
+  }
+  marker.color.a = 0.7;
+
+  return marker;
+}
+
 visualization_msgs::Marker DoorFoot::makeRFootMarker(){
   geometry_msgs::Pose pose;
   if(push){
@@ -146,14 +191,22 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
   mk.header.frame_id = "/map";
   mk.header.stamp = ros::Time(0);
   mk.name = marker_name;
-  mk.scale = 0.4;
+  mk.scale = 0.8;
 
   visualization_msgs::InteractiveMarkerControl triangleMarker;
   triangleMarker.always_visible = true;
   triangleMarker.markers.push_back( makeRWallMarker());
   triangleMarker.markers.push_back( makeLWallMarker());
   triangleMarker.markers.push_back( makeDoorMarker());
-  triangleMarker.markers.push_back( makeKnobMarker());
+
+  if(use_color_knob){
+    for(int i=0;i<25;i++){
+      triangleMarker.markers.push_back( makeKnobMarker(i));
+    }
+  }else{
+    triangleMarker.markers.push_back( makeKnobMarker());
+  }
+
   triangleMarker.markers.push_back( makeRFootMarker());
   triangleMarker.markers.push_back( makeLFootMarker());
   mk.controls.push_back( triangleMarker );
@@ -200,6 +253,7 @@ DoorFoot::DoorFoot () : nh_(), pnh_("~") {
   pnh_.param("size", size_, 1.0 );
   pnh_.param("marker_name", marker_name, std::string ("door_marker") );
   pnh_.param("push", push, true);
+  pnh_.param("push", use_color_knob, true);
 
   if ( server_name == "" ) {
     server_name = ros::this_node::getName();

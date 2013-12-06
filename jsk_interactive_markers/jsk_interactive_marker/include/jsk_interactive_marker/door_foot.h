@@ -12,6 +12,7 @@ class DoorFoot{
   visualization_msgs::Marker makeLWallMarker();
   visualization_msgs::Marker makeDoorMarker();
   visualization_msgs::Marker makeKnobMarker();
+  visualization_msgs::Marker makeKnobMarker(int position);
   visualization_msgs::Marker makeRFootMarker();
   visualization_msgs::Marker makeLFootMarker();
   visualization_msgs::Marker makeFootMarker(geometry_msgs::Pose pose);
@@ -34,4 +35,5 @@ class DoorFoot{
   interactive_markers::MenuHandler menu_handler;
   double size_;
   bool push;
+  bool use_color_knob;
 };
