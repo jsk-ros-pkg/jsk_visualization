@@ -1,7 +1,7 @@
 - name: "atlas"
-  model: "package://hrpsys_gazebo_atlas/build/atlas_v3.jsk.urdf"
   frame-id: "pelvis"
   robot: true
+  use_robot_description: true
   scale: 1.0
   pose: 
     position: 
