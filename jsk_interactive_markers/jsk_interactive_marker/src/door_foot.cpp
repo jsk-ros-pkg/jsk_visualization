@@ -5,6 +5,45 @@
 
 using namespace std;
 
+visualization_msgs::Marker DoorFoot::makeRWallMarker(){
+  visualization_msgs::Marker marker;
+  marker.type = visualization_msgs::Marker::CUBE;
+  marker.scale.x = 0.05;
+  marker.scale.y = 0.7;
+  marker.scale.z = 2.0;
+  
+  marker.pose.position.y = - marker.scale.y / 2;
+  marker.pose.position.z = marker.scale.z / 2;
+  marker.pose.orientation.w = 1.0;
+
+  marker.color.r = 0.0;
+  marker.color.g = 1.0;
+  marker.color.b = 0.0;
+  marker.color.a = 0.9;
+
+  return marker;
+}
+
+visualization_msgs::Marker DoorFoot::makeLWallMarker(){
+  visualization_msgs::Marker marker;
+  marker.type = visualization_msgs::Marker::CUBE;
+  marker.scale.x = 0.05;
+  marker.scale.y = 0.7;
+  marker.scale.z = 2.0;
+  
+  marker.pose.position.y = 0.914 + marker.scale.y / 2;
+  marker.pose.position.z = marker.scale.z / 2;
+  marker.pose.orientation.w = 1.0;
+
+  marker.color.r = 0.0;
+  marker.color.g = 1.0;
+  marker.color.b = 0.0;
+  marker.color.a = 0.9;
+
+  return marker;
+}
+
+
 visualization_msgs::Marker DoorFoot::makeDoorMarker(){
   visualization_msgs::Marker marker;
   marker.type = visualization_msgs::Marker::CUBE;
@@ -19,7 +58,7 @@ visualization_msgs::Marker DoorFoot::makeDoorMarker(){
   marker.color.r = 1.0;
   marker.color.g = 1.0;
   marker.color.b = 0.0;
-  marker.color.a = 1.0;
+  marker.color.a = 0.3;
 
   return marker;
 }
@@ -111,6 +150,8 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
 
   visualization_msgs::InteractiveMarkerControl triangleMarker;
   triangleMarker.always_visible = true;
+  triangleMarker.markers.push_back( makeRWallMarker());
+  triangleMarker.markers.push_back( makeLWallMarker());
   triangleMarker.markers.push_back( makeDoorMarker());
   triangleMarker.markers.push_back( makeKnobMarker());
   triangleMarker.markers.push_back( makeRFootMarker());

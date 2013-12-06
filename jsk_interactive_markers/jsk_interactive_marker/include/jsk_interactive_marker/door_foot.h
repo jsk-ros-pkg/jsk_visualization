@@ -8,6 +8,8 @@
 
 class DoorFoot{
  public:
+  visualization_msgs::Marker makeRWallMarker();
+  visualization_msgs::Marker makeLWallMarker();
   visualization_msgs::Marker makeDoorMarker();
   visualization_msgs::Marker makeKnobMarker();
   visualization_msgs::Marker makeRFootMarker();
