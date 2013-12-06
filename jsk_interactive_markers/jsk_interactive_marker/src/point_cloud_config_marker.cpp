@@ -49,7 +49,9 @@ visualization_msgs::InteractiveMarker PointCloudConfigMarker::makeBoxInteractive
   mk.header.stamp = ros::Time(0);
   mk.name = name;
   //mk.scale = size * 1.05;
+
   mk.scale = 1.0;
+  mk.scale = max(mconfig.size.x, max(mconfig.size.y, mconfig.size.z));
 
   visualization_msgs::InteractiveMarkerControl controlBox;
   controlBox.always_visible = true;
