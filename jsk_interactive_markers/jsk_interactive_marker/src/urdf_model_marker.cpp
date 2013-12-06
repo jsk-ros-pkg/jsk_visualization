@@ -523,8 +523,6 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
 	}
 
 	if(changeMarkerAngle){
-	  cout << "Detect Joint Limit" << endl;
-	  cout << jointAngleAllRange <<endl;
 	  setJointAngle(link, jointAngleAllRange);
 	}
       }
@@ -533,12 +531,19 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
       js.name.push_back(parent_joint->name);
       break;
     case Joint::PRISMATIC:
-      //TODO
+      js.position.push_back(0);
+      js.name.push_back(parent_joint->name);
+      ROS_WARN_STREAM("Joint::PRISMATIC joint publish 0 " << parent_joint->name);
+      break;
+    case Joint::FIXED:
+      ROS_INFO_STREAM("Joint::FIXED is not  included in JointState since robot_state_publisher will take care of this");
       break;
     default:
+      ROS_WARN_STREAM("unknown joint type -> " << parent_joint->type << " " << parent_joint->name);
       break;
     }
   }
+
   for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
     getJointState(*child, js);
   }
@@ -570,9 +575,6 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
     joint_angle -= rotation_count * M_PI * 2;
   }
   
-  cout<< "joint" << joint_angle << endl;
-  cout<< "rot" << rotation_count << endl;
-
   linkMarkerMap[link_frame_name_].joint_angle = joint_angle;
   linkMarkerMap[link_frame_name_].rotation_count = rotation_count;
 
@@ -581,7 +583,7 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
   jointVec = KDL::Vector(linkMarkerMap[link_frame_name_].joint_axis.x,
 			 linkMarkerMap[link_frame_name_].joint_axis.y,
 			 linkMarkerMap[link_frame_name_].joint_axis.z);
-  cout << joint_angle << endl;
+
   presentFrame.M = KDL::Rotation::Rot(jointVec, joint_angle) * initialFrame.M;
   tf::PoseKDLToMsg(presentFrame, linkMarkerMap[link_frame_name_].pose);
 
@@ -751,8 +753,6 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
       color.a = 1.0;
     }
 
-
-    std::cout << "LINK ===> " << link->name << std::endl;
 
     //link_array
     std::vector<boost ::shared_ptr<Visual> > visual_array;
