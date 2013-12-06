@@ -84,7 +84,7 @@ visualization_msgs::Marker DoorFoot::makeKnobMarker(){
 }
 
 visualization_msgs::Marker DoorFoot::makeKnobMarker(int position){
-  double size = 0.01;
+  double size = 0.02;
   visualization_msgs::Marker marker;
   marker.type = visualization_msgs::Marker::CUBE;
   marker.scale.x = 0.02;
@@ -200,7 +200,7 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
   triangleMarker.markers.push_back( makeDoorMarker());
 
   if(use_color_knob){
-    for(int i=0;i<25;i++){
+    for(int i=0;i<12;i++){
       triangleMarker.markers.push_back( makeKnobMarker(i));
     }
   }else{
@@ -253,7 +253,7 @@ DoorFoot::DoorFoot () : nh_(), pnh_("~") {
   pnh_.param("size", size_, 1.0 );
   pnh_.param("marker_name", marker_name, std::string ("door_marker") );
   pnh_.param("push", push, true);
-  pnh_.param("push", use_color_knob, true);
+  pnh_.param("use_color_knob", use_color_knob, true);
 
   if ( server_name == "" ) {
     server_name = ros::this_node::getName();
