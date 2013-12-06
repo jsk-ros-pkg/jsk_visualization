@@ -67,15 +67,19 @@ visualization_msgs::Marker DoorFoot::makeRFootMarker(){
 visualization_msgs::Marker DoorFoot::makeLFootMarker(){
   geometry_msgs::Pose pose;
   if(push){
-    pose.position.x = -0.585;
-    pose.position.y = 0.076;
+    pose.position.x = -0.747;
+    pose.position.y = 0.310;
     pose.position.z = 0;
+    pose.orientation.w = 0.766;
+    pose.orientation.x = 0;
+    pose.orientation.y = 0;
+    pose.orientation.z = 0.642788;
   }else{
     pose.position.x = -0.8;
     pose.position.y = -0.3;
     pose.position.z = -0.910;
+    pose.orientation.w = 1.0;
   }
-  pose.orientation.w = 1.0;
   return makeFootMarker(pose);
 
 }
