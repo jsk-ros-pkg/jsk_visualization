@@ -47,15 +47,21 @@ visualization_msgs::Marker DoorFoot::makeKnobMarker(){
 visualization_msgs::Marker DoorFoot::makeRFootMarker(){
   geometry_msgs::Pose pose;
   if(push){
-    pose.position.x = -0.585;
-    pose.position.y = 0.303;
+    //Right Foot Position
+    pose.position.x = -0.523;
+    pose.position.y = 0.270;
     pose.position.z = 0;
+    pose.orientation.w = 0.766;
+    pose.orientation.x = 0;
+    pose.orientation.y = 0;
+    pose.orientation.z = 0.642788;
   }else{
     pose.position.x = -0.8;
     pose.position.y = 0.0;
     pose.position.z = -0.910;
+    pose.orientation.w = 1.0;
   }
-  pose.orientation.w = 1.0;
+
   return makeFootMarker(pose);
 }
 visualization_msgs::Marker DoorFoot::makeLFootMarker(){
@@ -113,7 +119,7 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
 
 void DoorFoot::moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  std::cout << "moved" << std::endl;
+  //  std::cout << "moved" << std::endl;
 }
 
 void DoorFoot::pushDoorCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){

@@ -90,7 +90,9 @@ visualization_msgs::InteractiveMarker TriangleFoot::makeInteractiveMarker(){
   mk.header.stamp = ros::Time(0);
   mk.name = marker_name;
 
-  mk.scale = 0.2;
+  mk.scale = 0.4;
+
+  mk.pose.position.z = 0.910;
 
   visualization_msgs::InteractiveMarkerControl triangleMarker;
   triangleMarker.always_visible = true;
@@ -105,7 +107,7 @@ visualization_msgs::InteractiveMarker TriangleFoot::makeInteractiveMarker(){
 
 void TriangleFoot::moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  std::cout << "moved" << std::endl;
+  //  std::cout << "moved" << std::endl;
 }
 
 void TriangleFoot::reverseTriangleCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
