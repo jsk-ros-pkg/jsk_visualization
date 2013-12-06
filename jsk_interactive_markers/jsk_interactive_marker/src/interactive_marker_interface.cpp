@@ -679,6 +679,11 @@ void InteractiveMarkerInterface::initHandler(void){
   menu_handler.insert( sub_menu_handle_touch_it, "Execute", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_EXEC));
   menu_handler.insert( sub_menu_handle_touch_it, "Cancel", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_CANCEL));
 
+  interactive_markers::MenuHandler::EntryHandle sub_menu_handle_look_hand;
+  sub_menu_handle_touch_it = menu_handler.insert( "Look hand" );
+
+  menu_handler.insert( sub_menu_handle_touch_it, "rarm", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::LOOK_RARM));
+  menu_handler.insert( sub_menu_handle_touch_it, "larm", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::LOOK_LARM));
 
   pnh_.param("force_move_menu", use_menu, false );
   if(use_menu){
