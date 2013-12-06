@@ -387,7 +387,7 @@ void UrdfModelMarker::graspPoint_feedback( const visualization_msgs::Interactive
   }
 }
 
-visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale, const std_msgs::ColorRGBA &color, bool use_color){
+visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale, const std_msgs::ColorRGBA &color, bool use_color){
   visualization_msgs::Marker meshMarker;
 
   if (use_color) meshMarker.color = color;
@@ -395,9 +395,7 @@ visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerCont
   meshMarker.mesh_use_embedded_materials = !use_color;
   meshMarker.type = visualization_msgs::Marker::MESH_RESOURCE;
   
-  meshMarker.scale.x = scale;
-  meshMarker.scale.y = scale;
-  meshMarker.scale.z = scale;
+  meshMarker.scale = scale;
   meshMarker.pose = stamped.pose;
   visualization_msgs::InteractiveMarkerControl control;
   control.markers.push_back( meshMarker );
@@ -407,14 +405,14 @@ visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerCont
   return control;
 }
 
-visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, float scale)
+visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale)
 {
   std_msgs::ColorRGBA color;
   return makeMeshMarkerControl(mesh_resource, stamped, scale, color, false);
 }
 
 visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerControl(const std::string &mesh_resource,
-										    const geometry_msgs::PoseStamped &stamped, float scale, const std_msgs::ColorRGBA &color)
+										    const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale, const std_msgs::ColorRGBA &color)
 {
   return makeMeshMarkerControl(mesh_resource, stamped, scale, color, true);
 }
@@ -774,10 +772,14 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 	  ps.pose = UrdfPose2Pose(link_visual->origin);
 	  cout << "mesh_file:" << model_mesh_ << endl;
 
+	  geometry_msgs::Vector3 mesh_scale;
+	  mesh_scale.x = mesh->scale.x;
+	  mesh_scale.y = mesh->scale.y;
+	  mesh_scale.z = mesh->scale.z;
 	  if(use_color){
-	    meshControl = makeMeshMarkerControl(model_mesh_, ps, scale_factor_, color);
+	    meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale, color);
 	  }else{
-	    meshControl = makeMeshMarkerControl(model_mesh_, ps, scale_factor_);
+	    meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale);
 	  }
 	}else if(link_visual->geometry->type == Geometry::CYLINDER){
 	  boost::shared_ptr<const Cylinder> cylinder = boost::static_pointer_cast<const Cylinder>(link_visual->geometry);
