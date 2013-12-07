@@ -201,7 +201,7 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
   mk.header.frame_id = "/map";
   mk.header.stamp = ros::Time(0);
   mk.name = marker_name;
-  mk.scale = 0.8;
+  mk.scale = 0.3;
   mk.pose = door_pose;
 
   visualization_msgs::InteractiveMarkerControl triangleMarker;
