@@ -45,6 +45,7 @@ class DoorFoot{
   bool push;
   bool use_color_knob;
   std::vector<geometry_msgs::PoseStamped> foot_list;
+  geometry_msgs::Pose door_pose;
 };
 
 geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);

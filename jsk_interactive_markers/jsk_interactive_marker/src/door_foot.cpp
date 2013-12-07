@@ -202,6 +202,7 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
   mk.header.stamp = ros::Time(0);
   mk.name = marker_name;
   mk.scale = 0.8;
+  mk.pose = door_pose;
 
   visualization_msgs::InteractiveMarkerControl triangleMarker;
   triangleMarker.always_visible = true;
@@ -242,6 +243,7 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
 
 void DoorFoot::moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
+  door_pose = feedback->pose;
   //  std::cout << "moved" << std::endl;
 }
 
