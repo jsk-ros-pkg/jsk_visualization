@@ -5,6 +5,7 @@
 
 using namespace std;
 
+
 visualization_msgs::Marker DoorFoot::makeRWallMarker(){
   visualization_msgs::Marker marker;
   marker.type = visualization_msgs::Marker::CUBE;
@@ -195,11 +196,6 @@ visualization_msgs::Marker DoorFoot::makeFootMarker(geometry_msgs::Pose pose, bo
 }
 
 
-
-
-
-
-
 visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
   visualization_msgs::InteractiveMarker mk;
   mk.header.frame_id = "/map";
@@ -221,13 +217,23 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
     triangleMarker.markers.push_back( makeKnobMarker());
   }
 
-  for(int i=0; i<foot_list.size(); i++){
-    if(foot_list[i].header.frame_id == "right"){
-      triangleMarker.markers.push_back( makeFootMarker( foot_list[i].pose, true ));
-    }else{
-      triangleMarker.markers.push_back( makeFootMarker( foot_list[i].pose, false ));
+  if (footstep_show_initial_p_) {
+    for(size_t i=0; i<2; i++){
+      if(foot_list[i].header.frame_id == "right"){
+        triangleMarker.markers.push_back( makeFootMarker( foot_list[i].pose, true ));
+      }else{
+        triangleMarker.markers.push_back( makeFootMarker( foot_list[i].pose, false ));
+      }
     }
   }
+  else {
+      triangleMarker.markers.push_back( makeFootMarker( foot_list[footstep_index_].pose,
+                                                        foot_list[footstep_index_].header.frame_id == "right"));
+
+  }
+  
+  
+
   mk.controls.push_back( triangleMarker );
   
   im_helpers::add6DofControl(mk, true);
@@ -237,6 +243,37 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
 void DoorFoot::moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
   //  std::cout << "moved" << std::endl;
+}
+
+void DoorFoot::showStandLocationCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+  footstep_show_initial_p_ = true;
+  updateBoxInteractiveMarker();
+}
+void DoorFoot::showNextStepCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+  if (footstep_show_initial_p_) {
+    footstep_index_ = 2;
+    footstep_show_initial_p_ = false;
+  }
+  else {
+    ++footstep_index_;
+    if (foot_list.size() == footstep_index_) {
+      footstep_index_ = 2;
+    }
+  }
+  updateBoxInteractiveMarker();
+}
+void DoorFoot::showPreviousStepCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+  if (footstep_show_initial_p_) {
+    footstep_index_ = 2;
+    footstep_show_initial_p_ = false;
+  }
+  else {
+    --footstep_index_;
+    if (foot_list.size() == 1) {
+      footstep_index_ = foot_list.size() - 1;
+    }
+  }
+  updateBoxInteractiveMarker();
 }
 
 void DoorFoot::pushDoorCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
@@ -254,6 +291,9 @@ interactive_markers::MenuHandler DoorFoot::makeMenuHandler(){
   interactive_markers::MenuHandler mh;
   mh.insert("Push Door", boost::bind( &DoorFoot::pushDoorCb, this, _1));
   mh.insert("Pull Door", boost::bind( &DoorFoot::pullDoorCb, this, _1));
+  mh.insert("Show Initial Stand Location", boost::bind( &DoorFoot::showStandLocationCb, this, _1));
+  mh.insert("Show Next Step", boost::bind( &DoorFoot::showNextStepCb, this, _1));
+  mh.insert("Show Previous Step", boost::bind( &DoorFoot::showPreviousStepCb, this, _1));
   return mh;
 }
 
@@ -268,6 +308,8 @@ void DoorFoot::updateBoxInteractiveMarker(){
 }
 
 DoorFoot::DoorFoot () : nh_(), pnh_("~") {
+  footstep_show_initial_p_ = true;
+  footstep_index_ = -1;
   pnh_.param("server_name", server_name, std::string ("") );
   pnh_.param("size", size_, 1.0 );
   pnh_.param("marker_name", marker_name, std::string ("door_marker") );
@@ -300,6 +342,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "door_foot_marker");
   DoorFoot triFoot;
+  int counter = 0;
   ros::spin();
   return 0;
 }

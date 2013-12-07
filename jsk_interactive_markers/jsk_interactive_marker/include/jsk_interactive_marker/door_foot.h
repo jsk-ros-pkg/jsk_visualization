@@ -8,6 +8,7 @@
 
 class DoorFoot{
  public:
+  void procAnimation();
   visualization_msgs::Marker makeRWallMarker();
   visualization_msgs::Marker makeLWallMarker();
   visualization_msgs::Marker makeDoorMarker();
@@ -22,11 +23,16 @@ class DoorFoot{
   void moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void pushDoorCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void pullDoorCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void showStandLocationCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void showNextStepCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void showPreviousStepCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void updateBoxInteractiveMarker();
   interactive_markers::MenuHandler makeMenuHandler();
 
   DoorFoot ();
  private:
+  bool footstep_show_initial_p_;
+  int footstep_index_;
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
