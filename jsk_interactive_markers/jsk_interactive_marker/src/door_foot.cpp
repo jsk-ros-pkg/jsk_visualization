@@ -269,7 +269,7 @@ void DoorFoot::showPreviousStepCb( const visualization_msgs::InteractiveMarkerFe
   }
   else {
     --footstep_index_;
-    if (foot_list.size() == 1) {
+    if (footstep_index_ == 1) {
       footstep_index_ = foot_list.size() - 1;
     }
   }
