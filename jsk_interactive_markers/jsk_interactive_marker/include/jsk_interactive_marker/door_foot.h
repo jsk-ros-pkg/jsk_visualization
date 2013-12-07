@@ -13,9 +13,11 @@ class DoorFoot{
   visualization_msgs::Marker makeDoorMarker();
   visualization_msgs::Marker makeKnobMarker();
   visualization_msgs::Marker makeKnobMarker(int position);
+
   visualization_msgs::Marker makeRFootMarker();
   visualization_msgs::Marker makeLFootMarker();
-  visualization_msgs::Marker makeFootMarker(geometry_msgs::Pose pose);
+
+  visualization_msgs::Marker makeFootMarker(geometry_msgs::Pose pose, bool right);
   visualization_msgs::InteractiveMarker makeInteractiveMarker();
   void moveBoxCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void pushDoorCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
@@ -36,4 +38,8 @@ class DoorFoot{
   double size_;
   bool push;
   bool use_color_knob;
+  std::vector<geometry_msgs::PoseStamped> foot_list;
 };
+
+geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);
+double getXmlValue( XmlRpc::XmlRpcValue val );

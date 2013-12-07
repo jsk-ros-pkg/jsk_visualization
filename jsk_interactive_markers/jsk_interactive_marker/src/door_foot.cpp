@@ -128,6 +128,7 @@ visualization_msgs::Marker DoorFoot::makeKnobMarker(int position){
   return marker;
 }
 
+
 visualization_msgs::Marker DoorFoot::makeRFootMarker(){
   geometry_msgs::Pose pose;
   if(push){
@@ -146,7 +147,7 @@ visualization_msgs::Marker DoorFoot::makeRFootMarker(){
     pose.orientation.w = 1.0;
   }
 
-  return makeFootMarker(pose);
+  return makeFootMarker(pose, true);
 }
 visualization_msgs::Marker DoorFoot::makeLFootMarker(){
   geometry_msgs::Pose pose;
@@ -164,10 +165,12 @@ visualization_msgs::Marker DoorFoot::makeLFootMarker(){
     pose.position.z = -0.910;
     pose.orientation.w = 1.0;
   }
-  return makeFootMarker(pose);
+  return makeFootMarker(pose, false);
 
 }
-visualization_msgs::Marker DoorFoot::makeFootMarker(geometry_msgs::Pose pose){
+
+
+visualization_msgs::Marker DoorFoot::makeFootMarker(geometry_msgs::Pose pose, bool right){
   visualization_msgs::Marker marker;
   marker.type = visualization_msgs::Marker::CUBE;
   double PADDING_PARAM = 0.01;
@@ -177,14 +180,25 @@ visualization_msgs::Marker DoorFoot::makeFootMarker(geometry_msgs::Pose pose){
 
   marker.pose = pose;
 
-  marker.color.r = 1.0;
-  marker.color.g = 1.0;
-  marker.color.b = 0.0;
-  marker.color.a = 0.8;
+  if(right){
+    marker.color.r = 1.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+  }else{
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 1.0;
+  }
+  marker.color.a = 1.0;
 
   return marker;
-
 }
+
+
+
+
+
+
 
 visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
   visualization_msgs::InteractiveMarker mk;
@@ -207,8 +221,13 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
     triangleMarker.markers.push_back( makeKnobMarker());
   }
 
-  triangleMarker.markers.push_back( makeRFootMarker());
-  triangleMarker.markers.push_back( makeLFootMarker());
+  for(int i=0; i<foot_list.size(); i++){
+    if(foot_list[i].header.frame_id == "right"){
+      triangleMarker.markers.push_back( makeFootMarker( foot_list[i].pose, true ));
+    }else{
+      triangleMarker.markers.push_back( makeFootMarker( foot_list[i].pose, false ));
+    }
+  }
   mk.controls.push_back( triangleMarker );
   
   im_helpers::add6DofControl(mk, true);
@@ -255,6 +274,17 @@ DoorFoot::DoorFoot () : nh_(), pnh_("~") {
   pnh_.param("push", push, true);
   pnh_.param("use_color_knob", use_color_knob, true);
 
+  XmlRpc::XmlRpcValue v;
+  pnh_.param("foot_list", v, v);
+  for(int i=0; i< v.size(); i++){
+    XmlRpc::XmlRpcValue foot = v[i];
+    geometry_msgs::Pose p = getPose(foot["pose"]);
+    geometry_msgs::PoseStamped footPose;
+    footPose.pose = p;
+    footPose.header.frame_id.assign(foot["leg"]);
+    foot_list.push_back(footPose);
+  }
+
   if ( server_name == "" ) {
     server_name = ros::this_node::getName();
   }
@@ -275,3 +305,30 @@ int main(int argc, char** argv)
 }
 
 
+geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val){
+  geometry_msgs::Pose p;
+  XmlRpc::XmlRpcValue pos = val["position"];
+  p.position.x = getXmlValue(pos["x"]);
+  p.position.y = getXmlValue(pos["y"]);
+  p.position.z = getXmlValue(pos["z"]);
+
+  XmlRpc::XmlRpcValue ori = val["orientation"];
+  p.orientation.x = getXmlValue(ori["x"]);
+  p.orientation.y = getXmlValue(ori["y"]);
+  p.orientation.z = getXmlValue(ori["z"]);
+  p.orientation.w = getXmlValue(ori["w"]);
+
+  return p;
+}
+
+double getXmlValue( XmlRpc::XmlRpcValue val ){
+  switch(val.getType()){
+  case XmlRpc::XmlRpcValue::TypeInt:
+    return (double)((int)val);
+  case XmlRpc::XmlRpcValue::TypeDouble:
+    return (double)val;
+  default:
+    return 0;
+  }
+}
+  
