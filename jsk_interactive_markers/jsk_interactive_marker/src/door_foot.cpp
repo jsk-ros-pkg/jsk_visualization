@@ -228,9 +228,16 @@ visualization_msgs::InteractiveMarker DoorFoot::makeInteractiveMarker(){
     }
   }
   else {
-      triangleMarker.markers.push_back( makeFootMarker( foot_list[footstep_index_].pose,
-                                                        foot_list[footstep_index_].header.frame_id == "right"));
-
+    int first_index = footstep_index_ * 2;
+    int second_index = footstep_index_ * 2 + 1;
+    if (foot_list.size() > first_index) {
+      triangleMarker.markers.push_back( makeFootMarker( foot_list[first_index].pose,
+                                                        foot_list[first_index].header.frame_id == "right"));
+    }
+    if (foot_list.size() > second_index) {
+      triangleMarker.markers.push_back( makeFootMarker( foot_list[second_index].pose,
+                                                        foot_list[second_index].header.frame_id == "right"));
+    }
   }
   
   
@@ -252,27 +259,31 @@ void DoorFoot::showStandLocationCb( const visualization_msgs::InteractiveMarkerF
   updateBoxInteractiveMarker();
 }
 void DoorFoot::showNextStepCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
-  if (footstep_show_initial_p_) {
-    footstep_index_ = 2;
-    footstep_show_initial_p_ = false;
-  }
-  else {
-    ++footstep_index_;
-    if (foot_list.size() == footstep_index_) {
-      footstep_index_ = 2;
+  if (foot_list.size() > 2) {
+    if (footstep_show_initial_p_) {
+      footstep_index_ = 1;
+      footstep_show_initial_p_ = false;
+    }
+    else {
+      ++footstep_index_;
+      if (foot_list.size() / 2 == footstep_index_) {
+	footstep_index_ = 1;
+      }
     }
   }
   updateBoxInteractiveMarker();
 }
 void DoorFoot::showPreviousStepCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
-  if (footstep_show_initial_p_) {
-    footstep_index_ = 2;
-    footstep_show_initial_p_ = false;
-  }
-  else {
-    --footstep_index_;
-    if (footstep_index_ == 1) {
-      footstep_index_ = foot_list.size() - 1;
+  if (foot_list.size() > 2) {
+    if (footstep_show_initial_p_) {
+      footstep_index_ = 1;
+      footstep_show_initial_p_ = false;
+    }
+    else {
+      --footstep_index_;
+      if (footstep_index_ == 0) {
+	footstep_index_ = (foot_list.size() - 1)/ 2;
+      }
     }
   }
   updateBoxInteractiveMarker();
