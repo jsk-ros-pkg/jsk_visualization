@@ -38,6 +38,7 @@ void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::Intera
   pub_.publish( mp );
 }
 
+
 void InteractiveMarkerInterface::pub_marker_menuCb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu){
   jsk_interactive_marker::MarkerMenu m;
   m.marker_name = feedback->marker_name;
@@ -54,11 +55,16 @@ void InteractiveMarkerInterface::pub_marker_menuCb(const visualization_msgs::Int
 }
 
 
-void InteractiveMarkerInterface::pub_marker_menu(std::string marker,int menu){
+void InteractiveMarkerInterface::pub_marker_menu(std::string marker, int menu, int type){
   jsk_interactive_marker::MarkerMenu m;
   m.marker_name = marker;
   m.menu=menu;
+  m.type = type;
   pub_move_.publish(m);
+}
+
+void InteractiveMarkerInterface::pub_marker_menu(std::string marker, int menu){
+  pub_marker_menu(marker, menu, 0);
 }
 
 void InteractiveMarkerInterface::IMSizeLargeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
@@ -217,6 +223,30 @@ void InteractiveMarkerInterface::usingIKCb( const visualization_msgs::Interactiv
   server_->applyChanges();
 
 }
+
+void InteractiveMarkerInterface::toggleStartIKCb( const std_msgs::EmptyConstPtr &msg)
+{
+  interactive_markers::MenuHandler::CheckState check_state;
+  if(menu_handler.getCheckState( start_ik_menu_ , check_state)){
+
+    if(check_state == interactive_markers::MenuHandler::CHECKED){
+      //stop ik
+      menu_handler.setCheckState( start_ik_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+      menu_handler.setCheckState( stop_ik_menu_ , interactive_markers::MenuHandler::CHECKED );
+      pub_marker_menu("", jsk_interactive_marker::MarkerMenu::CANCEL_PLAN);
+
+    }else{
+      //start ik
+      menu_handler.setCheckState( start_ik_menu_ , interactive_markers::MenuHandler::CHECKED );
+      menu_handler.setCheckState( stop_ik_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+      pub_marker_menu("" , jsk_interactive_marker::MarkerMenu::PLAN);
+    }
+
+    menu_handler.reApply( *server_ );
+    server_->applyChanges();
+  }
+}
+
 
 void InteractiveMarkerInterface::modeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
@@ -679,7 +709,7 @@ void InteractiveMarkerInterface::initHandler(void){
   interactive_markers::MenuHandler::EntryHandle sub_menu_handle_touch_it;
   sub_menu_handle_touch_it = menu_handler.insert( "Touch It" );
 
-  menu_handler.insert( sub_menu_handle_touch_it, "Preview", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_PREV));
+  //  menu_handler.insert( sub_menu_handle_touch_it, "Preview", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_PREV));
   menu_handler.insert( sub_menu_handle_touch_it, "Execute", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_EXEC));
   menu_handler.insert( sub_menu_handle_touch_it, "Cancel", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_CANCEL));
 
@@ -1108,6 +1138,8 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
 					    &InteractiveMarkerInterface::markers_del_cb, this);
   serv_reset_ = pnh_.advertiseService("reset_pose",
 				      &InteractiveMarkerInterface::reset_cb, this);
+
+  sub_toggle_start_ik_ = pnh_.subscribe<std_msgs::Empty> ("toggle_start_ik", 1, boost::bind( &InteractiveMarkerInterface::toggleStartIKCb, this, _1));
 
   //server_.reset( new interactive_markers::InteractiveMarkerServer(server_name, "sid", false) );
   server_.reset( new interactive_markers::InteractiveMarkerServer(server_name));
