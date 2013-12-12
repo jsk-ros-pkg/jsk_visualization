@@ -22,7 +22,11 @@
 
 
 void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ) {
-  proc_feedback(feedback, 0);
+  if(feedback->control_name == "center_sphere"){
+    proc_feedback(feedback, jsk_interactive_marker::MarkerPose::SPHERE_MARKER);
+  }else{
+    proc_feedback(feedback, jsk_interactive_marker::MarkerPose::GENERAL);
+  }
 }
 
 void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int type ) {
@@ -894,6 +898,29 @@ void InteractiveMarkerInterface::initHandler(void){
 
 }
 
+void InteractiveMarkerInterface::makeCenterSphere(visualization_msgs::InteractiveMarker &mk, double mk_size){
+  visualization_msgs::InteractiveMarkerControl sphereControl;
+  sphereControl.name = "center_sphere";
+
+  visualization_msgs::Marker sphereMarker;
+  sphereMarker.type = visualization_msgs::Marker::SPHERE;
+  double marker_scale = mk_size / 2;
+  sphereMarker.scale.x = marker_scale;
+  sphereMarker.scale.y = marker_scale;
+  sphereMarker.scale.z = marker_scale;
+
+  //gray
+  sphereMarker.color.r = 0.7;
+  sphereMarker.color.g = 0.7;
+  sphereMarker.color.b = 0.7;
+  sphereMarker.color.a = 0.5;
+
+  sphereControl.markers.push_back(sphereMarker);
+
+  sphereControl.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
+  mk.controls.push_back(sphereControl);
+}
+
 //im_mode
 //0:normal move  1:operationModel 2:operationalModelFirst
 void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int im_mode){
@@ -950,11 +977,11 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
     mk = im_helpers::make6DofMarker(mk_name.c_str(), pose, mk_size,
 				    true, false );
     //mk.description = mk_name.c_str();
+    if(use_center_sphere_){
+      makeCenterSphere(mk, mk_size);
+    }
 
     makeIMVisible(mk);
-    // add the control to the interactive marker
-    //mk.controls.push_back( box_control );
-    //TEST
 
     server_->insert( mk );
     server_->setCallback( mk.name,
@@ -990,7 +1017,7 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
     mk = im_helpers::make6DofMarker(mk_name.c_str(), pose, mk_size,
 				    true, false );
     mk.description = mk_name.c_str();
-      
+
     server_->insert( mk );
     server_->setCallback( mk.name,
 			  boost::bind( &InteractiveMarkerInterface::proc_feedback, this, _1) );
@@ -1091,6 +1118,7 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
   pnh_.param<std::string>("hand_type", hand_type_, "GENERIC");
 
   pnh_.param("use_head_marker", use_body_marker_, false );
+  pnh_.param("use_center_sphere", use_center_sphere_, false );
 
   XmlRpc::XmlRpcValue v;
   pnh_.param("mesh_config", v, v);

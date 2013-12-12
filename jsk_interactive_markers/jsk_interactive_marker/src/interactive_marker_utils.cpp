@@ -251,7 +251,9 @@ std::string getFullPathFromModelPath(std::string path){
   }
   pclose(fp);
   if( path.find("model://", 0) == 0 ){
-    path.erase(0,9);
+    path.erase(0,8);
+    //    ??
+    //path.erase(0,9);
     size_t current = 0, found;
     while((found = gazebo_model_path.find_first_of(":", current)) != std::string::npos){
       std::string search_path = std::string(gazebo_model_path, current, found - current);

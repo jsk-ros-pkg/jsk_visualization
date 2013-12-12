@@ -71,7 +71,6 @@ class InteractiveMarkerInterface {
 
   void initControlMarkers(void);
 
-
   void initBodyMarkers(void);
 
   void initHandler(void);
@@ -83,6 +82,8 @@ class InteractiveMarkerInterface {
   void changeMarkerMoveMode( std::string mk_name , int im_mode, float mk_size, geometry_msgs::PoseStamped dist_pose);
 
   void changeMarkerOperationModelMode( std::string mk_name );
+  
+  void makeCenterSphere(visualization_msgs::InteractiveMarker &mk, double mk_size);
 
   InteractiveMarkerInterface ();
 
@@ -204,6 +205,7 @@ class InteractiveMarkerInterface {
 
   bool use_finger_marker_;
   bool use_body_marker_;
+  bool use_center_sphere_;
 
 
   ControlState control_state_;

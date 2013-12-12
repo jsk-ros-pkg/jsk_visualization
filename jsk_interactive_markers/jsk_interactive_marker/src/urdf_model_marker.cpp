@@ -991,6 +991,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
 
   }else{
     model_file_ = getFilePathFromRosPath(model_file_);
+    model_file_ = getFullPathFromModelPath(model_file_);
     std::fstream xml_file(model_file_.c_str(), std::fstream::in);
     while ( xml_file.good() )
       {
