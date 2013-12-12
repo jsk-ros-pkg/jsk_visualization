@@ -830,11 +830,11 @@ void InteractiveMarkerInterface::initHandler(void){
   if(use_menu){
     sub_menu_handle_ik = menu_handler.insert( "IK mode" );
 
-    rotation_t_menu_ = menu_handler.insert( sub_menu_handle_ik, "Don't Allow Rotation", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
-    menu_handler.setCheckState( rotation_t_menu_ , interactive_markers::MenuHandler::CHECKED );
+    rotation_t_menu_ = menu_handler.insert( sub_menu_handle_ik, "6D (Position + Rotation)", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
+    menu_handler.setCheckState( rotation_t_menu_ , interactive_markers::MenuHandler::UNCHECKED );
     //h_mode_ikmode = h_mode_last3;
-    rotation_nil_menu_ = menu_handler.insert( sub_menu_handle_ik, "Allow Rotation", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
-    menu_handler.setCheckState( rotation_nil_menu_, interactive_markers::MenuHandler::UNCHECKED );
+    rotation_nil_menu_ = menu_handler.insert( sub_menu_handle_ik, "3D (Position)", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
+    menu_handler.setCheckState( rotation_nil_menu_, interactive_markers::MenuHandler::CHECKED );
     //h_mode_last3 = h_mode_ikmode;
   }
 
