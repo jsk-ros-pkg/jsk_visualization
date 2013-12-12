@@ -57,6 +57,7 @@ class InteractiveMarkerInterface {
   void modeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void ikmodeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void toggleIKModeCb( const std_msgs::EmptyConstPtr &msg);
   void useTorsoCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void usingIKCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
@@ -119,6 +120,7 @@ class InteractiveMarkerInterface {
   ros::ServiceServer serv_markers_set_;
   ros::ServiceServer serv_markers_del_;
   ros::Subscriber sub_toggle_start_ik_;
+  ros::Subscriber sub_toggle_ik_mode_;
   //tf::TransformListener tfl_;
 
   interactive_markers::MenuHandler menu_handler;
@@ -151,6 +153,9 @@ class InteractiveMarkerInterface {
   interactive_markers::MenuHandler::EntryHandle h_mode_last;
   interactive_markers::MenuHandler::EntryHandle h_mode_last2;
   interactive_markers::MenuHandler::EntryHandle h_mode_last3;
+
+  interactive_markers::MenuHandler::EntryHandle rotation_t_menu_;
+  interactive_markers::MenuHandler::EntryHandle rotation_nil_menu_;
 
   interactive_markers::MenuHandler::EntryHandle use_torso_menu_;
   interactive_markers::MenuHandler::EntryHandle use_torso_t_menu_;

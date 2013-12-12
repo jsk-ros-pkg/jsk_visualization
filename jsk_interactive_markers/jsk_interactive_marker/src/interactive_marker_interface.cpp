@@ -278,27 +278,50 @@ void InteractiveMarkerInterface::modeCb( const visualization_msgs::InteractiveMa
 
 void InteractiveMarkerInterface::ikmodeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
-  menu_handler.setCheckState( h_mode_last3, interactive_markers::MenuHandler::UNCHECKED );
-  h_mode_last3 = feedback->menu_entry_id;
-  menu_handler.setCheckState( h_mode_last3, interactive_markers::MenuHandler::CHECKED );
+  //menu_handler.setCheckState( h_mode_last3, interactive_markers::MenuHandler::UNCHECKED );
+  //h_mode_last3 = feedback->menu_entry_id;
+  //menu_handler.setCheckState( h_mode_last3, interactive_markers::MenuHandler::CHECKED );
 
-  switch(h_mode_last3-h_mode_ikmode){
-  case 0:
+  if(feedback->menu_entry_id == rotation_t_menu_){
+    menu_handler.setCheckState( rotation_nil_menu_, interactive_markers::MenuHandler::UNCHECKED );
     pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::IK_ROTATION_AXIS_T);
-    ROS_INFO("send 36");
-    break;
-  case 1:
+    ROS_INFO("Rotation Axis T");
+  }else{
+    menu_handler.setCheckState( rotation_t_menu_, interactive_markers::MenuHandler::UNCHECKED );
     pub_marker_menu(feedback->marker_name ,jsk_interactive_marker::MarkerMenu::IK_ROTATION_AXIS_NIL);
-    ROS_INFO("send 37");
-    break;
-  default:
-    ROS_INFO("Switching IKMode Error");
-    break;
+    ROS_INFO("Rotation Axis NIL");
   }
+
+
+  menu_handler.setCheckState( feedback->menu_entry_id, interactive_markers::MenuHandler::CHECKED );
 
   menu_handler.reApply( *server_ );
   server_->applyChanges();
 }
+
+
+void InteractiveMarkerInterface::toggleIKModeCb( const std_msgs::EmptyConstPtr &msg)
+{
+  interactive_markers::MenuHandler::CheckState check_state;
+  if(menu_handler.getCheckState( rotation_t_menu_ , check_state)){
+    if(check_state == interactive_markers::MenuHandler::CHECKED){
+      //rotation axis nil
+      menu_handler.setCheckState( rotation_t_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+      menu_handler.setCheckState( rotation_nil_menu_ , interactive_markers::MenuHandler::CHECKED );
+      pub_marker_menu("", jsk_interactive_marker::MarkerMenu::IK_ROTATION_AXIS_NIL);
+
+    }else{
+      //rotation_axis t
+      menu_handler.setCheckState( rotation_t_menu_ , interactive_markers::MenuHandler::CHECKED );
+      menu_handler.setCheckState( rotation_nil_menu_ , interactive_markers::MenuHandler::UNCHECKED );
+      pub_marker_menu("" , jsk_interactive_marker::MarkerMenu::IK_ROTATION_AXIS_T);
+    }
+
+    menu_handler.reApply( *server_ );
+    server_->applyChanges();
+  }
+}
+
 
 void InteractiveMarkerInterface::updateHeadGoal( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
@@ -807,12 +830,12 @@ void InteractiveMarkerInterface::initHandler(void){
   if(use_menu){
     sub_menu_handle_ik = menu_handler.insert( "IK mode" );
 
-    h_mode_last3 = menu_handler.insert( sub_menu_handle_ik, "Don't Allow Rotation", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
-    menu_handler.setCheckState( h_mode_last3, interactive_markers::MenuHandler::CHECKED );
-    h_mode_ikmode = h_mode_last3;
-    h_mode_last3 = menu_handler.insert( sub_menu_handle_ik, "Allow Rotation", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
-    menu_handler.setCheckState( h_mode_last3, interactive_markers::MenuHandler::UNCHECKED );
-    h_mode_last3 = h_mode_ikmode;
+    rotation_t_menu_ = menu_handler.insert( sub_menu_handle_ik, "Don't Allow Rotation", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
+    menu_handler.setCheckState( rotation_t_menu_ , interactive_markers::MenuHandler::CHECKED );
+    //h_mode_ikmode = h_mode_last3;
+    rotation_nil_menu_ = menu_handler.insert( sub_menu_handle_ik, "Allow Rotation", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
+    menu_handler.setCheckState( rotation_nil_menu_, interactive_markers::MenuHandler::UNCHECKED );
+    //h_mode_last3 = h_mode_ikmode;
   }
 
   pnh_.param("use_torso_menu", use_menu, false );
@@ -1140,6 +1163,8 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
 				      &InteractiveMarkerInterface::reset_cb, this);
 
   sub_toggle_start_ik_ = pnh_.subscribe<std_msgs::Empty> ("toggle_start_ik", 1, boost::bind( &InteractiveMarkerInterface::toggleStartIKCb, this, _1));
+  
+  sub_toggle_ik_mode_ = pnh_.subscribe<std_msgs::Empty> ("toggle_ik_mode", 1, boost::bind( &InteractiveMarkerInterface::toggleIKModeCb, this, _1));
 
   //server_.reset( new interactive_markers::InteractiveMarkerServer(server_name, "sid", false) );
   server_.reset( new interactive_markers::InteractiveMarkerServer(server_name));
