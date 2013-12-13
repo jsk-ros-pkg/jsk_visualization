@@ -19,6 +19,8 @@
 
 class InteractiveMarkerInterface {
  public:
+  visualization_msgs::InteractiveMarker make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation);
+
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int type );
 

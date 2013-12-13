@@ -19,6 +19,90 @@
 
 #include <jsk_interactive_marker/interactive_marker_interface.h>
 #include <jsk_interactive_marker/interactive_marker_utils.h>
+/*
+  visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation){
+*/
+
+visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation){
+  
+  visualization_msgs::InteractiveMarker int_marker;
+  int_marker.header =  stamped.header;
+  int_marker.name = name;
+  int_marker.scale = scale;
+  int_marker.pose = stamped.pose;
+
+  visualization_msgs::InteractiveMarkerControl control;
+    
+  //x axis
+  if(fixed_rotation){
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;
+  }else{
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::INHERIT;
+  }
+
+  control.orientation.w = 1;
+  control.orientation.x = 1;
+  control.orientation.y = 0;
+  control.orientation.z = 0;
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  int_marker.controls.push_back(control);
+
+  if(fixed_position){
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;
+  }else{
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::INHERIT;
+  }
+    
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(control);
+    
+
+  //y axis
+  if(fixed_rotation){
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;
+  }else{
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::INHERIT;
+  }
+  control.orientation.w = 1;
+  control.orientation.x = 0;
+  control.orientation.y = 1;
+  control.orientation.z = 0;
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  int_marker.controls.push_back(control);
+
+  if(fixed_position){
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;
+  }else{
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::INHERIT;
+  }
+
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(control);
+    
+  //z axis
+  if(fixed_rotation){
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;
+  }else{
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::INHERIT;
+  }
+
+  control.orientation.w = 1;
+  control.orientation.x = 0;
+  control.orientation.y = 0;
+  control.orientation.z = 1;
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  int_marker.controls.push_back(control);
+  if(fixed_position){
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;
+  }else{
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::INHERIT;
+  }
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(control);
+    
+  return int_marker;
+}
+
 
 
 void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ) {
@@ -395,18 +479,18 @@ void InteractiveMarkerInterface::changeMarkerForceMode( std::string mk_name , in
   geometry_msgs::PoseStamped pose;
   pose.header.frame_id = base_frame;
   if ( target_frame != "" ) {
-  /*
-    tf::StampedTransform stf;
-    geometry_msgs::TransformStamped mtf;
-    tfl_.lookupTransform(target_frame, base_frame,
-			 ros::Time(0), stf);
-    tf::transformStampedTFToMsg(stf, mtf);
-    pose.pose.position.x = mtf.transform.translation.x;
-    pose.pose.position.y = mtf.transform.translation.y;
-    pose.pose.position.z = mtf.transform.translation.z;
-    pose.pose.orientation = mtf.transform.rotation;
-    pose.header = mtf.header;
-  */
+    /*
+      tf::StampedTransform stf;
+      geometry_msgs::TransformStamped mtf;
+      tfl_.lookupTransform(target_frame, base_frame,
+      ros::Time(0), stf);
+      tf::transformStampedTFToMsg(stf, mtf);
+      pose.pose.position.x = mtf.transform.translation.x;
+      pose.pose.position.y = mtf.transform.translation.y;
+      pose.pose.position.z = mtf.transform.translation.z;
+      pose.pose.orientation = mtf.transform.rotation;
+      pose.header = mtf.header;
+    */
   }
   visualization_msgs::InteractiveMarker mk;
   //    mk.name = marker_name.c_str();
@@ -547,28 +631,28 @@ void InteractiveMarkerInterface::initBodyMarkers(void){
 
 
   if(hand_type_ == "sandia_hand"){
-      geometry_msgs::PoseStamped ps;
-      ps.header.stamp = ros::Time(0);
+    geometry_msgs::PoseStamped ps;
+    ps.header.stamp = ros::Time(0);
 
-      ps.header.frame_id = "/right_f0_base";
-      for(int i=0;i<4;i++){
-	for(int j=0;j<3;j++){
-	  visualization_msgs::InteractiveMarker fingerIm = 
-	    makeSandiaHandInteractiveMarker(ps, "right", i, j);
-	  makeIMVisible(fingerIm);
-	  server_->insert(fingerIm, boost::bind( &InteractiveMarkerInterface::updateFinger, this, _1, "rhand"));
-	}
+    ps.header.frame_id = "/right_f0_base";
+    for(int i=0;i<4;i++){
+      for(int j=0;j<3;j++){
+	visualization_msgs::InteractiveMarker fingerIm = 
+	  makeSandiaHandInteractiveMarker(ps, "right", i, j);
+	makeIMVisible(fingerIm);
+	server_->insert(fingerIm, boost::bind( &InteractiveMarkerInterface::updateFinger, this, _1, "rhand"));
       }
+    }
 
-      ps.header.frame_id = "/left_f0_base";
-      for(int i=0;i<4;i++){
-	for(int j=0;j<3;j++){
-	  visualization_msgs::InteractiveMarker fingerIm = 
-	    makeSandiaHandInteractiveMarker(ps, "left", i, j);
-	  makeIMVisible(fingerIm);
-	  server_->insert(fingerIm, boost::bind( &InteractiveMarkerInterface::updateFinger, this, _1, "lhand"));
-	}
+    ps.header.frame_id = "/left_f0_base";
+    for(int i=0;i<4;i++){
+      for(int j=0;j<3;j++){
+	visualization_msgs::InteractiveMarker fingerIm = 
+	  makeSandiaHandInteractiveMarker(ps, "left", i, j);
+	makeIMVisible(fingerIm);
+	server_->insert(fingerIm, boost::bind( &InteractiveMarkerInterface::updateFinger, this, _1, "lhand"));
       }
+    }
 
   }else{
     //for right hand
@@ -701,9 +785,9 @@ void InteractiveMarkerInterface::initHandler(void){
     pnh_.param("move_safety_menu", use_menu, false );
     if(use_menu){
       /*
-      interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
-      sub_menu_move_ = menu_handler.insert( "Move" );
-      menu_handler.insert( sub_menu_move_,"Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
+	interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
+	sub_menu_move_ = menu_handler.insert( "Move" );
+	menu_handler.insert( sub_menu_move_,"Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
       */
       interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
       sub_menu_move_ = menu_handler.insert( "Move" );
@@ -718,13 +802,13 @@ void InteractiveMarkerInterface::initHandler(void){
 
   pnh_.param("change_using_ik_menu", use_menu, false );
   if(use_menu){
-  interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
-  sub_menu_move_ = menu_handler.insert( "Whether To Use IK" );
-  start_ik_menu_ = menu_handler.insert( sub_menu_move_,"Start IK",boost::bind( &InteractiveMarkerInterface::usingIKCb, this, _1));
-  menu_handler.setCheckState( start_ik_menu_, interactive_markers::MenuHandler::UNCHECKED );
+    interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
+    sub_menu_move_ = menu_handler.insert( "Whether To Use IK" );
+    start_ik_menu_ = menu_handler.insert( sub_menu_move_,"Start IK",boost::bind( &InteractiveMarkerInterface::usingIKCb, this, _1));
+    menu_handler.setCheckState( start_ik_menu_, interactive_markers::MenuHandler::UNCHECKED );
 
-  stop_ik_menu_ = menu_handler.insert( sub_menu_move_,"Stop IK",boost::bind( &InteractiveMarkerInterface::usingIKCb, this, _1));
-  menu_handler.setCheckState( stop_ik_menu_, interactive_markers::MenuHandler::CHECKED );
+    stop_ik_menu_ = menu_handler.insert( sub_menu_move_,"Stop IK",boost::bind( &InteractiveMarkerInterface::usingIKCb, this, _1));
+    menu_handler.setCheckState( stop_ik_menu_, interactive_markers::MenuHandler::CHECKED );
   }
 
   //menu_handler.insert("Touch It", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCH));
@@ -1006,17 +1090,17 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
 
   if ( target_frame != "" ) {
     /*
-    tf::StampedTransform stf;
-    geometry_msgs::TransformStamped mtf;
-    tfl_.lookupTransform(target_frame, base_frame,
-			 ros::Time(0), stf);
-    tf::transformStampedTFToMsg(stf, mtf);
-    pose.pose.position.x = mtf.transform.translation.x;
-    pose.pose.position.y = mtf.transform.translation.y;
-    pose.pose.position.z = mtf.transform.translation.z;
-    pose.pose.orientation = mtf.transform.rotation;
-    pose.header = mtf.header;
-  */
+      tf::StampedTransform stf;
+      geometry_msgs::TransformStamped mtf;
+      tfl_.lookupTransform(target_frame, base_frame,
+      ros::Time(0), stf);
+      tf::transformStampedTFToMsg(stf, mtf);
+      pose.pose.position.x = mtf.transform.translation.x;
+      pose.pose.position.y = mtf.transform.translation.y;
+      pose.pose.position.z = mtf.transform.translation.z;
+      pose.pose.orientation = mtf.transform.rotation;
+      pose.header = mtf.header;
+    */
   }else{
     pose = dist_pose;
   }
@@ -1027,8 +1111,10 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
   switch(im_mode){
   case 0:
     pose.header.stamp = ros::Time(0);
-    mk = im_helpers::make6DofMarker(mk_name.c_str(), pose, mk_size,
-				    true, false );
+    //mk = im_helpers::make6DofMarker(mk_name.c_str(), pose, mk_size,
+    //true, false );
+    mk = make6DofControlMarker(mk_name.c_str(), pose, mk_size,
+			       true, false );
     //mk.description = mk_name.c_str();
     if(use_center_sphere_){
       makeCenterSphere(mk, mk_size);
@@ -1097,11 +1183,11 @@ void InteractiveMarkerInterface::changeMarkerOperationModelMode( std::string mk_
   geometry_msgs::PoseStamped pose;
   pose.header.frame_id = base_frame;
   /*
-  if ( target_frame != "" ) {
+    if ( target_frame != "" ) {
     tf::StampedTransform stf;
     geometry_msgs::TransformStamped mtf;
     tfl_.lookupTransform(target_frame, base_frame,
-			 ros::Time(0), stf);
+    ros::Time(0), stf);
     tf::transformStampedTFToMsg(stf, mtf);
     pose.pose.position.x = mtf.transform.translation.x;
     pose.pose.position.y = mtf.transform.translation.y;
@@ -1111,6 +1197,7 @@ void InteractiveMarkerInterface::changeMarkerOperationModelMode( std::string mk_
     }*/
 
   visualization_msgs::InteractiveMarker mk =
+    
     im_helpers::make6DofMarker(mk_name.c_str(), pose, 0.5,
 			       true, false );
   mk.description = mk_name.c_str();
@@ -1312,19 +1399,19 @@ bool InteractiveMarkerInterface::reset_cb ( jsk_interactive_marker::SetPose::Req
   pose.header.frame_id = base_frame;
   if ( target_frame != "" ) {
     /*
-    tf::StampedTransform stf;
-    geometry_msgs::TransformStamped mtf;
-    tfl_.lookupTransform(base_frame, target_frame,
-    ros::Time(0), stf);
-    tf::transformStampedTFToMsg(stf, mtf);
-    pose.pose.position.x = mtf.transform.translation.x;
-    pose.pose.position.y = mtf.transform.translation.y;
-    pose.pose.position.z = mtf.transform.translation.z;
-    pose.pose.orientation = mtf.transform.rotation;
-    // pose.header = mtf.header;
-    // pose.header.stamp = ros::Time::Now();
-    // pose.header.frame_id = target_frame;
-    server_->setPose(marker_name, pose.pose, pose.header);
+      tf::StampedTransform stf;
+      geometry_msgs::TransformStamped mtf;
+      tfl_.lookupTransform(base_frame, target_frame,
+      ros::Time(0), stf);
+      tf::transformStampedTFToMsg(stf, mtf);
+      pose.pose.position.x = mtf.transform.translation.x;
+      pose.pose.position.y = mtf.transform.translation.y;
+      pose.pose.position.z = mtf.transform.translation.z;
+      pose.pose.orientation = mtf.transform.rotation;
+      // pose.header = mtf.header;
+      // pose.header.stamp = ros::Time::Now();
+      // pose.header.frame_id = target_frame;
+      server_->setPose(marker_name, pose.pose, pose.header);
     */
   } else {
     server_->setPose(marker_name, pose.pose);
