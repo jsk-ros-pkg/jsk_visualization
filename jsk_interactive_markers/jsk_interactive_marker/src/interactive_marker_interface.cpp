@@ -927,9 +927,9 @@ void InteractiveMarkerInterface::initHandler(void){
     use_torso_menu_ = menu_handler.insert( "Links To Use" );
 
     use_torso_nil_menu_ = menu_handler.insert( use_torso_menu_, "Arm", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
-    menu_handler.setCheckState( use_torso_nil_menu_, interactive_markers::MenuHandler::UNCHECKED );
+    menu_handler.setCheckState( use_torso_nil_menu_, interactive_markers::MenuHandler::CHECKED );
     use_torso_t_menu_ = menu_handler.insert( use_torso_menu_, "Arm and Torso", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
-    menu_handler.setCheckState( use_torso_t_menu_, interactive_markers::MenuHandler::CHECKED );
+    menu_handler.setCheckState( use_torso_t_menu_, interactive_markers::MenuHandler::UNCHECKED );
     use_fullbody_menu_ = menu_handler.insert( use_torso_menu_, "Fullbody", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
     menu_handler.setCheckState( use_fullbody_menu_, interactive_markers::MenuHandler::UNCHECKED );
 
