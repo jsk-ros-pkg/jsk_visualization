@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="rviz" type="rviz" name="interactive_test_rviz"
+        args="-d $(find jsk_interactive_test)/launch/rviz.rviz" />
+  <node pkg="jsk_interactive_test" name="publish_goal_marker"
+        type="publish_goal_marker.py" output="screen" />
+</launch>
