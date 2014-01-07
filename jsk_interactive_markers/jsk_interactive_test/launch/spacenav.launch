@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="jsk_interactive_test"
+	type="spacenav-controller.l"
+	name="spacenav_controller"
+	output="screen" />
+  <include file="$(find jsk_interactive_test)/launch/interactive_test.launch" />
+</launch>
