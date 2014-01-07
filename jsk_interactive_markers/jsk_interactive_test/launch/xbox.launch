@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find jsk_interactive_test)/launch/interactive_test.launch"/>
+  <include file="$(find jsk_joy)/launch/xbox.launch" />
+</launch>

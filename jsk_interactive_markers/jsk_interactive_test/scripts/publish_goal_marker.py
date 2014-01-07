@@ -6,7 +6,7 @@ import rospy
 import copy
 
 from std_msgs.msg import ColorRGBA
-from geometry_msgs.msg import Vector3, Pose, Point, Quaternion
+from geometry_msgs.msg import Vector3, Pose, Point, Quaternion, PoseStamped
 from visualization_msgs.msg import MarkerArray, Marker
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
@@ -35,7 +35,10 @@ class InteractiveMarkerTest:
         if pos < 0.010 and rot < numpy.deg2rad(2): # 1 [cm], 2 [deg]
             self.colors[i] = ColorRGBA(1.0,0.2,0.2,0.8)
             self.status[i] = rospy.get_rostime() - self.start_time
-
+    def poseCB(self, msg):
+        self.server.setPose('control', msg.pose, msg.header)
+        self.server.applyChanges()
+        self.processFeedback(msg)
     def __init__(self):
         pub_goal = rospy.Publisher('interactive_goal_marker', MarkerArray)
         rospy.init_node('publish_interactive_goal_marker')
@@ -44,6 +47,7 @@ class InteractiveMarkerTest:
         space = 0.5
         mesh = 'file://'+roslib.packages.get_pkg_dir('jsk_interactive_test')+'/scripts/RobotHand.dae'
         mesh_scale = Vector3(0.2, 0.2, 0.2)
+        rospy.Subscriber('/goal_marker/move_marker', PoseStamped, self.poseCB)
         #
         for i in range(size*size*size):
             x = space * ((i%(size) - size/2) + numpy.random.normal(0,0.1))
@@ -58,6 +62,7 @@ class InteractiveMarkerTest:
 
         # interactive marker
         server = InteractiveMarkerServer("goal_marker")
+        self.server = server
         int_marker = InteractiveMarker()
         int_marker.header.frame_id = "/map"
         int_marker.name = "control"
