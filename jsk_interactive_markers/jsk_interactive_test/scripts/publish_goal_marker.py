@@ -19,6 +19,7 @@ class InteractiveMarkerTest:
     status = []
     size = 2
     start_time = False
+    done_time = False
 
     def processFeedback(self, feedback):
         if not self.start_time:
@@ -122,7 +123,7 @@ class InteractiveMarkerTest:
         server.applyChanges()
 
         # start rosmain
-        r = rospy.Rate(1.0)
+        r = rospy.Rate(5.0)
         while not rospy.is_shutdown():
             array = MarkerArray()
             for i in range(size*size*size):
@@ -143,7 +144,10 @@ class InteractiveMarkerTest:
             if self.start_time:
                 rospy.loginfo("%2d/%d %5.2f"%(len(filter(lambda x: x != False, self.status)),len(self.status),float((rospy.get_rostime()-self.start_time).to_sec())))
             if all(self.status):
-                rospy.loginfo("Done..")
+                if self.done_time:
+                    rospy.loginfo("Done.. %5.2f"%self.done_time)
+                else:
+                    self.done_time = (rospy.get_rostime()-self.start_time).to_sec()
                 for s in self.status:
                     rospy.loginfo("%5.2f"%s.to_sec())
 
