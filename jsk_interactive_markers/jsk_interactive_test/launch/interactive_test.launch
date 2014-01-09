@@ -1,6 +1,14 @@
 <launch>
+  <arg name="USE_ROTATION" default="false" />
+  <arg name="POSITION_THRESHOLD" default="0.01" /> <!-- meter -->
+  <arg name="ROTATION_THRESHOLD" default="2" /> <!-- degree -->
+
   <node pkg="rviz" type="rviz" name="interactive_test_rviz"
         args="-d $(find jsk_interactive_test)/launch/rviz.rviz" />
   <node pkg="jsk_interactive_test" name="publish_goal_marker"
-        type="publish_goal_marker.py" output="screen" />
+        type="publish_goal_marker.py" output="screen" >
+    <param name="use_rotation" value="$(arg USE_ROTATION)" />
+    <param name="position_threshold" value="$(arg POSITION_THRESHOLD)" />
+    <param name="rotation_threshold" value="$(arg ROTATION_THRESHOLD)" />
+  </node>
 </launch>

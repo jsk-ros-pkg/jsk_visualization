@@ -31,15 +31,22 @@ class InteractiveMarkerTest:
         p = self.poses[i]
         pos = numpy.linalg.norm(numpy.array([p.position.x,p.position.y,p.position.z])-
                                 numpy.array([feedback.pose.position.x,feedback.pose.position.y,feedback.pose.position.z]))
-        rot = numpy.linalg.norm(numpy.array(transformations.euler_from_quaternion([p.orientation.x,p.orientation.y,p.orientation.z,p.orientation.w]))-
-                                numpy.array(transformations.euler_from_quaternion([feedback.pose.orientation.x,feedback.pose.orientation.y,feedback.pose.orientation.z,feedback.pose.orientation.w])))
-        if pos < 0.010 and rot < numpy.deg2rad(2): # 1 [cm], 2 [deg]
+        rvec = (numpy.array(transformations.euler_from_quaternion([p.orientation.x,p.orientation.y,p.orientation.z,p.orientation.w]))-
+                numpy.array(transformations.euler_from_quaternion([feedback.pose.orientation.x,feedback.pose.orientation.y,feedback.pose.orientation.z,feedback.pose.orientation.w])))
+        if not self.use_rotation:
+            rvec[0] = 0
+            rvec[1] = 0
+        rot = numpy.linalg.norm(rvec)
+        rospy.loginfo('error %6.3f / %6.3f'%(pos, numpy.rad2deg(rot)))
+        if pos < self.position_threshold and rot < numpy.deg2rad(self.rotation_threshold):
             self.colors[i] = ColorRGBA(1.0,0.2,0.2,0.8)
             self.status[i] = rospy.get_rostime() - self.start_time
+
     def poseCB(self, msg):
         self.server.setPose('control', msg.pose, msg.header)
         self.server.applyChanges()
         self.processFeedback(msg)
+
     def __init__(self):
         pub_goal = rospy.Publisher('interactive_goal_marker', MarkerArray)
         rospy.init_node('publish_interactive_goal_marker')
@@ -48,15 +55,21 @@ class InteractiveMarkerTest:
         space = 0.5
         mesh = 'file://'+roslib.packages.get_pkg_dir('jsk_interactive_test')+'/scripts/RobotHand.dae'
         mesh_scale = Vector3(0.2, 0.2, 0.2)
+
+        self.use_rotation = rospy.get_param('~use_rotation', False)
+        self.position_threshold = rospy.get_param('~position_threshold', 0.01) # 1 [cm]
+        self.rotation_threshold = rospy.get_param('~rotation_threshold', 2)    # 2 [deg]
+
         rospy.Subscriber('/goal_marker/move_marker', PoseStamped, self.poseCB)
         #
         for i in range(size*size*size):
             x = space * ((i%(size) - size/2) + numpy.random.normal(0,0.1))
             y = space * (((i/(size))%size - size/2) + numpy.random.normal(0,0.1))
             z = space * ((i/(size*size) - size/2) + numpy.random.normal(0,0.1))
-            # q = transformations.quaternion_from_euler(*numpy.random.rand(3))
-            # q = transformations.quaternion_from_euler(*numpy.random.normal(0,0.01,(1,3))[0])
-            q = transformations.quaternion_from_euler(0,0,numpy.random.normal(0,0.5))
+            if self.use_rotation:
+                q = transformations.quaternion_from_euler(*numpy.random.normal(0, 0.7, 3))
+            else:
+                q = transformations.quaternion_from_euler(0,0,numpy.random.normal(0,0.5))
             self.poses.append(Pose(Point(x,y,z), Quaternion(*q)))
             self.colors.append(ColorRGBA(0.8,0.8,0.8,0.8))
             self.status.append(False)
