@@ -152,6 +152,20 @@ class InteractiveMarkerTest:
                 msg.lifetime = rospy.Time(10)
                 msg.id = i
                 array.markers.append(msg)
+            if self.done_time:
+                msg = Marker()
+                msg.header.stamp = rospy.get_rostime()
+                msg.header.frame_id = '/map'
+                msg.type = Marker.TEXT_VIEW_FACING
+                msg.scale.z = 0.14
+                msg.color.r = 1.0
+                msg.color.g = 1.0
+                msg.color.b = 1.0
+                msg.color.a = 1.0
+                msg.text = 'Done, time = %5.2f'%(self.done_time)
+                msg.lifetime = rospy.Time(10)
+                msg.id = size*size*size
+                array.markers.append(msg)
             pub_goal.publish(array)
             r.sleep()
             if self.start_time:
