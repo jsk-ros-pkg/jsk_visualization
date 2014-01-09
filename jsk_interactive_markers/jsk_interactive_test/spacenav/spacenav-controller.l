@@ -6,9 +6,15 @@
 
 (ros::roseus "spacenav_controller")
 
+(defvar *debug-view* nil)
+(cond
+ (*debug-view*
+  (defvar *debug-object* (make-cube 100 100 100))
+  (objects *debug-object*)))
+
 (defun spacenav-controller-callback
   (msg)
-  ;;(format t "~A" (send msg :axes))
+  (if *debug-view* (format t "~A~%" (send msg :axes)))
   (let* ((bs (send msg :buttons))
          (rotscl (cond ((= (elt bs 0) 1) 0.25)
                        ((= (elt bs 1) 1) 0.04)
@@ -31,7 +37,7 @@
                 (reverse
                  (map cons
                       #'*
-                      (float-vector 0 0 rotscl)
+                      (scale rotscl (float-vector 1 1 1))
                       (subseq (send msg :axes) 3 6)))
                 ;;(scale 1e-1 (subseq (send msg :axes) 3 6)) ;; ???
                 ))))
@@ -52,7 +58,8 @@
 
 (defvar *controll-marker*
   (instance geometry_msgs::poseStamped :init))
-(defvar *controll-coords* (make-coords))
+(defvar *controll-twist* #F(0 0 0 0 0 0))
+;;(defvar *controll-coords* (make-coords))
 (defvar *camera-place*
   (instance view_controller_msgs::CameraPlacement :init))
 
@@ -60,29 +67,30 @@
   (&key
    (coords (make-coords))
    (pos (send coords :worldpos))
-   (rot (send coords :worldrot)))
-  (let* ((p pos)
-	 (q (matrix-log rot))
-	 (new-p (v+ p (send *controll-coords* :worldpos)))
-	 (new-q (v+ q (matrix-log (send *controll-coords* :worldrot))))
-	 (position (send (send *controll-marker* :pose) :position))
+   (rot (send coords :worldrot))
+   (twist (concatenate float-vector
+		       (scale 1e-3 pos)
+		       (matrix-log rot))))
+  (let* ((position (send (send *controll-marker* :pose) :position))
 	 (orientation
 	  (send (send *controll-marker* :pose) :orientation))
+	 c
 	 )
-    (setq *controll-coords*
-	  (make-coords :pos new-p
-		       :rpy
-		       (coerce (reverse new-q) cons)))
+    (setq *controll-twist* (v+ twist *controll-twist*))
+    (setq c
+	  (make-coords
+	   :pos (subseq *controll-twist* 0 3)
+	   :rpy (reverse (subseq *controll-twist* 3 6))))
     (send *controll-marker* :header :frame_id "/map")
     (send *controll-marker* :header :stamp (ros::time 0.0))
     (map cons
 	 #'(lambda (key val) (send position key val))
-	 '(:x :y :z) (scale 1e-3 (send *controll-coords* :worldpos)))
+	 '(:x :y :z) (send c :worldpos))
     (map cons
 	 #'(lambda (key val)
 	     (send orientation key val))
 	 '(:w :x :y :z)
-	 (matrix2quaternion (send *controll-coords* :worldrot)))
+	 (matrix2quaternion (send c :worldrot)))
     (ros::publish "/goal_marker/move_marker" *controll-marker*)))
 
 (defclass view-property
@@ -144,6 +152,13 @@
 (do-until-key
  (if (not (ros::ok)) (return-from nil nil))
  (ros::spin-once)
+ (cond
+  (*debug-view*
+   (send *debug-object* :newcoords
+	 (make-coords
+	  :rpy (reverse (subseq *controll-twist* 3 6))))
+   (send *viewer* :draw-objects)
+   (x::window-main-one)))
  (ros::sleep))
 
 
