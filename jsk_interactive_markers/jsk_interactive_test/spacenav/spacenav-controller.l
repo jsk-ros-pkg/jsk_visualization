@@ -8,22 +8,34 @@
 
 (defun spacenav-controller-callback
   (msg)
-  (format t "~A" (send msg :axes))
-  (cond
-   ((< (norm (send msg :axes)) 1e-3) (print 'skip))
-   (t
-    (print 'send)
-    (move-controll-marker
-     :coords (make-coords
-	      :pos
-	      (scale 1e+2 (subseq (send msg :axes) 0 3))
-	      :rpy
-	      (reverse
-	       (map cons
-		    #'*
-		    (scale 1e-1 #F(0 0 1))
-		    (subseq (send msg :axes) 3 6)))))))
-  )
+  ;;(format t "~A" (send msg :axes))
+  (let* ((bs (send msg :buttons))
+         (rotscl (cond ((= (elt bs 0) 1) 0.25)
+                       ((= (elt bs 1) 1) 0.04)
+                       (t 0.1)))
+         (posscl (cond ((= (elt bs 0) 1) 250.0)
+                       ((= (elt bs 1) 1) 40.0)
+                       (t 100.0)))
+         )
+    (cond
+     ((< (norm (send msg :axes)) 1e-3)
+      ;;(print 'skip)
+      )
+     (t
+      ;;(print 'send)
+      (move-controll-marker
+       :coords (make-coords
+                :pos
+                (scale posscl (subseq (send msg :axes) 0 3))
+                :rpy
+                (reverse
+                 (map cons
+                      #'*
+                      (float-vector 0 0 rotscl)
+                      (subseq (send msg :axes) 3 6)))
+                ;;(scale 1e-1 (subseq (send msg :axes) 3 6)) ;; ???
+                ))))
+    ))
 
 (ros::subscribe
  "/spacenav/joy"
