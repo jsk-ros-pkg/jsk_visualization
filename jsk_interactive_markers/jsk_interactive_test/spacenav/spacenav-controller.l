@@ -90,11 +90,15 @@
   :slots (yaw pitch distance focus ))
 (defmethod view-property
   (:init
-   nil
-   (setq yaw 0.0)
-   (setq pitch 0.0)
-   (setq distance 1.0)
-   (setq focus (float-vector 0 0 0)))
+   (&key
+    ((:yaw y) 0.0)
+    ((:pitch p) 0.0)
+    ((:distance d) 1.0)
+    ((:focus f) (float-vector 0 0 0)))
+   (setq yaw y)
+   (setq pitch p)
+   (setq distance d)
+   (setq focus f))
   (:view-point
    nil
    (float-vector
@@ -117,8 +121,8 @@
 	  (placement (instance view_controller_msgs::CameraPlacement :init)))
      (send placement :interpolation_mode
 	   view_controller_msgs::CameraPlacement::*LINEAR*)
-     (send placement :time_from_start TIME)
-     (send placement :.eye :header :stamp (ros::time 0.0))
+     (send placement :time_from_start (ros::time TIME))
+     (send placement :eye :header :stamp (ros::time 0.0))
      (send placement :eye :header :frame_id "/map")
      (send placement :eye :point :x (aref view_point 0))
      (send placement :eye :point :y (aref view_point 1))
@@ -141,3 +145,11 @@
  (if (not (ros::ok)) (return-from nil nil))
  (ros::spin-once)
  (ros::sleep))
+
+
+#|
+
+(ros::publish
+ "/rviz/camera_placement"
+ (send (instance view-property :init) :camera-placement))
+
