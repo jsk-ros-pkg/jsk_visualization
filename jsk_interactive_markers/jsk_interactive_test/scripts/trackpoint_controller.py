@@ -53,16 +53,17 @@ def trackpoint_joyCB(msg):
         elif ( nanokontrol_st and nanokontrol_st.R8 ):
             yaw_move =  status.y / scale
         else:
-            local_xy_move = numpy.array((status.x / scale,
-                                         status.y / scale,
+            local_xy_move = numpy.array((- status.x / scale,
+                                         - status.y / scale,
                                          0.0,
                                          1.0))
     q = numpy.array((pre_pose.pose.orientation.x,
                      pre_pose.pose.orientation.y,
                      pre_pose.pose.orientation.z,
                      pre_pose.pose.orientation.w))
-    xy_move = numpy.dot(tf.transformations.quaternion_matrix(q),
-                        local_xy_move)
+    # xy_move = numpy.dot(tf.transformations.quaternion_matrix(q),
+    #                     local_xy_move)
+    xy_move = local_xy_move
 
     new_pose.pose.position.x = pre_pose.pose.position.x + xy_move[0]
     new_pose.pose.position.y = pre_pose.pose.position.y + xy_move[1]
