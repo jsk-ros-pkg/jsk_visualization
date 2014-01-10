@@ -1,0 +1,8 @@
+<launch>
+  <include file="$(find jsk_interactive_test)/launch/interactive_test.launch">
+    <arg name="MAKE_INTERACTIVE_MARKER_ARROW" value="false" />
+  </include>
+  <node pkg="jsk_joy" type="trackpoint_joy.py" name="trackpoint_joy" />
+  <node pkg="jsk_joy" type="nanokontrol_joy.py" name="nanokontrol_joy" args="3"/>
+  <node pkg="jsk_interactive_test" type="trackpoint_controller.py" name="trackpoint_controller" output="screen"/>
+</launch>
