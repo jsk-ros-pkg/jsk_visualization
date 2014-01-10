@@ -1,4 +1,6 @@
 <launch>
   <include file="$(find jsk_interactive_test)/launch/interactive_test.launch"/>
-  <include file="$(find jsk_joy)/launch/xbox.launch" />
+  <include file="$(find jsk_joy)/launch/xbox.launch">
+    <arg name="POSE_REMAP" value="/goal_marker/move_marker" />
+  </include>
 </launch>
