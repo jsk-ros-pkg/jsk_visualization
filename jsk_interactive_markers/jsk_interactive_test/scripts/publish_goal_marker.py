@@ -94,43 +94,44 @@ class InteractiveMarkerTest:
 
         int_marker.controls.append(mesh_control)
 
-        control = InteractiveMarkerControl()
-        control.orientation.w = 1
-        control.orientation.x = 1
-        control.orientation.y = 0
-        control.orientation.z = 0
-        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
-        int_marker.controls.append(copy.deepcopy(control))
-        control.orientation.w = 1
-        control.orientation.x = 0
-        control.orientation.y = 1
-        control.orientation.z = 0
-        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
-        int_marker.controls.append(copy.deepcopy(control))
-        control.orientation.w = 1
-        control.orientation.x = 0
-        control.orientation.y = 0
-        control.orientation.z = 1
-        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
-        int_marker.controls.append(copy.deepcopy(control))
-        control.orientation.w = 1
-        control.orientation.x = 1
-        control.orientation.y = 0
-        control.orientation.z = 0
-        control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
-        int_marker.controls.append(copy.deepcopy(control))
-        control.orientation.w = 1
-        control.orientation.x = 0
-        control.orientation.y = 1
-        control.orientation.z = 0
-        control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
-        int_marker.controls.append(copy.deepcopy(control))
-        control.orientation.w = 1
-        control.orientation.x = 0
-        control.orientation.y = 0
-        control.orientation.z = 1
-        control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
-        int_marker.controls.append(copy.deepcopy(control))
+        if rospy.has_param(rospy.search_param('make_interactive_marker_arrow')) and rospy.get_param(rospy.search_param('make_interactive_marker_arrow')):
+            control = InteractiveMarkerControl()
+            control.orientation.w = 1
+            control.orientation.x = 1
+            control.orientation.y = 0
+            control.orientation.z = 0
+            control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
+            int_marker.controls.append(copy.deepcopy(control))
+            control.orientation.w = 1
+            control.orientation.x = 0
+            control.orientation.y = 1
+            control.orientation.z = 0
+            control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
+            int_marker.controls.append(copy.deepcopy(control))
+            control.orientation.w = 1
+            control.orientation.x = 0
+            control.orientation.y = 0
+            control.orientation.z = 1
+            control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
+            int_marker.controls.append(copy.deepcopy(control))
+            control.orientation.w = 1
+            control.orientation.x = 1
+            control.orientation.y = 0
+            control.orientation.z = 0
+            control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
+            int_marker.controls.append(copy.deepcopy(control))
+            control.orientation.w = 1
+            control.orientation.x = 0
+            control.orientation.y = 1
+            control.orientation.z = 0
+            control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
+            int_marker.controls.append(copy.deepcopy(control))
+            control.orientation.w = 1
+            control.orientation.x = 0
+            control.orientation.y = 0
+            control.orientation.z = 1
+            control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
+            int_marker.controls.append(copy.deepcopy(control))
 
         server.insert(int_marker, self.processFeedback)
         server.applyChanges()
