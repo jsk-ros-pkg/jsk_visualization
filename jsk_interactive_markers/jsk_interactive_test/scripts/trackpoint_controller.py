@@ -16,8 +16,9 @@ from sensor_msgs.msg import Joy
 import tf.transformations
 
 sys.path.append(commands.getoutput('rospack find jsk_joy') + '/scripts')
-from trackpoint_joy import TrackpointStatus
+from trackpoint_status import TrackpointStatus
 from nanokontrol_status import NanoKONTROL2Status
+from nanopad_status import NanoPAD2Status
 
 INTERACTIVE_MARKER_TOPIC = '/goal_marker'
 pre_pose = None
@@ -26,10 +27,13 @@ def nanokontrol_joyCB(msg):
     global nanokontrol_st
     nanokontrol_st = NanoKONTROL2Status(msg)
     
+def nanopad_joyCB(msg):
+    global nanopad_st
+    nanopad_st = NanoPAD2Status(msg)
 
 def trackpoint_joyCB(msg):
     global pre_view, g_seq_num, pre_pose
-    global nanokontrol_st
+    global nanokontrol_st, nanopad_st
     if not pre_pose:
         pre_pose = PoseStamped()
     status = TrackpointStatus(msg)
@@ -40,21 +44,33 @@ def trackpoint_joyCB(msg):
     new_pose.header.frame_id = '/map'
     new_pose.header.stamp = rospy.Time(0.0)
     # move in local
-    scale = 500.0
     local_xy_move = numpy.array((0.0,
                                  0.0,
                                  0.0,
                                  1.0))
     z_move = 0
     yaw_move = 0
+    if ( nanopad_st and nanopad_st.buttonL1 ):
+        scale_xy = 1500.0
+        scale_z = 1500.0
+        scale_yaw = 1000.0
+    else:
+        scale_xy = 500.0
+        scale_z = 500.0
+        scale_yaw = 300.0
+
     if not ( status.left or status.right or status.middle ):
-        if ( nanokontrol_st and nanokontrol_st.S8 ):
-            z_move = status.y / scale
-        elif ( nanokontrol_st and nanokontrol_st.R8 ):
-            yaw_move =  status.y / scale
+        # if ( nanokontrol_st and nanokontrol_st.S8 ):
+        #     z_move = status.y / scale
+        # elif ( nanokontrol_st and nanokontrol_st.R8 ):
+        #     yaw_move =  status.y / scale
+        if ( nanopad_st and nanopad_st.buttonU1 ):
+            z_move = status.y / scale_z
+        elif ( nanopad_st and nanopad_st.buttonU2 ):
+            yaw_move =  status.y / scale_yaw
         else:
-            local_xy_move = numpy.array((- status.x / scale,
-                                         - status.y / scale,
+            local_xy_move = numpy.array((- status.x / scale_xy,
+                                         - status.y / scale_xy,
                                          0.0,
                                          1.0))
     q = numpy.array((pre_pose.pose.orientation.x,
@@ -126,14 +142,16 @@ def trackpoint_joyCB(msg):
 
 def main():
     global g_camera_pub, g_interactive_pub
-    global nanokontrol_st
+    global nanokontrol_st, nanopad_st
     rospy.sleep(1)
     rospy.init_node('trackpoint_controller')
     g_camera_pub = rospy.Publisher('/rviz/camera_placement', CameraPlacement)
     g_interactive_pub = rospy.Publisher(INTERACTIVE_MARKER_TOPIC + '/move_marker', PoseStamped)
     trackpoint_sub = rospy.Subscriber('/trackpoint/joy', Joy, trackpoint_joyCB)
     nanokontrol_sub= rospy.Subscriber('/nanokontrol/joy', Joy, nanokontrol_joyCB)
+    nanopad_sub= rospy.Subscriber('/nanopad/joy', Joy, nanopad_joyCB)
     nanokontrol_st = None
+    nanopad_st = None
         
     rospy.spin()
         
