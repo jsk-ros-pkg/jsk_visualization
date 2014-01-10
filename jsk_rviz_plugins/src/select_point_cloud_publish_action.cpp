@@ -79,10 +79,15 @@ namespace jsk_rviz_plugin
             ColorProperty* color_data = qobject_cast<ColorProperty* >(model_->getProp( child_index )->childAt(1));
 
             Ogre::Vector3 point_vec = vec_data->getVector();
-            Ogre::ColourValue point_color = color_data->getOgreColor();
+            // check if color_data is available
+            // if not color_data is available, set the color to black(0,0,0)
+            int rgb_int = 0;
+            if (color_data != NULL && color_data->getColor().isValid()) {
+              Ogre::ColourValue point_color = color_data->getOgreColor();
+              rgb_int = (int)point_color.r << 16 | (int)point_color.g << 8 |  (int)point_color.b << 0;
+            }
             float x = point_vec.x, y = point_vec.y, z = point_vec.z;
             //Tty to add color, but point_color's value are all zero!!!!!!
-            int rgb_int = (int)point_color.r << 16 | (int)point_color.g << 8 |  (int)point_color.b << 0;
             float rgb_float = *reinterpret_cast<float*>(&rgb_int);
             memcpy(&pc2.data[i*4*sizeof(float)], &x, sizeof(float));
             memcpy(&pc2.data[(i*4+1)*sizeof(float)], &y, sizeof(float));
