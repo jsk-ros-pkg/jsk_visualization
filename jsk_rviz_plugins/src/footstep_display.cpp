@@ -67,6 +67,8 @@ namespace jsk_rviz_plugin
   void FootstepDisplay::reset()
   {
     MFDClass::reset();
+    shapes_.clear();
+    line_->clear();
   }
 
   bool FootstepDisplay::validateFloats( const jsk_footstep_msgs::FootstepArray& msg )
