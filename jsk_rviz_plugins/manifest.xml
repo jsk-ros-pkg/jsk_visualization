@@ -10,6 +10,7 @@
   <url>http://ros.org/wiki/jsk_rviz_plugins</url>
   <depend package="rviz"/>
   <depend package="jsk_hark_msgs"/>
+  <depend package="jsk_footstep_msgs"/>
   <depend package="actionlib_msgs"/>
 
   <export>

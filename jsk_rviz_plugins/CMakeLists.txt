@@ -45,9 +45,10 @@ qt4_wrap_cpp(MOC_FILES
   src/publish_topic.h
   src/cancel_action.h
   src/select_point_cloud_publish_action.h
+  src/footstep_display.h
 )
 
-set(SOURCE_FILES src/cancel_action.cpp src/publish_topic.cpp src/select_point_cloud_publish_action.cpp ${MOC_FILES})
+set(SOURCE_FILES src/footstep_display.cpp src/cancel_action.cpp src/publish_topic.cpp src/select_point_cloud_publish_action.cpp ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(jsk_rviz_plugins ${SOURCE_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES})
