@@ -11,13 +11,13 @@ from visualization_msgs.msg import MarkerArray, Marker
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from tf import transformations
-import numpy
+import numpy, math
 
 class InteractiveMarkerTest:
     poses = []
     colors = []
     status = []
-    size = 2
+    size = 3
     start_time = False
     done_time = False
 
@@ -31,12 +31,13 @@ class InteractiveMarkerTest:
         p = self.poses[i]
         pos = numpy.linalg.norm(numpy.array([p.position.x,p.position.y,p.position.z])-
                                 numpy.array([feedback.pose.position.x,feedback.pose.position.y,feedback.pose.position.z]))
-        rvec = (numpy.array(transformations.euler_from_quaternion([p.orientation.x,p.orientation.y,p.orientation.z,p.orientation.w]))-
-                numpy.array(transformations.euler_from_quaternion([feedback.pose.orientation.x,feedback.pose.orientation.y,feedback.pose.orientation.z,feedback.pose.orientation.w])))
-        if not self.use_rotation:
-            rvec[0] = 0
-            rvec[1] = 0
-        rot = numpy.linalg.norm(rvec)
+        #print transformations.quaternion_matrix([p.orientation.x,p.orientation.y,p.orientation.z,p.orientation.w])
+        #print transformations.quaternion_matrix([feedback.pose.orientation.x,feedback.pose.orientation.y,feedback.pose.orientation.z,feedback.pose.orientation.w])
+        #print transformations.quaternion_matrix([p.orientation.x,p.orientation.y,p.orientation.z,p.orientation.w])[0:3,2]
+        #print transformations.quaternion_matrix([feedback.pose.orientation.x,feedback.pose.orientation.y,feedback.pose.orientation.z,feedback.pose.orientation.w])[0:3,2]
+        rot = math.acos(numpy.dot(transformations.quaternion_matrix([p.orientation.x,p.orientation.y,p.orientation.z,p.orientation.w])[0:3,2],
+                                  transformations.quaternion_matrix([feedback.pose.orientation.x,feedback.pose.orientation.y,feedback.pose.orientation.z,feedback.pose.orientation.w])[0:3,2]))
+        #rot = numpy.linalg.norm(rvec)
         rospy.loginfo('error %6.3f / %6.3f'%(pos, numpy.rad2deg(rot)))
         if pos < self.position_threshold and rot < numpy.deg2rad(self.rotation_threshold):
             self.colors[i] = ColorRGBA(1.0,0.2,0.2,0.8)
@@ -53,10 +54,11 @@ class InteractiveMarkerTest:
         # setup
         size = self.size
         space = 0.5
-        mesh = 'file://'+roslib.packages.get_pkg_dir('jsk_interactive_test')+'/scripts/RobotHand.dae'
-        mesh_scale = Vector3(0.2, 0.2, 0.2)
+        hand_mesh = 'file://'+roslib.packages.get_pkg_dir('jsk_interactive_test')+'/scripts/RobotHand.dae'
+        hand_mesh_scale = Vector3(0.2, 0.2, 0.2)
+        goal_mesh = 'file://'+roslib.packages.get_pkg_dir('jsk_interactive_test')+'/scripts/Bottle.dae'
+        goal_mesh_scale = Vector3(1.0, 1.0, 1.0)
 
-        self.use_rotation = rospy.get_param('~use_rotation', False)
         self.position_threshold = rospy.get_param('~position_threshold', 0.01) # 1 [cm]
         self.rotation_threshold = rospy.get_param('~rotation_threshold', 2)    # 2 [deg]
 
@@ -66,10 +68,7 @@ class InteractiveMarkerTest:
             x = space * ((i%(size) - size/2) + numpy.random.normal(0,0.1))
             y = space * (((i/(size))%size - size/2) + numpy.random.normal(0,0.1))
             z = space * ((i/(size*size) - size/2) + numpy.random.normal(0,0.1))
-            if self.use_rotation:
-                q = transformations.quaternion_from_euler(*numpy.random.normal(0, 0.7, 3))
-            else:
-                q = transformations.quaternion_from_euler(0,0,numpy.random.normal(0,0.5))
+            q = transformations.quaternion_from_euler(*numpy.random.normal(0,0.7,3))
             self.poses.append(Pose(Point(x,y,z), Quaternion(*q)))
             self.colors.append(ColorRGBA(0.8,0.8,0.8,0.8))
             self.status.append(False)
@@ -84,13 +83,19 @@ class InteractiveMarkerTest:
 
         mesh_marker = Marker()
         mesh_marker.type = Marker.MESH_RESOURCE
-        mesh_marker.scale = mesh_scale
+        mesh_marker.scale = hand_mesh_scale
         mesh_marker.color = ColorRGBA(0.2,0.2,1.0,0.8)
-        mesh_marker.mesh_resource = mesh
+        mesh_marker.mesh_resource = hand_mesh
+
+        target_marker = Marker()
+        target_marker.type = Marker.CYLINDER
+        target_marker.scale = Vector3(0.07,0.07,0.1)
+        target_marker.color = ColorRGBA(0.4,0.4,1.0,0.6)
 
         mesh_control = InteractiveMarkerControl()
         mesh_control.always_visible = True
         mesh_control.markers.append(mesh_marker)
+        mesh_control.markers.append(target_marker)
 
         int_marker.controls.append(mesh_control)
 
@@ -145,9 +150,9 @@ class InteractiveMarkerTest:
                 msg.header.stamp = rospy.get_rostime()
                 msg.header.frame_id = '/map'
                 msg.mesh_use_embedded_materials = False
-                msg.mesh_resource = mesh
+                msg.mesh_resource = goal_mesh
                 msg.type = Marker.MESH_RESOURCE
-                msg.scale = mesh_scale
+                msg.scale = goal_mesh_scale
                 msg.color = self.colors[i]
                 msg.pose = self.poses[i]
                 msg.lifetime = rospy.Time(10)
