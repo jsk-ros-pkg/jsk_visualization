@@ -4,6 +4,10 @@
 import roslib; roslib.load_manifest('jsk_interactive_test')
 import rospy
 import copy
+import httplib, urllib2, urllib
+from socket import gethostname
+from getpass import getuser
+
 
 from std_msgs.msg import ColorRGBA
 from geometry_msgs.msg import Vector3, Pose, Point, Quaternion, PoseStamped
@@ -21,6 +25,18 @@ class InteractiveMarkerTest:
     start_time = False
     done_time = False
 
+    def recordResult(self, ui_type, time):
+        #url = 'http://localhost:3000/interactive_marker_test'
+        url = 'http://jsk-db.herokuapp.com/interactive_marker_test'
+        params = {'ui_type': ui_type,
+                  'user': '%s@%s' % (getuser(), gethostname()),
+                  'time': time}
+        data = urllib.urlencode(params)
+        req = urllib2.Request(url, data)
+        try:
+            response = urllib2.urlopen(req)
+        except:
+            rospy.logfatal('failed to record result')
     def processFeedback(self, feedback):
         if not self.start_time:
             self.start_time = rospy.get_rostime()
@@ -49,8 +65,10 @@ class InteractiveMarkerTest:
         self.processFeedback(msg)
 
     def __init__(self):
+        
         pub_goal = rospy.Publisher('interactive_goal_marker', MarkerArray)
         rospy.init_node('publish_interactive_goal_marker')
+        self.ui_type = rospy.get_param('~ui_type')
         # setup
         size = self.size
         space = 0.5
@@ -181,9 +199,9 @@ class InteractiveMarkerTest:
                     rospy.loginfo("Done.. %5.2f"%self.done_time)
                 else:
                     self.done_time = (rospy.get_rostime()-self.start_time).to_sec()
+                    self.recordResult(self.ui_type, self.done_time)
                 for s in self.status:
                     rospy.loginfo("%5.2f"%s.to_sec())
-
 
 if __name__ == '__main__':
     try:

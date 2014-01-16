@@ -3,6 +3,7 @@
   <include file="$(find jsk_interactive_test)/launch/interactive_test.launch">
     <arg name="MAKE_INTERACTIVE_MARKER_ARROW" value="false" />
     <arg name="LAUNCH_RVIZ_WITH_DEFAULT_CONFIG" value="false" />
+    <arg name="UI_TYPE" value="trackpoint" />
   </include>
 
   <node pkg="jsk_joy" type="trackpoint_joy.py" name="trackpoint_joy" />

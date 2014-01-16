@@ -1,4 +1,5 @@
 <launch>
+  <arg name="UI_TYPE" default="mouse" />
   <arg name="USE_ROTATION" default="false" />
   <arg name="POSITION_THRESHOLD" default="0.01" /> <!-- meter -->
   <arg name="ROTATION_THRESHOLD" default="2" /> <!-- degree -->
@@ -11,7 +12,8 @@
   </group>
 
   <node pkg="jsk_interactive_test" name="publish_goal_marker"
-        type="publish_goal_marker.py" output="screen" >
+        type="publish_goal_marker.py" output="screen" clear_params="true">
+    <param name="ui_type" value="$(arg UI_TYPE)" />
     <param name="use_rotation" value="$(arg USE_ROTATION)" />
     <param name="position_threshold" value="$(arg POSITION_THRESHOLD)" />
     <param name="rotation_threshold" value="$(arg ROTATION_THRESHOLD)" />

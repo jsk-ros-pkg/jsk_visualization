@@ -6,5 +6,6 @@
 	output="screen" />
   <include file="$(find jsk_interactive_test)/launch/interactive_test.launch" >
     <arg name="USE_ROTATION" value="$(arg USE_ROTATION)" />
+    <arg name="UI_TYPE" value="spacenav" />
   </include>
 </launch>

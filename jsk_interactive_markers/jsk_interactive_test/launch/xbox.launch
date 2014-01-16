@@ -2,6 +2,7 @@
   <arg name="CONTROLLER" default="xbox" />
   <include file="$(find jsk_interactive_test)/launch/interactive_test.launch">
     <arg name="USE_ROTATION" value="false" />
+    <arg name="UI_TYPE" value="$(arg CONTROLLER)" />
   </include>
   
   <include file="$(find jsk_joy)/launch/xbox.launch">
