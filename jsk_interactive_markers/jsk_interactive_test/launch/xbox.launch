@@ -1,6 +1,11 @@
 <launch>
-  <include file="$(find jsk_interactive_test)/launch/interactive_test.launch"/>
+  <arg name="CONTROLLER" default="xbox" />
+  <include file="$(find jsk_interactive_test)/launch/interactive_test.launch">
+    <arg name="USE_ROTATION" value="false" />
+  </include>
+  
   <include file="$(find jsk_joy)/launch/xbox.launch">
     <arg name="POSE_REMAP" value="/goal_marker/move_marker" />
+    <arg name="CONTROLLER_TYPE" value="$(arg CONTROLLER)" />
   </include>
 </launch>
