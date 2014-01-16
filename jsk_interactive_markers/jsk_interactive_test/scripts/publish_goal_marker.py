@@ -17,7 +17,7 @@ class InteractiveMarkerTest:
     poses = []
     colors = []
     status = []
-    size = 3
+    size = 2
     start_time = False
     done_time = False
 
