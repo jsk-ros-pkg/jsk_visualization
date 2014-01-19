@@ -16,6 +16,7 @@
   <depend package="dynamic_tf_publisher" />
   <depend package="tf" />
   <depend package="jsk_footstep_msgs" />
+  <depend package="actionlib" />
   <rosdep name="eigen" />
 </package>
 

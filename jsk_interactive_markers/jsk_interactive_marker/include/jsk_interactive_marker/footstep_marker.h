@@ -11,6 +11,8 @@
 #include <geometry_msgs/PointStamped.h>
 
 #include <tf/transform_listener.h>
+#include <actionlib/client/simple_action_client.h>
+#include <jsk_footstep_msgs/PlanFootstepsAction.h>
 
 class FootstepMarker {
 public:
@@ -21,6 +23,8 @@ protected:
   void initializeInteractiveMarker();
   void processFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void moveMarkerCB(const geometry_msgs::PoseStamped::ConstPtr& msg);
+  geometry_msgs::Pose getFootstepPose(bool leftp);
+  void planIfPossible();
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   double foot_size_x_;
   double foot_size_y_;
@@ -29,5 +33,8 @@ protected:
   std::string marker_frame_id_;
   geometry_msgs::PoseStamped marker_pose_;
   ros::Subscriber move_marker_sub_;
+  ros::Publisher footstep_pub_;
   boost::shared_ptr<tf::TransformListener> tf_listener_;
+  actionlib::SimpleActionClient<jsk_footstep_msgs::PlanFootstepsAction> ac_;
+  bool plan_run_;
 };
