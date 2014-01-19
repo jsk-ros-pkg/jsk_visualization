@@ -15,6 +15,7 @@
   <depend package="interactive_marker_helpers" />
   <depend package="dynamic_tf_publisher" />
   <depend package="tf" />
+  <depend package="jsk_footstep_msgs" />
   <rosdep name="eigen" />
 </package>
 
