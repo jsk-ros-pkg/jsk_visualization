@@ -371,8 +371,6 @@ void UrdfModelMarker::showModelMarkerCB( const std_msgs::EmptyConstPtr &msg){
 }
 
 
-
-
 void UrdfModelMarker::graspPoint_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string link_name){
   switch ( feedback->event_type ){
   case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
@@ -408,6 +406,10 @@ visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerCont
 visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale)
 {
   std_msgs::ColorRGBA color;
+  color.r = 0;
+  color.g = 0;
+  color.b = 0;
+  color.a = 0;
   return makeMeshMarkerControl(mesh_resource, stamped, scale, color, false);
 }
 
@@ -651,7 +653,7 @@ void UrdfModelMarker::setOriginalPose(boost::shared_ptr<const Link> link)
 
 void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init){
   //addChildLinkNames(link, root, init, false, 0);
-  addChildLinkNames(link, root, init, true, 0);
+  addChildLinkNames(link, root, init, use_visible_color_, 0);
 }
 
 void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index)
@@ -875,7 +877,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 UrdfModelMarker::UrdfModelMarker ()
 {}
 
-UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
   pnh_.param("server_name", server_name, std::string ("") );
 
   if ( server_name == "" ) {
@@ -900,6 +902,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   mode_ = mode;
   fixed_link_ = fixed_link;
   use_robot_description_ = use_robot_description;
+  use_visible_color_ = use_visible_color;
 
   pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
   pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1);
@@ -1040,12 +1043,8 @@ int main(int argc, char** argv)
     server_name = ros::this_node::getName();
   }
 
-
-  
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
   server.reset( new interactive_markers::InteractiveMarkerServer(server_name, "", false) );
-
-
 
   XmlRpc::XmlRpcValue v;
   pnh_.param("model_config", v, v);
@@ -1073,15 +1072,21 @@ int main(int argc, char** argv)
       use_robot_description = model["use_robot_description"];
     }
 
+    bool use_visible_color = false;
+    if(model.hasMember("use_visible_color")){
+      use_visible_color = model["use_visible_color"];
+    }
+    std::cout << use_visible_color << "aaa" <<std::endl;
+
+
     if(model["robot"]){
       mode = "robot";
     }
     if(model.hasMember("mode")){
       mode.assign(model["mode"]);
-      //mode = model["mode"];
     }
-    
-    new UrdfModelMarker(model["name"], model["model"], model["frame-id"], p, scale_factor, mode , model["robot"], registration,fixed_link, use_robot_description, server);
+
+    new UrdfModelMarker(model["name"], model["model"], model["frame-id"], p, scale_factor, mode , model["robot"], registration,fixed_link, use_robot_description, use_visible_color, server);
   }
 
   ros::spin();

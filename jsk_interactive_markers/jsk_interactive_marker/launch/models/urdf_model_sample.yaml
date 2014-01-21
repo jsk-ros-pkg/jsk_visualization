@@ -1,0 +1,148 @@
+- name: "Robot"
+  frame-id: "map"
+  robot: true
+  use_robot_description: true
+  pose:
+    position: {x: -1.0, y: 0.0, z: 0.0}
+    orientation : {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+
+- name: "Nao"
+  model: "package://nao_description/urdf/nao_robot_v4.urdf"
+  frame-id: "map"
+  robot: true
+  scale: 0.001
+  pose: 
+    position: 
+        x: 0.0
+        y: 1.0
+        z: 0.0
+    orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+
+- name: "PR2"
+  model: "package://pr2_mechanism_model/pr2.urdf"
+#  model: "package://jsk_interactive_marker/launch/models/pr2.urdf"
+  use_visible_color: true
+  frame-id: "map"
+  robot: true
+  pose:
+    position: {x: 0.0, y: 0.0, z: 0.0}
+    orientation : {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+
+- name: "Nao"
+  model: "package://nao_description/urdf/nao_robot_v4.urdf"
+  frame-id: "map"
+  robot: true
+  scale: 0.001
+  pose: 
+    position: 
+        x: 0.0
+        y: 1.0
+        z: 0.0
+    orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+
+
+- name: "atlas"
+  model: "package://hrpsys_gazebo_atlas/build/atlas_v3.jsk.urdf"
+  frame-id: "map"
+  robot: true
+  use_visible_color: true
+  scale: 1.0
+  pose: 
+    position: 
+        x: 0.0
+        y: 2.0
+        z: 0.0
+    orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+
+- name: "atlas2"
+  model: "package://atlas_v3_moveit_config/atlas_v3_sandia_hands.urdf"
+  frame-id: "map"
+  robot: true
+  scale: 1.0
+  pose: 
+    position: 
+        x: 2.0
+        y: 2.0
+        z: 0.0
+    orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+
+
+- name: "Fridge"
+  model: "package://hrpsys_gazebo_tutorials/environment_models/room73b2-hitachi-fiesta-refrigerator-0/model.urdf"
+  frame-id: "map"
+  robot: false
+  pose: 
+    position: 
+        x: 0.0
+        y: 3.0
+        z: 0.0
+    orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+
+
+- 
+  name: "Door"
+  model: "package://hrpsys_gazebo_tutorials/environment_models/room73b2-door-left-0/model.urdf"
+  frame-id: "map"
+  robot: false
+  use_visible_color: true
+  pose: 
+    position: 
+        x: 0.0
+        y: 4.0
+        z: 0.0
+    orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+
+
+- name: "broom"
+  model: "package://hrpsys_gazebo_tutorials/environment_models/room73b2-broom-0/model.urdf"
+  frame-id: "map"
+  robot: true
+  pose: 
+    position: 
+        x: 0.0
+        y: 5.0
+        z: 0.0
+    orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+
+- name: "cupboard"
+  model: "package://hrpsys_gazebo_tutorials/environment_models/cupboard/model.urdf"
+  frame-id: "map"
+  robot: true
+  pose: 
+    position: 
+        x: 0.0
+        y: 6.0
+        z: 0.0
+    orientation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
