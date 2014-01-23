@@ -14,6 +14,7 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   pnh.param("foot_size_y", foot_size_y_, 0.135);
   pnh.param("foot_size_z", foot_size_z_, 0.001);
   pnh.param("footstep_margin", footstep_margin_, 0.2);
+  pnh.param("use_footstep_planner", use_footstep_planner_, true);
   footstep_pub_ = nh.advertise<jsk_footstep_msgs::FootstepArray>("footstep", 1);
   server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
 
@@ -26,7 +27,9 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
 
   tf_listener_.reset(new tf::TransformListener);
   ROS_INFO("waiting server...");
-  ac_.waitForServer();
+  if (use_footstep_planner_) {
+    ac_.waitForServer();
+  }
 }
 
 void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
@@ -38,6 +41,9 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
 
 void FootstepMarker::planIfPossible() {
   // check the status of the ac_
+  if (!use_footstep_planner_) {
+    return;                     // do nothing
+  }
   bool call_planner = !plan_run_;
   if (plan_run_) {
     actionlib::SimpleClientGoalState state = ac_.getState();

@@ -36,5 +36,6 @@ protected:
   ros::Publisher footstep_pub_;
   boost::shared_ptr<tf::TransformListener> tf_listener_;
   actionlib::SimpleActionClient<jsk_footstep_msgs::PlanFootstepsAction> ac_;
+  bool use_footstep_planner_;
   bool plan_run_;
 };

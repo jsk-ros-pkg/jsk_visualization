@@ -2,7 +2,12 @@
   <node pkg="jsk_interactive_marker"
         type="footstep_marker"
         name="footstep_marker"
+        clear_params="true"
         >
+    <rosparam>
+      use_footstep_planner: false
+      footstep_margin: 0.2
+    </rosparam>
   </node>
     <node pkg="jsk_footstep_planner"
         type="footstep-planner-node.l"

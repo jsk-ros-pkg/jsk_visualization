@@ -17,6 +17,7 @@
   <depend package="tf" />
   <depend package="jsk_footstep_msgs" />
   <depend package="actionlib" />
+  <depend package="jsk_pcl_ros" />
   <rosdep name="eigen" />
 </package>
 
