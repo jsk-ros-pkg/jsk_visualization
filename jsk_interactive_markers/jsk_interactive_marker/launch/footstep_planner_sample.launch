@@ -5,7 +5,7 @@
         clear_params="true"
         >
     <rosparam>
-      use_footstep_planner: false
+      use_footstep_planner: true
       footstep_margin: 0.2
     </rosparam>
   </node>
