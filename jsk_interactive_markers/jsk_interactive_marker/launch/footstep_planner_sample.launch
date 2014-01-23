@@ -4,12 +4,23 @@
         name="footstep_marker"
         clear_params="true"
         >
+    <remap from="snapit" to="/snapit/snapit" />
     <rosparam>
-      use_footstep_planner: true
+      use_footstep_planner: false
       footstep_margin: 0.2
+      frame_id: "/camera_rgb_optical_frame"
+      foot_size_z: 0.01
     </rosparam>
   </node>
-    <node pkg="jsk_footstep_planner"
+  <include file="$(find openni_launch)/launch/openni.launch" />
+  <node pkg="nodelet" type="nodelet"
+        name="snapit"
+        args="load jsk_pcl/Snapit /camera_nodelet_manager"
+        output="screen" clear_params="true">
+    <remap from="~input" to="/camera/depth_registered/points" />
+  </node>
+  
+  <node pkg="jsk_footstep_planner"
         type="footstep-planner-node.l"
         name="footstep_planner"
         output="screen">
@@ -17,7 +28,7 @@
     x:     [-0.039375,0.0525,0.0525,0.027176,-0.027176,-0.08,0.0,0.0,0.075,0.15,0.0]
     y:     [0.2475,0.26,0.26,0.206422,0.206422,0.21,0.27,0.19,0.21,0.21,0.21]
     theta: [0.174533,-0.20944,0.20944,-0.261799,0.261799,0.0,0.0,0.0,0.0,0.0,0.0]
-    global_frame_id: /map
+    global_frame_id: /camera_rgb_optical_frame
     </rosparam>
   </node>
 

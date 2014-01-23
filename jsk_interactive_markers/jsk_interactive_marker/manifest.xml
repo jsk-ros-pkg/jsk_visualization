@@ -18,6 +18,7 @@
   <depend package="jsk_footstep_msgs" />
   <depend package="actionlib" />
   <depend package="jsk_pcl_ros" />
+  <depend package="eigen_conversions" />
   <rosdep name="eigen" />
 </package>
 

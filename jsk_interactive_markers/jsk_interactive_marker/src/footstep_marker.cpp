@@ -4,32 +4,160 @@
 #include <jsk_interactive_marker/interactive_marker_utils.h>
 #include <jsk_footstep_msgs/PlanFootstepsGoal.h>
 #include <jsk_footstep_msgs/PlanFootstepsResult.h>
+#include <jsk_pcl_ros/CallSnapIt.h>
+#include <Eigen/StdVector>
+#include <eigen_conversions/eigen_msg.h>
 
 FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false) {
   // read parameters
-  marker_frame_id_ = "/map";
+  
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
   pnh.param("foot_size_x", foot_size_x_, 0.247);
   pnh.param("foot_size_y", foot_size_y_, 0.135);
-  pnh.param("foot_size_z", foot_size_z_, 0.001);
+  pnh.param("foot_size_z", foot_size_z_, 0.01);
   pnh.param("footstep_margin", footstep_margin_, 0.2);
   pnh.param("use_footstep_planner", use_footstep_planner_, true);
+  pnh.param("wait_snapit_server", wait_snapit_server_, false);
+  pnh.param("frame_id", marker_frame_id_, std::string("/map"));
   footstep_pub_ = nh.advertise<jsk_footstep_msgs::FootstepArray>("footstep", 1);
+  snapit_client_ = nh.serviceClient<jsk_pcl_ros::CallSnapIt>("snapit");
+  if (wait_snapit_server_) {
+    snapit_client_.waitForExistence();
+  }
   server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
-
+  menu_handler_.insert( "Snap Legs", boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Reset Legs", boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  
   marker_pose_.header.frame_id = marker_frame_id_;
   marker_pose_.header.stamp = ros::Time::now();
   marker_pose_.pose.orientation.w = 1.0;
+
+  resetLegPoses();
+  
   initializeInteractiveMarker();
-
+  
   move_marker_sub_ = nh.subscribe("move_marker", 1, &FootstepMarker::moveMarkerCB, this);
-
+  menu_command_sub_ = nh.subscribe("menu_command", 1, &FootstepMarker::menuCommandCB, this);
   tf_listener_.reset(new tf::TransformListener);
   ROS_INFO("waiting server...");
   if (use_footstep_planner_) {
     ac_.waitForServer();
   }
+}
+
+void FootstepMarker::resetLegPoses() {
+  lleg_pose_.orientation.x = 0.0;
+  lleg_pose_.orientation.y = 0.0;
+  lleg_pose_.orientation.z = 0.0;
+  lleg_pose_.orientation.w = 1.0;
+  lleg_pose_.position.x = 0.0;
+  lleg_pose_.position.y = footstep_margin_ / 2.0;
+  lleg_pose_.position.z = 0.0;
+  
+  rleg_pose_.orientation.x = 0.0;
+  rleg_pose_.orientation.y = 0.0;
+  rleg_pose_.orientation.z = 0.0;
+  rleg_pose_.orientation.w = 1.0;
+  rleg_pose_.position.x = 0.0;
+  rleg_pose_.position.y = - footstep_margin_ / 2.0;
+  rleg_pose_.position.z = 0.0;
+}
+
+geometry_msgs::Pose FootstepMarker::computeLegTransformation(uint8_t leg) {
+  geometry_msgs::Pose new_pose;
+  jsk_pcl_ros::CallSnapIt srv;
+  srv.request.request.header.stamp = ros::Time::now();
+  srv.request.request.header.frame_id = marker_frame_id_;
+  srv.request.request.target_plane.header.stamp = ros::Time::now();
+  srv.request.request.target_plane.header.frame_id = marker_frame_id_;
+  srv.request.request.target_plane.polygon = computePolygon(leg);
+  if (snapit_client_.call(srv)) {
+    Eigen::Affine3d A, T, B, B_prime;
+    tf::poseMsgToEigen(srv.response.transformation, T);
+    tf::poseMsgToEigen(marker_pose_.pose, A);
+    if (leg == jsk_footstep_msgs::Footstep::LEFT) {
+      tf::poseMsgToEigen(lleg_pose_, B);
+    }
+    else if (leg == jsk_footstep_msgs::Footstep::RIGHT) {
+      tf::poseMsgToEigen(rleg_pose_, B);
+    }
+    B_prime = A.inverse() * T * A * B;
+    tf::poseEigenToMsg(B_prime, new_pose);
+  }
+  else {
+    // throw exception
+    ROS_ERROR("failed to call snapit");
+  }
+  return new_pose;
+}
+
+void FootstepMarker::snapLegs() {
+  geometry_msgs::Pose l_pose = computeLegTransformation(jsk_footstep_msgs::Footstep::LEFT);
+  geometry_msgs::Pose r_pose = computeLegTransformation(jsk_footstep_msgs::Footstep::RIGHT);
+
+  lleg_pose_ = l_pose;
+  rleg_pose_ = r_pose;
+  
+}
+
+geometry_msgs::Polygon FootstepMarker::computePolygon(uint8_t leg) {
+  geometry_msgs::Polygon polygon;
+  // tree
+  // marker_frame_id_ ---[marker_pose_]---> [leg_pose_] --> points
+  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > points;
+  points.push_back(Eigen::Vector3d(foot_size_x_ / 2.0, foot_size_y_ / 2.0, 0.0));
+  points.push_back(Eigen::Vector3d(-foot_size_x_ / 2.0, foot_size_y_ / 2.0, 0.0));
+  points.push_back(Eigen::Vector3d(-foot_size_x_ / 2.0, -foot_size_y_ / 2.0, 0.0));
+  points.push_back(Eigen::Vector3d(foot_size_x_ / 2.0, -foot_size_y_ / 2.0, 0.0));
+
+  Eigen::Affine3d marker_pose_eigen;
+  Eigen::Affine3d leg_pose_eigen;
+  tf::poseMsgToEigen(marker_pose_.pose, marker_pose_eigen);
+  if (leg == jsk_footstep_msgs::Footstep::LEFT) {
+    tf::poseMsgToEigen(lleg_pose_, leg_pose_eigen);
+  }
+  else if (leg == jsk_footstep_msgs::Footstep::RIGHT) {
+    tf::poseMsgToEigen(rleg_pose_, leg_pose_eigen);
+  }
+  
+  for (size_t i = 0; i < points.size(); i++) {
+    Eigen::Vector3d point = points[i];
+    Eigen::Vector3d new_point = marker_pose_eigen * leg_pose_eigen * point;
+    geometry_msgs::Point32 point_msg;
+    point_msg.x = new_point[0];
+    point_msg.y = new_point[1];
+    point_msg.z = new_point[2];
+    polygon.points.push_back(point_msg);
+  }
+  
+  return polygon;
+}
+
+void FootstepMarker::menuCommandCB(const std_msgs::UInt8::ConstPtr& msg) {
+  processMenuFeedback(msg->data);
+}
+
+void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
+  switch (menu_entry_id) {
+  case 1: {                     // snapit
+    snapLegs();
+    initializeInteractiveMarker();
+    break;
+  }
+  case 2: {
+    resetLegPoses();
+    initializeInteractiveMarker();
+    break;
+  }
+  default: {
+    break;
+  }
+  }
+}
+
+void FootstepMarker::menuFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
+  processMenuFeedback(feedback->menu_entry_id);
 }
 
 void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
@@ -137,7 +265,7 @@ void FootstepMarker::initializeInteractiveMarker() {
   int_marker.header.frame_id = marker_frame_id_;
   //int_marker.header.stamp = ros::Time(0);
   int_marker.name = "footstep_marker";
-  
+  int_marker.pose = marker_pose_.pose;
   visualization_msgs::Marker left_box_marker;
   left_box_marker.type = visualization_msgs::Marker::CUBE;
   left_box_marker.scale.x = foot_size_x_;
@@ -147,15 +275,17 @@ void FootstepMarker::initializeInteractiveMarker() {
   left_box_marker.color.g = 1.0;
   left_box_marker.color.b = 0.0;
   left_box_marker.color.a = 1.0;
-  left_box_marker.pose.position.y = footstep_margin_ / 2.0;
+  left_box_marker.pose = lleg_pose_;
 
   visualization_msgs::InteractiveMarkerControl left_box_control;
+  left_box_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
   left_box_control.always_visible = true;
   left_box_control.markers.push_back( left_box_marker );
 
   int_marker.controls.push_back( left_box_control );
 
   visualization_msgs::Marker right_box_marker;
+  
   right_box_marker.type = visualization_msgs::Marker::CUBE;
   right_box_marker.scale.x = foot_size_x_;
   right_box_marker.scale.y = foot_size_y_;
@@ -164,9 +294,10 @@ void FootstepMarker::initializeInteractiveMarker() {
   right_box_marker.color.g = 0.0;
   right_box_marker.color.b = 0.0;
   right_box_marker.color.a = 1.0;
-  right_box_marker.pose.position.y = - footstep_margin_ / 2.0;
+  right_box_marker.pose = rleg_pose_;
 
   visualization_msgs::InteractiveMarkerControl right_box_control;
+  right_box_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
   right_box_control.always_visible = true;
   right_box_control.markers.push_back( right_box_marker );
 
@@ -210,6 +341,10 @@ void FootstepMarker::initializeInteractiveMarker() {
   
   server_->insert(int_marker,
                   boost::bind(&FootstepMarker::processFeedbackCB, this, _1));
+
+  
+  menu_handler_.apply( *server_, "footstep_marker");
+  
   server_->applyChanges();
 }
 
