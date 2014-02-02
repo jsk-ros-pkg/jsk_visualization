@@ -12,7 +12,7 @@
   <depend package="jsk_hark_msgs"/>
   <depend package="jsk_footstep_msgs"/>
   <depend package="actionlib_msgs"/>
-
+  <depend package="jsk_pcl_ros" />
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>
