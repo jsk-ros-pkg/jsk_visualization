@@ -85,7 +85,7 @@ class PointCloudConfigMarker{
 
   std::string server_name;
   std::string marker_name;
-
+  std::string base_frame;
   double size_;
   MarkerControlConfig marker_control_config;
 };

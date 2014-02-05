@@ -33,7 +33,7 @@ visualization_msgs::Marker PointCloudConfigMarker::makeTextMarker(geometry_msgs:
 
 visualization_msgs::InteractiveMarker PointCloudConfigMarker::makeBoxInteractiveMarker(MarkerControlConfig mconfig, std::string name){
   visualization_msgs::InteractiveMarker mk;
-  mk.header.frame_id = "/pelvis";
+  mk.header.frame_id = base_frame;
   if (latest_feedback_) {
     mk.pose = latest_feedback_->pose;
   }
@@ -307,6 +307,7 @@ PointCloudConfigMarker::PointCloudConfigMarker () : nh_(), pnh_("~") {
   pnh_.param("server_name", server_name, std::string ("") );
   pnh_.param("size", size_, 1.0 );
   pnh_.param("marker_name", marker_name, std::string ("point_cloud_config_marker") );
+  pnh_.param("base_frame", base_frame, std::string("/pelvis") );
 
   if ( server_name == "" ) {
     server_name = ros::this_node::getName();
