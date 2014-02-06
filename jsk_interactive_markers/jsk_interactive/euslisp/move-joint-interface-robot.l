@@ -2,18 +2,24 @@
 
 (ros::load-ros-manifest "arm_navigation_msgs")
 (ros::load-ros-manifest "jsk_interactive")
-(ros::roseus "atlas-test")
+(ros::roseus "move_joint_interface")
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 (load "package://pr2eus/pr2-interface.l")
 
-#|
-(atlas-init-ex :view nil :set-reset-pose nil)
-(real2model)
-|#
-(pr2-init)
+(defvar *robot-name* (ros::get-param "~robot" "PR2"))
 
-(setq *robot* *pr2*)
-
+(cond
+ ((equal (string-upcase *robot-name*) "PR2")
+  (setq *robot-name* "PR2")
+  (pr2-init)
+  (setq *robot* *pr2*)
+  )
+ ((equal (string-upcase *robot-name*) "ATLAS")
+  (setq *robot-name* "atlas")
+  (atlas-init-ex :view nil :set-reset-pose nil)
+  (setq *robot* *atlas*)
+  )
+ )
 
 (when (and (boundp '*irtviewer*) *irtviewer*)
   (send *irtviewer* :change-background #f(0.3 0.3 0.7))
@@ -34,36 +40,15 @@
 	    (send *robot* hand-method :joint-angle joint-angle)))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       )
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
 ;;    (model2real :wait t :time 5000)
     )
   )
 
-(defun move-rleg-ankle-p
-  (msg)
-  (real2model)
-  (send *robot* :rleg :ankle-p :joint-angle (send msg :data))
-  (model2real :time 4000)
-  )
-
-(defun move-lleg-ankle-p
-  (msg)
-  (real2model)
-  (send *robot* :lleg :ankle-p :joint-angle (send msg :data))
-  (model2real :time 4000)
-  )
-
 (setq server-nodename "jsk_model_marker_interface")
 
-(ros::subscribe (format nil "~A/PR2/joint_states_ri_move" server-nodename)
+(ros::subscribe (format nil "~A/~A/joint_states_ri_move" server-nodename *robot-name*)
 		sensor_msgs::JointState #'joint-state-callback)
-
-(ros::subscribe (format nil "~A/PR2/rleg_ankle_p" server-nodename)
-		std_msgs::float32 #'move-rleg-ankle-p)
-
-(ros::subscribe (format nil "~A/PR2/lleg_ankle_p" server-nodename)
-		std_msgs::float32 #'move-lleg-ankle-p)
-
 
 (ros::rate 30)
 
