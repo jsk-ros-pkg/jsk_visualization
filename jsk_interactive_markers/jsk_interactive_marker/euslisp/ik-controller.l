@@ -1081,11 +1081,13 @@
    ;;init robot
    (cond
     ((equal (string-upcase *robot-name*) "PR2")
+     (setq *robot-name* "PR2")
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
      (defvar *robot-origin* "base_link")
      )
-    ((equal (string-upcase *robot-name*) "atlas")
+    ((equal (string-upcase *robot-name*) "ATLAS")
+     (setq *robot-name* "atlas")
      (require "package://hrpsys_gazebo_atlas/euslisp/atlas-model.l")
      (require "package://hrpsys_gazebo_atlas/euslisp/atlas-fullbody-ik.l")
      (require "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser-settings.l")

@@ -83,6 +83,7 @@ class UrdfModelMarker {
 
   void registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   
+  void setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg );
   void resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg);
   
  private:
@@ -95,6 +96,7 @@ class UrdfModelMarker {
   ros::Publisher pub_joint_state_;
   
   ros::Subscriber sub_reset_joints_;
+  ros::Subscriber sub_set_root_pose_;
   ros::Subscriber hide_marker_;
   ros::Subscriber show_marker_;
 
