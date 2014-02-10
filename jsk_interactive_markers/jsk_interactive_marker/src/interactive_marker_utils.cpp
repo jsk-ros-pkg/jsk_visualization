@@ -219,20 +219,23 @@ std::string getRosPathFromFullPath(std::string path){
     ros_package_path += buf;
   }
   pclose(fp);
+  
+  ros::package::V_string all_package;
+  ros::package::getAll(all_package);
 
   if( path.find("file://", 0) == 0 ){
     path.erase(0,7);
     size_t current = 0, found;
-    while((found = ros_package_path.find_first_of(":", current)) != std::string::npos){
-      std::string search_path = std::string(ros_package_path, current, found - current);
+    while((found = path.find_first_of("/", current)) != std::string::npos){
+      std::string search_path = std::string(path, current, found - current);
       current = found + 1;
-      
-      if( path.find(search_path, 0) == 0){
-	path.erase(0, search_path.length() + 1);
-	return "package://" + path;
+      std::string package_path;
+      if( ros::package::getPath(search_path) != ""){
+	return "package://" + search_path + path.erase(0, current-1);
       }
     }
   }
+
   return path;
 }
 
