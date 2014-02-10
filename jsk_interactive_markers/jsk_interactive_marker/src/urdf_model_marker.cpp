@@ -811,7 +811,12 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 	  boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link_visual->geometry);
 	  string model_mesh_ = mesh->filename;
 	  //model_mesh_ = getModelFilePath(model_mesh_);
-	  model_mesh_ = getRosPathFromModelPath(model_mesh_);
+	  if(linkMarkerMap[link_frame_name_].mesh_file == ""){
+	    model_mesh_ = getRosPathFromModelPath(model_mesh_);
+	    linkMarkerMap[link_frame_name_].mesh_file = model_mesh_;
+	  }else{
+	    model_mesh_ = linkMarkerMap[link_frame_name_].mesh_file;
+	  }
 
 	  ps.pose = UrdfPose2Pose(link_visual->origin);
 	  cout << "mesh_file:" << model_mesh_ << endl;

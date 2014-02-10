@@ -152,6 +152,7 @@ class UrdfModelMarker {
     linkProperty(){
       displayMoveMarker = false;
       displayModelMarker = true;
+      mesh_file = "";
     }
     bool displayMoveMarker;
     bool displayModelMarker;
@@ -165,6 +166,7 @@ class UrdfModelMarker {
     urdf::Vector3 joint_axis;
     double joint_angle;
     int rotation_count;
+    string mesh_file;
   };
 
   map<string, linkProperty> linkMarkerMap;
