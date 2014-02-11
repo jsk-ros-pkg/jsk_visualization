@@ -20,7 +20,7 @@ class FootstepMarker {
 public:
   FootstepMarker();
   virtual ~FootstepMarker();
-  
+  void updateInitialFootstep();
 protected:
   void initializeInteractiveMarker();
   void processFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
@@ -34,8 +34,7 @@ protected:
   geometry_msgs::Pose getFootstepPose(bool leftp);
   void planIfPossible();
   void resetLegPoses();
-  void updateInitialFootstep();
-
+  visualization_msgs::Marker makeFootstepMarker(geometry_msgs::Pose pose);
   
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   interactive_markers::MenuHandler menu_handler_;
@@ -54,6 +53,7 @@ protected:
   bool use_footstep_planner_;
   bool plan_run_;
   bool wait_snapit_server_;
+  bool use_initial_footstep_tf_;
   geometry_msgs::Pose lleg_pose_;
   geometry_msgs::Pose rleg_pose_;
   geometry_msgs::Pose lleg_initial_pose_;
