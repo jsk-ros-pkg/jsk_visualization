@@ -34,6 +34,9 @@ protected:
   geometry_msgs::Pose getFootstepPose(bool leftp);
   void planIfPossible();
   void resetLegPoses();
+  void updateInitialFootstep();
+
+  
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   interactive_markers::MenuHandler menu_handler_;
   double foot_size_x_;
@@ -53,4 +56,8 @@ protected:
   bool wait_snapit_server_;
   geometry_msgs::Pose lleg_pose_;
   geometry_msgs::Pose rleg_pose_;
+  geometry_msgs::Pose lleg_initial_pose_;
+  geometry_msgs::Pose rleg_initial_pose_;
+  std::string lfoot_frame_id_;
+  std::string rfoot_frame_id_;
 };

@@ -16,6 +16,8 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   pnh.param("foot_size_x", foot_size_x_, 0.247);
   pnh.param("foot_size_y", foot_size_y_, 0.135);
   pnh.param("foot_size_z", foot_size_z_, 0.01);
+  pnh.param("lfoot_frame_id", lfoot_frame_id_, std::string("lfsensor"));
+  pnh.param("rfoot_frame_id", rfoot_frame_id_, std::string("rfsensor"));
   pnh.param("footstep_margin", footstep_margin_, 0.2);
   pnh.param("use_footstep_planner", use_footstep_planner_, true);
   pnh.param("wait_snapit_server", wait_snapit_server_, false);
@@ -136,6 +138,28 @@ geometry_msgs::Polygon FootstepMarker::computePolygon(uint8_t leg) {
 
 void FootstepMarker::menuCommandCB(const std_msgs::UInt8::ConstPtr& msg) {
   processMenuFeedback(msg->data);
+}
+
+void FootstepMarker::updateInitialFootstep() {
+  tf::StampedTransform lfoot_transform, rfoot_transform;
+  tf_listener_->lookupTransform(marker_frame_id_, lfoot_frame_id_, ros::Time(0.0), lfoot_transform);
+  tf_listener_->lookupTransform(marker_frame_id_, rfoot_frame_id_, ros::Time(0.0), rfoot_transform);
+
+  lleg_initial_pose_.position.x = lfoot_transform.getOrigin().getX();
+  lleg_initial_pose_.position.y = lfoot_transform.getOrigin().getY();
+  lleg_initial_pose_.position.z = lfoot_transform.getOrigin().getZ();
+  lleg_initial_pose_.orientation.x = lfoot_transform.getRotation().getX();
+  lleg_initial_pose_.orientation.y = lfoot_transform.getRotation().getY();
+  lleg_initial_pose_.orientation.z = lfoot_transform.getRotation().getZ();
+  lleg_initial_pose_.orientation.w = lfoot_transform.getRotation().getW();
+
+  rleg_initial_pose_.position.x = rfoot_transform.getOrigin().getX();
+  rleg_initial_pose_.position.y = rfoot_transform.getOrigin().getY();
+  rleg_initial_pose_.position.z = rfoot_transform.getOrigin().getZ();
+  rleg_initial_pose_.orientation.x = rfoot_transform.getRotation().getX();
+  rleg_initial_pose_.orientation.y = rfoot_transform.getRotation().getY();
+  rleg_initial_pose_.orientation.z = rfoot_transform.getRotation().getZ();
+  rleg_initial_pose_.orientation.w = rfoot_transform.getRotation().getW();
 }
 
 void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
