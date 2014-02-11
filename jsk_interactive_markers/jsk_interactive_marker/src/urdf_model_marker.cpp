@@ -910,12 +910,15 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
       }
     }
   }
-  server_->applyChanges();
+
 
   //  cout << "Link:" << link->name << endl;
 
   for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
     addChildLinkNames(*child, false, init, use_color, color_index + 1);
+  }
+  if(root){
+    server_->applyChanges();
   }
 }
 
@@ -933,7 +936,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   
   pnh_.getParam("use_dynamic_tf", use_dynamic_tf_);
   if (use_dynamic_tf_) {
-    dynamic_tf_publisher_client = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf");
+    dynamic_tf_publisher_client = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf", false);
     ros::service::waitForService("set_dynamic_tf", -1);
   }
   std::cerr << "use_dynamic_tf_ is " << use_dynamic_tf_ << std::endl;

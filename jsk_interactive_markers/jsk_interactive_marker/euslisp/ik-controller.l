@@ -114,7 +114,7 @@
 	   :header
 	   (instance std_msgs::Header :init
 		     :stamp (ros::time 0.0)
-		     :frame_id *robot-origin*))
+		     :frame_id (format nil "/~A" *robot-origin*)))
      (send *prev-js*
 	   :position
 	   (map float-vector
@@ -158,7 +158,8 @@
 		     :header
 		     (instance std_msgs::Header :init
 			       :stamp (ros::time 0.0)
-			       :frame_id *robot-origin*)
+			       :frame_id (format nil "/~A" *robot-origin*)
+			       )
 		     :pose
 		     (instance geometry_msgs::Pose :init
 			       :position
@@ -235,7 +236,7 @@
 	(*use-fullbody* *touchit-target-larm-fullbody*)
 	(*use-torso* *touchit-target-larm-torso*)
 	(t *touchit-target-larm*)))))
-    (frame_id *robot-origin*)
+    (frame_id (format nil "/~A" *robot-origin*))
     (target-coords *target-coords*)
     (target-coords-from-pelvis
      (send (send *robot* :copy-worldcoords)
@@ -636,6 +637,9 @@
    (let ((menu (send msg :menu))
 	 (type (send msg :type)))
      (cond
+      ((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
+       (format t "[marker-menu] move robot!!~%")
+       (send self :publish-joint-states :real? t))
       ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
        (setq *orgin-key* :free)
        (send self :set-origin)
@@ -887,7 +891,7 @@
 	  (send *real-robot* :angle-vector)))
    (send *robot* :fix-leg-to-coords
 	 (make-coords) :both)
-   (fix-centroid-object)
+   (send self :fix-centroid-object)
    )
 
   ;;fixed flamae is foot?
@@ -1047,7 +1051,7 @@
 		    :header (instance std_msgs::header :init
 				      :stamp (ros::time-now)))))
      (send joint-state-msg :position
-	   (mapcar #'deg2rad (send-all joint-list :joint-angle)))
+	   (mapcar #'(lambda (joint) (send joint :ros-joint-angle)) joint-list))
      (send joint-state-msg :name (send-all joint-list :name))
      ;;
      (cond
@@ -1059,6 +1063,16 @@
 		     joint-state-msg)))
      )
    )
+
+   (:make-centroid-object
+    ()
+    (setq *centroid-object* (make-cylinder 20 400))
+    (send *centroid-object* :set-color #F(1 1 0)))
+   
+   (:fix-centroid-object
+    ()
+    )
+
 
   (:init 
    ()
@@ -1096,6 +1110,7 @@
      (atlas-with-hand)
      (setq *robot* *atlas*)
      (defvar *robot-origin* "pelvis")
+
      )
 
     (t
@@ -1113,7 +1128,7 @@
 
    ;;initialize joint-index-list
    ;;it is used to convert joint-name -> index
-   (joint-index-init)
+   ;;(joint-index-init)
    
    (ros::roseus "ik_controller")
    (setq *tfb* (instance ros::transform-broadcaster :init))
@@ -1176,7 +1191,8 @@
    (setq *real-robot* (copy-object *robot*))
    (gl::transparent *real-robot* 0.3)
    (setq *arrow* (arrow))
-   (make-centroid-object)
+   (send self :make-centroid-object)
+
    (send self :init-pose)
    (send self :set-origin-to-hand *orgin-key*)
 
@@ -1198,7 +1214,7 @@
 	       :header
 	       (instance std_msgs::Header :init
 			 :stamp (ros::time 0.0)
-			 :frame_id *robot-origin*)
+			 :frame_id (format nil "/~A" *robot-origin*))
 	       :position
 	       (map float-vector
 		    #'deg2rad
