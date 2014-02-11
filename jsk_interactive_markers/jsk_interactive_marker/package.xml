@@ -1,0 +1,44 @@
+<package>
+  <name>
+    jsk_interactive_marker
+  </name>
+  <description>
+    jsk interactive markers
+  </description>
+  <version>0.0.1</version>
+  <author email="furuta@jsk.t.u-tokyo.ac.jp">furuta</author>
+  <maintainer email="furuta@jsk.t.u-tokyo.ac.jp">furuta</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/interactive_marker</url>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roseus</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>dynamic_tf_publisher</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>jsk_footstep_msgs</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>jsk_pcl_ros</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>orocos_kdl</build_depend>
+  <build_depend>tinyxml</build_depend>
+  <build_depend>cmake_modules</build_depend>
+  
+  <run_depend>roseus</run_depend>
+  <run_depend>tinyxml</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>dynamic_tf_publisher</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>jsk_footstep_msgs</run_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>jsk_pcl_ros</run_depend>
+  <run_depend>eigen_conversions</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>orocos_kdl</run_depend>
+</package>
+
+

@@ -3,6 +3,7 @@
 #include <interactive_markers/tools.h>
 #include <jsk_interactive_marker/urdf_model_marker.h>
 #include <jsk_interactive_marker/interactive_marker_utils.h>
+#include <jsk_interactive_marker/interactive_marker_helpers.h>
 #include <dynamic_tf_publisher/SetDynamicTF.h>
 #include <Eigen/Geometry>
 

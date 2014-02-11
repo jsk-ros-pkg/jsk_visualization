@@ -5,7 +5,7 @@
 #include <tf/transform_broadcaster.h>
 
 #include <interactive_markers/interactive_marker_server.h>
-#include <interactive_marker_helpers/interactive_marker_helpers.h>
+#include <jsk_interactive_marker/interactive_marker_helpers.h>
 
 #include <interactive_markers/menu_handler.h>
 #include <jsk_interactive_marker/SetPose.h>

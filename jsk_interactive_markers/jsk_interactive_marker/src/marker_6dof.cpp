@@ -1,6 +1,5 @@
 #include <ros/ros.h>
 #include <interactive_markers/interactive_marker_server.h>
-#include <interactive_marker_helpers/interactive_marker_helpers.h>
 #include <interactive_markers/tools.h>
 #include <interactive_markers/menu_handler.h>
 
