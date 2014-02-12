@@ -57,12 +57,13 @@
 (defun start-loop
   ()
   (while t
-   (ros::spin-once)
-   (unless (or (null x::*display*) (= x::*display* 0))
-     (x::window-main-one))
-   (ros::sleep)
+    (send *ri* :spin-once)
+    (ros::spin-once)
+    (unless (or (null x::*display*) (= x::*display* 0))
+      (x::window-main-one))
+    (ros::sleep)
 
-   (unless (ros::ok) (return)))
+    (unless (ros::ok) (return)))
   )
 
 (start-loop)
