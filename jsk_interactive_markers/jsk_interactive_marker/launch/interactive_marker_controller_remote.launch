@@ -87,6 +87,6 @@
 
     <!-- eus-ik-server -->
     <node pkg="roseus" type="roseus" name="pr2_ik_server"
-	  args="$(find jsk_ik_server)/euslisp/pr2-ik-server.l"/>
+	  args="$(find jsk_ik_server)/euslisp/ik-server-impl/pr2-ik-server.l"/>
   </group>
 </launch>
