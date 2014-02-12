@@ -32,6 +32,8 @@
 (defclass im-controller
   :slots
   (*robot*
+   *lhand-frame*
+   *rhand-frame*
    )
   )
 
@@ -836,18 +838,21 @@
   (:tf-end-coords
    (&optional (arm :rarm))
    (let* ((from-frame *robot-origin*)
-	  (to-frame (if (eq arm :rarm) "right_grasp_frame" "left_grasp_frame"))
-	  (trans (send *tfl* :lookup-transform ;pelvis -> grasp_frame
-		       from-frame to-frame (ros::time 0.0))))
+	  (to-frame (if (eq arm :rarm) *rhand-frame* *lhand-frame*))
+	  (trans nil))
+     (if to-frame
+         (setq trans (send *tfl* :lookup-transform ;pelvis -> grasp_frame
+                           from-frame to-frame (ros::time 0.0))))
      (cond
       (trans
        (send trans :transform
-	     (send (make-coords) :transformation ;origin -> pelvis
-		   (send *real-robot* :copy-worldcoords))
-	     :world)
+             (send (make-coords) :transformation ;origin -> pelvis
+                   (send *real-robot* :copy-worldcoords))
+             :world)
        trans)
       (t (send *real-robot* arm :end-coords :copy-worldcoords)))))
 
+   
   (:tf-model-end-coords
    (&key
     (robot *robot*)
@@ -1092,6 +1097,8 @@
 
    (defvar *robot-name* (ros::get-param "~robot" "PR2"))
 
+   (defvar *rhand-frame* nil)
+   (defvar *lhand-frame* nil)
    ;;init robot
    (cond
     ((equal (string-upcase *robot-name*) "PR2")
