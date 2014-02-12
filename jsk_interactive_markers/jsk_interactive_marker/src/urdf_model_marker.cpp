@@ -250,7 +250,6 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
   case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
     linkMarkerMap[frame_id].pose = feedback->pose;
     CallSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(feedback->pose));
-    //cout << "parent:" << parent_frame_id << " frame:" << frame_id <<endl;
     publishMarkerPose(feedback);
     publishJointState(feedback);
     break;
@@ -501,26 +500,25 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
     switch(parent_joint->type){
     case Joint::REVOLUTE:
     case Joint::CONTINUOUS:
-      tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, initialFrame);
-      tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].pose, presentFrame);
+      {
+      linkProperty link_property = linkMarkerMap[link_frame_name_];
+      tf::PoseMsgToKDL (link_property.initial_pose, initialFrame);
+      tf::PoseMsgToKDL (link_property.pose, presentFrame);
       rot = initialFrame.M.Inverse() * presentFrame.M;
       jointAngle = rot.GetRotAngle(rotVec);
-      jointVec = KDL::Vector(linkMarkerMap[link_frame_name_].joint_axis.x,
-			     linkMarkerMap[link_frame_name_].joint_axis.y,
-			     linkMarkerMap[link_frame_name_].joint_axis.z);
+      jointVec = KDL::Vector(link_property.joint_axis.x,
+			     link_property.joint_axis.y,
+			     link_property.joint_axis.z);
       if( KDL::dot(rotVec,jointVec) < 0){
 	jointAngle = - jointAngle;
       }
-      if(linkMarkerMap[link_frame_name_].joint_angle > M_PI/2 && jointAngle < -M_PI/2){
-	linkMarkerMap[link_frame_name_].rotation_count += 1;
-      }else if(linkMarkerMap[link_frame_name_].joint_angle < -M_PI/2 && jointAngle > M_PI/2){
-	linkMarkerMap[link_frame_name_].rotation_count -= 1;
+      if(link_property.joint_angle > M_PI/2 && jointAngle < -M_PI/2){
+	link_property.rotation_count += 1;
+      }else if(link_property.joint_angle < -M_PI/2 && jointAngle > M_PI/2){
+	link_property.rotation_count -= 1;
       }
-      linkMarkerMap[link_frame_name_].joint_angle = jointAngle;
-      jointAngleAllRange = jointAngle + linkMarkerMap[link_frame_name_].rotation_count * M_PI * 2;
-      //check joint limit
-      //cout << "aa" << linkMarkerMap[link_frame_name_].rotation_count << endl;
-      //cout << jointAngleAllRange << endl;
+      link_property.joint_angle = jointAngle;
+      jointAngleAllRange = jointAngle + link_property.rotation_count * M_PI * 2;
 
       if(parent_joint->type == Joint::REVOLUTE && parent_joint->limits != NULL){
 	bool changeMarkerAngle = false;
@@ -541,16 +539,14 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
       js.position.push_back(jointAngleAllRange);
       js.name.push_back(parent_joint->name);
       break;
+      }
     case Joint::PRISMATIC:
       js.position.push_back(0);
       js.name.push_back(parent_joint->name);
-      ROS_WARN_STREAM("Joint::PRISMATIC joint publish 0 " << parent_joint->name);
       break;
     case Joint::FIXED:
-      ROS_INFO_STREAM("Joint::FIXED is not  included in JointState since robot_state_publisher will take care of this");
       break;
     default:
-      ROS_WARN_STREAM("unknown joint type -> " << parent_joint->type << " " << parent_joint->name);
       break;
     }
   }
@@ -582,6 +578,7 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
   switch(parent_joint->type){
     case Joint::REVOLUTE:
     case Joint::CONTINUOUS:
+      {
       if(joint_angle > M_PI){
 	rotation_count = (int)((joint_angle + M_PI) / (M_PI * 2));
 	joint_angle -= rotation_count * M_PI * 2;
@@ -589,34 +586,37 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
 	rotation_count = (int)((- joint_angle + M_PI) / (M_PI * 2));
 	joint_angle -= rotation_count * M_PI * 2;
       }
+      linkProperty link = linkMarkerMap[link_frame_name_];
+      link.joint_angle = joint_angle;
+      link.rotation_count = rotation_count;
 
-      linkMarkerMap[link_frame_name_].joint_angle = joint_angle;
-      linkMarkerMap[link_frame_name_].rotation_count = rotation_count;
-
-      tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, initialFrame);
-      tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, presentFrame);
-      jointVec = KDL::Vector(linkMarkerMap[link_frame_name_].joint_axis.x,
-			     linkMarkerMap[link_frame_name_].joint_axis.y,
-			     linkMarkerMap[link_frame_name_].joint_axis.z);
+      tf::PoseMsgToKDL (link.initial_pose, initialFrame);
+      tf::PoseMsgToKDL (link.initial_pose, presentFrame);
+      jointVec = KDL::Vector(link.joint_axis.x,
+			     link.joint_axis.y,
+			     link.joint_axis.z);
 
       presentFrame.M = KDL::Rotation::Rot(jointVec, joint_angle) * initialFrame.M;
-      tf::PoseKDLToMsg(presentFrame, linkMarkerMap[link_frame_name_].pose);
+      tf::PoseKDLToMsg(presentFrame, link.pose);
 
       break;
-
+      }
     case Joint::PRISMATIC:
-      linkMarkerMap[link_frame_name_].joint_angle = joint_angle;
-      linkMarkerMap[link_frame_name_].rotation_count = rotation_count;
-      tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, initialFrame);
-      tf::PoseMsgToKDL (linkMarkerMap[link_frame_name_].initial_pose, presentFrame);
-      jointVec = KDL::Vector(linkMarkerMap[link_frame_name_].joint_axis.x,
-			     linkMarkerMap[link_frame_name_].joint_axis.y,
-			     linkMarkerMap[link_frame_name_].joint_axis.z);
+      {
+      linkProperty link = linkMarkerMap[link_frame_name_];
+      link.joint_angle = joint_angle;
+      link.rotation_count = rotation_count;
+      tf::PoseMsgToKDL (link.initial_pose, initialFrame);
+      tf::PoseMsgToKDL (link.initial_pose, presentFrame);
+      jointVec = KDL::Vector(link.joint_axis.x,
+			     link.joint_axis.y,
+			     link.joint_axis.z);
 
       //presentFrame.M = KDL::Rotation::Rot(jointVec, joint_angle) * initialFrame.M;
       presentFrame.p =  joint_angle * jointVec + initialFrame.p;
-      tf::PoseKDLToMsg(presentFrame, linkMarkerMap[link_frame_name_].pose);
+      tf::PoseKDLToMsg(presentFrame, link.pose);
       break;
+      }
   default:
     break;
   }
