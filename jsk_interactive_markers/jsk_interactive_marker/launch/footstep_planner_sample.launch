@@ -1,26 +1,40 @@
 <launch>
   <arg name="USE_OPENNI" default="false" />
-  <node pkg="jsk_interactive_marker"
-        type="footstep_marker"
-        name="footstep_marker"
-        clear_params="true"
-        >
-    <remap from="snapit" to="/snapit/snapit" />
-    <rosparam>
-      wait_snapit_server: false
-      use_footstep_planner: true
-      footstep_margin: 0.2
-      frame_id: "/camera_rgb_optical_frame"
-      foot_size_z: 0.01
-    </rosparam>
-  </node>
+  <!-- running pointcloud sample? -->
   <include file="$(find openni_launch)/launch/openni.launch" if="$(arg USE_OPENNI)"/>
   <node pkg="nodelet" type="nodelet"
         name="snapit"
         args="load jsk_pcl/Snapit /camera_nodelet_manager"
+        if="$(arg USE_OPENNI)"
         output="screen" clear_params="true">
     <remap from="~input" to="/camera/depth_registered/points" />
   </node>
+
+  <!-- marker -->
+  <node pkg="jsk_interactive_marker"
+        type="footstep_marker"
+        name="footstep_marker"
+        clear_params="true"
+        output="screen"
+        >
+    <remap from="snapit" to="/snapit/snapit" />
+    
+    <rosparam>
+      wait_snapit_server: $(arg USE_OPENNI)
+#      use_footstep_planner: true
+      use_footstep_planner: false
+      use_initial_footstep_tf: true
+      footstep_margin: 0.2
+      frame_id: "/odom"
+      foot_size_z: 0.01
+    </rosparam>
+  </node>
+
+  <!-- odom -> lfsensor, odom -> rfsensor -->
+  <node pkg="tf" type="static_transform_publisher" name="odom_to_lfoot"
+        args="0 0.2 0 0 0 0 /odom /lfsensor 10" />
+  <node pkg="tf" type="static_transform_publisher" name="odom_to_rfoot"
+        args="0 0.2 0 0 0 0 /odom /rfsensor 10" />
   
   <node pkg="jsk_footstep_planner"
         type="footstep-planner-node.l"

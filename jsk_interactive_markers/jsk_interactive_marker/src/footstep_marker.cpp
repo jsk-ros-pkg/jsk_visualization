@@ -39,6 +39,12 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   marker_pose_.pose.orientation.w = 1.0;
 
   resetLegPoses();
+
+  // initialize lleg_initial_pose, rleg_initial_pose
+  lleg_initial_pose_.position.y = footstep_margin_ / 2.0;
+  lleg_initial_pose_.orientation.w = 1.0;
+  rleg_initial_pose_.position.y = - footstep_margin_ / 2.0;
+  rleg_initial_pose_.orientation.w = 1.0;
   
   initializeInteractiveMarker();
   
@@ -60,12 +66,6 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
     }
   }
 
-  // initialize lleg_initial_pose, rleg_initial_pose
-  lleg_initial_pose_.position.y = footstep_margin_ / 2.0;
-  lleg_initial_pose_.orientation.w = 1.0;
-  rleg_initial_pose_.position.y = - footstep_margin_ / 2.0;
-  rleg_initial_pose_.orientation.w = 1.0;
-  
   if (use_footstep_planner_) {
     ROS_INFO("waiting server...");
     ac_.waitForServer();
