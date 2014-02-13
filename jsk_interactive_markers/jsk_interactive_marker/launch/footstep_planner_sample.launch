@@ -1,5 +1,6 @@
 <launch>
   <arg name="USE_OPENNI" default="false" />
+  <arg name="GLOBAL_FRAME_ID" default="/odom" />
   <!-- running pointcloud sample? -->
   <include file="$(find openni_launch)/launch/openni.launch" if="$(arg USE_OPENNI)"/>
   <node pkg="nodelet" type="nodelet"
@@ -18,23 +19,22 @@
         output="screen"
         >
     <remap from="snapit" to="/snapit/snapit" />
-    
+    <param name="wait_snapit_server" value="$(arg USE_OPENNI)" />
     <rosparam>
-      wait_snapit_server: $(arg USE_OPENNI)
-#      use_footstep_planner: true
-      use_footstep_planner: false
+      use_footstep_planner: true
+#      use_footstep_planner: false
       use_initial_footstep_tf: true
       footstep_margin: 0.2
-      frame_id: "/odom"
       foot_size_z: 0.01
     </rosparam>
+    <param name="frame_id" value="$(arg GLOBAL_FRAME_ID)" />
   </node>
 
   <!-- odom -> lfsensor, odom -> rfsensor -->
   <node pkg="tf" type="static_transform_publisher" name="odom_to_lfoot"
         args="0 0.2 0 0 0 0 /odom /lfsensor 10" />
   <node pkg="tf" type="static_transform_publisher" name="odom_to_rfoot"
-        args="0 0.2 0 0 0 0 /odom /rfsensor 10" />
+        args="0 -0.2 0 0 0 0 /odom /rfsensor 10" />
   
   <node pkg="jsk_footstep_planner"
         type="footstep-planner-node.l"
@@ -47,12 +47,13 @@
     y:     [0.2475,0.26,0.26,0.206422,0.206422,0.21,0.27,0.19,0.21,0.21,0.21,        0.21, 0.21, 0.21, 0.21, 0.21, 0.21]
     theta: [0.174533,-0.20944,0.20944,-0.261799,0.261799,0.0,0.0,0.0,0.0,0.0,0.0,    0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
     timeout: 1
-    global_frame_id: /camera_rgb_optical_frame
     </rosparam>
+    <param name="global_frame_id" value="$(arg GLOBAL_FRAME_ID)" />
   </node>
   <node pkg="jsk_footstep_planner"
         type="plane_publisher.py"
         name="plane_publisher"
+        args="$(arg GLOBAL_FRAME_ID)"
         output="screen">
   </node>
 
