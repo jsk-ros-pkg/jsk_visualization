@@ -68,8 +68,8 @@ namespace jsk_rviz_plugin
     }
 
     // create nodes and manual objects
-    if (msg->polygons.size() > manual_objects_.size()) {
-      for (size_t i = manual_objects_.size(); i < msg->polygons.size(); i++) {
+    if (msg->polygons.size() * 2 > manual_objects_.size()) {
+      for (size_t i = manual_objects_.size(); i < msg->polygons.size() * 2; i++) {
         Ogre::SceneNode* scene_node = scene_node_->createChildSceneNode();
         Ogre::ManualObject* manual_object = scene_manager_->createManualObject();
         manual_object->setDynamic( true );
@@ -79,14 +79,14 @@ namespace jsk_rviz_plugin
         scene_nodes_.push_back(scene_node);
       }
     }
-    else if (msg->polygons.size() < manual_objects_.size()) {
-      for (size_t i = msg->polygons.size(); i < manual_objects_.size(); i++) {
+    else if (msg->polygons.size() * 2 < manual_objects_.size()) {
+      for (size_t i = msg->polygons.size() * 2; i < manual_objects_.size(); i++) {
         scene_manager_->destroyManualObject( manual_objects_[i] );
         scene_manager_->destroySceneNode( scene_nodes_[i] );
       }
       // resize the array
-      manual_objects_.resize(msg->polygons.size());
-      scene_nodes_.resize(msg->polygons.size());
+      manual_objects_.resize(msg->polygons.size() * 2);
+      scene_nodes_.resize(msg->polygons.size() * 2);
     }
 
     Ogre::ColourValue color = rviz::qtToOgre( color_property_->getColor() );
@@ -106,8 +106,8 @@ namespace jsk_rviz_plugin
     
     for (size_t i = 0; i < msg->polygons.size(); i++) {
       geometry_msgs::PolygonStamped polygon = msg->polygons[i];
-      Ogre::SceneNode* scene_node = scene_nodes_[i];
-      Ogre::ManualObject* manual_object = manual_objects_[i];
+      Ogre::SceneNode* scene_node = scene_nodes_[i * 2];
+      Ogre::ManualObject* manual_object = manual_objects_[i * 2];
       Ogre::Vector3 position;
       Ogre::Quaternion orientation;
       if( !context_->getFrameManager()->getTransform( polygon.header, position, orientation )) {
@@ -117,21 +117,45 @@ namespace jsk_rviz_plugin
       scene_node->setPosition( position );
       scene_node->setOrientation( orientation );
       manual_object->clear();
-      
-        
-
         
       uint32_t num_points = polygon.polygon.points.size();
       if( num_points > 0 )
       {
         manual_object->estimateVertexCount( num_points );
         manual_object->begin(material_name_, Ogre::RenderOperation::OT_TRIANGLE_FAN );
-        //manual_object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_FAN );
         for( uint32_t i = 0; i < num_points + 1; ++i )
         {
           const geometry_msgs::Point32& msg_point = polygon.polygon.points[ i % num_points ];
           manual_object->position( msg_point.x, msg_point.y, msg_point.z );
-          //manual_object->colour( color );
+        }
+          
+        manual_object->end();
+      }
+    }
+    // reverse order
+    for (size_t i = 0; i < msg->polygons.size(); i++) {
+      geometry_msgs::PolygonStamped polygon = msg->polygons[i];
+      Ogre::SceneNode* scene_node = scene_nodes_[i * 2 + 1];
+      Ogre::ManualObject* manual_object = manual_objects_[i * 2 + 1];
+      Ogre::Vector3 position;
+      Ogre::Quaternion orientation;
+      if( !context_->getFrameManager()->getTransform( polygon.header, position, orientation )) {
+        ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
+                   polygon.header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+      }
+      scene_node->setPosition( position );
+      scene_node->setOrientation( orientation );
+      manual_object->clear();
+        
+      uint32_t num_points = polygon.polygon.points.size();
+      if( num_points > 0 )
+      {
+        manual_object->estimateVertexCount( num_points );
+        manual_object->begin(material_name_, Ogre::RenderOperation::OT_TRIANGLE_FAN );
+        for( uint32_t i = num_points; i > 0; --i )
+        {
+          const geometry_msgs::Point32& msg_point = polygon.polygon.points[ i % num_points ];
+          manual_object->position( msg_point.x, msg_point.y, msg_point.z );
         }
           
         manual_object->end();
