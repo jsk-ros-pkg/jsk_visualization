@@ -10,6 +10,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterialManager.h>
 #include "rviz/properties/color_property.h"
 #include "rviz/properties/float_property.h"
 
@@ -30,6 +31,8 @@ namespace jsk_rviz_plugin
     void processMessage(const jsk_pcl_ros::PolygonArray::ConstPtr& msg);
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
+    Ogre::MaterialPtr material_;
+    std::string material_name_;
     std::vector<Ogre::ManualObject*> manual_objects_;
     std::vector<Ogre::SceneNode*> scene_nodes_;
   };

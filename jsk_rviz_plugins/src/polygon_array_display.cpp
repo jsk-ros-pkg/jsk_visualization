@@ -14,12 +14,23 @@ namespace jsk_rviz_plugin
                                                this, SLOT( queueRender() ));
     alpha_property_->setMin( 0 );
     alpha_property_->setMax( 1 );
+    static uint32_t count = 0;
+    std::stringstream ss;
+    ss << "PolygonArray" << count++;
+    ss << "Material";
+    material_name_ = ss.str();
+    material_ = Ogre::MaterialManager::getSingleton().create(material_name_, "rviz");
+    material_->setReceiveShadows(false);
+    material_->getTechnique(0)->setLightingEnabled(true);
+    material_->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
   }
   
   PolygonArrayDisplay::~PolygonArrayDisplay()
   {
     delete alpha_property_;
     delete color_property_;
+    material_->unload();
+    Ogre::MaterialManager::getSingleton().remove(material_->getName());
     for (size_t i = 0; i < manual_objects_.size(); i++) {
       scene_manager_->destroyManualObject(manual_objects_[i]);
       scene_manager_->destroySceneNode(scene_nodes_[i]);
@@ -77,6 +88,21 @@ namespace jsk_rviz_plugin
       manual_objects_.resize(msg->polygons.size());
       scene_nodes_.resize(msg->polygons.size());
     }
+
+    Ogre::ColourValue color = rviz::qtToOgre( color_property_->getColor() );
+    color.a = alpha_property_->getFloat();
+    material_->getTechnique(0)->setAmbient( color * 0.5 );
+    material_->getTechnique(0)->setDiffuse( color );
+    if ( color.a < 0.9998 )
+    {
+      material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+      material_->getTechnique(0)->setDepthWriteEnabled( false );
+    }
+    else
+    {
+      material_->getTechnique(0)->setSceneBlending( Ogre::SBT_REPLACE );
+      material_->getTechnique(0)->setDepthWriteEnabled( true );
+    }
     
     for (size_t i = 0; i < msg->polygons.size(); i++) {
       geometry_msgs::PolygonStamped polygon = msg->polygons[i];
@@ -88,25 +114,28 @@ namespace jsk_rviz_plugin
         ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
                    polygon.header.frame_id.c_str(), qPrintable( fixed_frame_ ));
       }
-        scene_node->setPosition( position );
-        scene_node->setOrientation( orientation );
-        manual_object->clear();
-        Ogre::ColourValue color = rviz::qtToOgre( color_property_->getColor() );
-        color.a = alpha_property_->getFloat();
-        uint32_t num_points = polygon.polygon.points.size();
-        if( num_points > 0 )
+      scene_node->setPosition( position );
+      scene_node->setOrientation( orientation );
+      manual_object->clear();
+      
+        
+
+        
+      uint32_t num_points = polygon.polygon.points.size();
+      if( num_points > 0 )
+      {
+        manual_object->estimateVertexCount( num_points );
+        manual_object->begin(material_name_, Ogre::RenderOperation::OT_TRIANGLE_FAN );
+        //manual_object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_FAN );
+        for( uint32_t i = 0; i < num_points + 1; ++i )
         {
-          manual_object->estimateVertexCount( num_points );
-          manual_object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP );
-          for( uint32_t i = 0; i < num_points + 1; ++i )
-          {
-            const geometry_msgs::Point32& msg_point = polygon.polygon.points[ i % num_points ];
-            manual_object->position( msg_point.x, msg_point.y, msg_point.z );
-            manual_object->colour( color );
-          }
-          
-          manual_object->end();
+          const geometry_msgs::Point32& msg_point = polygon.polygon.points[ i % num_points ];
+          manual_object->position( msg_point.x, msg_point.y, msg_point.z );
+          //manual_object->colour( color );
         }
+          
+        manual_object->end();
+      }
     }
   }
 }
