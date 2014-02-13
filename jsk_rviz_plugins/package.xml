@@ -48,12 +48,14 @@
   <build_depend>hark_msgs</build_depend>
   <build_depend>jsk_hark_msgs</build_depend>
   <build_depend>jsk_footstep_msgs</build_depend>
-
+  <build_depend>jsk_pcl_ros</build_depend>
+  
   <run_depend>rviz</run_depend>
   <run_depend>hark_msgs</run_depend>
   <run_depend>jsk_hark_msgs</run_depend>
   <run_depend>jsk_footstep_msgs</run_depend>
-
+  <run_depend>jsk_pcl_ros</run_depend>
+  
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

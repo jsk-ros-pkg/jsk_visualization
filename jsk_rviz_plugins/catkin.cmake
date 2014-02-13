@@ -6,11 +6,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_rviz_plugins)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs)
+find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros)
 
 catkin_package(
     DEPENDS rviz
-    CATKIN-DEPENDS jsk_hark_msgs jsk_footstep_msgs
+    CATKIN-DEPENDS jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
@@ -40,6 +40,7 @@ qt4_wrap_cpp(MOC_FILES
   src/footstep_display.h
   src/point_display_groovy.h
   src/effort_display_groovy.h
+  src/polygon_array_display.h
 )
 
 set(SOURCE_FILES
@@ -52,6 +53,7 @@ set(SOURCE_FILES
   src/point_visual.cpp
   src/effort_display_groovy.cpp
   src/effort_visual.cpp
+  src/polygon_array_display.cpp
   ${MOC_FILES}
 )
 
