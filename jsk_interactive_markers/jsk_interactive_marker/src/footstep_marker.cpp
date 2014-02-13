@@ -2,6 +2,7 @@
 #include <interactive_markers/tools.h>
 #include <jsk_interactive_marker/footstep_marker.h>
 #include <jsk_interactive_marker/interactive_marker_utils.h>
+#include <jsk_interactive_marker/interactive_marker_helpers.h>
 #include <jsk_footstep_msgs/PlanFootstepsGoal.h>
 #include <jsk_footstep_msgs/PlanFootstepsResult.h>
 #include <jsk_pcl_ros/CallSnapIt.h>
@@ -348,43 +349,9 @@ void FootstepMarker::initializeInteractiveMarker() {
   right_box_control.markers.push_back( right_box_marker );
 
   int_marker.controls.push_back( right_box_control );
-  
-  visualization_msgs::InteractiveMarkerControl control;
-  
-  control.orientation.w = 1;
-  control.orientation.x = 1;
-  control.orientation.y = 0;
-  control.orientation.z = 0;
-  control.name = "rotate_x";
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  int_marker.controls.push_back(control);
-  control.name = "move_x";
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
-  int_marker.controls.push_back(control);
 
-  control.orientation.w = 1;
-  control.orientation.x = 0;
-  control.orientation.y = 1;
-  control.orientation.z = 0;
-  control.name = "rotate_z";
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  int_marker.controls.push_back(control);
-  control.name = "move_z";
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
-  int_marker.controls.push_back(control);
-
-  control.orientation.w = 1;
-  control.orientation.x = 0;
-  control.orientation.y = 0;
-  control.orientation.z = 1;
-  control.name = "rotate_y";
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  int_marker.controls.push_back(control);
-  control.name = "move_y";
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
-  int_marker.controls.push_back(control);
-  
-  
+  im_helpers::add6DofControl(int_marker, false);
+    
   server_->insert(int_marker,
                   boost::bind(&FootstepMarker::processFeedbackCB, this, _1));
 

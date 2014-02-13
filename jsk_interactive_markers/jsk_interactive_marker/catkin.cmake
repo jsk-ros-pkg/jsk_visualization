@@ -46,7 +46,7 @@ target_link_libraries(triangle_foot ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_executable(door_foot src/door_foot.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(door_foot ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
-add_executable(footstep_marker src/footstep_marker.cpp)
+add_executable(footstep_marker src/footstep_marker.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(footstep_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
 add_executable(marker_6dof src/marker_6dof.cpp)
