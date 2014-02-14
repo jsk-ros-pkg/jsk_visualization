@@ -35,9 +35,12 @@
     (dotimes (x (length joint-names))
       (setq joint-name (elt joint-names x))
       (let ((hand-method (intern (string-upcase joint-name) *keyword-package*)))
-	(setq joint-angle (rad2deg (elt joint-angles x)))
-	(if (find-method *robot* hand-method)
-	    (send *robot* hand-method :joint-angle joint-angle)))
+	(when (find-method *robot* hand-method)
+	  (if (subclassp (class (send *robot* hand-method)) rotational-joint)
+	      (setq joint-angle (rad2deg (elt joint-angles x)))
+	    (setq joint-angle (* 1000.0 (elt joint-angles x)))
+	    )
+	  (send *robot* hand-method :joint-angle joint-angle)))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       )
     (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
@@ -62,7 +65,6 @@
     (unless (or (null x::*display*) (= x::*display* 0))
       (x::window-main-one))
     (ros::sleep)
-
     (unless (ros::ok) (return)))
   )
 
