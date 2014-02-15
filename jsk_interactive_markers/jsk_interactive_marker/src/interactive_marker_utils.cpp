@@ -300,3 +300,31 @@ std::string getFilePathFromRosPath( std::string rospath){
   return path;
 }
 
+geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val){
+  geometry_msgs::Pose p;
+  XmlRpc::XmlRpcValue pos = val["position"];
+  p.position.x = getXmlValue(pos["x"]);
+  p.position.y = getXmlValue(pos["y"]);
+  p.position.z = getXmlValue(pos["z"]);
+
+  XmlRpc::XmlRpcValue ori = val["orientation"];
+  p.orientation.x = getXmlValue(ori["x"]);
+  p.orientation.y = getXmlValue(ori["y"]);
+  p.orientation.z = getXmlValue(ori["z"]);
+  p.orientation.w = getXmlValue(ori["w"]);
+
+  return p;
+}
+
+double getXmlValue( XmlRpc::XmlRpcValue val ){
+  switch(val.getType()){
+  case XmlRpc::XmlRpcValue::TypeInt:
+    return (double)((int)val);
+  case XmlRpc::XmlRpcValue::TypeDouble:
+    return (double)val;
+  default:
+    return 0;
+  }
+}
+
+

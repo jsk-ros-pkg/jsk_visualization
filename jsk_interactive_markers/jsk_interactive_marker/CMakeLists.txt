@@ -38,7 +38,7 @@ include_directories(${Eigen_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 
 rosbuild_add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
-rosbuild_add_executable(urdf_model_marker src/urdf_model_marker.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
+rosbuild_add_executable(urdf_model_marker src/urdf_model_marker_main.cpp src/urdf_model_marker.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
 rosbuild_add_executable(point_cloud_config_marker src/point_cloud_config_marker.cpp)
 
 rosbuild_add_executable(triangle_foot src/triangle_foot.cpp src/interactive_marker_helpers.cpp)

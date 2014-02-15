@@ -1,3 +1,7 @@
+#ifndef _URDF_MODEL_MARKER_H_
+#define _URDF_MODEL_MARKER_H_
+
+
 #include <ros/ros.h>
 
 #include <tf/tf.h>
@@ -173,3 +177,5 @@ class UrdfModelMarker {
 
 geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);
 double getXmlValue( XmlRpc::XmlRpcValue val );
+
+#endif

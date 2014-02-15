@@ -1,3 +1,7 @@
+#ifndef _MARKER_UTILS_H_
+#define _MARKER_UTILS_H_
+
+
 #include <ros/ros.h>
 
 #include <tf/tf.h>
@@ -29,3 +33,8 @@ std::string getRosPathFromModelPath(std::string path);
 std::string getRosPathFromFullPath(std::string path);
 std::string getFullPathFromModelPath(std::string path);
 std::string getFilePathFromRosPath( std::string rospath);
+
+geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);
+double getXmlValue( XmlRpc::XmlRpcValue val );
+
+#endif
