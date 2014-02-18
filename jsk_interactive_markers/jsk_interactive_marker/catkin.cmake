@@ -34,7 +34,7 @@ link_directories(${orocos_kdl_LIBRARY_DIRS})
 add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(interactive_marker_interface ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
-add_executable(urdf_model_marker src/urdf_model_marker.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
+add_executable(urdf_model_marker src/urdf_model_marker.cpp src/urdf_model_marker_main.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(urdf_model_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
 add_executable(point_cloud_config_marker src/point_cloud_config_marker.cpp)
