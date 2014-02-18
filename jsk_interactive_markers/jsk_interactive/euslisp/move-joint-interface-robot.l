@@ -3,7 +3,7 @@
 (ros::load-ros-manifest "arm_navigation_msgs")
 (ros::load-ros-manifest "jsk_interactive")
 (ros::roseus "move_joint_interface")
-(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+
 (load "package://pr2eus/pr2-interface.l")
 
 (defvar *robot-name* (ros::get-param "~robot" "PR2"))
@@ -15,6 +15,7 @@
   (setq *robot* *pr2*)
   )
  ((equal (string-upcase *robot-name*) "ATLAS")
+  (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
   (setq *robot-name* "atlas")
   (atlas-init-ex :view nil :set-reset-pose nil)
   (setq *robot* *atlas*)
@@ -48,10 +49,49 @@
     )
   )
 
+(defun hand-callback
+  (msg)
+  (let ((hand-msg (send msg :data))
+	move-hand move-type)
+    ;; set move-hand
+    (cond
+     ((substringp "rhand" hand-msg)
+      (setq move-hand :rarm)
+      )
+     ((substringp "lhand" hand-msg)
+      (setq move-hand :larm)
+      )
+     (t
+      (setq move-hand :arms)
+      )
+     )
+    
+    ;; set move-type
+    (cond
+     ((substringp "start-grasp" hand-msg)
+      (setq move-type :start-grasp)
+      )
+     ((substringp "stop-grasp" hand-msg)
+      (setq move-type :stop-grasp)
+      )
+     (t
+      (return-from hand-callback)
+      )
+     )
+
+    (when (find-method *ri* move-type)
+      (send *ri* move-type move-hand)
+      )
+    )
+  )
+
 (setq server-nodename "jsk_model_marker_interface")
 
 (ros::subscribe (format nil "~A/~A/joint_states_ri_move" server-nodename *robot-name*)
 		sensor_msgs::JointState #'joint-state-callback)
+
+(ros::subscribe (format nil "~A/~A/hand_ri_move" server-nodename *robot-name*)
+		std_msgs::String #'hand-callback)
 
 (ros::rate 30)
 
