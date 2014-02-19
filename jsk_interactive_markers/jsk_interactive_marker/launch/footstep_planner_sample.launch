@@ -31,10 +31,10 @@
   </node>
 
   <!-- odom -> lfsensor, odom -> rfsensor -->
-  <node pkg="tf" type="static_transform_publisher" name="odom_to_lfoot"
-        args="0 0.2 0 0 0 0 /odom /lfsensor 10" />
-  <node pkg="tf" type="static_transform_publisher" name="odom_to_rfoot"
-        args="0 -0.2 0 0 0 0 /odom /rfsensor 10" />
+   <!-- <node pkg="tf" type="static_transform_publisher" name="odom_to_lfoot" -->
+   <!--       args="0 0.2 0 0 0 0 /odom /lfsensor 10" /> -->
+   <!-- <node pkg="tf" type="static_transform_publisher" name="odom_to_rfoot" -->
+   <!--       args="0 -0.2 0 0 0 0 /odom /rfsensor 10" /> -->
   
   <node pkg="jsk_footstep_planner"
         type="footstep-planner-node.l"
@@ -43,9 +43,9 @@
         output="screen">
     <rosparam>
     use_planes: true
-    x:     [-0.039375,0.0525,0.0525,0.027176,-0.027176,-0.08,0.0,0.0,0.075,0.15,0.0, 0.3,  0.4,  0.1,  0.05, 0.35, 0.2]
-    y:     [0.2475,0.26,0.26,0.206422,0.206422,0.21,0.27,0.19,0.21,0.21,0.21,        0.21, 0.21, 0.21, 0.21, 0.21, 0.21]
-    theta: [0.174533,-0.20944,0.20944,-0.261799,0.261799,0.0,0.0,0.0,0.0,0.0,0.0,    0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
+    x:     [-0.039375,0.0525,  0.0525,  0.027176,-0.027176, -0.08,0.0, 0.0, 0.075,0.15,0.0, 0.3,  0.4,  0.1,  0.05, 0.35, 0.2, 0.0525,0.0525,0.0,0.0, 0.0,0.0]
+    y:     [0.2475,   0.26,    0.26,    0.206422, 0.206422,  0.21,0.27,0.19,0.21, 0.21,0.21,0.21, 0.21, 0.21, 0.21, 0.21, 0.21,0.26,  0.26,  0.4,0.45,0.3,0.35]
+    theta: [0.174533, -0.20944,0.20944,-0.261799, 0.261799,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,-0.1,   0.1,   0.0,0.0, 0.0,0.0]
     timeout: 1
     </rosparam>
     <param name="global_frame_id" value="$(arg GLOBAL_FRAME_ID)" />
@@ -54,6 +54,12 @@
         type="plane_publisher.py"
         name="plane_publisher"
         args="$(arg GLOBAL_FRAME_ID)"
+        if="false"
+        output="screen">
+  </node>
+  <node pkg="jsk_footstep_planner"
+        type="drc-task2-env.l"
+        name="plane_publisher"
         output="screen">
   </node>
 

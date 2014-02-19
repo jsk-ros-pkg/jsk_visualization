@@ -166,6 +166,7 @@ void FootstepMarker::menuCommandCB(const std_msgs::UInt8::ConstPtr& msg) {
 }
 
 void FootstepMarker::updateInitialFootstep() {
+  ROS_INFO("updateInitialFootstep");
   if (!use_initial_footstep_tf_) {
     return;
   } 
@@ -190,7 +191,7 @@ void FootstepMarker::updateInitialFootstep() {
   rleg_initial_pose_.orientation.w = rfoot_transform.getRotation().getW();
 
   // we need to move the marker
-  
+  initializeInteractiveMarker();
 }
 
 void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
@@ -400,6 +401,7 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "footstep_marker");
   FootstepMarker marker;
   ros::Rate r(10.0);
+  int counter = 0;
   while (ros::ok()) {
     ros::spinOnce();
     marker.updateInitialFootstep();
