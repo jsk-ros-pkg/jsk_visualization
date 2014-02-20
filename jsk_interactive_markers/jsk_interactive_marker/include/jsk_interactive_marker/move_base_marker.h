@@ -1,47 +1,27 @@
-#ifndef _URDF_MODEL_MARKER_H_
-#define _URDF_MODEL_MARKER_H_
+#ifndef _MOVE_BASE_MARKER_H_
+#define _MOVE_BASE_MARKER_H_
 
-
+#include <iostream>
+#include <interactive_markers/tools.h>
+#include <jsk_interactive_marker/urdf_model_marker.h>
+#include <jsk_interactive_marker/move_base_marker.h>
+#include <jsk_interactive_marker/interactive_marker_utils.h>
+#include <jsk_interactive_marker/interactive_marker_helpers.h>
 #include <ros/ros.h>
 
-#include <tf/tf.h>
-#include <tf/transform_listener.h>
-#include <tf/transform_broadcaster.h>
 
-#include <interactive_markers/interactive_marker_server.h>
-
-#include <interactive_markers/menu_handler.h>
-#include <jsk_interactive_marker/SetPose.h>
-#include <jsk_interactive_marker/MarkerSetPose.h>
-
-#include <math.h>
-#include <jsk_interactive_marker/MarkerMenu.h>
-#include <jsk_interactive_marker/MarkerPose.h>
-#include <jsk_interactive_marker/MoveObject.h>
-
-#include <std_msgs/Int8.h>
-#include <sensor_msgs/JointState.h>
-
-#include "urdf_parser/urdf_parser.h"
-#include <iostream>
-#include <fstream>
-using namespace urdf;
-using namespace std;
-
-
-class UrdfModelMarker {
+class MoveBaseMarker : UrdfModelMarker{
  public:
-  //  UrdfModelMarker(string file);
-  UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker();
 
+  MoveBaseMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  MoveBaseMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  MoveBaseMarker();
+  /*
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
   void addInvisibleMeshMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, const std_msgs::ColorRGBA &color);
   void addGraspPointControl(visualization_msgs::InteractiveMarker &int_marker, std::string link_frame_name_);
 
   void publishMarkerPose ( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
-  void publishMarkerPose ( geometry_msgs::Pose pose, std_msgs::Header header, std::string marker_name);
   void publishMarkerMenu( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu );
   void publishMoveObject( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void publishJointState( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
@@ -88,9 +68,12 @@ class UrdfModelMarker {
   void registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   
   void setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg );
+  void markerPoseCB( const jsk_interactive_marker::MarkerPoseConstPtr &msg);
   void resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg);
-  
- protected:
+  */
+  void markerPoseCB( const jsk_interactive_marker::MarkerPoseConstPtr &msg);
+ private:
+  /*
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
@@ -98,7 +81,10 @@ class UrdfModelMarker {
   ros::Publisher pub_move_;
   ros::Publisher pub_move_object_;
   ros::Publisher pub_joint_state_;
-  
+  */
+  ros::Publisher pub_base_pose_;
+  ros::Subscriber sub_marker_pose_;
+  /*
   ros::Subscriber sub_reset_joints_;
   ros::Subscriber sub_set_root_pose_;
   ros::Subscriber hide_marker_;
@@ -123,7 +109,7 @@ class UrdfModelMarker {
   std::string target_frame;
 
 
-  boost::shared_ptr<ModelInterface> model;
+  //boost::shared_ptr<ModelInterface> model;
   std::string model_name_;
   std::string frame_id_;
   std::string model_file_;
@@ -173,10 +159,8 @@ class UrdfModelMarker {
     string mesh_file;
   };
 
-  map<string, linkProperty> linkMarkerMap;
+  map<string, linkProperty> linkMarkerMap;*/
 };
 
-geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);
-double getXmlValue( XmlRpc::XmlRpcValue val );
 
 #endif

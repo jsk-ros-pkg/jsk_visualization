@@ -32,17 +32,12 @@ void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker
     control.orientation.z = qua.z();
     control.orientation.w = qua.w();
 
-    //cout << parent_joint->axis.x << parent_joint->axis.y << parent_joint->axis.z<< endl;
-    //cout << qua.x() << qua.y() << qua.z() << qua.w() << endl;
-
-    //cout << parent_joint->type << endl;
     int_marker.scale = 0.5;
 
     switch(parent_joint->type){
     case Joint::REVOLUTE:
     case Joint::CONTINUOUS:
       control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-      //interactive_markers::makeDisc ( int_marker, control, 1);
       int_marker.controls.push_back(control);
       break;
     case Joint::PRISMATIC:
@@ -153,13 +148,18 @@ void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, 
 }
 
 void UrdfModelMarker::publishMarkerPose( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+  publishMarkerPose(feedback->pose, feedback->header, feedback->marker_name);
+}
+
+void UrdfModelMarker::publishMarkerPose( geometry_msgs::Pose pose, std_msgs::Header header, std::string marker_name){
   jsk_interactive_marker::MarkerPose mp;
-  mp.pose.header = feedback->header;
-  mp.pose.pose = feedback->pose;
-  mp.marker_name = feedback->marker_name;
+  mp.pose.header = header;
+  mp.pose.pose = pose;
+  mp.marker_name = marker_name;
   mp.type = jsk_interactive_marker::MarkerPose::GENERAL;
   pub_.publish( mp );
 }
+
 
 void UrdfModelMarker::publishMarkerMenu( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu ){
   jsk_interactive_marker::MarkerMenu m;
@@ -196,12 +196,12 @@ void UrdfModelMarker::republishJointState( sensor_msgs::JointState js){
 }
 
 void UrdfModelMarker::setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg ){
-  string root_frame=model_name_ + "/" + model->getRoot()->name;
+  string root_frame = model_name_ + "/" + model->getRoot()->name;
   linkMarkerMap[frame_id_].pose = msg->pose;
   CallSetDynamicTf(frame_id_, root_frame, Pose2Transform(msg->pose));
   root_pose_ = msg->pose;
   addChildLinkNames(model->getRoot(), true, false);
-  //    publishMarkerPose(feedback);
+  publishMarkerPose( msg->pose, msg->header, root_frame);
   //publishJointState(feedback);
 }
 
@@ -249,6 +249,10 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
   switch ( feedback->event_type ){
   case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
     linkMarkerMap[frame_id].pose = feedback->pose;
+    //root link
+    if(parent_frame_id == frame_id_){
+      root_pose_ = feedback->pose;
+    }
     CallSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(feedback->pose));
     publishMarkerPose(feedback);
     publishJointState(feedback);
@@ -307,24 +311,6 @@ void UrdfModelMarker::registrationCB( const visualization_msgs::InteractiveMarke
   publishJointState(feedback);
 }
 
-
-
-/*
-  void UrdfModelMarker::moveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-  publishMarkerPose(feedback);
-  publishMarkerMenu(feedback, jsk_interactive_marker::MarkerMenu::MOVE);
-  }
-
-  void UrdfModelMarker::setPoseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-  publishMarkerPose(feedback);
-  publishMarkerMenu(feedback, jsk_interactive_marker::MarkerMenu::SET_ORIGIN);
-  }
-*/
-/*
-  void UrdfModelMarker::jointStatesCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
-  publishJointState();
-  }
-*/
 void UrdfModelMarker::moveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   jsk_interactive_marker::MoveObject mo;
   mo.origin.header = feedback->header;
@@ -740,14 +726,12 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   if(root){
     parent_link_frame_name_ = frame_id_;
     ps.pose = root_pose_;
-    std::cout << root_pose_.position.x << std::endl;
   }else{
     parent_link_frame_name_ = link->parent_joint->parent_link_name;
     parent_link_frame_name_ = model_name_ + "/" + parent_link_frame_name_;
     ps.pose = UrdfPose2Pose(link->parent_joint->parent_to_joint_origin_transform);
   }
   ps.header.frame_id =  parent_link_frame_name_;
-  //ps.header.stamp = ros::Time::now();
   ps.header.stamp = ros::Time(0);
 
   //initialize linkProperty
