@@ -42,8 +42,9 @@
 	    (setq joint-angle (* 1000.0 (elt joint-angles x)))
 	    )
 	  (send *robot* hand-method :joint-angle joint-angle)))
-      (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       )
+    (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+
     (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
 ;;    (model2real :wait t :time 5000)
     )
@@ -55,17 +56,17 @@
 	move-hand move-type)
     ;; set move-hand
     (cond
-     ((substringp "rhand" hand-msg)
+     ((substringp "rarm" hand-msg)
       (setq move-hand :rarm)
       )
-     ((substringp "lhand" hand-msg)
+     ((substringp "larm" hand-msg)
       (setq move-hand :larm)
       )
      (t
       (setq move-hand :arms)
       )
      )
-    
+
     ;; set move-type
     (cond
      ((substringp "start-grasp" hand-msg)
@@ -85,7 +86,40 @@
     )
   )
 
+(defun get-joint-state-srv
+  (req)
+  (setq req-tmp req)
+  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+  (let ((joint-list (send *robot* :joint-list))
+	(res (send req :response))
+	(joint-state-msg
+	 (instance sensor_msgs::JointState :init
+		   :header (instance std_msgs::header :init
+				    :stamp (ros::time-now))))
+	(joint-angles (send *robot* :angle-vector)))
+    (send joint-state-msg :position
+	  (mapcar #'(lambda (joint)
+		      (if (subclassp (class joint) rotational-joint)
+			  (deg2rad (send joint :joint-angle))
+			(/ (send joint :joint-angle) 1000.0)))
+		  joint-list))
+    (send joint-state-msg :name (send-all joint-list :name))
+    (send res :joint_state joint-state-msg)
+    res
+    ))
+
+
 (setq server-nodename "jsk_model_marker_interface")
+
+;;(ros::advertise (format nil "~A/~A/joint_states" server-nodename *robot-name*)
+;;		sensor_msgs::JointState)
+
+;;(ros::subscribe (format nil "~A/~A/send_joint_states" server-nodename *robot-name*)
+;;		std_msgs::Empty #'send-joint-state-callback)
+(ros::advertise-service (format nil "~A/~A/get_joint_states" server-nodename *robot-name*)
+			jsk_interactive_marker::GetJointState
+			#'get-joint-state-srv)
+
 
 (ros::subscribe (format nil "~A/~A/joint_states_ri_move" server-nodename *robot-name*)
 		sensor_msgs::JointState #'joint-state-callback)
