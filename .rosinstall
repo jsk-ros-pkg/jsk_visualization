@@ -1,0 +1,6 @@
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_recognition.git
+    local-name: jsk-ros-pkg/jsk_recognition
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_common.git
+    local-name: jsk-ros-pkg/jsk_common
