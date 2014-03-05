@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_interactive_marker)
 
 find_package(catkin REQUIRED COMPONENTS
-  cmake_modules
-  jsk_pcl_ros jsk_footstep_msgs geometry_msgs visualization_msgs interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions
+  cmake_modules jsk_pcl_ros jsk_footstep_msgs geometry_msgs visualization_msgs interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions
   urdf)
 find_package(orocos_kdl REQUIRED)
 find_package(TinyXML REQUIRED)
