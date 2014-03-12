@@ -13,11 +13,25 @@
   <depend package="jsk_pcl_ros" />
   <depend package="jsk_footstep_msgs" />
 
+  <depend name="visualization_msgs" />
+  <depend name="geometry_msgs" />
+  <depend name="sensor_msgs" />
+  <depend name="dynamic_tf_publisher" />
+  <depend name="interactive_marker_helpers" />
+  <depend name="interactive_markers" />
+  <depend name="tf" />
+  <depend name="tf_conversions" />
+  <depend name="actionlib" />
+  <depend name="eigen_conversions" />
+  <depend name="orocos_kdl" />
+  <depend name="cmake_modules" />
+  
   <rosdep name="visualization_msgs" />
   <rosdep name="geometry_msgs" />
   <rosdep name="sensor_msgs" />
   <rosdep name="dynamic_tf_publisher" />
   <rosdep name="interactive_marker_helpers" />
+  <rosdep name="interactive_markers" />
   <rosdep name="tf" />
   <rosdep name="tf_conversions" />
   <rosdep name="actionlib" />
