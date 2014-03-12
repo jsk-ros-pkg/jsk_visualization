@@ -1,7 +1,7 @@
 <package>
-  <description brief="interactive_marker">
+  <description brief="jsk_interactive_marker">
 
-     interactive_marker
+    jsk_interactive_marker
 
   </description>
   <author>furuta</author>
