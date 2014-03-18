@@ -11,8 +11,7 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/float_property.h"
+#include <rviz/properties/color_property.h>
 
 
 namespace jsk_rviz_plugin
