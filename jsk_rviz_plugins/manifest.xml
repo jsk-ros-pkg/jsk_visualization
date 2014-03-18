@@ -14,6 +14,7 @@
   <depend package="jsk_hark_msgs"/>
   <depend package="jsk_footstep_msgs"/>
   <depend package="jsk_pcl_ros" />
+  <depend package="rviz" />
   <rosdep name="wxwidgets" />
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
