@@ -40,7 +40,7 @@ protected:
   // where x, y and z means position and xx, yy, zz and ww means
   // orientation.
   void readPoseParam(ros::NodeHandle& pnh, const std::string param,
-                     geometry_msgs::Pose& offset);
+                     tf::Transform& offset);
   visualization_msgs::Marker makeFootstepMarker(geometry_msgs::Pose pose);
   
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
@@ -65,8 +65,8 @@ protected:
   geometry_msgs::Pose rleg_pose_;
   geometry_msgs::Pose lleg_initial_pose_;
   geometry_msgs::Pose rleg_initial_pose_;
-  geometry_msgs::Pose lleg_offset_;
-  geometry_msgs::Pose rleg_offset_;
+  tf::Transform lleg_offset_;
+  tf::Transform rleg_offset_;
   std::string lfoot_frame_id_;
   std::string rfoot_frame_id_;
 };

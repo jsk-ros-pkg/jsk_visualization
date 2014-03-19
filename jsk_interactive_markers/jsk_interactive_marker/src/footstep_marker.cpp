@@ -8,6 +8,7 @@
 #include <jsk_pcl_ros/CallSnapIt.h>
 #include <Eigen/StdVector>
 #include <eigen_conversions/eigen_msg.h>
+#include <tf_conversions/tf_eigen.h>
 
 FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false) {
   // read parameters
@@ -78,20 +79,26 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
 }
 
 void FootstepMarker::readPoseParam(ros::NodeHandle& pnh, const std::string param,
-                                   geometry_msgs::Pose& offset) {
+                                   tf::Transform& offset) {
   XmlRpc::XmlRpcValue v;
+  geometry_msgs::Pose pose;
   if (pnh.hasParam(param)) {
     pnh.getParam(param, v);
     // check if v is 7 length Array
     if (v.getType() == XmlRpc::XmlRpcValue::TypeArray &&
         v.size() == 7) {
-      offset.position.x = v[0];
-      offset.position.y = v[1];
-      offset.position.z = v[2];
-      offset.orientation.x = v[3];
-      offset.orientation.y = v[4];
-      offset.orientation.z = v[5];
-      offset.orientation.w = v[6];
+      pose.position.x = v[0];
+      pose.position.y = v[1];
+      pose.position.z = v[2];
+      pose.orientation.x = v[3];
+      pose.orientation.y = v[4];
+      pose.orientation.z = v[5];
+      pose.orientation.w = v[6];
+      // converst the message as following: msg -> eigen -> tf
+      //void poseMsgToEigen(const geometry_msgs::Pose &m, Eigen::Affine3d &e);
+      Eigen::Affine3d e;
+      tf::poseMsgToEigen(pose, e); // msg -> eigen
+      tf::transformEigenToTF(e, offset); // eigen -> tf
     }
     else {
       ROS_ERROR_STREAM(param << " is malformed, which should be 7 length array");
@@ -203,6 +210,9 @@ void FootstepMarker::updateInitialFootstep() {
   tf_listener_->lookupTransform(marker_frame_id_, lfoot_frame_id_, ros::Time(0.0), lfoot_transform);
   tf_listener_->lookupTransform(marker_frame_id_, rfoot_frame_id_, ros::Time(0.0), rfoot_transform);
 
+  // apply offset
+  
+  
   lleg_initial_pose_.position.x = lfoot_transform.getOrigin().getX();
   lleg_initial_pose_.position.y = lfoot_transform.getOrigin().getY();
   lleg_initial_pose_.position.z = lfoot_transform.getOrigin().getZ();
