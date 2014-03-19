@@ -211,23 +211,12 @@ void FootstepMarker::updateInitialFootstep() {
   tf_listener_->lookupTransform(marker_frame_id_, rfoot_frame_id_, ros::Time(0.0), rfoot_transform);
 
   // apply offset
-  
-  
-  lleg_initial_pose_.position.x = lfoot_transform.getOrigin().getX();
-  lleg_initial_pose_.position.y = lfoot_transform.getOrigin().getY();
-  lleg_initial_pose_.position.z = lfoot_transform.getOrigin().getZ();
-  lleg_initial_pose_.orientation.x = lfoot_transform.getRotation().getX();
-  lleg_initial_pose_.orientation.y = lfoot_transform.getRotation().getY();
-  lleg_initial_pose_.orientation.z = lfoot_transform.getRotation().getZ();
-  lleg_initial_pose_.orientation.w = lfoot_transform.getRotation().getW();
-
-  rleg_initial_pose_.position.x = rfoot_transform.getOrigin().getX();
-  rleg_initial_pose_.position.y = rfoot_transform.getOrigin().getY();
-  rleg_initial_pose_.position.z = rfoot_transform.getOrigin().getZ();
-  rleg_initial_pose_.orientation.x = rfoot_transform.getRotation().getX();
-  rleg_initial_pose_.orientation.y = rfoot_transform.getRotation().getY();
-  rleg_initial_pose_.orientation.z = rfoot_transform.getRotation().getZ();
-  rleg_initial_pose_.orientation.w = rfoot_transform.getRotation().getW();
+  // convert like tf -> eigen -> msg
+  Eigen::Affine3d le, re;
+  tf::transformTFToEigen(lfoot_transform, le); // tf -> eigen
+  tf::poseEigenToMsg(le, lleg_initial_pose_);  // eigen -> msg
+  tf::transformTFToEigen(rfoot_transform, re); // tf -> eigen
+  tf::poseEigenToMsg(re, rleg_initial_pose_);  // eigen -> msg
 
   // we need to move the marker
   initializeInteractiveMarker();
