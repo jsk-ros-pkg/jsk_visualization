@@ -2,6 +2,7 @@
   <arg name="REMOTE_TF" default="/tf_low_frequency"/>
   <arg name="USE_INTERACTIVE_JOINT" default="true" />
   <arg name="USE_INTERACTIVE_ENDCOORDS" default="true" />
+  <arg name="USE_BASE_MARKER" default="true" />
   <arg name="ROBOT_DESCRIPTION_REMOTE" default="robot_description" />
   <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="false" />
   <arg name="ROBOT" default="PR2" />
@@ -22,7 +23,7 @@
     <group if="$(arg IS_PR2)">
       <node pkg="robot_state_publisher" name="robot_state_publisher_for_urdf_marker" type="robot_state_publisher" >
 	<remap from="joint_states" to="jsk_model_marker_interface/$(arg ROBOT)/joint_states_full_100hz" />
-	<param name="~tf_prefix" type="string" value="$(arg ROBOT)" />
+	<param name="~tf_prefix" type="string" value="jsk_model_marker_interface/$(arg ROBOT)" />
       </node>
 
       <node pkg="joint_state_publisher" name="joint_state_publisher_for_urdf_marker" type="joint_state_publisher" >
@@ -37,7 +38,7 @@
     <group unless="$(arg IS_PR2)">
       <node pkg="robot_state_publisher" name="robot_state_publisher_for_urdf_marker" type="robot_state_publisher" >
 	<remap from="joint_states" to="jsk_model_marker_interface/$(arg ROBOT)/joint_states_100hz" />
-	<param name="~tf_prefix" type="string" value="$(arg ROBOT)" />
+	<param name="~tf_prefix" type="string" value="jsk_model_marker_interface/$(arg ROBOT)" />
       </node>
     </group>
 
@@ -47,8 +48,8 @@
       <remap from="joint_states_pub" to="jsk_model_marker_interface/$(arg ROBOT)/joint_states_100hz" />
     </node>
 
-    <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher" args="0 0 0 0 0 0 $(arg ROBOT_ROOTFRAME) $(arg ROBOT)/$(arg ROBOT_ROOTFRAME) 100" />
-
+    <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher" args="0 0 0 0 0 0 $(arg ROBOT_ROOTFRAME) jsk_model_marker_interface/$(arg ROBOT)/$(arg ROBOT_ROOTFRAME) 100" />
+    
     <node pkg="rviz" type="rviz" name="rviz_for_interactive_marker" args="-d $(find jsk_interactive_marker)/launch/atlas_joint_marker.rviz" respawn="true">
       <remap from="/robot_description" to="$(arg ROBOT_DESCRIPTION_REMOTE)"/>
     </node>
@@ -66,22 +67,10 @@
     <remap from="/dissoc_tf" to="/dynamic_tf_publisher_remote/dissoc_tf"/>
     <remap from="/delete_tf" to="/dynamic_tf_publisher_remote/delete_tf"/>
     <remap from="/assoc_tf" to="/dynamic_tf_publisher_remote/assoc_tf"/>
-    <!--
-    <include file="$(find jsk_interactive_marker)/launch/atlas_interactive_marker_practical.launch" >
-
-    </include>
-      -->
 
     <include file="$(find jsk_interactive_marker)/launch/pr2_interactive_marker.launch" />
 
-
-    <!-- eus-ik-controller -->
-    <!--
-    <node pkg="roseus" type="roseus" name="ik_controller" args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-ik-controller.l" output="screen">
-      <param name="robot" value="$(arg ROBOT)"/>
-    </node>
-    -->
-    <node pkg="roseus" type="roseus" name="ik_controller" args="$(find jsk_interactive_marker)/euslisp/ik-controller.l" output="screen">
+    <node pkg="roseus" type="roseus" name="ik_controller" args="$(find jsk_interactive_marker)/euslisp/ik-controller-main.l" output="screen">
       <param name="robot" value="$(arg ROBOT)"/>
     </node>
 
@@ -89,4 +78,21 @@
     <node pkg="roseus" type="roseus" name="pr2_ik_server"
 	  args="$(find jsk_ik_server)/euslisp/ik-server-impl/pr2-ik-server.l"/>
   </group>
+
+  <!-- base-marker -->
+  <group if="$(arg USE_BASE_MARKER)" >
+    <remap from="/tf" to="$(arg REMOTE_TF)"/>
+    <remap from="/set_dynamic_tf" to="/dynamic_tf_publisher_for_move_base_marker/set_dynamic_tf"/>
+    <remap from="/dissoc_tf" to="/dynamic_tf_publisher_for_move_base_marker/dissoc_tf"/>
+    <remap from="/delete_tf" to="/dynamic_tf_publisher_for_move_base_marker/delete_tf"/>
+    <remap from="/assoc_tf" to="/dynamic_tf_publisher_for_move_base_marker/assoc_tf"/>
+    <include file="$(find jsk_interactive_marker)/launch/move_base_marker.launch">
+      <arg name="models" value="$(find jsk_interactive_marker)/launch/models/pr2_move_base_sample.yaml"/>
+    </include>
+
+    <node pkg="roseus" type="roseus" name="move_base_controller" args="$(find jsk_interactive_marker)/euslisp/move-base-controller-main.l" output="screen">
+      <param name="robot" value="$(arg ROBOT)"/>
+    </node>
+  </group>
+
 </launch>
