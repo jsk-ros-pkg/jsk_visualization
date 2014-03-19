@@ -59,7 +59,6 @@ set(SOURCE_FILES
 
 add_library(jsk_rviz_plugins ${SOURCE_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES})
-set_target_properties(jsk_rviz_plugins PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 add_dependencies(jsk_rviz_plugins jsk_hark_msgs_gencpp)
 
 install(FILES plugin_description.xml

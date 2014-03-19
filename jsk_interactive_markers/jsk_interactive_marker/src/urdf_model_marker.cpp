@@ -196,7 +196,7 @@ void UrdfModelMarker::republishJointState( sensor_msgs::JointState js){
 }
 
 void UrdfModelMarker::setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg ){
-  string root_frame = model_name_ + "/" + model->getRoot()->name;
+  string root_frame = tf_prefix_ + model->getRoot()->name;
   linkMarkerMap[frame_id_].pose = msg->pose;
   CallSetDynamicTf(frame_id_, root_frame, Pose2Transform(msg->pose));
   root_pose_ = msg->pose;
@@ -213,14 +213,14 @@ void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr 
 
   if(mode_ == "visualization"){
     //fix fixed_link of Marker on fixed_link of Robot
-    string marker_name =  model_name_ + "/" + model->getRoot()->name;
+    string marker_name =  tf_prefix_ + model->getRoot()->name;
 
     tf::StampedTransform stf_robot;
     tfl_.lookupTransform(fixed_link_, model->getRoot()->name,
 			 ros::Time(0), stf_robot);
 
     tf::StampedTransform stf_marker;
-    tfl_.lookupTransform(marker_name, model_name_ + "/" + fixed_link_,
+    tfl_.lookupTransform(marker_name, tf_prefix_ + fixed_link_,
 			 ros::Time(0), stf_marker);
     
     KDL::Frame robotFrame;
@@ -473,7 +473,7 @@ visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeSphereMarkerCo
 
 void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_msgs::JointState &js)
 {
-  string link_frame_name_ =  model_name_ + "/" + link->name;
+  string link_frame_name_ =  tf_prefix_ + link->name;
   boost::shared_ptr<Joint> parent_joint = link->parent_joint;
   if(parent_joint != NULL){
     KDL::Frame initialFrame;
@@ -547,11 +547,11 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
 	if(parent_joint->type == Joint::PRISMATIC && parent_joint->limits != NULL){
 	  bool changeMarkerAngle = false;
 	  if(jointAngleAllRange < parent_joint->limits->lower){
-	    jointAngleAllRange = parent_joint->limits->lower + 0.001;
+	    jointAngleAllRange = parent_joint->limits->lower + 0.003;
 	    changeMarkerAngle = true;
 	  }
 	  if(jointAngleAllRange > parent_joint->limits->upper){
-	    jointAngleAllRange = parent_joint->limits->upper - 0.001;
+	    jointAngleAllRange = parent_joint->limits->upper - 0.003;
 	    changeMarkerAngle = true;
 	  }
 	  if(changeMarkerAngle){
@@ -577,7 +577,7 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
 }
 
 void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double joint_angle){
-  string link_frame_name_ =  model_name_ + "/" + link->name;
+  string link_frame_name_ =  tf_prefix_ + link->name;
   boost::shared_ptr<Joint> parent_joint = link->parent_joint;
 
   if(parent_joint == NULL){
@@ -650,7 +650,7 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
 
 void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js)
 {
-  string link_frame_name_ =  model_name_ + "/" + link->name;
+  string link_frame_name_ =  tf_prefix_ + link->name;
   boost::shared_ptr<Joint> parent_joint = link->parent_joint;
   if(parent_joint != NULL){
     KDL::Frame initialFrame;
@@ -703,7 +703,7 @@ void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const se
 
 void UrdfModelMarker::setOriginalPose(boost::shared_ptr<const Link> link)
 {
-  string link_frame_name_ =  model_name_ + "/" + link->name;
+  string link_frame_name_ =  tf_prefix_ + link->name;
   linkMarkerMap[link_frame_name_].origin =  linkMarkerMap[link_frame_name_].pose;
   for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
     setOriginalPose(*child);
@@ -720,7 +720,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   geometry_msgs::PoseStamped ps;
 
   double scale_factor = 1.02;
-  string link_frame_name_ =  model_name_ + "/" + link->name;
+  string link_frame_name_ =  tf_prefix_ + link->name;
   string parent_link_frame_name_;
 
   if(root){
@@ -728,7 +728,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     ps.pose = root_pose_;
   }else{
     parent_link_frame_name_ = link->parent_joint->parent_link_name;
-    parent_link_frame_name_ = model_name_ + "/" + parent_link_frame_name_;
+    parent_link_frame_name_ = tf_prefix_ + parent_link_frame_name_;
     ps.pose = UrdfPose2Pose(link->parent_joint->parent_to_joint_origin_transform);
   }
   ps.header.frame_id =  parent_link_frame_name_;
@@ -776,7 +776,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   //hide marker
   if(!linkMarkerMap[link_frame_name_].displayModelMarker){
     server_->erase(link_frame_name_);
-    server_->erase(model_name_ + "/" + link->name + "/grasp"); //grasp marker
+    server_->erase(tf_prefix_ + link->name + "/grasp"); //grasp marker
   }else{
 
     //move Marker
@@ -904,8 +904,8 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
       if(linkMarkerMap[link_frame_name_].gp.displayGraspPoint){
 	visualization_msgs::InteractiveMarker grasp_int_marker;
 	double grasp_scale_factor = 1.02;
-	string grasp_link_frame_name_ = model_name_ + "/" + link->name + "/grasp";
-	string grasp_parent_link_frame_name_ = model_name_ + "/" + link->name;
+	string grasp_link_frame_name_ = tf_prefix_ + link->name + "/grasp";
+	string grasp_parent_link_frame_name_ = tf_prefix_ + link->name;
 
 	geometry_msgs::PoseStamped grasp_ps;
 	grasp_ps.pose = linkMarkerMap[link_frame_name_].gp.pose;
@@ -968,6 +968,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   fixed_link_ = fixed_link;
   use_robot_description_ = use_robot_description;
   use_visible_color_ = use_visible_color;
+  tf_prefix_ = server_name + "/" + model_name_ + "/";
 
   pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
   pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1);

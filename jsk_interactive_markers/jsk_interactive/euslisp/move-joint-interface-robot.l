@@ -86,6 +86,15 @@
     )
   )
 
+(defun base-callback
+  (msg)
+  ;;do callback
+  (let ((move-coords (ros::tf-pose-stamped->coords msg)))
+    (send *ri* :move-to move-coords :frame-id (send move-coords :name))
+    )
+  )
+
+
 (defun get-joint-state-srv
   (req)
   (setq req-tmp req)
@@ -126,6 +135,11 @@
 
 (ros::subscribe (format nil "~A/~A/hand_ri_move" server-nodename *robot-name*)
 		std_msgs::String #'hand-callback)
+
+(ros::subscribe (format nil "~A/~A/base_move" server-nodename *robot-name*)
+		geometry_msgs::PoseStamped #'base-callback)
+
+
 
 (ros::rate 30)
 

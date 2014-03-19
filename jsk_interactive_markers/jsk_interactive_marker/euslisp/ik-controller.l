@@ -1094,6 +1094,8 @@
 
    (defvar *rhand-frame* nil)
    (defvar *lhand-frame* nil)
+
+   (defvar *start-loop* t)
    ;;init robot
    (cond
     ((equal (string-upcase *robot-name*) "PR2")
@@ -1250,7 +1252,7 @@
    (send self :realmodel2model)
    (send self :publish-joint-states :real? nil)
 
-   (send self :demo-pos-controller)
+   (if *start-loop* (send self :demo-pos-controller))
 
    )
 
@@ -1276,7 +1278,7 @@
 	)
        (cond
 	(*ik-stop*
-	 (format t "[demo-pos-controller] ik-stop")
+	 ;;(format t "[demo-pos-controller] ik-stop")
 	 (unix:usleep (round (* 1000 100))))
 	(t
 	 (let ((move-arms '(t t))
@@ -1365,7 +1367,8 @@
 	   ;;(send self :publish-touchit-status (format nil "~%IK FAIL / ~A" log-string))
 	   (send self :publish-touchit-status (format nil "~%IK FAIL "))
 	   ))
-	 )))
+	 ))
+       )
       ))
    )
 
@@ -1403,7 +1406,7 @@
    )
   )
 
-(setq *im-controller* (instance im-controller :init))
+;;(setq *im-controller* (instance im-controller :init))
 
 
 #|

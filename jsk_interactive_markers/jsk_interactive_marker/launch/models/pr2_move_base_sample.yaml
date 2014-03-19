@@ -1,0 +1,7 @@
+- name: "PR2"
+  frame-id: "map"
+  robot: true
+  use_robot_description: true
+  pose:
+    position: {x: -1.0, y: 0.0, z: 0.01}
+    orientation : {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
