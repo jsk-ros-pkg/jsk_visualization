@@ -136,6 +136,7 @@ class UrdfModelMarker {
   string fixed_link_;
   bool use_robot_description_;
   bool use_visible_color_;
+  std::string tf_prefix_;
 
   struct graspPoint{
     graspPoint(){
