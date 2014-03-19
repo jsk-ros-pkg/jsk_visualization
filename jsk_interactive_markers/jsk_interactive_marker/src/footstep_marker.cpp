@@ -8,6 +8,7 @@
 #include <jsk_pcl_ros/CallSnapIt.h>
 #include <Eigen/StdVector>
 #include <eigen_conversions/eigen_msg.h>
+#include <tf_conversions/tf_eigen.h>
 
 FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false) {
   // read parameters
@@ -19,6 +20,10 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   pnh.param("foot_size_z", foot_size_z_, 0.01);
   pnh.param("lfoot_frame_id", lfoot_frame_id_, std::string("lfsensor"));
   pnh.param("rfoot_frame_id", rfoot_frame_id_, std::string("rfsensor"));
+  // read lfoot_offset
+  readPoseParam(pnh, "lfoot_offset", lleg_offset_);
+  readPoseParam(pnh, "rfoot_offset", rleg_offset_);
+  
   pnh.param("footstep_margin", footstep_margin_, 0.2);
   pnh.param("use_footstep_planner", use_footstep_planner_, true);
   pnh.param("use_initial_footstep_tf", use_initial_footstep_tf_, true);
@@ -70,6 +75,52 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   if (use_footstep_planner_) {
     ROS_INFO("waiting server...");
     ac_.waitForServer();
+  }
+}
+
+// a function to read double value from XmlRpcValue.
+// if the value is integer like 0 and 1, we need to
+// cast it to int first, and after that, casting to double.
+double getXMLDoubleValue(XmlRpc::XmlRpcValue val) {
+  switch(val.getType()) {
+  case XmlRpc::XmlRpcValue::TypeInt:
+    return (double)((int)val);
+  case XmlRpc::XmlRpcValue::TypeDouble:
+    return (double)val;
+  default:
+    return 0;
+  }
+}
+
+void FootstepMarker::readPoseParam(ros::NodeHandle& pnh, const std::string param,
+                                   tf::Transform& offset) {
+  XmlRpc::XmlRpcValue v;
+  geometry_msgs::Pose pose;
+  if (pnh.hasParam(param)) {
+    pnh.param(param, v, v);
+    // check if v is 7 length Array
+    if (v.getType() == XmlRpc::XmlRpcValue::TypeArray &&
+        v.size() == 7) {
+      // safe parameter access by getXMLDoubleValue
+      pose.position.x = getXMLDoubleValue(v[0]);
+      pose.position.y = getXMLDoubleValue(v[1]);
+      pose.position.z = getXMLDoubleValue(v[2]);
+      pose.orientation.x = getXMLDoubleValue(v[3]);
+      pose.orientation.y = getXMLDoubleValue(v[4]);
+      pose.orientation.z = getXMLDoubleValue(v[5]);
+      pose.orientation.w = getXMLDoubleValue(v[6]);
+      // converst the message as following: msg -> eigen -> tf
+      //void poseMsgToEigen(const geometry_msgs::Pose &m, Eigen::Affine3d &e);
+      Eigen::Affine3d e;
+      tf::poseMsgToEigen(pose, e); // msg -> eigen
+      tf::transformEigenToTF(e, offset); // eigen -> tf
+    }
+    else {
+      ROS_ERROR_STREAM(param << " is malformed, which should be 7 length array");
+    }
+  }
+  else {
+    ROS_WARN_STREAM("there is no parameter on " << param);
   }
 }
 
@@ -174,22 +225,14 @@ void FootstepMarker::updateInitialFootstep() {
   tf_listener_->lookupTransform(marker_frame_id_, lfoot_frame_id_, ros::Time(0.0), lfoot_transform);
   tf_listener_->lookupTransform(marker_frame_id_, rfoot_frame_id_, ros::Time(0.0), rfoot_transform);
 
-  lleg_initial_pose_.position.x = lfoot_transform.getOrigin().getX();
-  lleg_initial_pose_.position.y = lfoot_transform.getOrigin().getY();
-  lleg_initial_pose_.position.z = lfoot_transform.getOrigin().getZ();
-  lleg_initial_pose_.orientation.x = lfoot_transform.getRotation().getX();
-  lleg_initial_pose_.orientation.y = lfoot_transform.getRotation().getY();
-  lleg_initial_pose_.orientation.z = lfoot_transform.getRotation().getZ();
-  lleg_initial_pose_.orientation.w = lfoot_transform.getRotation().getW();
-
-  rleg_initial_pose_.position.x = rfoot_transform.getOrigin().getX();
-  rleg_initial_pose_.position.y = rfoot_transform.getOrigin().getY();
-  rleg_initial_pose_.position.z = rfoot_transform.getOrigin().getZ();
-  rleg_initial_pose_.orientation.x = rfoot_transform.getRotation().getX();
-  rleg_initial_pose_.orientation.y = rfoot_transform.getRotation().getY();
-  rleg_initial_pose_.orientation.z = rfoot_transform.getRotation().getZ();
-  rleg_initial_pose_.orientation.w = rfoot_transform.getRotation().getW();
-
+  // apply offset
+  // convert like tf -> eigen -> msg
+  Eigen::Affine3d le, re;
+  tf::transformTFToEigen(lfoot_transform * lleg_offset_, le); // tf -> eigen
+  tf::poseEigenToMsg(le, lleg_initial_pose_);  // eigen -> msg
+  tf::transformTFToEigen(rfoot_transform * rleg_offset_, re); // tf -> eigen
+  tf::poseEigenToMsg(re, rleg_initial_pose_);  // eigen -> msg
+  
   // we need to move the marker
   initializeInteractiveMarker();
 }
@@ -401,7 +444,6 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "footstep_marker");
   FootstepMarker marker;
   ros::Rate r(10.0);
-  int counter = 0;
   while (ros::ok()) {
     ros::spinOnce();
     marker.updateInitialFootstep();
