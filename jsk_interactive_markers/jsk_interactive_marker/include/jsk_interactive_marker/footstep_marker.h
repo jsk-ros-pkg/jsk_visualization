@@ -34,6 +34,13 @@ protected:
   geometry_msgs::Pose getFootstepPose(bool leftp);
   void planIfPossible();
   void resetLegPoses();
+  
+  // read a geometry_msgs/pose from the parameter specified.
+  // the format of the parameter is [x, y, z, xx, yy, zz, ww].
+  // where x, y and z means position and xx, yy, zz and ww means
+  // orientation.
+  void readPoseParam(ros::NodeHandle& pnh, const std::string param,
+                     geometry_msgs::Pose& offset);
   visualization_msgs::Marker makeFootstepMarker(geometry_msgs::Pose pose);
   
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
@@ -58,6 +65,8 @@ protected:
   geometry_msgs::Pose rleg_pose_;
   geometry_msgs::Pose lleg_initial_pose_;
   geometry_msgs::Pose rleg_initial_pose_;
+  geometry_msgs::Pose lleg_offset_;
+  geometry_msgs::Pose rleg_offset_;
   std::string lfoot_frame_id_;
   std::string rfoot_frame_id_;
 };

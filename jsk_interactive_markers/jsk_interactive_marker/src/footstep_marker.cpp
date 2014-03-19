@@ -19,6 +19,10 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   pnh.param("foot_size_z", foot_size_z_, 0.01);
   pnh.param("lfoot_frame_id", lfoot_frame_id_, std::string("lfsensor"));
   pnh.param("rfoot_frame_id", rfoot_frame_id_, std::string("rfsensor"));
+  // read lfoot_offset
+  readPoseParam(pnh, "lfoot_offset", lleg_offset_);
+  readPoseParam(pnh, "rfoot_offset", rleg_offset_);
+  
   pnh.param("footstep_margin", footstep_margin_, 0.2);
   pnh.param("use_footstep_planner", use_footstep_planner_, true);
   pnh.param("use_initial_footstep_tf", use_initial_footstep_tf_, true);
@@ -70,6 +74,31 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   if (use_footstep_planner_) {
     ROS_INFO("waiting server...");
     ac_.waitForServer();
+  }
+}
+
+void FootstepMarker::readPoseParam(ros::NodeHandle& pnh, const std::string param,
+                                   geometry_msgs::Pose& offset) {
+  XmlRpc::XmlRpcValue v;
+  if (pnh.hasParam(param)) {
+    pnh.getParam(param, v);
+    // check if v is 7 length Array
+    if (v.getType() == XmlRpc::XmlRpcValue::TypeArray &&
+        v.size() == 7) {
+      offset.position.x = v[0];
+      offset.position.y = v[1];
+      offset.position.z = v[2];
+      offset.orientation.x = v[3];
+      offset.orientation.y = v[4];
+      offset.orientation.z = v[5];
+      offset.orientation.w = v[6];
+    }
+    else {
+      ROS_ERROR_STREAM(param << " is malformed, which should be 7 length array");
+    }
+  }
+  else {
+    ROS_WARN_STREAM("there is no parameter on " << param);
   }
 }
 
@@ -401,7 +430,6 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "footstep_marker");
   FootstepMarker marker;
   ros::Rate r(10.0);
-  int counter = 0;
   while (ros::ok()) {
     ros::spinOnce();
     marker.updateInitialFootstep();
