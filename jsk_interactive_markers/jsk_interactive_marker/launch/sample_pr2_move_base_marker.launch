@@ -1,0 +1,9 @@
+<launch>
+  <param name="robot_description"
+	 command="$(find xacro)/xacro.py '$(find pr2_description)/robots/pr2.urdf.xacro'" />
+
+  <include file="$(find jsk_interactive_marker)/launch/move_base_marker.launch">
+    <arg name="models" value="$(find jsk_interactive_marker)/launch/models/pr2_move_base_sample.yaml"/>
+  </include>
+  <node pkg="rviz" type="rviz" name="rviz_for_move_base"/>
+</launch>

@@ -12,7 +12,7 @@ MoveBaseMarker::MoveBaseMarker (string model_name, string model_file, string fra
 }
 
 void MoveBaseMarker::markerPoseCB (  const jsk_interactive_marker::MarkerPoseConstPtr &msg){
-  if( msg -> marker_name == model_name_ + "/" + model->getRoot()->name){
+  if( msg -> marker_name == tf_prefix_ + model->getRoot()->name){
     pub_base_pose_.publish(msg->pose);
   }
 }
