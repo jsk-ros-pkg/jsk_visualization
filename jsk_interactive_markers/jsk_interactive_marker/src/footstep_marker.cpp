@@ -78,22 +78,37 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   }
 }
 
+// a function to read double value from XmlRpcValue.
+// if the value is integer like 0 and 1, we need to
+// cast it to int first, and after that, casting to double.
+double getXMLDoubleValue(XmlRpc::XmlRpcValue val) {
+  switch(val.getType()) {
+  case XmlRpc::XmlRpcValue::TypeInt:
+    return (double)((int)val);
+  case XmlRpc::XmlRpcValue::TypeDouble:
+    return (double)val;
+  default:
+    return 0;
+  }
+}
+
 void FootstepMarker::readPoseParam(ros::NodeHandle& pnh, const std::string param,
                                    tf::Transform& offset) {
   XmlRpc::XmlRpcValue v;
   geometry_msgs::Pose pose;
   if (pnh.hasParam(param)) {
-    pnh.getParam(param, v);
+    pnh.param(param, v, v);
     // check if v is 7 length Array
     if (v.getType() == XmlRpc::XmlRpcValue::TypeArray &&
         v.size() == 7) {
-      pose.position.x = v[0];
-      pose.position.y = v[1];
-      pose.position.z = v[2];
-      pose.orientation.x = v[3];
-      pose.orientation.y = v[4];
-      pose.orientation.z = v[5];
-      pose.orientation.w = v[6];
+      // safe parameter access by getXMLDoubleValue
+      pose.position.x = getXMLDoubleValue(v[0]);
+      pose.position.y = getXMLDoubleValue(v[1]);
+      pose.position.z = getXMLDoubleValue(v[2]);
+      pose.orientation.x = getXMLDoubleValue(v[3]);
+      pose.orientation.y = getXMLDoubleValue(v[4]);
+      pose.orientation.z = getXMLDoubleValue(v[5]);
+      pose.orientation.w = getXMLDoubleValue(v[6]);
       // converst the message as following: msg -> eigen -> tf
       //void poseMsgToEigen(const geometry_msgs::Pose &m, Eigen::Affine3d &e);
       Eigen::Affine3d e;
@@ -213,11 +228,11 @@ void FootstepMarker::updateInitialFootstep() {
   // apply offset
   // convert like tf -> eigen -> msg
   Eigen::Affine3d le, re;
-  tf::transformTFToEigen(lfoot_transform, le); // tf -> eigen
+  tf::transformTFToEigen(lfoot_transform * lleg_offset_, le); // tf -> eigen
   tf::poseEigenToMsg(le, lleg_initial_pose_);  // eigen -> msg
-  tf::transformTFToEigen(rfoot_transform, re); // tf -> eigen
+  tf::transformTFToEigen(rfoot_transform * rleg_offset_, re); // tf -> eigen
   tf::poseEigenToMsg(re, rleg_initial_pose_);  // eigen -> msg
-
+  
   // we need to move the marker
   initializeInteractiveMarker();
 }
