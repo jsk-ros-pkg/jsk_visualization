@@ -10,7 +10,9 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <tf_conversions/tf_eigen.h>
 
-FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false) {
+FootstepMarker::FootstepMarker():
+ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
+  plan_run_(false) {
   // read parameters
   
   ros::NodeHandle pnh("~");
@@ -26,6 +28,7 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   
   pnh.param("footstep_margin", footstep_margin_, 0.2);
   pnh.param("use_footstep_planner", use_footstep_planner_, true);
+  pnh.param("use_footstep_controller", use_footstep_controller_, true);
   pnh.param("use_initial_footstep_tf", use_initial_footstep_tf_, true);
   pnh.param("wait_snapit_server", wait_snapit_server_, false);
   pnh.param("frame_id", marker_frame_id_, std::string("/map"));
@@ -56,6 +59,7 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   
   move_marker_sub_ = nh.subscribe("move_marker", 1, &FootstepMarker::moveMarkerCB, this);
   menu_command_sub_ = nh.subscribe("menu_command", 1, &FootstepMarker::menuCommandCB, this);
+  exec_sub_ = pnh.subscribe("execute", 1, &FootstepMarker::executeCB, this);
   tf_listener_.reset(new tf::TransformListener);
 
   if (use_initial_footstep_tf_) {
@@ -73,8 +77,12 @@ FootstepMarker::FootstepMarker(): ac_("footstep_planner", true), plan_run_(false
   }
 
   if (use_footstep_planner_) {
-    ROS_INFO("waiting server...");
+    ROS_INFO("waiting planner server...");
     ac_.waitForServer();
+  }
+  if (use_footstep_controller_) {
+    ROS_INFO("waiting controller server...");
+    ac_exec_.waitForServer();
   }
 }
 
@@ -212,6 +220,10 @@ geometry_msgs::Polygon FootstepMarker::computePolygon(uint8_t leg) {
   return polygon;
 }
 
+void FootstepMarker::executeCB(const std_msgs::Empty::ConstPtr& msg) {
+  executeFootstep();
+}
+
 void FootstepMarker::menuCommandCB(const std_msgs::UInt8::ConstPtr& msg) {
   processMenuFeedback(msg->data);
 }
@@ -266,6 +278,23 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
   planIfPossible();
 }
 
+void FootstepMarker::executeFootstep() {
+  if (!use_footstep_controller_) {
+    return;
+  }
+  if (!plan_result_) {
+    ROS_ERROR("no planner result is available");
+    return;
+  }
+  jsk_footstep_msgs::ExecFootstepsGoal goal;
+  goal.footstep = plan_result_->result;
+  //goal.strategy = jsk_footstep_msgs::ExecFootstepsGoal::DEFAULT_STRATEGY;
+  ROS_INFO("sending goal...");
+  ac_exec_.sendGoal(goal);
+  ac_exec_.waitForResult();
+  ROS_INFO("done executing...");
+}
+
 void FootstepMarker::planIfPossible() {
   // check the status of the ac_
   if (!use_footstep_planner_) {
@@ -275,8 +304,8 @@ void FootstepMarker::planIfPossible() {
   if (plan_run_) {
     actionlib::SimpleClientGoalState state = ac_.getState();
     if (state.isDone()) {
-      jsk_footstep_msgs::PlanFootstepsResult::ConstPtr result = ac_.getResult();
-      footstep_pub_.publish(result->result);
+      plan_result_ = ac_.getResult();
+      footstep_pub_.publish(plan_result_->result);
       ROS_INFO("planning is finished");
       call_planner = true;
     }
