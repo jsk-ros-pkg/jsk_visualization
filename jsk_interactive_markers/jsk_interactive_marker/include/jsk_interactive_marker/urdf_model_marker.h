@@ -78,6 +78,7 @@ class UrdfModelMarker {
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index);
 
   geometry_msgs::Transform Pose2Transform(geometry_msgs::Pose pose_msg);
+  geometry_msgs::Pose Transform2Pose( const geometry_msgs::Transform tf_msg);
   geometry_msgs::Pose UrdfPose2Pose( const urdf::Pose pose);
   void CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform);
 
@@ -86,7 +87,8 @@ class UrdfModelMarker {
   void graspPointCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void jointMoveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void resetMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
-
+  void resetBaseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void resetRobotBase();
   void registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   
   void setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg );

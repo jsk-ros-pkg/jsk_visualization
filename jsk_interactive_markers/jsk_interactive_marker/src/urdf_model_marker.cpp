@@ -119,6 +119,16 @@ geometry_msgs::Transform UrdfModelMarker::Pose2Transform( const geometry_msgs::P
   return tf_msg;
 }
 
+geometry_msgs::Pose UrdfModelMarker::Transform2Pose( const geometry_msgs::Transform tf_msg){
+  geometry_msgs::Pose pose_msg;
+  pose_msg.position.x =  tf_msg.translation.x;
+  pose_msg.position.y = tf_msg.translation.y;
+  pose_msg.position.z = tf_msg.translation.z;
+  pose_msg.orientation = tf_msg.rotation;
+  return pose_msg;
+}
+
+
 geometry_msgs::Pose UrdfModelMarker::UrdfPose2Pose( const urdf::Pose pose){
   geometry_msgs::Pose p_msg;
   double x, y, z, w;
@@ -143,7 +153,6 @@ void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, 
   SetTf.request.cur_tf.child_frame_id = frame_id;
   SetTf.request.cur_tf.transform = transform;
   if (use_dynamic_tf_ || parent_frame_id == frame_id_){
-    std::cout << "aaaaaaaaaaaaaaa" << std::endl;
     std::cout << parent_frame_id << frame_id << std::endl;
     dynamic_tf_publisher_client.call(SetTf);
   }
@@ -321,6 +330,32 @@ void UrdfModelMarker::resetMarkerCB( const visualization_msgs::InteractiveMarker
   publishJointState(feedback);
   publishMarkerMenu(feedback, jsk_interactive_marker::MarkerMenu::RESET_JOINT);
 }
+
+void UrdfModelMarker::resetBaseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+  resetRobotBase();
+  string rootlink_name = tf_prefix_ + model->getRoot()->name;
+  linkMarkerMap[rootlink_name].pose = feedback->pose;
+  CallSetDynamicTf(frame_id_, rootlink_name, Pose2Transform(root_pose_));
+  addChildLinkNames(model->getRoot(), true, false);
+  publishBasePose(root_pose_, feedback->header);
+}
+
+void UrdfModelMarker::resetRobotBase(){
+  //set root_pose_ to robot base pose
+  try{
+    tf::StampedTransform transform;
+    geometry_msgs::TransformStamped ts_msg;
+    tfl_.lookupTransform(frame_id_, model->getRoot()->name,
+			 ros::Time(0), transform);
+    tf::transformStampedTFToMsg(transform, ts_msg);
+      
+    root_pose_ = Transform2Pose(ts_msg.transform);
+  }
+  catch (tf::TransformException ex){
+    ROS_ERROR("%s",ex.what());
+  }
+}
+
 
 void UrdfModelMarker::registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   
@@ -753,9 +788,6 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   //initialize linkProperty
   if(init){
     CallSetDynamicTf(parent_link_frame_name_, link_frame_name_, Pose2Transform(ps.pose));
-    if(root){
-          std::cout << "bbbbbbbbbbbbbaaaaaaaaaaaaaaa" << std::endl;
-    }
     linkProperty lp;
     lp.pose = ps.pose;
     lp.origin = ps.pose;
@@ -1041,7 +1073,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
     model_menu_.insert( sub_menu_reset_, "Joint",
 			boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
     model_menu_.insert( sub_menu_reset_, "Base",
-			boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
+			boost::bind( &UrdfModelMarker::resetBaseCB, this, _1) );
 
 
     interactive_markers::MenuHandler::EntryHandle sub_menu_pose_;
@@ -1102,15 +1134,21 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
     return;
   }
 
+  if( mode_ == "robot"){
+    resetRobotBase();
+  }
+
 
   addChildLinkNames(model->getRoot(), true, true);
 
   // wait for joint\statelistner
+
   if ( pub_joint_state_.getNumSubscribers() == 0 ) {
     ROS_WARN_STREAM("urdf_model_marker wait for joint_state_subscriber .... ");
     ros::Duration(1.0).sleep();
   }
   ROS_WARN_STREAM("urdf_model_marker publish joint_state_subscriber, done");
+
   // start JointState
   sensor_msgs::JointState js;
   getJointState(model->getRoot(), js);
