@@ -142,10 +142,25 @@ void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, 
   SetTf.request.cur_tf.header.frame_id = parent_frame_id;
   SetTf.request.cur_tf.child_frame_id = frame_id;
   SetTf.request.cur_tf.transform = transform;
-  if (use_dynamic_tf_){
+  if (use_dynamic_tf_ || parent_frame_id == frame_id_){
+    std::cout << "aaaaaaaaaaaaaaa" << std::endl;
+    std::cout << parent_frame_id << frame_id << std::endl;
     dynamic_tf_publisher_client.call(SetTf);
   }
 }
+
+void UrdfModelMarker::publishBasePose( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+  publishBasePose(feedback->pose, feedback->header);
+}
+
+void UrdfModelMarker::publishBasePose( geometry_msgs::Pose pose, std_msgs::Header header){
+  geometry_msgs::PoseStamped ps;
+  ps.pose = pose;
+  ps.header = header;
+  pub_base_pose_.publish(ps);
+}
+
+
 
 void UrdfModelMarker::publishMarkerPose( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   publishMarkerPose(feedback->pose, feedback->header, feedback->marker_name);
@@ -252,6 +267,7 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
     //root link
     if(parent_frame_id == frame_id_){
       root_pose_ = feedback->pose;
+      publishBasePose(feedback);
     }
     CallSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(feedback->pose));
     publishMarkerPose(feedback);
@@ -737,6 +753,9 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   //initialize linkProperty
   if(init){
     CallSetDynamicTf(parent_link_frame_name_, link_frame_name_, Pose2Transform(ps.pose));
+    if(root){
+          std::cout << "bbbbbbbbbbbbbaaaaaaaaaaaaaaa" << std::endl;
+    }
     linkProperty lp;
     lp.pose = ps.pose;
     lp.origin = ps.pose;
@@ -982,6 +1001,8 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   hide_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/hide_marker", 1, boost::bind( &UrdfModelMarker::hideModelMarkerCB, this, _1));
   show_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/show_marker", 1, boost::bind( &UrdfModelMarker::showModelMarkerCB, this, _1));
 
+  pub_base_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>(model_name_ + "/base_pose", 1);
+
   /*
     serv_set_ = pnh_.advertiseService("set_pose",
     &InteractiveMarkerInterface::set_cb, this);
@@ -1010,14 +1031,18 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   }else if(mode_ == "robot"){
     interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
     sub_menu_move_ = model_menu_.insert( "Move" );
-    model_menu_.insert( sub_menu_move_, "Yes", 
+    model_menu_.insert( sub_menu_move_, "Joint",
 			boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
-    //    model_menu_.insert( "Move" ,
-    //boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
-    model_menu_.insert( "Reset Marker Pose",
+    model_menu_.insert( sub_menu_move_, "Base",
+			boost::bind( &UrdfModelMarker::publishMarkerMenu, this, _1, jsk_interactive_marker::MarkerMenu::MOVE) );
+
+    interactive_markers::MenuHandler::EntryHandle sub_menu_reset_;
+    sub_menu_reset_ = model_menu_.insert( "Reset Marker Pose" );
+    model_menu_.insert( sub_menu_reset_, "Joint",
 			boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
-      
-      
+    model_menu_.insert( sub_menu_reset_, "Base",
+			boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
+
 
     interactive_markers::MenuHandler::EntryHandle sub_menu_pose_;
     sub_menu_pose_ = model_menu_.insert( "Special Pose" );

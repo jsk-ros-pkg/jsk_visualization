@@ -36,6 +36,7 @@
    *lhand-frame*
    *rhand-frame*
    *fullbody-ik-client*
+   *base-target-coords*
    )
   )
 
@@ -745,11 +746,14 @@
    (let ((menu (send msg :menu))
 	 (type (send msg :type)))
      (cond
+      ((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
+       (format t "[marker-menu] move robot base!!~%")
+       (send self :publish-base-target))
       ((eq menu jsk_interactive_marker::MarkerMenu::*JOINT_MOVE*)
-       (format t "[marker-menu] move robot!!~%")
+       (format t "[marker-menu] move robot joint!!~%")
        (send self :publish-joint-states :real? t))
       ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_JOINT*)
-       (format t "[marker-menu] move robot!!~%")
+       (format t "[marker-menu] reset robot joint!!~%")
        (send self :realmodel2model)
        (send self :publish-joint-states :real? nil))
       ((eq menu 100)
@@ -1045,6 +1049,24 @@
      )
    )
 
+  (:publish-base-target
+   ()
+   (when *base-target-coords*
+     (let ((base-msg (ros::coords->tf-pose-stamped *base-target-coords* (send *base-target-coords* :name))))
+       (ros::publish (format nil "~A/~A/base_move" *im-nodename* *robot-name*)
+		     base-msg)
+       )
+     )
+   )
+
+  (:base-target-callback
+   (msg)
+   (setq *base-target-coords* (ros::tf-pose-stamped->coords msg))
+   (print "update target")
+   )
+
+
+
   (:start-grasp
    (&key (arm :arms))
    (send self :send-grasp-msg "start-grasp" :arm arm)
@@ -1198,6 +1220,14 @@
    (ros::advertise
     (format nil "~A/~A/hand_ri_move" *im-nodename* *robot-name*)
     std_msgs::String)
+
+   (ros::advertise (format nil "~A/~A/base_move" *im-nodename* *robot-name*)
+		   geometry_msgs::PoseStamped)
+
+   (ros::subscribe
+    (format nil "~A/~A/base_pose" *im-nodename* *robot-name*)
+    geometry_msgs::PoseStamped #'send self :base-target-callback)
+
 
    ;;(switch-end-coords :id 2)
    (setq *real-robot* (copy-object *robot*))

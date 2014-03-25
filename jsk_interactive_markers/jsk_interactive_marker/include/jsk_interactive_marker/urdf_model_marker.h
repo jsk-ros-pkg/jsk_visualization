@@ -40,6 +40,8 @@ class UrdfModelMarker {
   void addInvisibleMeshMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, const std_msgs::ColorRGBA &color);
   void addGraspPointControl(visualization_msgs::InteractiveMarker &int_marker, std::string link_frame_name_);
 
+  void publishBasePose( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void publishBasePose( geometry_msgs::Pose pose, std_msgs::Header header);
   void publishMarkerPose ( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void publishMarkerPose ( geometry_msgs::Pose pose, std_msgs::Header header, std::string marker_name);
   void publishMarkerMenu( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu );
@@ -94,11 +96,14 @@ class UrdfModelMarker {
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  /* publisher */
   ros::Publisher pub_;
   ros::Publisher pub_move_;
   ros::Publisher pub_move_object_;
   ros::Publisher pub_joint_state_;
-  
+  ros::Publisher pub_base_pose_;
+
+  /* publisher */
   ros::Subscriber sub_reset_joints_;
   ros::Subscriber sub_set_root_pose_;
   ros::Subscriber hide_marker_;
