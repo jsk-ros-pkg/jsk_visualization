@@ -44,7 +44,7 @@ add_executable(world2yaml src/world2yaml)
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
 
 generate_messages(
-  DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs
+  DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs jsk_pcl_ros
 )
 
 catkin_package(
