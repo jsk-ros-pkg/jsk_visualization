@@ -48,7 +48,7 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   - find -L src -name package.xml -exec dirname {} \; | xargs -n 1 -i find {} -name manifest.xml | xargs -n 1 -i mv {} {}.deprecated
   - rosdep install -r -n --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y
   - find -L src -name manifest.xml.deprecated | xargs -n 1 -i dirname {} | xargs -n 1 -i ln -sf `pwd`/{}/manifest.xml.deprecated `pwd`/{}/manifest.xml
-  - if [ $BUILDER = rosbuild ]; then source src/setup.sh; rosdep install -a -y -n -r; fi
+  - if [ $BUILDER = rosbuild ]; then source src/setup.sh; fi
   - if [ $ROS_DISTRO = groovy ]; then sudo apt-get install ros-$ROS_DISTRO-common-tutorials ros-$ROS_DISTRO-object-manipulation; fi
 before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
   - source /opt/ros/$ROS_DISTRO/setup.bash

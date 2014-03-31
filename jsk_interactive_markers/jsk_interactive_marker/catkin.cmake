@@ -14,17 +14,6 @@ add_message_files(
 add_service_files(DIRECTORY srv
   FILES MarkerSetPose.srv SetPose.srv)
 
-generate_messages(
-  DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs
-)
-
-catkin_package(
-    DEPENDS orocos_kdl TinyXML
-    CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib
-    INCLUDE_DIRS # TODO include
-    LIBRARIES # TODO
-)
-
 include_directories(include ${catkin_INCLUDE_DIRS} ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS})
 # target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${TinyXML_LIBRARIES} ${orocos_kdl_LIBRARIES})
 link_directories(${catkin_LIBRARY_DIRS})
@@ -53,6 +42,18 @@ target_link_libraries(marker_6dof ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
 add_executable(world2yaml src/world2yaml)
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
+
+generate_messages(
+  DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs jsk_pcl_ros
+)
+
+catkin_package(
+    DEPENDS orocos_kdl TinyXML
+    CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib
+    INCLUDE_DIRS # TODO include
+    LIBRARIES # TODO
+)
+
 
 install(DIRECTORY launch euslisp urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
