@@ -1,5 +1,5 @@
 - name: "PR2"
-  frame-id: "base_link"
+  frame-id: "/map"
   robot: true
   use_robot_description: true
   scale: 1.0
