@@ -46,7 +46,7 @@ rosbuild_add_executable(door_foot src/door_foot.cpp src/interactive_marker_helpe
 rosbuild_add_executable(world2yaml src/world2yaml)
 rosbuild_add_executable(footstep_marker src/footstep_marker.cpp src/interactive_marker_helpers.cpp)
 rosbuild_add_executable(marker_6dof src/marker_6dof.cpp)
-rosbuild_add_executable(move_base_marker src/move_base_marker_main.cpp src/move_base_marker.cpp src/urdf_model_marker.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
+
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
 #rosbuild_add_executable(interactive_marker_interface_both_arm src/interactive_marker_interface_both_arm.cpp)
 #rosbuild_add_executable(button_interactive_marker_interface src/button_interactive_marker_interface.cpp)

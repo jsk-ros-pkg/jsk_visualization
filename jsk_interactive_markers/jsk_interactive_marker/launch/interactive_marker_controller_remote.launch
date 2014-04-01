@@ -2,7 +2,6 @@
   <arg name="REMOTE_TF" default="/tf_low_frequency"/>
   <arg name="USE_INTERACTIVE_JOINT" default="true" />
   <arg name="USE_INTERACTIVE_ENDCOORDS" default="true" />
-  <arg name="USE_BASE_MARKER" default="false" />
   <arg name="ROBOT_DESCRIPTION_REMOTE" default="robot_description" />
   <!--
   <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="false" />
@@ -86,22 +85,6 @@
     <!-- eus-ik-server -->
     <node pkg="roseus" type="roseus" name="pr2_ik_server"
 	  args="$(find jsk_ik_server)/euslisp/ik-server-impl/pr2-ik-server.l"/>
-  </group>
-
-  <!-- base-marker -->
-  <group if="$(arg USE_BASE_MARKER)" >
-    <remap from="/tf" to="$(arg REMOTE_TF)"/>
-    <remap from="/set_dynamic_tf" to="/dynamic_tf_publisher_for_move_base_marker/set_dynamic_tf"/>
-    <remap from="/dissoc_tf" to="/dynamic_tf_publisher_for_move_base_marker/dissoc_tf"/>
-    <remap from="/delete_tf" to="/dynamic_tf_publisher_for_move_base_marker/delete_tf"/>
-    <remap from="/assoc_tf" to="/dynamic_tf_publisher_for_move_base_marker/assoc_tf"/>
-    <include file="$(find jsk_interactive_marker)/launch/move_base_marker.launch">
-      <arg name="models" value="$(find jsk_interactive_marker)/launch/models/pr2_move_base_sample.yaml"/>
-    </include>
-
-    <node pkg="roseus" type="roseus" name="move_base_controller" args="$(find jsk_interactive_marker)/euslisp/move-base-controller-main.l" output="screen">
-      <param name="robot" value="$(arg ROBOT)"/>
-    </node>
   </group>
 
 </launch>
