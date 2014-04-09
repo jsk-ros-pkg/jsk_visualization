@@ -40,6 +40,8 @@ class UrdfModelMarker {
   void addInvisibleMeshMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, const std_msgs::ColorRGBA &color);
   void addGraspPointControl(visualization_msgs::InteractiveMarker &int_marker, std::string link_frame_name_);
 
+  void publishBasePose( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void publishBasePose( geometry_msgs::Pose pose, std_msgs::Header header);
   void publishMarkerPose ( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void publishMarkerPose ( geometry_msgs::Pose pose, std_msgs::Header header, std::string marker_name);
   void publishMarkerMenu( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu );
@@ -76,6 +78,7 @@ class UrdfModelMarker {
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index);
 
   geometry_msgs::Transform Pose2Transform(geometry_msgs::Pose pose_msg);
+  geometry_msgs::Pose Transform2Pose( const geometry_msgs::Transform tf_msg);
   geometry_msgs::Pose UrdfPose2Pose( const urdf::Pose pose);
   void CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform);
 
@@ -84,7 +87,8 @@ class UrdfModelMarker {
   void graspPointCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void jointMoveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void resetMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
-
+  void resetBaseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void resetRobotBase();
   void registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   
   void setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg );
@@ -94,11 +98,14 @@ class UrdfModelMarker {
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  /* publisher */
   ros::Publisher pub_;
   ros::Publisher pub_move_;
   ros::Publisher pub_move_object_;
   ros::Publisher pub_joint_state_;
-  
+  ros::Publisher pub_base_pose_;
+
+  /* publisher */
   ros::Subscriber sub_reset_joints_;
   ros::Subscriber sub_set_root_pose_;
   ros::Subscriber hide_marker_;
