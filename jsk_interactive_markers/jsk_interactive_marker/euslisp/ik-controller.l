@@ -1283,12 +1283,15 @@
 	(t
 	 (let ((move-arms '(t t))
 	       (use-torso (or *use-torso* *use-fullbody*))
+	       rotation-axis
 	       target-coords)
 	   (setq move-arms 
 		 (case *move-limb*
 		   (:rarm '(nil t))
 		   (:larm '(t nil))
 		   (:arms '(t t))))
+	   (setq rotation-axis (mapcar #'(lambda (move-arm) (if move-arm (if *tmp-rotation-axis* *rotation-axis* nil) t)) move-arms))
+
 	   ;;ik target
 	   (setq target-coords
 		 (mapcar #'(lambda (arm move-arm)
@@ -1304,6 +1307,7 @@
 		       target-coords
 		       :move-arm :arms
 		       :use-torso use-torso
+		       :rotation-axis rotation-axis
 		       :debug-view nil)
 		 ))
 
