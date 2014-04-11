@@ -100,7 +100,7 @@ class InteractiveMarkerInterface {
   bool markers_del_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
 			jsk_interactive_marker::MarkerSetPose::Response &res );
 
-  void move_marker_cb ( geometry_msgs::PoseStamped::ConstPtr& msg);
+  void move_marker_cb ( const geometry_msgs::PoseStampedConstPtr &msg);
 
   bool set_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
                 jsk_interactive_marker::MarkerSetPose::Response &res );

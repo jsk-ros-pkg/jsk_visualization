@@ -1371,12 +1371,12 @@ bool InteractiveMarkerInterface::markers_del_cb ( jsk_interactive_marker::Marker
       }
       it++;
     }
-    
+  
   return true;
     
 }
 
-void InteractiveMarkerInterface::move_marker_cb ( geometry_msgs::PoseStamped::ConstPtr& msg){
+void InteractiveMarkerInterface::move_marker_cb ( const geometry_msgs::PoseStampedConstPtr &msg){
   pub_marker_pose( msg->header, msg->pose, marker_name, jsk_interactive_marker::MarkerPose::SPHERE_MARKER);
   server_->setPose(marker_name, msg->pose, msg->header);
   server_->applyChanges();
