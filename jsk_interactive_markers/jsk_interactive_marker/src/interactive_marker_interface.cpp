@@ -122,6 +122,17 @@ void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::Intera
   pub_.publish( mp );
 }
 
+void InteractiveMarkerInterface::pub_marker_pose ( std_msgs::Header header, geometry_msgs::Pose pose, std::string name, int type ) {
+  jsk_interactive_marker::MarkerPose mp;
+  mp.pose.header = header;
+  mp.pose.pose = pose;
+  mp.marker_name = name;
+  mp.type = type;
+  pub_.publish( mp );
+}
+
+
+
 
 void InteractiveMarkerInterface::pub_marker_menuCb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu){
   jsk_interactive_marker::MarkerMenu m;
@@ -1249,6 +1260,9 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
   serv_reset_ = pnh_.advertiseService("reset_pose",
 				      &InteractiveMarkerInterface::reset_cb, this);
 
+  sub_marker_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> ("move_marker", 1, boost::bind( &InteractiveMarkerInterface::move_marker_cb, this, _1));
+  //  sub_marker_menu_ = pnh_.subscribe<geometry_msgs::PoseStamped> ("marker_menu", 1, boost::bind( &InteractiveMarkerInterface::marker_menu_cb, this, _1));
+
   sub_toggle_start_ik_ = pnh_.subscribe<std_msgs::Empty> ("toggle_start_ik", 1, boost::bind( &InteractiveMarkerInterface::toggleStartIKCb, this, _1));
   
   sub_toggle_ik_mode_ = pnh_.subscribe<std_msgs::Empty> ("toggle_ik_mode", 1, boost::bind( &InteractiveMarkerInterface::toggleIKModeCb, this, _1));
@@ -1361,6 +1375,13 @@ bool InteractiveMarkerInterface::markers_del_cb ( jsk_interactive_marker::Marker
   return true;
     
 }
+
+void InteractiveMarkerInterface::move_marker_cb ( geometry_msgs::PoseStamped::ConstPtr& msg){
+  pub_marker_pose( msg->header, msg->pose, marker_name, jsk_interactive_marker::MarkerPose::SPHERE_MARKER);
+  server_->setPose(marker_name, msg->pose, msg->header);
+  server_->applyChanges();
+}
+
 
 bool InteractiveMarkerInterface::set_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
 					  jsk_interactive_marker::MarkerSetPose::Response &res ) {

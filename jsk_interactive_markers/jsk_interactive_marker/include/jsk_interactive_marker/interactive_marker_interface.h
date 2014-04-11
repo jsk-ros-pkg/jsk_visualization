@@ -22,6 +22,7 @@ class InteractiveMarkerInterface {
 
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int type );
+  void pub_marker_pose ( std_msgs::Header header, geometry_msgs::Pose pose, std::string name, int type );
 
   void pub_marker_menu(std::string marker,int menu, int type);
   void pub_marker_menu(std::string marker,int menu);
@@ -99,6 +100,8 @@ class InteractiveMarkerInterface {
   bool markers_del_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
 			jsk_interactive_marker::MarkerSetPose::Response &res );
 
+  void move_marker_cb ( geometry_msgs::PoseStamped::ConstPtr& msg);
+
   bool set_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
                 jsk_interactive_marker::MarkerSetPose::Response &res );
 
@@ -120,6 +123,8 @@ class InteractiveMarkerInterface {
   ros::ServiceServer serv_set_;
   ros::ServiceServer serv_markers_set_;
   ros::ServiceServer serv_markers_del_;
+  ros::Subscriber sub_marker_pose_;
+  ros::Subscriber sub_marker_menu_;
   ros::Subscriber sub_toggle_start_ik_;
   ros::Subscriber sub_toggle_ik_mode_;
   //tf::TransformListener tfl_;
