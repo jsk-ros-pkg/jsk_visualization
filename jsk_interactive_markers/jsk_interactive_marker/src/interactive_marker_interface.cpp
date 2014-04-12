@@ -1256,7 +1256,7 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
 				      &InteractiveMarkerInterface::reset_cb, this);
 
   sub_marker_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> ("move_marker", 1, boost::bind( &InteractiveMarkerInterface::move_marker_cb, this, _1));
-  sub_marker_menu_ = pnh_.subscribe<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1, boost::bind( &InteractiveMarkerInterface::marker_menu_cb, this, _1));
+  sub_marker_menu_ = pnh_.subscribe<jsk_interactive_marker::MarkerMenu> ("select_marker_menu", 1, boost::bind( &InteractiveMarkerInterface::marker_menu_cb, this, _1));
 
   sub_toggle_start_ik_ = pnh_.subscribe<std_msgs::Empty> ("toggle_start_ik", 1, boost::bind( &InteractiveMarkerInterface::toggleStartIKCb, this, _1));
   
