@@ -19,9 +19,6 @@
 
 #include <jsk_interactive_marker/interactive_marker_interface.h>
 #include <jsk_interactive_marker/interactive_marker_utils.h>
-/*
-  visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation){
-*/
 
 visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation){
   
@@ -417,6 +414,10 @@ void InteractiveMarkerInterface::toggleIKModeCb( const std_msgs::EmptyConstPtr &
   }
 }
 
+void InteractiveMarkerInterface::marker_menu_cb( const jsk_interactive_marker::MarkerMenuConstPtr &msg){
+  pub_marker_menu(msg->marker_name , msg->menu, msg->type);
+}
+
 
 void InteractiveMarkerInterface::updateHeadGoal( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
@@ -795,11 +796,6 @@ void InteractiveMarkerInterface::initHandler(void){
   if(use_menu){
     pnh_.param("move_safety_menu", use_menu, false );
     if(use_menu){
-      /*
-	interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
-	sub_menu_move_ = menu_handler.insert( "Move" );
-	menu_handler.insert( sub_menu_move_,"Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
-      */
       interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
       sub_menu_move_ = menu_handler.insert( "Move" );
       menu_handler.insert( sub_menu_move_,"Plan",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::PLAN));
@@ -1122,11 +1118,10 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
   switch(im_mode){
   case 0:
     pose.header.stamp = ros::Time(0);
-    //mk = im_helpers::make6DofMarker(mk_name.c_str(), pose, mk_size,
-    //true, false );
+
     mk = make6DofControlMarker(mk_name.c_str(), pose, mk_size,
 			       true, false );
-    //mk.description = mk_name.c_str();
+
     if(use_center_sphere_){
       makeCenterSphere(mk, mk_size);
     }
@@ -1261,13 +1256,12 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
 				      &InteractiveMarkerInterface::reset_cb, this);
 
   sub_marker_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> ("move_marker", 1, boost::bind( &InteractiveMarkerInterface::move_marker_cb, this, _1));
-  //  sub_marker_menu_ = pnh_.subscribe<geometry_msgs::PoseStamped> ("marker_menu", 1, boost::bind( &InteractiveMarkerInterface::marker_menu_cb, this, _1));
+  sub_marker_menu_ = pnh_.subscribe<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1, boost::bind( &InteractiveMarkerInterface::marker_menu_cb, this, _1));
 
   sub_toggle_start_ik_ = pnh_.subscribe<std_msgs::Empty> ("toggle_start_ik", 1, boost::bind( &InteractiveMarkerInterface::toggleStartIKCb, this, _1));
   
   sub_toggle_ik_mode_ = pnh_.subscribe<std_msgs::Empty> ("toggle_ik_mode", 1, boost::bind( &InteractiveMarkerInterface::toggleIKModeCb, this, _1));
 
-  //server_.reset( new interactive_markers::InteractiveMarkerServer(server_name, "sid", false) );
   server_.reset( new interactive_markers::InteractiveMarkerServer(server_name));
 
   pnh_.param<std::string>("head_link_frame", head_link_frame_, "head_tilt_link");

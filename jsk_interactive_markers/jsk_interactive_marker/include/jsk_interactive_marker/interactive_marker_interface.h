@@ -64,6 +64,8 @@ class InteractiveMarkerInterface {
 
   void usingIKCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
+  void marker_menu_cb( const jsk_interactive_marker::MarkerMenuConstPtr &msg);
+
   void updateHeadGoal( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void updateBase( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void updateFinger( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, std::string hand);
