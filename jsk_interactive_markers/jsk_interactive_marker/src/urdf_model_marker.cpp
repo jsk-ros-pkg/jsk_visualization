@@ -1002,8 +1002,8 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   
   pnh_.getParam("use_dynamic_tf", use_dynamic_tf_);
   if (use_dynamic_tf_) {
-    dynamic_tf_publisher_client = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf", false);
     ros::service::waitForService("set_dynamic_tf", -1);
+    dynamic_tf_publisher_client = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf", true);
   }
   std::cerr << "use_dynamic_tf_ is " << use_dynamic_tf_ << std::endl;
 
