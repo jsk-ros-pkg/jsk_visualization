@@ -5,7 +5,7 @@
     <param name="base_frame" type="string" value="/base_link"/>
     <param name="move_menu" type="boolean" value="true"/>
     <param name="grasp_menu" type="boolean" value="true"/>
-    <param name="use_head_marker" type="boolean" value="true"/>
+    <param name="use_head_marker" type="boolean" value="false"/>
     <param name="stop_grasp_menu" type="boolean" value="true"/>
     <param name="set_origin_menu" type="boolean" value="true"/>
     <param name="set_origin_to_rhand_menu" type="boolean" value="true"/>

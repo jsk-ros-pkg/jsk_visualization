@@ -237,6 +237,7 @@ class InteractiveMarkerInterface {
   struct MeshProperty{
     std::string link_name;
     std::string mesh_file;
+    geometry_msgs::Point position;
     geometry_msgs::Quaternion orientation;
 
   };

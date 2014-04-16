@@ -6,7 +6,6 @@
   <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="true" />
 
   <arg name="ROBOT" default="PR2" />
-  <arg name="IS_PR2" default="true" />
   <arg name="ROBOT_ROOTFRAME" default="base_footprint" />
 
   <!-- joint marker -->

@@ -1045,7 +1045,30 @@ void InteractiveMarkerInterface::initHandler(void){
 void InteractiveMarkerInterface::makeCenterSphere(visualization_msgs::InteractiveMarker &mk, double mk_size){
   visualization_msgs::InteractiveMarkerControl sphereControl;
   sphereControl.name = "center_sphere";
+  
+  //for right hand
+  //for(auto irhand_mesh: rhand_mesh) {
+  for(int i=0; i<rhand_mesh_.size(); i++){
+    visualization_msgs::Marker handMarker;
+    handMarker.type = visualization_msgs::Marker::MESH_RESOURCE;
+    handMarker.mesh_resource = rhand_mesh_[i].mesh_file;
+    handMarker.scale.x = 1.0;
+    handMarker.scale.y = 1.0;
+    handMarker.scale.z = 1.0;
 
+    handMarker.pose.position = rhand_mesh_[i].position;
+    handMarker.pose.orientation = rhand_mesh_[i].orientation;
+
+    //color
+    handMarker.color.r = 1.0;
+    handMarker.color.g = 1.0;
+    handMarker.color.b = 0.0;
+    handMarker.color.a = 0.7;
+
+    sphereControl.markers.push_back(handMarker);
+  }
+
+  /*
   visualization_msgs::Marker sphereMarker;
   sphereMarker.type = visualization_msgs::Marker::SPHERE;
   double marker_scale = mk_size / 2;
@@ -1060,6 +1083,7 @@ void InteractiveMarkerInterface::makeCenterSphere(visualization_msgs::Interactiv
   sphereMarker.color.a = 0.5;
 
   sphereControl.markers.push_back(sphereMarker);
+  */
 
   sphereControl.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
   mk.controls.push_back(sphereControl);
@@ -1295,6 +1319,17 @@ void InteractiveMarkerInterface::loadMeshes(XmlRpc::XmlRpcValue val){
     m.link_name = (std::string)nval["link"];
     m.mesh_file = (std::string)nval["mesh"];
 
+    if(nval.hasMember("position")){
+      XmlRpc::XmlRpcValue position = nval["position"];
+      m.position.x = (double)position["x"];
+      m.position.y = (double)position["y"];
+      m.position.z = (double)position["z"];
+    }else{
+      m.position.x = 0.0;
+      m.position.y = 0.0;
+      m.position.z = 0.0;
+    }
+
     if(nval.hasMember("orient")){
       XmlRpc::XmlRpcValue orient = nval["orient"];
       std::cerr << "load_link: " << orient["x"] << std::endl;
@@ -1302,6 +1337,11 @@ void InteractiveMarkerInterface::loadMeshes(XmlRpc::XmlRpcValue val){
       m.orientation.y = (double)orient["y"];
       m.orientation.z = (double)orient["z"];
       m.orientation.w = (double)orient["w"];
+    }else{
+      m.orientation.x = 0.0;
+      m.orientation.y = 0.0;
+      m.orientation.z = 0.0;
+      m.orientation.w = 1.0;
     }
     rhand_mesh_.push_back(m);
     std::cerr << "load_link: " << nval["link"] << std::endl;
