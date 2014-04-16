@@ -1454,3 +1454,5 @@
 (ros::subscribe
  (format nil "~A/marker_menu" server-nodename)
  jsk_interactive_marker::MarkerMenu #'send self :move-callback)
+
+|#
