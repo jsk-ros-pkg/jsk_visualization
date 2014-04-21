@@ -37,6 +37,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 qt4_wrap_cpp(MOC_FILES
   src/ambient_sound_display_groovy.h
   src/wrench_display_groovy.h
+  src/select_point_cloud_publish_action.h
   src/footstep_display.h
   src/point_display_groovy.h
   src/effort_display_groovy.h
@@ -51,6 +52,7 @@ set(SOURCE_FILES
   src/wrench_visual.cpp
   src/point_display_groovy.cpp
   src/point_visual.cpp
+  src/select_point_cloud_publish_action.cpp
   src/effort_display_groovy.cpp
   src/effort_visual.cpp
   src/polygon_array_display.cpp
