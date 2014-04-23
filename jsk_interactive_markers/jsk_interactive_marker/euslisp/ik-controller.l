@@ -3,7 +3,7 @@
 (ros::load-ros-manifest "roseus")
 (ros::load-ros-manifest "move_base_msgs")
 
-(ros::load-ros-manifest "hrpsys_gazebo_atlas")
+
 (ros::load-ros-manifest "arm_navigation_msgs")
 (ros::load-ros-manifest "moveit_msgs")
 (ros::load-ros-manifest "jsk_interactive")
@@ -1127,6 +1127,8 @@
      (defvar *robot-origin* "base_link")
      )
     ((equal (string-upcase *robot-name*) "ATLAS")
+     (ros::load-ros-manifest "hrpsys_gazebo_atlas")
+     (ros::roseus-add-msgs "hrpsys_gazebo_atlas")
      (setq *robot-name* "atlas")
      (require "package://hrpsys_gazebo_atlas/euslisp/atlas-model.l")
      (require "package://hrpsys_gazebo_atlas/euslisp/atlas-fullbody-ik.l")
@@ -1161,7 +1163,7 @@
    (setq *tfl* (instance ros::transform-listener :init))
    (setq *fullbody-ik-client* (instance fullbody-ik-client :init))
    ;;
-   (ros::roseus-add-msgs "hrpsys_gazebo_atlas")
+
    (ros::roseus-add-msgs "sensor_msgs")
    ;;
    (ros::subscribe "/ik_server_command"
@@ -1313,12 +1315,15 @@
 	(t
 	 (let ((move-arms '(t t))
 	       (use-torso (or *use-torso* *use-fullbody*))
+	       rotation-axis
 	       target-coords)
 	   (setq move-arms 
 		 (case *move-limb*
 		   (:rarm '(nil t))
 		   (:larm '(t nil))
 		   (:arms '(t t))))
+	   (setq rotation-axis (mapcar #'(lambda (move-arm) (if move-arm (if *tmp-rotation-axis* *rotation-axis* nil) t)) move-arms))
+
 	   ;;ik target
 	   (setq target-coords
 		 (mapcar #'(lambda (arm move-arm)
@@ -1334,6 +1339,7 @@
 		       target-coords
 		       :move-arm :arms
 		       :use-torso use-torso
+		       :rotation-axis rotation-axis
 		       :debug-view nil)
 		 ))
 
