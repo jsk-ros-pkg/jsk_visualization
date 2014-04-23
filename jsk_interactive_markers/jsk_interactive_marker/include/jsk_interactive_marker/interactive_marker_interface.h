@@ -66,6 +66,8 @@ class InteractiveMarkerInterface {
   void ConstraintCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void modeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+
+  void changeMoveArm( std::string m_name, int menu );
   
   void setOriginCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, bool origin_hand);
 

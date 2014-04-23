@@ -351,21 +351,40 @@ void InteractiveMarkerInterface::modeCb( const visualization_msgs::InteractiveMa
   h_mode_last = feedback->menu_entry_id;
   menu_handler.setCheckState( h_mode_last, interactive_markers::MenuHandler::CHECKED );
 
-  switch(h_mode_last-h_mode_rightarm){
+  switch(h_mode_last - h_mode_rightarm){
   case 0:
-    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM);
+    changeMoveArm( feedback->marker_name, jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM);
+    break;
+  case 1:
+    changeMoveArm( feedback->marker_name, jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM);
+    break;
+  case 2:
+    changeMoveArm( feedback->marker_name, jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS);
+    break;
+  default:
+    ROS_INFO("Switching Arm Error");
+    break;
+  }
+  menu_handler.reApply( *server_ );
+  server_->applyChanges();
+}
+
+void InteractiveMarkerInterface::changeMoveArm( std::string m_name, int menu ){
+  switch(menu){
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM:
+    pub_marker_menu(m_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM);
     control_state_.move_arm_ = ControlState::RARM;
     ROS_INFO("move Rarm");
     changeMarkerMoveMode( marker_name.c_str(), 0, 0.5, control_state_.marker_pose_);
     break;
-  case 1:
-    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM);
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM:
+    pub_marker_menu(m_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM);
     control_state_.move_arm_ = ControlState::LARM;
     ROS_INFO("move Larm");
     changeMarkerMoveMode( marker_name.c_str(), 0, 0.5, control_state_.marker_pose_);
     break;
-  case 2:
-    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS);
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS:
+    pub_marker_menu(m_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS);
     control_state_.move_arm_ = ControlState::ARMS;
     ROS_INFO("move Arms");
     changeMarkerMoveMode( marker_name.c_str(), 0, 0.5, control_state_.marker_pose_);
@@ -374,9 +393,6 @@ void InteractiveMarkerInterface::modeCb( const visualization_msgs::InteractiveMa
     ROS_INFO("Switching Arm Error");
     break;
   }
-
-  menu_handler.reApply( *server_ );
-  server_->applyChanges();
 }
 
 void InteractiveMarkerInterface::setOriginCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback,  bool origin_hand){
@@ -443,7 +459,16 @@ void InteractiveMarkerInterface::toggleIKModeCb( const std_msgs::EmptyConstPtr &
 }
 
 void InteractiveMarkerInterface::marker_menu_cb( const jsk_interactive_marker::MarkerMenuConstPtr &msg){
-  pub_marker_menu(msg->marker_name , msg->menu, msg->type);
+  switch (msg->menu){
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM:
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM:
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS:
+    changeMoveArm(msg->marker_name, msg->menu);
+    break;
+  default:
+    pub_marker_menu(msg->marker_name , msg->menu, msg->type);
+    break;
+  }
 }
 
 
