@@ -19,6 +19,13 @@
     <node pkg="rviz" type="rviz" name="rviz_for_interactive_marker" args="-d $(find jsk_interactive_marker)/launch/atlas_joint_marker.rviz" respawn="true">
       <remap from="/robot_description" to="$(arg ROBOT_DESCRIPTION_REMOTE)"/>
     </node>
+    <node pkg="jsk_interactive_marker" type="dummy_camera.py"
+	  name="dummy_camera_above">
+      <param name="frame_id" value="dummy_camera_above"/>
+    </node>
+    <node pkg="tf" type="static_transform_publisher"
+	  name="dummy_camera_above_tf"
+	  args="0 0 1 0 0 0 /moving_marker /dummy_camera_above 30"/>
 
     <include file="$(find jsk_interactive_marker)/launch/urdf_model_markers.launch">
       <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
