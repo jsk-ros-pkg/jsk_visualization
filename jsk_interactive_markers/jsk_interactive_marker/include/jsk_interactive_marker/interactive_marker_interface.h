@@ -31,6 +31,7 @@ class InteractiveMarkerInterface {
 
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int type );
+  void pub_marker_tf ( std_msgs::Header header, geometry_msgs::Pose pose);
   void pub_marker_pose ( std_msgs::Header header, geometry_msgs::Pose pose, std::string name, int type );
 
   void pub_marker_menu(std::string marker,int menu, int type);
@@ -146,6 +147,8 @@ class InteractiveMarkerInterface {
   ros::Subscriber sub_toggle_start_ik_;
   ros::Subscriber sub_toggle_ik_mode_;
   //tf::TransformListener tfl_;
+  tf::TransformBroadcaster tfb_;
+  ros::ServiceClient dynamic_tf_publisher_client_;
 
   interactive_markers::MenuHandler menu_handler;
   interactive_markers::MenuHandler menu_handler1;
