@@ -487,6 +487,20 @@ void InteractiveMarkerInterface::marker_menu_cb( const jsk_interactive_marker::M
   case jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS:
     changeMoveArm(msg->marker_name, msg->menu);
     break;
+  case jsk_interactive_marker::MarkerMenu::IK_ROTATION_AXIS_NIL:
+  case jsk_interactive_marker::MarkerMenu::IK_ROTATION_AXIS_T:
+    {
+      std_msgs::EmptyConstPtr empty;
+      toggleIKModeCb(empty);
+    }
+    break;
+  case jsk_interactive_marker::MarkerMenu::PLAN:
+  case jsk_interactive_marker::MarkerMenu::CANCEL_PLAN:
+    {
+      std_msgs::EmptyConstPtr empty;
+      toggleStartIKCb(empty);
+    }
+    break;3
   default:
     pub_marker_menu(msg->marker_name , msg->menu, msg->type);
     break;
@@ -1039,6 +1053,7 @@ void InteractiveMarkerInterface::initHandler(void){
   if(use_menu){
     //menu_handler.insert("ManipulationMode", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MANIP_MODE));
     menu_handler.insert("Publish Marker",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::PUBLISH_MARKER));
+
   }
 
 
@@ -1371,6 +1386,7 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
   }
 
   pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
+  pub_update_ =  pnh_.advertise<geometry_msgs::PoseStamped> ("pose_update", 1);
   pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1);
 
   serv_set_ = pnh_.advertiseService("set_pose",
@@ -1552,6 +1568,7 @@ bool InteractiveMarkerInterface::set_cb ( jsk_interactive_marker::MarkerSetPose:
 
   server_->setPose(mName, req.pose.pose, req.pose.header);
   server_->applyChanges();
+  pub_update_.publish(req.pose);
   return true;
 }
 

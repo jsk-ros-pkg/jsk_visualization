@@ -136,6 +136,7 @@ class InteractiveMarkerInterface {
   ros::NodeHandle pnh_;
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   ros::Publisher pub_;
+  ros::Publisher pub_update_;
   ros::Publisher pub_move_;
   ros::ServiceServer serv_reset_;
   ros::ServiceServer serv_set_;
