@@ -20,6 +20,8 @@
 #include <jsk_interactive_marker/interactive_marker_interface.h>
 #include <jsk_interactive_marker/interactive_marker_utils.h>
 
+#include <dynamic_tf_publisher/SetDynamicTF.h>
+
 visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation){
   
   visualization_msgs::InteractiveMarker int_marker;
@@ -108,9 +110,11 @@ void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::Intera
   }else{
     proc_feedback(feedback, jsk_interactive_marker::MarkerPose::GENERAL);
   }
+  
 }
 
 void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int type ) {
+
   jsk_interactive_marker::MarkerPose mp;
   mp.pose.header = feedback->header;
   mp.pose.pose = feedback->pose;
@@ -121,7 +125,25 @@ void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::Intera
   //update Marker Pose Status
   control_state_.marker_pose_.pose = feedback->pose;
   control_state_.marker_pose_.header = feedback->header;
+
+  pub_marker_tf(feedback->header, feedback->pose);
+
+}
+
+void InteractiveMarkerInterface::pub_marker_tf ( std_msgs::Header header, geometry_msgs::Pose pose){
+  geometry_msgs::Transform tf;
+  tf.translation.x = pose.position.x;
+  tf.translation.y = pose.position.y;
+  tf.translation.z = pose.position.z;
+  tf.rotation = pose.orientation;
   
+  dynamic_tf_publisher::SetDynamicTF SetTf;
+  SetTf.request.freq = 10;
+  SetTf.request.cur_tf.header.stamp = ros::Time::now();
+  SetTf.request.cur_tf.header.frame_id = header.frame_id;
+  SetTf.request.cur_tf.child_frame_id = "/moving_marker";
+  SetTf.request.cur_tf.transform = tf;
+  dynamic_tf_publisher_client_.call(SetTf);
 }
 
 void InteractiveMarkerInterface::pub_marker_pose ( std_msgs::Header header, geometry_msgs::Pose pose, std::string name, int type ) {
@@ -1367,6 +1389,9 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
   
   sub_toggle_ik_mode_ = pnh_.subscribe<std_msgs::Empty> ("toggle_ik_mode", 1, boost::bind( &InteractiveMarkerInterface::toggleIKModeCb, this, _1));
 
+  ros::service::waitForService("set_dynamic_tf", -1);
+  dynamic_tf_publisher_client_ = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf", true);
+
   server_.reset( new interactive_markers::InteractiveMarkerServer(server_name));
 
   pnh_.param<std::string>("head_link_frame", head_link_frame_, "head_tilt_link");
@@ -1488,7 +1513,10 @@ bool InteractiveMarkerInterface::markers_del_cb ( jsk_interactive_marker::Marker
 }
 
 void InteractiveMarkerInterface::move_marker_cb ( const geometry_msgs::PoseStampedConstPtr &msg){
+  pub_marker_tf(msg->header, msg->pose);
+
   pub_marker_pose( msg->header, msg->pose, marker_name, jsk_interactive_marker::MarkerPose::GENERAL);
+
   server_->setPose(marker_name, msg->pose, msg->header);
   server_->applyChanges();
 }
@@ -1520,6 +1548,8 @@ bool InteractiveMarkerInterface::set_cb ( jsk_interactive_marker::MarkerSetPose:
   if(mName == ""){
     mName = marker_name;
   }
+  pub_marker_tf(req.pose.header, req.pose.pose);
+
   server_->setPose(mName, req.pose.pose, req.pose.header);
   server_->applyChanges();
   return true;
