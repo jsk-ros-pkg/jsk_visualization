@@ -46,6 +46,7 @@ void NormalDisplay::processMessage( const sensor_msgs::PointCloud2::ConstPtr& ms
 
   if (xi == -1 || yi == -1 || zi == -1)
   {
+    ROS_ERROR("doesn't have x, y, z");
     return;
   }
 
@@ -60,6 +61,7 @@ void NormalDisplay::processMessage( const sensor_msgs::PointCloud2::ConstPtr& ms
 
   if (normal_xi == -1 || normal_yi == -1 || normal_zi == -1)
   {
+    ROS_ERROR("doesn't have normal_x, normal_y, normal_z");
     return;
   }
 
@@ -74,6 +76,7 @@ void NormalDisplay::processMessage( const sensor_msgs::PointCloud2::ConstPtr& ms
 
   if (point_count == 0)
   {
+    ROS_ERROR("doesn't have point_count > 0");
     return;
   }
 
@@ -111,6 +114,7 @@ void NormalDisplay::processMessage( const sensor_msgs::PointCloud2::ConstPtr& ms
 
     ptr += point_step;
   }
+  ROS_INFO("point_num: %l", point_count); 
 }
 
 }
