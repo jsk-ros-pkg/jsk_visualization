@@ -33,13 +33,12 @@ add_definitions(-DQT_NO_KEYWORDS)
 #include(${wxWidgets_USE_FILE})
 #include_directories( ${wxWidgets_INCLUDE_DIRS} )
 
-#set(SOURCE_FILES src/effort_display.cpp src/effort_visual.cpp src/wrench_display.cpp src/wrench_visual.cpp src/point_display.cpp src/point_visual.cpp src/ambient_sound_display.cpp src/ambient_sound_visual.cpp)
+#set(SOURCE_FILES src/effort_display.cpp src/effort_visual.cpp src/wrench_display.cpp src/wrench_visual.cpp src/ambient_sound_display.cpp src/ambient_sound_visual.cpp)
 qt4_wrap_cpp(MOC_FILES
   src/ambient_sound_display_groovy.h
   src/wrench_display_groovy.h
   src/select_point_cloud_publish_action.h
   src/footstep_display.h
-  src/point_display_groovy.h
   src/effort_display_groovy.h
   src/polygon_array_display.h
 )
@@ -50,8 +49,6 @@ set(SOURCE_FILES
   src/footstep_display.cpp
   src/wrench_display_groovy.cpp
   src/wrench_visual.cpp
-  src/point_display_groovy.cpp
-  src/point_visual.cpp
   src/select_point_cloud_publish_action.cpp
   src/effort_display_groovy.cpp
   src/effort_visual.cpp
