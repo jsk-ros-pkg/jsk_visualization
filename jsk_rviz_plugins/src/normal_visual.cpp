@@ -31,9 +31,10 @@ NormalVisual::~NormalVisual()
   Ogre::Vector3 dir( normal_x, normal_y, normal_z);
   Ogre::Vector3 pos(        x,        y,        z);
 
-  float length = dir.length();
+  float length = dir.length()/10;
 
   Ogre::Vector3 scale( length, length, length );
+  // Ogre::Vector3 scale( 10, 10, 10 );
   acceleration_arrow_->setScale( scale );
   acceleration_arrow_->setDirection( dir );
   acceleration_arrow_->setPosition(pos);
