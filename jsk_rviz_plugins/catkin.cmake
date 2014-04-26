@@ -42,6 +42,7 @@ qt4_wrap_cpp(MOC_FILES
   src/point_display_groovy.h
   src/effort_display_groovy.h
   src/polygon_array_display.h
+  src/normal_display.h
 )
 
 set(SOURCE_FILES
@@ -56,6 +57,7 @@ set(SOURCE_FILES
   src/effort_display_groovy.cpp
   src/effort_visual.cpp
   src/polygon_array_display.cpp
+  src/normal_display.cpp
   ${MOC_FILES}
 )
 
