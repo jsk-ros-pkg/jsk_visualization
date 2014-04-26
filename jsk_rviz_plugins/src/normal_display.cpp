@@ -4,12 +4,18 @@
 
 #include <tf/transform_listener.h>
 
+#include <rviz/default_plugin/point_cloud_transformer.h>
 #include <rviz/default_plugin/point_cloud_transformers.h>
 #include <rviz/validate_floats.h>
 #include <rviz/visualization_manager.h>
 #include <rviz/frame_manager.h>
 #include <rviz/ogre_helpers/arrow.h>
-
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include "rviz/properties/color_property.h"
+#include <rviz/properties/vector_property.h>
+#include <QColor>
 #include "normal_display.h"
 
 using namespace rviz;
@@ -19,6 +25,29 @@ namespace jsk_rviz_plugin
 
   NormalDisplay::NormalDisplay()
   {
+    style_property_ = new EnumProperty( "Style", "PointsColor",
+                                        "Rendering mode to use, in order of computational complexity.",
+                                        this, SLOT( updateStyle() ), this);
+    style_property_->addOption( "PointsColor", PointCloud::RM_POINTS );
+    style_property_->addOption( "FlatColor", PointCloud::RM_FLAT_SQUARES );
+    style_property_->addOption( "DirectionColor", PointCloud::RM_SPHERES );
+
+    color_property_ = new ColorProperty( "Color", Qt::white,
+                                         "Color to assign to every point.",this);
+    color_property_->hide();
+  }
+
+  void NormalDisplay::updateStyle()
+  {
+    PointCloud::RenderMode mode = (PointCloud::RenderMode) style_property_->getOptionInt();
+    if( mode != PointCloud::RM_FLAT_SQUARES )
+      {
+        color_property_->hide();
+      }
+    else
+      {
+        color_property_->show();
+      }
   }
 
   void NormalDisplay::onInitialize()
@@ -114,13 +143,8 @@ namespace jsk_rviz_plugin
         float normal_y = *reinterpret_cast<const float*>(ptr + normal_yoff);
         float normal_z = *reinterpret_cast<const float*>(ptr + normal_zoff);
         int r=1,g=0,b=0;
-        if(rgbai != -1){
-          b = *reinterpret_cast<const uint8_t*>(ptr + rgbaoff);
-          g = *reinterpret_cast<const uint8_t*>(ptr + rgbaoff + 1*sizeof(uint8_t));
-          r = *reinterpret_cast<const uint8_t*>(ptr + rgbaoff + 2*sizeof(uint8_t));
-        }
 
-       if (validateFloats(Ogre::Vector3(x, y, z)) && validateFloats(Ogre::Vector3(normal_x, normal_y, normal_z)))
+        if (validateFloats(Ogre::Vector3(x, y, z)) && validateFloats(Ogre::Vector3(normal_x, normal_y, normal_z)))
           {
             boost::shared_ptr<NormalVisual> visual;
             if(visuals_.full()){
@@ -131,7 +155,25 @@ namespace jsk_rviz_plugin
             visual->setValues( x, y, z, normal_x, normal_y, normal_z );
             visual->setFramePosition( position );
             visual->setFrameOrientation( orientation );
-            visual->setColor( r/256.0, g/256.0, b/256.0, 1 );
+
+            QColor color = color_property_->getColor();
+            Ogre::Vector3 dir_vec(normal_x, normal_y, normal_z);
+            switch((PointCloud::RenderMode) style_property_->getOptionInt()){
+            case (PointCloud::RM_POINTS):
+              if(rgbai != -1){
+                b = *reinterpret_cast<const uint8_t*>(ptr + rgbaoff);
+                g = *reinterpret_cast<const uint8_t*>(ptr + rgbaoff + 1*sizeof(uint8_t));
+                r = *reinterpret_cast<const uint8_t*>(ptr + rgbaoff + 2*sizeof(uint8_t));
+              }
+              visual->setColor( r/256.0, g/256.0, b/256.0, 1 );
+              break;
+            case (PointCloud::RM_FLAT_SQUARES):
+              visual->setColor(color.redF(), color.greenF(), color.blueF(), 1);
+              break;
+            case (PointCloud::RM_SPHERES):
+              visual->setColor( dir_vec.dotProduct(Ogre::Vector3(1,0,0)), dir_vec.dotProduct(Ogre::Vector3(0,1,0)), dir_vec.dotProduct(Ogre::Vector3(0,0,-1)), 1 );
+              break;
+            }
             visuals_.push_back(visual);
             ROS_INFO("normal valus %f %f %f %f %f %f / %d %d %d", x, y, z, normal_x, normal_y, normal_z, r, g, b);
           }else{
