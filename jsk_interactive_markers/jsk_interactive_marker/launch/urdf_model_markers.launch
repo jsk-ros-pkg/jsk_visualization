@@ -7,7 +7,7 @@
   </node>
 
   <group if="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)">
-    <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_for_urdf_marker" output="screen">
+    <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_for_urdf_marker">
       <param name="use_cache" type="bool" value="false"/>
     </node>
 

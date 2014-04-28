@@ -806,7 +806,6 @@
        (send *irtviewer* :draw-objects))
      )
    (send self :publish-arrow-tf)
-   (ros::ros-error "~A" *origin-coords*)
    )
 
   (:tf-end-coords

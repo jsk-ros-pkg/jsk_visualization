@@ -19,13 +19,21 @@
     <node pkg="rviz" type="rviz" name="rviz_for_interactive_marker" args="-d $(find jsk_interactive_marker)/launch/atlas_joint_marker.rviz" respawn="true">
       <remap from="/robot_description" to="$(arg ROBOT_DESCRIPTION_REMOTE)"/>
     </node>
-    <node pkg="jsk_interactive_marker" type="dummy_camera.py"
-	  name="dummy_camera_above">
-      <param name="frame_id" value="dummy_camera_above"/>
-    </node>
-    <node pkg="tf" type="static_transform_publisher"
-	  name="dummy_camera_above_tf"
-	  args="0 0 1 0 0 0 /moving_marker /dummy_camera_above 30"/>
+
+    <include file="$(find jsk_interactive_marker)/launch/dummy_camera.launch">
+      <arg name="dummy_camera_name" value="dummy_camera_above"/>
+      <arg name="tf_pose" value="0 0 1 1.5708 3.1416 0"/>
+    </include>
+
+    <include file="$(find jsk_interactive_marker)/launch/dummy_camera.launch">
+      <arg name="dummy_camera_name" value="dummy_camera_front"/>
+      <arg name="tf_pose" value="1 0 0 1.5708 0 -1.5708"/>
+    </include>
+
+    <include file="$(find jsk_interactive_marker)/launch/dummy_camera.launch">
+      <arg name="dummy_camera_name" value="dummy_camera_side"/>
+      <arg name="tf_pose" value="0 1 0 0 3.1416 1.5708"/>
+    </include>
 
     <include file="$(find jsk_interactive_marker)/launch/urdf_model_markers.launch">
       <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
