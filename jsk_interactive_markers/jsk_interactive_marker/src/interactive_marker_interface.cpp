@@ -500,7 +500,7 @@ void InteractiveMarkerInterface::marker_menu_cb( const jsk_interactive_marker::M
       std_msgs::EmptyConstPtr empty;
       toggleStartIKCb(empty);
     }
-    break;3
+    break;
   default:
     pub_marker_menu(msg->marker_name , msg->menu, msg->type);
     break;
