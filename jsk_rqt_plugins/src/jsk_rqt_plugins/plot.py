@@ -59,7 +59,8 @@ class MatDataPlot3D(QWidget):
 
     _colors = [QColor(c) for c in [Qt.red, Qt.blue, Qt.magenta, Qt.cyan, Qt.green, Qt.darkYellow, Qt.black, Qt.darkRed, Qt.gray, Qt.darkCyan]]
 
-    def __init__(self, parent=None, buffer_length=100, use_poly=True):
+    def __init__(self, parent=None, buffer_length=100, use_poly=True, 
+                 no_legend=False):
         super(MatDataPlot3D, self).__init__(parent)
         self._canvas = MatDataPlot3D.Canvas()
         self._use_poly = use_poly
@@ -72,6 +73,7 @@ class MatDataPlot3D(QWidget):
         self._curves_verts = {}
         self._color_index = 0
         self._curves = {}
+        self._no_legend = no_legend
         self._autoscroll = False
 
     def autoscroll(self, enabled=True):
@@ -98,6 +100,8 @@ class MatDataPlot3D(QWidget):
             self._update_legend()
 
     def _update_legend(self):
+        if self._no_legend:
+            return
         labels = self._curves.keys()
         handles = [plt.Rectangle((0, 0), 1, 1, fc=self._curves[labels[i]][4] ) for i in range(len(labels))]
         self._canvas.axes.legend(handles, labels, loc='upper left')
@@ -182,7 +186,8 @@ class Plot3D(Plugin):
         self._args = self._parse_args(context.argv())
         self._widget = Plot3DWidget(initial_topics=self._args.topics, start_paused=self._args.start_paused, 
                                     buffer_length=self._args.buffer,
-                                    use_poly=not self._args.show_line)
+                                    use_poly=not self._args.show_line,
+                                    no_legend=self._args.no_legend)
         context.add_widget(self._widget)
     def _parse_args(self, argv):
         parser = argparse.ArgumentParser(prog='rqt_3d_plot', add_help=False)
@@ -225,6 +230,8 @@ class Plot3D(Plugin):
             help='Start in paused state')
         group.add_argument('-L', '--line', action='store_true', dest='show_line',
             help='Show lines rather than polygon representation')
+        group.add_argument('--no-legend', action='store_true', dest='no_legend',
+            help='do not show legend')
         group.add_argument('-B', '--buffer', dest='buffer', action="store",
             help='the length of the buffer', default=100, type=int)
         # group.add_argument('-e', '--empty', action='store_true', dest='start_empty',
@@ -235,7 +242,7 @@ class Plot3DWidget(QWidget):
     _redraw_interval = 40
 
     def __init__(self, initial_topics=None, start_paused=False, 
-                 buffer_length=100, use_poly=True):
+                 buffer_length=100, use_poly=True, no_legend=False):
         super(Plot3DWidget, self).__init__()
         self.setObjectName('Plot3DWidget')
         self._buffer_length = buffer_length
@@ -249,7 +256,8 @@ class Plot3DWidget(QWidget):
         self.remove_topic_button.setIcon(QIcon.fromTheme('remove'))
         self.pause_button.setIcon(QIcon.fromTheme('media-playback-pause'))
         self.clear_button.setIcon(QIcon.fromTheme('edit-clear'))
-        self.data_plot = MatDataPlot3D(self, self._buffer_length, use_poly)
+        self.data_plot = MatDataPlot3D(self, self._buffer_length, 
+                                       use_poly, no_legend)
         self.data_plot_layout.addWidget(self.data_plot)
         self.data_plot.autoscroll(self.autoscroll_checkbox.isChecked())
         self.data_plot.dropEvent = self.dropEvent
