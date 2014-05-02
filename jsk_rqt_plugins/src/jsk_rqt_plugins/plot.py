@@ -59,9 +59,10 @@ class MatDataPlot3D(QWidget):
 
     _colors = [QColor(c) for c in [Qt.red, Qt.blue, Qt.magenta, Qt.cyan, Qt.green, Qt.darkYellow, Qt.black, Qt.darkRed, Qt.gray, Qt.darkCyan]]
 
-    def __init__(self, parent=None, buffer_length=100):
+    def __init__(self, parent=None, buffer_length=100, use_poly=True):
         super(MatDataPlot3D, self).__init__(parent)
         self._canvas = MatDataPlot3D.Canvas()
+        self._use_poly = use_poly
         self._buffer_length = buffer_length
         self._toolbar = NavigationToolbar(self._canvas, self._canvas)
         vbox = QVBoxLayout()
@@ -148,17 +149,24 @@ class MatDataPlot3D(QWidget):
         if self._autoscroll and ymin is not None:
             self._canvas.axes.set_xbound(lower=xmin, upper=xmax)
             self._canvas.axes.set_zbound(lower=ymin, upper=ymax)
-            self._canvas.axes.set_ybound(lower=-len(self._curves.keys())/2.0,
-                                         upper=len(self._curves.keys())/2.0)
+            self._canvas.axes.set_ybound(lower=0,
+                                         upper=len(self._curves.keys()))
         # create poly object
         verts = []
         colors = []
         for curve_id in self._curves_verts.keys():
             (data_x, data_y) = self._curves_verts[curve_id]
             colors.append(self._curves[curve_id][4])
-            verts.append(zip(data_x, data_y))
+            if self._use_poly:
+                verts.append([(xmin, ymin)] + list(zip(data_x, data_y))
+                             + [(xmax, ymin)])
+            else:
+                verts.append(zip(data_x, data_y))
         line_num = len(self._curves.keys())
-        poly = LineCollection(verts, colors=colors)
+        if self._use_poly:
+            poly = PolyCollection(verts, facecolors=colors, closed=False)
+        else:
+            poly = LineCollection(verts, colors=colors)
         poly.set_alpha(0.7)
         self._canvas.axes.cla()
         self._canvas.axes.add_collection3d(poly,
@@ -173,7 +181,8 @@ class Plot3D(Plugin):
         self.setObjectName('Plot3D')
         self._args = self._parse_args(context.argv())
         self._widget = Plot3DWidget(initial_topics=self._args.topics, start_paused=self._args.start_paused, 
-                                    buffer_length=self._args.buffer)
+                                    buffer_length=self._args.buffer,
+                                    use_poly=not self._args.show_line)
         context.add_widget(self._widget)
     def _parse_args(self, argv):
         parser = argparse.ArgumentParser(prog='rqt_3d_plot', add_help=False)
@@ -214,6 +223,8 @@ class Plot3D(Plugin):
         group = parser.add_argument_group('Options for rqt_plot plugin')
         group.add_argument('-P', '--pause', action='store_true', dest='start_paused',
             help='Start in paused state')
+        group.add_argument('-L', '--line', action='store_true', dest='show_line',
+            help='Show lines rather than polygon representation')
         group.add_argument('-B', '--buffer', dest='buffer', action="store",
             help='the length of the buffer', default=100, type=int)
         # group.add_argument('-e', '--empty', action='store_true', dest='start_empty',
@@ -224,7 +235,7 @@ class Plot3DWidget(QWidget):
     _redraw_interval = 40
 
     def __init__(self, initial_topics=None, start_paused=False, 
-                 buffer_length=100):
+                 buffer_length=100, use_poly=True):
         super(Plot3DWidget, self).__init__()
         self.setObjectName('Plot3DWidget')
         self._buffer_length = buffer_length
@@ -238,7 +249,7 @@ class Plot3DWidget(QWidget):
         self.remove_topic_button.setIcon(QIcon.fromTheme('remove'))
         self.pause_button.setIcon(QIcon.fromTheme('media-playback-pause'))
         self.clear_button.setIcon(QIcon.fromTheme('edit-clear'))
-        self.data_plot = MatDataPlot3D(self, self._buffer_length)
+        self.data_plot = MatDataPlot3D(self, self._buffer_length, use_poly)
         self.data_plot_layout.addWidget(self.data_plot)
         self.data_plot.autoscroll(self.autoscroll_checkbox.isChecked())
         self.data_plot.dropEvent = self.dropEvent
