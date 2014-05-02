@@ -1,0 +1,9 @@
+Header header
+float32 width
+float32 height
+float32 left
+float32 top
+string text
+string font
+std_msgs/ColorRGBA bg_color
+std_msgs/ColorRGBA fg_color

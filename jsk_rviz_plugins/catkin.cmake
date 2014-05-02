@@ -6,7 +6,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_rviz_plugins)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros)
+find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros
+  message_generation std_msgs)
+
+add_message_files(FILES OverlayText.msg)
+generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
     DEPENDS rviz
@@ -54,7 +58,7 @@ set(SOURCE_FILES
 
 add_library(jsk_rviz_plugins ${SOURCE_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES})
-add_dependencies(jsk_rviz_plugins jsk_hark_msgs_gencpp)
+add_dependencies(jsk_rviz_plugins jsk_hark_msgs_gencpp ${PROJECT_NAME}_gencpp)
 
 install(FILES plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
