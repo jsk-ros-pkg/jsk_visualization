@@ -1,0 +1,18 @@
+<library path="src">
+  <class name="Plot3D" type="jsk_rqt_plugins.plot.Plot3D" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A plugin visualizing numeric values in a 3D plot using matplotlib.
+    </description>
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>Plot3D</label>
+      <icon type="theme">utilities-system-monitor</icon>
+      <statustip>A plugin for visualizing numeric values in a 3D plot using different plotting backends.</statustip>
+    </qtgui>
+
+  </class>
+</library>
