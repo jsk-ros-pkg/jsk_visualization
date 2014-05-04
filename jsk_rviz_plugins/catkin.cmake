@@ -44,6 +44,7 @@ qt4_wrap_cpp(MOC_FILES
   src/footstep_display.h
   src/polygon_array_display.h
   src/normal_display.h
+  src/overlay_text_display.h
 )
 
 set(SOURCE_FILES
@@ -53,6 +54,7 @@ set(SOURCE_FILES
   src/select_point_cloud_publish_action.cpp
   src/polygon_array_display.cpp
   src/normal_display.cpp
+  src/overlay_text_display.cpp
   ${MOC_FILES}
 )
 
