@@ -38,21 +38,45 @@
 #include "jsk_rviz_plugins/OverlayText.h"
 #include <rviz/message_filter_display.h>
 #include <OGRE/OgreOverlayElement.h>
+#include <OGRE/OgreOverlayContainer.h>
+#include <OGRE/OgrePanelOverlayElement.h>
+#include <OGRE/OgreTextAreaOverlayElement.h>
+#include <OGRE/OgreColourValue.h>
+#include <OGRE/OgreMaterial.h>
+#include <std_msgs/ColorRGBA.h>
+#include <rviz/properties/ros_topic_property.h>
 
 namespace jsk_rviz_plugin
 {
-  class OvelrayTextDisplay
-    : public rviz::MessageFilterDisplay<jsk_rviz_plugins::OverlayText>
+  class OverlayTextDisplay
+  //: public rviz::MessageFilterDisplay<jsk_rviz_plugins::OverlayText>
+  : public rviz::Display
   {
     Q_OBJECT
   public:
-    OvelrayTextDisplay();
-    virtual ~OvelrayTextDisplay();
+    OverlayTextDisplay();
+    virtual ~OverlayTextDisplay();
   protected:
     Ogre::Overlay* overlay_;
+    Ogre::OverlayContainer* panel_;
+    Ogre::TextAreaOverlayElement* textArea_;
+    Ogre::MaterialPtr panel_material_;
+    std::string material_name_;
+    std::string texture_name_;
+    std_msgs::ColorRGBA bg_color_;
+    ros::Subscriber sub_;
     virtual void onInitialize();
     virtual void reset();
-  private Q_SLOTS:
+    virtual void subscribe();
+    virtual void unsubscribe();
+    virtual void updateTexture(const std_msgs::ColorRGBA& color,
+                               bool force_to_create);
+    virtual void onEnable();
+    virtual void onDisable();
+    rviz::RosTopicProperty* update_topic_property_;
+  protected Q_SLOTS:
+    void updateTopic();
+    
   private:
     void processMessage(const jsk_rviz_plugins::OverlayText::ConstPtr& msg);
   };
