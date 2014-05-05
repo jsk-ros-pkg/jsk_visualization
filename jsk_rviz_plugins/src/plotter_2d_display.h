@@ -46,6 +46,7 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/color_property.h>
+#include <rviz/properties/bool_property.h>
 #include <rviz/properties/ros_topic_property.h>
 
 namespace jsk_rviz_plugin
@@ -71,6 +72,7 @@ namespace jsk_rviz_plugin
     rviz::ColorProperty* bg_color_property_;
     rviz::FloatProperty* fg_alpha_property_;
     rviz::FloatProperty* bg_alpha_property_;
+    rviz::BoolProperty* show_border_property_;
     rviz::IntProperty* buffer_length_property_;
     rviz::IntProperty* width_property_;
     rviz::IntProperty* height_property_;
@@ -88,6 +90,7 @@ namespace jsk_rviz_plugin
    
     double fg_alpha_;
     double bg_alpha_;
+    bool show_border_;
 
     virtual void updateTextureSize(uint16_t width, uint16_t height);
     virtual void drawPlot();
@@ -118,6 +121,7 @@ namespace jsk_rviz_plugin
     void updateTop();
     void updateLeft();
     void updateLineWidth();
+    void updateShowBorder();
   private:
   };
 }

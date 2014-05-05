@@ -85,6 +85,9 @@ namespace jsk_rviz_plugin
     line_width_property_ = new rviz::IntProperty("linewidth", 1,
                                                  "linewidth of the plot",
                                                  this, SLOT(updateLineWidth()));
+    show_border_property_ = new rviz::BoolProperty("border", true,
+                                                   "show border or not",
+                                                   this, SLOT(updateShowBorder()));
   }
 
   Plotter2DDisplay::~Plotter2DDisplay()
@@ -100,6 +103,7 @@ namespace jsk_rviz_plugin
     delete width_property_;
     delete height_property_;
     delete line_width_property_;
+    delete show_border_property_;
   }
 
   void Plotter2DDisplay::initializeBuffer()
@@ -142,6 +146,7 @@ namespace jsk_rviz_plugin
     updateFGAlpha();
     updateBGAlpha();
     updateLineWidth();
+    updateShowBorder();
   }
 
   void Plotter2DDisplay::updateTextureSize(uint16_t width, uint16_t height)
@@ -177,7 +182,7 @@ namespace jsk_rviz_plugin
     QColor bg_color(bg_color_);
     fg_color.setAlpha(fg_alpha_);
     bg_color.setAlpha(bg_alpha_);
-      
+    
     // Get the pixel buffer
     Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
     // Lock the pixel buffer and get a pixel box
@@ -221,6 +226,14 @@ namespace jsk_rviz_plugin
         uint16_t y = (int)(v * texture_height_);
         painter.drawLine(x_prev, y_prev, x, y);
       }
+      // draw border
+      if (show_border_) {
+        painter.drawLine(0, 0, 0, texture_height_);
+        painter.drawLine(0, texture_height_, texture_width_, texture_height_);
+        painter.drawLine(texture_width_, texture_height_, texture_width_, 0);
+        painter.drawLine(texture_width_, 0, 0, 0);
+      }
+      
       //painter.drawLine(0, 0, 128, 128);
       //painter.drawImage( QRect( Offset, texture_->getHeight() - h - Offset, w, h ), ImageHudSpeed, QRect( 0, 0, ImageHudSpeed.width(), ImageHudSpeed.height() ) );
 
@@ -353,6 +366,11 @@ namespace jsk_rviz_plugin
     subscribe();
   }
 
+  void Plotter2DDisplay::updateShowBorder()
+  {
+    show_border_ = show_border_property_->getBool();
+  }
+  
   void Plotter2DDisplay::updateLineWidth()
   {
     line_width_ = line_width_property_->getInt();
