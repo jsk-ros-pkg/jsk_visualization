@@ -1,4 +1,11 @@
 <library path="lib/libjsk_rviz_plugins">
+  <class name="jsk_rviz_plugin/Diagnostics"
+         type="jsk_rviz_plugin::DiagnosticsDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      diagnostics display
+    </description>
+  </class>
   <class name="jsk_rviz_plugin/Plotter2D"
          type="jsk_rviz_plugin::Plotter2DDisplay"
          base_class_type="rviz::Display">
