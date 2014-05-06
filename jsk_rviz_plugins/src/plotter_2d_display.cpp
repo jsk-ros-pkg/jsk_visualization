@@ -92,6 +92,9 @@ namespace jsk_rviz_plugin
 
   Plotter2DDisplay::~Plotter2DDisplay()
   {
+    if (overlay_->isVisible()) {
+      overlay_->hide();
+    }
     delete update_topic_property_;
     delete buffer_length_property_;
     delete fg_color_property_;
