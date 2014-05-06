@@ -114,6 +114,9 @@ namespace jsk_rviz_plugin
 
   PieChartDisplay::~PieChartDisplay()
   {
+    if (overlay_->isVisible()) {
+      overlay_->hide();
+    }
     delete update_topic_property_;
     delete fg_color_property_;
     delete bg_color_property_;
