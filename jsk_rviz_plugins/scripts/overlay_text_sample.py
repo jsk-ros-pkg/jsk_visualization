@@ -20,8 +20,9 @@ while not rospy.is_shutdown():
   text.top = math.sin(theta) * 0.5
   text.text_size = 0.05
   text.text = "Hello World %d          " % (counter)
-  text.fg_color = ColorRGBA((counter % 255) / 255.0, 0.0, 0.0, 0.5)
-  text.bg_color = ColorRGBA(1.0, 1.0, (counter % 255) / 255.0, 0.5)
+  #text.fg_color = ColorRGBA((counter % 255) / 255.0, 0.0, 0.0, 0.5)
+  text.fg_color = ColorRGBA(1.0, 1.0, 1.0, 1.0)
+  text.bg_color = ColorRGBA(1.0, 1.0, (counter % 255) / 255.0, 0.0)
   pub.publish(text)
   counter = counter + 1
   r.sleep()
