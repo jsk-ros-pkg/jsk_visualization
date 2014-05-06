@@ -151,7 +151,7 @@ namespace jsk_rviz_plugin
     ss << "OverlayTextDisplayObject" << count++;
     //MFDClass::onInitialize();
     Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
-    overlay_ = mOverlayMgr->create("foo");
+    overlay_ = mOverlayMgr->create(ss.str());
     
     //panel_ = static_cast<Ogre::OverlayContainer*> (
     panel_ = static_cast<Ogre::PanelOverlayElement*> (
@@ -176,6 +176,7 @@ namespace jsk_rviz_plugin
     textArea_->setPosition(0, 0);
     textArea_->setDimensions(1.0, 1.0);
     textArea_->setFontName("Arial");
+    //textArea_->setFontName("DejaVu Sans Mono");
     overlay_->add2D(panel_);
     panel_->addChild(textArea_);
     onEnable();
