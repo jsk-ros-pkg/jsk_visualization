@@ -50,9 +50,21 @@ qt4_wrap_cpp(MOC_FILES
   src/normal_display.h
   src/overlay_text_display.h
   src/plotter_2d_display.h
+  src/pie_chart_display.h
 )
 
-set(SOURCE_FILES src/footstep_display.cpp src/cancel_action.cpp src/publish_topic.cpp src/select_point_cloud_publish_action.cpp src/polygon_array_display.cpp src/normal_display.cpp src/normal_visual.cpp  src/overlay_text_display.cpp src/plotter_2d_display.cpp ${MOC_FILES})
+set(SOURCE_FILES
+  src/footstep_display.cpp
+  src/cancel_action.cpp
+  src/publish_topic.cpp
+  src/select_point_cloud_publish_action.cpp
+  src/polygon_array_display.cpp
+  src/normal_display.cpp
+  src/normal_visual.cpp
+  src/overlay_text_display.cpp
+  src/plotter_2d_display.cpp
+  src/pie_chart_display.cpp
+  ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(jsk_rviz_plugins ${SOURCE_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES})
