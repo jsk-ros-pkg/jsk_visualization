@@ -85,6 +85,23 @@ namespace jsk_rviz_plugin
       = new rviz::FloatProperty("backround alpha", 0.0,
                                 "alpha belnding value for background",
                                 this, SLOT(updateBGAlpha()));
+    text_color_property_
+      = new rviz::ColorProperty("text color",
+                                QColor(25, 255, 240),
+                                "text color",
+                                this, SLOT(updateTextColor()));
+    text_alpha_property_
+      = new rviz::FloatProperty("text alpha", 1.0,
+                                "alpha belnding value for text",
+                                this, SLOT(updateTextAlpha()));
+    text_size_property_
+      = new rviz::IntProperty("text size", 14,
+                              "text size",
+                              this, SLOT(updateTextSize()));
+    show_caption_property_
+      = new rviz::BoolProperty("show caption", true,
+                                "show caption",
+                                this, SLOT(updateShowCaption()));
     max_value_property_
       = new rviz::FloatProperty("max value", 1.0,
                                 "max value of pie chart",
@@ -100,14 +117,18 @@ namespace jsk_rviz_plugin
     delete update_topic_property_;
     delete fg_color_property_;
     delete bg_color_property_;
+    delete text_color_property_;
     delete fg_alpha_property_;
     delete fg_alpha2_property_;
     delete bg_alpha_property_;
+    delete text_alpha_property_;
     delete top_property_;
     delete left_property_;
     delete size_property_;
     delete min_value_property_;
     delete max_value_property_;
+    delete text_size_property_;
+    delete show_caption_property_;
   }
 
   void PieChartDisplay::onInitialize()
@@ -130,7 +151,6 @@ namespace jsk_rviz_plugin
     overlay_->add2D(panel_);
     onEnable();
     updateSize();
-    updateTextureSize(size_property_->getInt(), size_property_->getInt());
     updateLeft();
     updateTop();
     updateFGColor();
@@ -140,6 +160,11 @@ namespace jsk_rviz_plugin
     updateBGAlpha();
     updateMinValue();
     updateMaxValue();
+    updateTextColor();
+    updateTextAlpha();
+    updateTextSize();
+    updateShowCaption();
+    updateTextureSize(size_property_->getInt(), size_property_->getInt());
   }
 
   void PieChartDisplay::updateTextureSize(uint16_t width, uint16_t height)
@@ -147,7 +172,7 @@ namespace jsk_rviz_plugin
     //boost::mutex::scoped_lock lock(mutex_);
     
     if (texture_.isNull() ||
-        ((width != texture_->getWidth()) || (height != texture_->getHeight()))) {
+        ((width != texture_->getWidth()) || (height != texture_->getHeight() - caption_offset_))) {
       if (!texture_.isNull()) {
         // remove the texture first if previous texture exists
         Ogre::TextureManager::getSingleton().remove(texture_name_);
@@ -156,7 +181,7 @@ namespace jsk_rviz_plugin
         texture_name_,        // name
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
         Ogre::TEX_TYPE_2D,   // type
-        width, height,   // width & height of the render window 
+        width, height + caption_offset_,   // width & height of the render window 
         0,                   // number of mipmaps
         Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
         Ogre::TU_DEFAULT     // usage
@@ -185,10 +210,11 @@ namespace jsk_rviz_plugin
     QColor fg_color(fg_color_);
     QColor fg_color2(fg_color_);
     QColor bg_color(bg_color_);
+    QColor text_color(text_color_);
     fg_color.setAlpha(fg_alpha_);
     fg_color2.setAlpha(fg_alpha2_);
     bg_color.setAlpha(bg_alpha_);
-
+    text_color.setAlpha(text_alpha_);
     int width = texture_->getWidth();
     int height = texture_->getHeight();
     
@@ -231,12 +257,12 @@ namespace jsk_rviz_plugin
 
       painter.drawEllipse(outer_line_width / 2, outer_line_width / 2,
                           width - outer_line_width ,
-                          height - outer_line_width);
+                          height - outer_line_width - caption_offset_);
 
       painter.setPen(QPen(fg_color2, value_indicator_line_width, Qt::SolidLine));
       painter.drawEllipse(value_aabb_offset, value_aabb_offset,
                           width - value_aabb_offset * 2,
-                          height - value_aabb_offset * 2);
+                          height - value_aabb_offset * 2 - caption_offset_);
 
       const double ratio = (val - min_value_) / (max_value_ - min_value_);
       const double ratio_angle = ratio * 360.0;
@@ -244,9 +270,27 @@ namespace jsk_rviz_plugin
       painter.setPen(QPen(fg_color, value_line_width, Qt::SolidLine));
       painter.drawArc(QRectF(value_aabb_offset, value_aabb_offset,
                              width - value_aabb_offset * 2,
-                             height - value_aabb_offset * 2),
+                             height - value_aabb_offset * 2 - caption_offset_),
                       start_angle_offset * 16 ,
                       ratio_angle * 16);
+      QFont font = painter.font();
+      font.setPointSize(text_size_);
+      font.setBold(true);
+      painter.setFont(font);
+      painter.setPen(QPen(text_color, value_line_width, Qt::SolidLine));
+      std::ostringstream s;
+      s << std::fixed << std::setprecision(2) << val;
+      painter.drawText(0, 0, width, height - caption_offset_,
+                       Qt::AlignCenter | Qt::AlignVCenter,
+                       s.str().c_str());
+
+      // caption
+      if (show_caption_) {
+        painter.drawText(0, height - caption_offset_, width, caption_offset_,
+                         Qt::AlignCenter | Qt::AlignVCenter,
+                         getName());
+      }
+      
       // done
       painter.end();
     }
@@ -334,6 +378,33 @@ namespace jsk_rviz_plugin
     max_value_ = max_value_property_->getFloat();
   }
   
+  void PieChartDisplay::updateTextColor()
+  {
+    text_color_ = text_color_property_->getColor();
+  }
+
+  void PieChartDisplay::updateTextAlpha()
+  {
+    text_alpha_ = text_alpha_property_->getFloat() * 255;
+  }
+
+  void PieChartDisplay::updateTextSize()
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    text_size_ = text_size_property_->getInt();
+    // estimate caption_offset_
+    QPainter painter;
+    QFont font = painter.font();
+    font.setPointSize(text_size_);
+    caption_offset_ = QFontMetrics(font).height();
+    
+  }
+  
+  void PieChartDisplay::updateShowCaption()
+  {
+    show_caption_ = show_caption_property_->getBool();
+  }
+
   
   void PieChartDisplay::updateTopic()
   {
