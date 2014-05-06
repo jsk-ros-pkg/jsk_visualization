@@ -74,18 +74,26 @@ namespace jsk_rviz_plugin
     rviz::IntProperty* top_property_;
     rviz::ColorProperty* fg_color_property_;
     rviz::ColorProperty* bg_color_property_;
+    rviz::ColorProperty* text_color_property_;
     rviz::FloatProperty* fg_alpha_property_;
     rviz::FloatProperty* fg_alpha2_property_;
     rviz::FloatProperty* bg_alpha_property_;
+    rviz::FloatProperty* text_alpha_property_;
+    rviz::IntProperty* text_size_property_;
     rviz::FloatProperty* max_value_property_;
     rviz::FloatProperty* min_value_property_;
-
+    rviz::BoolProperty* show_caption_property_;
     ros::Subscriber sub_;
     int left_;
     int top_;
     uint16_t texture_size_;
     QColor fg_color_;
     QColor bg_color_;
+    QColor text_color_;
+    double text_alpha_;
+    int text_size_;
+    bool show_caption_;
+    int caption_offset_;
     double fg_alpha_;
     double fg_alpha2_;
     double bg_alpha_;
@@ -107,13 +115,16 @@ namespace jsk_rviz_plugin
     void updateTop();
     void updateLeft();
     void updateBGColor();
+    void updateTextColor();
+    void updateTextAlpha();
+    void updateTextSize();
     void updateFGColor();
     void updateFGAlpha();
     void updateFGAlpha2();
     void updateBGAlpha();
     void updateMinValue();
     void updateMaxValue();
-
+    void updateShowCaption();
   private:
   };
 
