@@ -45,6 +45,7 @@ qt4_wrap_cpp(MOC_FILES
   src/polygon_array_display.h
   src/normal_display.h
   src/overlay_text_display.h
+  src/plotter_2d_display.h
 )
 
 set(SOURCE_FILES
@@ -55,6 +56,7 @@ set(SOURCE_FILES
   src/polygon_array_display.cpp
   src/normal_display.cpp
   src/overlay_text_display.cpp
+  src/plotter_2d_display.cpp
   ${MOC_FILES}
 )
 
