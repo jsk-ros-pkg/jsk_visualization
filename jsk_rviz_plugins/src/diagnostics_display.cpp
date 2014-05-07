@@ -83,7 +83,7 @@ namespace jsk_rviz_plugin
     delete line_width_property_;
     delete axis_property_;
     delete line_;
-    //delete msg_;
+    delete msg_;
   }
 
   void DiagnosticsDisplay::update(float wall_dt, float ros_dt)
@@ -144,7 +144,6 @@ namespace jsk_rviz_plugin
     updateFrameId();
     updateDiagnosticsNamespace();
     updateRadius();
-    updateLine();
     updateRosTopic();
   }
   
@@ -235,15 +234,13 @@ namespace jsk_rviz_plugin
   
   void DiagnosticsDisplay::onEnable()
   {
-    updateLine();
+    line_update_required_ = true;
   }
 
   void DiagnosticsDisplay::onDisable()
   {
-    msg_->detachFromParent();
-    delete msg_;
+    unsubscribe();
     line_->clear();
-    // delete orbit node
   }
   
   void DiagnosticsDisplay::unsubscribe()
