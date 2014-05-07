@@ -255,6 +255,11 @@ namespace jsk_rviz_plugin
   void Plotter2DDisplay::processMessage(const std_msgs::Float32::ConstPtr& msg)
   {
     boost::mutex::scoped_lock lock(mutex_);
+
+    if (!isEnabled()) {
+      return;
+    }
+    
     // add the message to the buffer
     double min_value = buffer_[0];
     double max_value = buffer_[0];
