@@ -81,7 +81,8 @@ namespace jsk_rviz_plugin
     rviz::IntProperty* left_property_;
     rviz::IntProperty* top_property_;
     rviz::IntProperty* line_width_property_;
-
+    rviz::BoolProperty* show_caption_property_;
+    rviz::IntProperty* text_size_property_;
     Ogre::Overlay* overlay_;
     Ogre::PanelOverlayElement* panel_;
     Ogre::MaterialPtr panel_material_;
@@ -93,6 +94,7 @@ namespace jsk_rviz_plugin
     double fg_alpha_;
     double bg_alpha_;
     bool show_border_;
+    bool show_caption_;
     bool draw_required_;
     float last_time_;
     float update_interval_;
@@ -109,6 +111,8 @@ namespace jsk_rviz_plugin
     int left_;
     int top_;
     int line_width_;
+    int text_size_;
+    int caption_offset_;
     double min_value_;
     double max_value_;
     boost::mutex mutex_;
@@ -127,6 +131,8 @@ namespace jsk_rviz_plugin
     void updateLineWidth();
     void updateShowBorder();
     void updateUpdateInterval();
+    void updateShowCaption();
+    void updateTextSize();
   private:
   };
 }

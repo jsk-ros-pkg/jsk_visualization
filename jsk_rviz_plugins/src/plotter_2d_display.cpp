@@ -88,6 +88,12 @@ namespace jsk_rviz_plugin
     show_border_property_ = new rviz::BoolProperty("border", true,
                                                    "show border or not",
                                                    this, SLOT(updateShowBorder()));
+    text_size_property_ = new rviz::IntProperty("text size", 12,
+                                                "text size of the caption",
+                                                this, SLOT(updateTextSize()));
+    show_caption_property_ = new rviz::BoolProperty("caption", true,
+                                                    "show caption or not",
+                                                    this, SLOT(updateShowCaption()));
     update_interval_property_ = new rviz::FloatProperty("update interval", 0.04,
                                                         "update interval of the plotter",
                                                         this, SLOT(updateUpdateInterval()));
@@ -111,6 +117,8 @@ namespace jsk_rviz_plugin
     delete line_width_property_;
     delete show_border_property_;
     delete update_interval_property_;
+    delete show_caption_property_;
+    delete text_size_property_;
   }
 
   void Plotter2DDisplay::initializeBuffer()
@@ -143,7 +151,6 @@ namespace jsk_rviz_plugin
     panel_->setMaterialName(panel_material_->getName());
     overlay_->add2D(panel_);
     onEnable();
-    updateTextureSize(width_property_->getInt(), height_property_->getInt());
     updateWidth();
     updateHeight();
     updateLeft();
@@ -155,6 +162,9 @@ namespace jsk_rviz_plugin
     updateLineWidth();
     updateUpdateInterval();
     updateShowBorder();
+    updateShowCaption();
+    updateTextSize();
+    updateTextureSize(width_property_->getInt(), height_property_->getInt());
   }
 
   void Plotter2DDisplay::updateTextureSize(uint16_t width, uint16_t height)
@@ -162,7 +172,8 @@ namespace jsk_rviz_plugin
     //boost::mutex::scoped_lock lock(mutex_);
     
     if (texture_.isNull() ||
-        ((width != texture_->getWidth()) || (height != texture_->getHeight()))) {
+        ((width != texture_->getWidth()) ||
+         (height != texture_->getHeight() - caption_offset_))) {
       if (!texture_.isNull()) {
         // remove the texture first if previous texture exists
         Ogre::TextureManager::getSingleton().remove(texture_name_);
@@ -173,7 +184,7 @@ namespace jsk_rviz_plugin
         texture_name_,        // name
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
         Ogre::TEX_TYPE_2D,   // type
-        width, height,   // width & height of the render window 
+        width, height + caption_offset_,   // width & height of the render window 
         0,                   // number of mipmaps
         Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
         Ogre::TU_DEFAULT     // usage
@@ -218,9 +229,8 @@ namespace jsk_rviz_plugin
       painter.setRenderHint(QPainter::Antialiasing, true);
       painter.setPen(QPen(fg_color, line_width_, Qt::SolidLine));
       
-      uint8_t Offset = 8;
       uint16_t w = texture_->getWidth();
-      uint16_t h = texture_->getHeight();
+      uint16_t h = texture_->getHeight() - caption_offset_;
 
       double margined_max_value = max_value_ + (max_value_ - min_value_) / 2;
       double margined_min_value = min_value_ - (max_value_ - min_value_) / 2;
@@ -244,17 +254,21 @@ namespace jsk_rviz_plugin
         painter.drawLine(texture_width_, texture_height_, texture_width_, 0);
         painter.drawLine(texture_width_, 0, 0, 0);
       }
+      // draw caption
+      if (show_caption_) {
+        QFont font = painter.font();
+        font.setPointSize(text_size_);
+        font.setBold(true);
+        painter.setFont(font);
+        painter.drawText(0, h, w, caption_offset_,
+                         Qt::AlignCenter | Qt::AlignVCenter,
+                         getName());
+
+      }
       
-      //painter.drawLine(0, 0, 128, 128);
-      //painter.drawImage( QRect( Offset, texture_->getHeight() - h - Offset, w, h ), ImageHudSpeed, QRect( 0, 0, ImageHudSpeed.width(), ImageHudSpeed.height() ) );
-
-      // do any other drawing you would like here using painter
-
       // done
       painter.end();
     }
-    // note the QImage is destroyed. Bad things will happen if you reuse the QImage!
-    
     // Unlock the pixel buffer
     pixelBuffer->unlock();
 
@@ -298,14 +312,10 @@ namespace jsk_rviz_plugin
       return;
     }
     
-    // draw it
-    //if (!textire_.isNull()) {
     updateTextureSize(texture_width_, texture_height_);
-    //drawPlot();
     panel_->setPosition(left_, top_);
-    panel_->setDimensions(texture_->getWidth(), texture_->getHeight());
+    panel_->setDimensions(texture_->getWidth(), texture_->getHeight() + caption_offset_);
     draw_required_ = true;
-      //}
   }
 
   void Plotter2DDisplay::update(float wall_dt, float ros_dt)
@@ -418,6 +428,19 @@ namespace jsk_rviz_plugin
   void Plotter2DDisplay::updateUpdateInterval()
   {
     update_interval_ = update_interval_property_->getFloat();
+  }
+
+  void Plotter2DDisplay::updateTextSize()
+  {
+    text_size_ = text_size_property_->getInt();
+    QFont font;
+    font.setPointSize(text_size_);
+    caption_offset_ = QFontMetrics(font).height();
+  }
+  
+  void Plotter2DDisplay::updateShowCaption()
+  {
+    show_caption_  = show_caption_property_->getBool();
   }
   
 }
