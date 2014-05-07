@@ -51,6 +51,7 @@
 
 namespace jsk_rviz_plugin
 {
+
   class Plotter2DDisplay
     : public rviz::Display
   {
@@ -59,7 +60,7 @@ namespace jsk_rviz_plugin
     Plotter2DDisplay();
     virtual ~Plotter2DDisplay();
   protected:
-    
+    virtual void update(float wall_dt, float ros_dt);
     virtual void subscribe();
     virtual void unsubscribe();
     virtual void onEnable();
@@ -72,6 +73,7 @@ namespace jsk_rviz_plugin
     rviz::ColorProperty* bg_color_property_;
     rviz::FloatProperty* fg_alpha_property_;
     rviz::FloatProperty* bg_alpha_property_;
+    rviz::FloatProperty* update_interval_property_;
     rviz::BoolProperty* show_border_property_;
     rviz::IntProperty* buffer_length_property_;
     rviz::IntProperty* width_property_;
@@ -91,7 +93,9 @@ namespace jsk_rviz_plugin
     double fg_alpha_;
     double bg_alpha_;
     bool show_border_;
-
+    bool draw_required_;
+    float last_time_;
+    float update_interval_;
     virtual void updateTextureSize(uint16_t width, uint16_t height);
     virtual void drawPlot();
     
@@ -122,6 +126,7 @@ namespace jsk_rviz_plugin
     void updateLeft();
     void updateLineWidth();
     void updateShowBorder();
+    void updateUpdateInterval();
   private:
   };
 }

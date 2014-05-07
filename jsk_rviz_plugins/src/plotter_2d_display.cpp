@@ -88,6 +88,9 @@ namespace jsk_rviz_plugin
     show_border_property_ = new rviz::BoolProperty("border", true,
                                                    "show border or not",
                                                    this, SLOT(updateShowBorder()));
+    update_interval_property_ = new rviz::FloatProperty("update interval", 0.04,
+                                                        "update interval of the plotter",
+                                                        this, SLOT(updateUpdateInterval()));
   }
 
   Plotter2DDisplay::~Plotter2DDisplay()
@@ -107,6 +110,7 @@ namespace jsk_rviz_plugin
     delete height_property_;
     delete line_width_property_;
     delete show_border_property_;
+    delete update_interval_property_;
   }
 
   void Plotter2DDisplay::initializeBuffer()
@@ -149,6 +153,7 @@ namespace jsk_rviz_plugin
     updateFGAlpha();
     updateBGAlpha();
     updateLineWidth();
+    updateUpdateInterval();
     updateShowBorder();
   }
 
@@ -180,7 +185,6 @@ namespace jsk_rviz_plugin
 
   void Plotter2DDisplay::drawPlot()
   {
-    
     QColor fg_color(fg_color_);
     QColor bg_color(bg_color_);
     fg_color.setAlpha(fg_alpha_);
@@ -293,10 +297,25 @@ namespace jsk_rviz_plugin
     // draw it
     //if (!textire_.isNull()) {
     updateTextureSize(texture_width_, texture_height_);
-    drawPlot();
+    //drawPlot();
     panel_->setPosition(left_, top_);
     panel_->setDimensions(texture_->getWidth(), texture_->getHeight());
+    draw_required_ = true;
       //}
+  }
+
+  void Plotter2DDisplay::update(float wall_dt, float ros_dt)
+  {
+    if (draw_required_) {
+      if (wall_dt + last_time_ > update_interval_) {
+        last_time_ = 0;
+        drawPlot();
+        draw_required_ = false;
+      }
+      else {
+        last_time_ = last_time_ + wall_dt;
+      }
+    }
   }
   
   void Plotter2DDisplay::subscribe()
@@ -316,6 +335,8 @@ namespace jsk_rviz_plugin
 
   void Plotter2DDisplay::onEnable()
   {
+    last_time_ = 0;
+    draw_required_ = false;
     subscribe();
     overlay_->show();
   }
@@ -389,6 +410,12 @@ namespace jsk_rviz_plugin
     buffer_length_ = buffer_length_property_->getInt();
     initializeBuffer();
   }
+
+  void Plotter2DDisplay::updateUpdateInterval()
+  {
+    update_interval_ = update_interval_property_->getFloat();
+  }
+  
 }
 
 #include <pluginlib/class_list_macros.h>
