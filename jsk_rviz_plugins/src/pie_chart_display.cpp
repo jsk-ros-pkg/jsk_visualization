@@ -395,9 +395,7 @@ namespace jsk_rviz_plugin
   {
     boost::mutex::scoped_lock lock(mutex_);
     text_size_ = text_size_property_->getInt();
-    // estimate caption_offset_
-    QPainter painter;
-    QFont font = painter.font();
+    QFont font;
     font.setPointSize(text_size_);
     caption_offset_ = QFontMetrics(font).height();
     
