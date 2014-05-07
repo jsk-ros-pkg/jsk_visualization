@@ -221,9 +221,13 @@ namespace jsk_rviz_plugin
       uint8_t Offset = 8;
       uint16_t w = texture_->getWidth();
       uint16_t h = texture_->getHeight();
+
+      double margined_max_value = max_value_ + (max_value_ - min_value_) / 2;
+      double margined_min_value = min_value_ - (max_value_ - min_value_) / 2;
+      
       for (size_t i = 1; i < buffer_length_; i++) {
-        double v_prev = (max_value_ - buffer_[i - 1]) / (max_value_ - min_value_);
-        double v = (max_value_ - buffer_[i]) / (max_value_ - min_value_);
+        double v_prev = (margined_max_value - buffer_[i - 1]) / (margined_max_value - margined_min_value);
+        double v = (margined_max_value - buffer_[i]) / (margined_max_value - margined_min_value);
         double u_prev = (i - 1) / (float)buffer_length_;
         double u = i / (float)buffer_length_;
 
