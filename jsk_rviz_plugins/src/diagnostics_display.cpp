@@ -91,6 +91,10 @@ namespace jsk_rviz_plugin
     if (line_update_required_) {
       updateLine();
     }
+
+    if (!isEnabled()) {
+      return;
+    }
     
     const float round_trip = 10.0;
     Ogre::Quaternion orientation;
@@ -107,6 +111,9 @@ namespace jsk_rviz_plugin
     scene_node_->setOrientation(orientation);
     Ogre::Vector3 orbit_position;
     orbit_theta_ = ros_dt / round_trip * M_PI * 2.0 + orbit_theta_;
+    while (orbit_theta_ > M_PI * 2) {
+      orbit_theta_ -= M_PI*2;
+    }
     if (axis_ == 0) {           // x
       orbit_position.x = radius_ * cos(orbit_theta_);
       orbit_position.y = radius_ * sin(orbit_theta_);
@@ -132,6 +139,7 @@ namespace jsk_rviz_plugin
   
   void DiagnosticsDisplay::onInitialize()
   {
+    static int counter = 0;
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
     orbit_node_ = scene_node_->createChildSceneNode(); // ??
     line_ = new rviz::BillboardLine(context_->getSceneManager(), scene_node_);
@@ -139,6 +147,7 @@ namespace jsk_rviz_plugin
     msg_->setTextAlignment(rviz::MovableText::H_CENTER,
                            rviz::MovableText::V_ABOVE);
     orbit_node_->attachObject(msg_);
+    orbit_theta_ = M_PI * 2.0 / 6 * counter++;
     updateLineWidth();
     updateAxis();
     updateFrameId();
