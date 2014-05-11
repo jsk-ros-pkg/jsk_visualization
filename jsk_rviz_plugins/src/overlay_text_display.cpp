@@ -194,6 +194,16 @@ namespace jsk_rviz_plugin
     if (!isEnabled()) {
       return;
     }
+    if (msg->action == jsk_rviz_plugins::OverlayText::DELETE) {
+      if (overlay_->isVisible()) {
+        overlay_->hide();
+      }
+    }
+    else if (msg->action == jsk_rviz_plugins::OverlayText::ADD) {
+      if (!overlay_->isVisible()) {
+        overlay_->show();
+      }
+    }
     texture_width_ = msg->width;
     texture_height_ = msg->height;
     panel_->setPosition(msg->top, msg->left);
