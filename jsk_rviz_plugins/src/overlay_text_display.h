@@ -49,7 +49,6 @@
 namespace jsk_rviz_plugin
 {
   class OverlayTextDisplay
-  //: public rviz::MessageFilterDisplay<jsk_rviz_plugins::OverlayText>
   : public rviz::Display
   {
     Q_OBJECT
@@ -58,21 +57,36 @@ namespace jsk_rviz_plugin
     virtual ~OverlayTextDisplay();
   protected:
     Ogre::Overlay* overlay_;
-    Ogre::OverlayContainer* panel_;
+    Ogre::PanelOverlayElement* panel_;
     Ogre::TextAreaOverlayElement* textArea_;
     Ogre::MaterialPtr panel_material_;
     std::string material_name_;
     std::string texture_name_;
-    std_msgs::ColorRGBA bg_color_;
+    Ogre::TexturePtr texture_;
+
+    int texture_width_;
+    int texture_height_;
+    
+    // std_msgs::ColorRGBA bg_color_;
+    // std_msgs::ColorRGBA fg_color_;
+    QColor bg_color_;
+    QColor fg_color_;
+    int text_size_;
+    int line_width_;
+    std::string text_;
+    std::string font_;
+    
+    
     ros::Subscriber sub_;
+    
     virtual void onInitialize();
-    virtual void reset();
     virtual void subscribe();
     virtual void unsubscribe();
-    virtual void updateTexture(const std_msgs::ColorRGBA& color,
-                               bool force_to_create);
+    virtual void updateTextureSize(int width, int height);
     virtual void onEnable();
     virtual void onDisable();
+    virtual void update(float wall_dt, float ros_dt);
+    bool require_update_texture_;
     rviz::RosTopicProperty* update_topic_property_;
   protected Q_SLOTS:
     void updateTopic();
