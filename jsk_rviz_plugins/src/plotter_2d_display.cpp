@@ -88,6 +88,16 @@ namespace jsk_rviz_plugin
     show_border_property_ = new rviz::BoolProperty("border", true,
                                                    "show border or not",
                                                    this, SLOT(updateShowBorder()));
+    auto_color_change_property_
+      = new rviz::BoolProperty("auto color change",
+                               false,
+                               "change the color automatically",
+                               this, SLOT(updateAutoColorChange()));
+    max_color_property_
+      = new rviz::ColorProperty("max color",
+                                QColor(255, 0, 0),
+                                "only used if auto color change is set to True.",
+                                this, SLOT(updateMaxColor()));
   }
 
   Plotter2DDisplay::~Plotter2DDisplay()
@@ -107,6 +117,8 @@ namespace jsk_rviz_plugin
     delete height_property_;
     delete line_width_property_;
     delete show_border_property_;
+    delete auto_color_change_property_;
+    delete max_color_property_;
   }
 
   void Plotter2DDisplay::initializeBuffer()
@@ -150,6 +162,8 @@ namespace jsk_rviz_plugin
     updateBGAlpha();
     updateLineWidth();
     updateShowBorder();
+    updateAutoColorChange();
+    updateMaxColor();
   }
 
   void Plotter2DDisplay::updateTextureSize(uint16_t width, uint16_t height)
@@ -185,6 +199,18 @@ namespace jsk_rviz_plugin
     QColor bg_color(bg_color_);
     fg_color.setAlpha(fg_alpha_);
     bg_color.setAlpha(bg_alpha_);
+
+    if (auto_color_change_) {
+      double r
+        = std::max((buffer_[buffer_.size() - 1] - min_value_) / (max_value_ - min_value_),
+                   0.0);
+      fg_color.setRed((max_color_.red() - fg_color_.red()) * r
+                      + fg_color_.red());
+      fg_color.setGreen((max_color_.green() - fg_color_.green()) * r
+                      + fg_color_.green());
+      fg_color.setBlue((max_color_.blue() - fg_color_.blue()) * r
+                       + fg_color_.blue());
+    }
     
     // Get the pixel buffer
     Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
@@ -384,6 +410,17 @@ namespace jsk_rviz_plugin
     buffer_length_ = buffer_length_property_->getInt();
     initializeBuffer();
   }
+
+  void Plotter2DDisplay::updateAutoColorChange()
+  {
+    auto_color_change_ = auto_color_change_property_->getBool();
+  }
+
+  void Plotter2DDisplay::updateMaxColor()
+  {
+    max_color_ = max_color_property_->getColor();
+  }
+  
 }
 
 #include <pluginlib/class_list_macros.h>

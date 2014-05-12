@@ -83,6 +83,9 @@ namespace jsk_rviz_plugin
     rviz::FloatProperty* max_value_property_;
     rviz::FloatProperty* min_value_property_;
     rviz::BoolProperty* show_caption_property_;
+    rviz::BoolProperty* auto_color_change_property_;
+    rviz::ColorProperty* max_color_property_;
+
     ros::Subscriber sub_;
     int left_;
     int top_;
@@ -90,9 +93,11 @@ namespace jsk_rviz_plugin
     QColor fg_color_;
     QColor bg_color_;
     QColor text_color_;
+    QColor max_color_;
     double text_alpha_;
     int text_size_;
     bool show_caption_;
+    bool auto_color_change_;
     int caption_offset_;
     double fg_alpha_;
     double fg_alpha2_;
@@ -125,6 +130,9 @@ namespace jsk_rviz_plugin
     void updateMinValue();
     void updateMaxValue();
     void updateShowCaption();
+    void updateAutoColorChange();
+    void updateMaxColor();
+
   private:
   };
 

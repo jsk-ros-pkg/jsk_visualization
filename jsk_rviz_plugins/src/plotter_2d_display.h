@@ -79,6 +79,8 @@ namespace jsk_rviz_plugin
     rviz::IntProperty* left_property_;
     rviz::IntProperty* top_property_;
     rviz::IntProperty* line_width_property_;
+    rviz::BoolProperty* auto_color_change_property_;
+    rviz::ColorProperty* max_color_property_;
 
     Ogre::Overlay* overlay_;
     Ogre::PanelOverlayElement* panel_;
@@ -86,11 +88,13 @@ namespace jsk_rviz_plugin
     Ogre::TexturePtr texture_;
 
     QColor fg_color_;
+    QColor max_color_;
     QColor bg_color_;
    
     double fg_alpha_;
     double bg_alpha_;
     bool show_border_;
+    bool auto_color_change_;
 
     virtual void updateTextureSize(uint16_t width, uint16_t height);
     virtual void drawPlot();
@@ -122,6 +126,8 @@ namespace jsk_rviz_plugin
     void updateLeft();
     void updateLineWidth();
     void updateShowBorder();
+    void updateAutoColorChange();
+    void updateMaxColor();
   private:
   };
 }
