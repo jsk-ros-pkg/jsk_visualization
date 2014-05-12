@@ -32,68 +32,72 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#ifndef JSK_RVIZ_PLUGIN_OVERLAY_TEXT_DISPLAY_H_
-#define JSK_RVIZ_PLUGIN_OVERLAY_TEXT_DISPLAY_H_
 
-#include "jsk_rviz_plugins/OverlayText.h"
-#include <rviz/message_filter_display.h>
-#include <OGRE/OgreOverlayElement.h>
-#include <OGRE/OgreOverlayContainer.h>
-#include <OGRE/OgrePanelOverlayElement.h>
-#include <OGRE/OgreTextAreaOverlayElement.h>
-#include <OGRE/OgreColourValue.h>
-#include <OGRE/OgreMaterial.h>
-#include <std_msgs/ColorRGBA.h>
+#ifndef JSK_RVIZ_PLUGIN_DIAGNOSTICS_DISPLAY_H_
+#define JSK_RVIZ_PLUGIN_DIAGNOSTICS_DISPLAY_H_
+
+#include <rviz/display.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/string_property.h>
 #include <rviz/properties/ros_topic_property.h>
+#include <rviz/properties/enum_property.h>
+#include <diagnostic_msgs/DiagnosticArray.h>
+#include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz/display_context.h>
+#include <rviz/frame_manager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <rviz/ogre_helpers/movable_text.h>
 
 namespace jsk_rviz_plugin
 {
-  class OverlayTextDisplay
-  : public rviz::Display
+  class DiagnosticsDisplay : public rviz::Display
   {
     Q_OBJECT
   public:
-    OverlayTextDisplay();
-    virtual ~OverlayTextDisplay();
+    DiagnosticsDisplay();
+    virtual ~DiagnosticsDisplay();
   protected:
-    Ogre::Overlay* overlay_;
-    Ogre::PanelOverlayElement* panel_;
-    Ogre::TextAreaOverlayElement* textArea_;
-    Ogre::MaterialPtr panel_material_;
-    std::string material_name_;
-    std::string texture_name_;
-    Ogre::TexturePtr texture_;
-
-    int texture_width_;
-    int texture_height_;
-    
-    // std_msgs::ColorRGBA bg_color_;
-    // std_msgs::ColorRGBA fg_color_;
-    QColor bg_color_;
-    QColor fg_color_;
-    int text_size_;
-    int line_width_;
-    std::string text_;
-    std::string font_;
-    
-    
-    ros::Subscriber sub_;
-    
+    virtual void onEnable();
+    virtual void onDisable();
     virtual void onInitialize();
     virtual void subscribe();
     virtual void unsubscribe();
-    virtual void updateTextureSize(int width, int height);
-    virtual void onEnable();
-    virtual void onDisable();
+    virtual void updateLine();
     virtual void update(float wall_dt, float ros_dt);
-    bool require_update_texture_;
-    rviz::RosTopicProperty* update_topic_property_;
-  protected Q_SLOTS:
-    void updateTopic();
+    virtual void processMessage
+    (const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
     
+    rviz::RosTopicProperty* ros_topic_property_;
+    rviz::StringProperty* diagnostics_namespace_property_;
+    rviz::StringProperty* frame_id_property_;
+    rviz::FloatProperty* radius_property_;
+    rviz::FloatProperty* line_width_property_;
+    rviz::EnumProperty* axis_property_;
+    ros::Subscriber sub_;
+    
+    double radius_;
+    double line_width_;
+    std::string frame_id_;
+    std::string diagnostics_namespace_;
+    rviz::MovableText* msg_;
+    rviz::BillboardLine* line_;
+    Ogre::SceneNode* orbit_node_;
+    int axis_;
+    double orbit_theta_;
+    bool line_update_required_;
+  protected Q_SLOTS:
+    virtual void updateRosTopic();
+    virtual void updateFrameId();
+    virtual void updateDiagnosticsNamespace();
+    virtual void updateRadius();
+    virtual void updateLineWidth();
+    virtual void updateAxis();
   private:
-    void processMessage(const jsk_rviz_plugins::OverlayText::ConstPtr& msg);
+    
   };
+  
 }
+
 
 #endif

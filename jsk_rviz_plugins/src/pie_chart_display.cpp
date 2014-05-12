@@ -189,7 +189,9 @@ namespace jsk_rviz_plugin
     
     if (texture_.isNull() ||
         ((width != texture_->getWidth()) || (height != texture_->getHeight() - caption_offset_))) {
+      bool firsttime = true;
       if (!texture_.isNull()) {
+        firsttime = false;
         // remove the texture first if previous texture exists
         Ogre::TextureManager::getSingleton().remove(texture_name_);
       }
@@ -202,8 +204,10 @@ namespace jsk_rviz_plugin
         Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
         Ogre::TU_DEFAULT     // usage
         );
-      panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-      panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      if (firsttime) {
+        panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
+        panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      }
     }
   }
 
@@ -422,9 +426,7 @@ namespace jsk_rviz_plugin
   {
     boost::mutex::scoped_lock lock(mutex_);
     text_size_ = text_size_property_->getInt();
-    // estimate caption_offset_
-    QPainter painter;
-    QFont font = painter.font();
+    QFont font;
     font.setPointSize(text_size_);
     caption_offset_ = QFontMetrics(font).height();
     

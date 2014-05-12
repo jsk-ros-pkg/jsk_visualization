@@ -1,3 +1,4 @@
+
 // -*- mode: c++; -*-
 #ifndef FOOTSTEP_DISPLAY_H
 #define FOOTSTEP_DISPLAY_H

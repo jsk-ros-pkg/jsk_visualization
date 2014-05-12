@@ -39,33 +39,42 @@
 #include <rviz/uniform_string_stream.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreHardwarePixelBuffer.h>
+#include <QPainter>
 
 namespace jsk_rviz_plugin
 {
-  OverlayTextDisplay::OverlayTextDisplay() : Display()
+  OverlayTextDisplay::OverlayTextDisplay() : Display(),
+                                             texture_width_(0), texture_height_(0),
+                                             text_size_(14),
+                                             line_width_(2),
+                                             text_(""), font_(""),
+                                             bg_color_(0, 0, 0, 0),
+                                             fg_color_(255, 255, 255, 255.0),
+                                             require_update_texture_(false)
   {
     update_topic_property_ = new rviz::RosTopicProperty( "Topic", "",
                                                          ros::message_traits::datatype<jsk_rviz_plugins::OverlayText>(),
                                                          "jsk_rviz_plugins::OverlayText topic to subscribe to.",
                                                          this, SLOT( updateTopic() ));
-
   }
 
   
   OverlayTextDisplay::~OverlayTextDisplay()
   {
+    onDisable();
     //delete overlay_;
     delete update_topic_property_;
   }
 
   void OverlayTextDisplay::onEnable()
   {
+    overlay_->show();
     subscribe();
   }
 
   void OverlayTextDisplay::onDisable()
   {
-    reset();
+    overlay_->hide();
     unsubscribe();
   }
   
@@ -87,133 +96,159 @@ namespace jsk_rviz_plugin
     unsubscribe();
     subscribe();
   }
-  
-  // this method is defined to generate texture map manually.
-  // because in order to specify background color of the overlay panel,
-  // using texture mapping is the only way to do that as far as I know.
-  // Thus, this method generate 1x1 texture mapping specified by `color'
-  // argument.
-  void OverlayTextDisplay::updateTexture(const std_msgs::ColorRGBA& color,
-                                         bool force_to_create)
-  {
-    if (force_to_create ||
-        ((color.r != bg_color_.r) ||
-         (color.g != bg_color_.g) ||
-         (color.b != bg_color_.b) ||
-         (color.a != bg_color_.a))) {
-      bg_color_.r = color.r;
-      bg_color_.g = color.g;
-      bg_color_.b = color.b;
-      bg_color_.a = color.a;
-      // here we manually generate the texture
-      Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(texture_name_);
-      if (texture.isNull()) {
-        texture = Ogre::TextureManager::getSingleton().createManual(
-          texture_name_, // name
-          Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-          Ogre::TEX_TYPE_2D,      // type
-          1, 1,         // width & height
-          0,                // number of mipmaps
-          Ogre::PF_BYTE_BGRA,     // pixel format
-          Ogre::TU_DEFAULT);      // usage; should be TU_DYNAMIC_WRITE_ONLY_DISCARDABLE for
-      }
-      // textures updated very often (e.g. each frame)
-      Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture->getBuffer();
-      // Lock the pixel buffer and get a pixel box
-      pixelBuffer->lock(Ogre::HardwareBuffer::HBL_NORMAL); // for best performance use HBL_DISCARD!
-      const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-      uint8_t* pDest = static_cast<uint8_t*>(pixelBox.data);
-      
-      for (size_t j = 0; j < 1; j++)
-      {
-        for(size_t i = 0; i < 1; i++)
-        {
-          *pDest++ = bg_color_.b * 255; // B
-          *pDest++ =   bg_color_.g * 255; // G
-          *pDest++ =   bg_color_.r * 255; // R
-          *pDest++ = bg_color_.a * 255; // A
-        }
-        
-        pDest += pixelBox.getRowSkip() * Ogre::PixelUtil::getNumElemBytes(pixelBox.format);
-      }
-      
-      pixelBuffer->unlock();
-    }
-  }
-  
+    
   // only the first time
   void OverlayTextDisplay::onInitialize()
   {
     static int count = 0;
     rviz::UniformStringStream ss;
-    //bg_color_.r = bg_color_.g = bg_color_.b = bg_color_.a = 1.0;
-    bg_color_.r = bg_color_.g = bg_color_.b = bg_color_.a = 1.0;
     ss << "OverlayTextDisplayObject" << count++;
-    //MFDClass::onInitialize();
     Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
     overlay_ = mOverlayMgr->create(ss.str());
-    
     //panel_ = static_cast<Ogre::OverlayContainer*> (
     panel_ = static_cast<Ogre::PanelOverlayElement*> (
       mOverlayMgr->createOverlayElement("BorderPanel", ss.str() + "Panel"));
-    textArea_ = static_cast<Ogre::TextAreaOverlayElement*>(
-      mOverlayMgr->createOverlayElement("TextArea", ss.str() + "TextArea"));
     material_name_ = ss.str() + "Material";
     texture_name_ = ss.str() + "Texture";
+    // panel_ = static_cast<Ogre::PanelOverlayElement*> (
+    //   mOverlayMgr->createOverlayElement("BorderPanel", ss.str() + "Panel"));
     
-    panel_material_
-      = Ogre::MaterialManager::getSingleton().create(material_name_,
-                                                     Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+    // panel_material_
+    //   = Ogre::MaterialManager::getSingleton().create(material_name_,
+    //                                                  Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
     
-
-    updateTexture(bg_color_, true);
-    
-    panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-    panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-
-    panel_->setMaterialName(panel_material_->getName());
-    
-    textArea_->setPosition(0, 0);
-    textArea_->setDimensions(1.0, 1.0);
-    textArea_->setFontName("Arial");
-    //textArea_->setFontName("DejaVu Sans Mono");
-    overlay_->add2D(panel_);
-    panel_->addChild(textArea_);
-    onEnable();
+    // panel_->setMaterialName(panel_material_->getName());
+    // panel_->setMetricsMode(Ogre::GMM_PIXELS);
+    // overlay_->add2D(panel_);
+    require_update_texture_ = false;
   }
 
-  // This method is called everytime users uncheck the box
-  void OverlayTextDisplay::reset()
+  void OverlayTextDisplay::update(float wall_dt, float ros_dt)
   {
-    overlay_->hide();
-    // todo: clear panel_ and textArea_
-  }
+    if (!require_update_texture_) {
+      return;
+    }
+    if (!isEnabled()) {
+      return;
+    }
+    
+    if (panel_material_.isNull()) {
+      Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
+      panel_material_
+        = Ogre::MaterialManager::getSingleton().create(material_name_,
+                                                       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+      panel_->setMaterialName(panel_material_->getName());
+      panel_->setMetricsMode(Ogre::GMM_PIXELS);
+      overlay_->add2D(panel_);
+    }
+    
+    updateTextureSize(texture_width_, texture_height_);
+    // draw
+    if (texture_.isNull()) {
+      ROS_WARN("failed to crate texture");
+      return;
+    }
+    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
+    pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
+    const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
+    Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
+    {
+      memset( pDest, 0, texture_->getWidth() * texture_->getHeight() );
+      QImage Hud( pDest, texture_->getWidth(), texture_->getHeight(), QImage::Format_ARGB32 );
+      // initilize by the background color
+      for (int i = 0; i < texture_->getWidth(); i++) {
+        for (int j = 0; j < texture_->getHeight(); j++) {
+          Hud.setPixel(i, j, bg_color_.rgba());
+        }
+      }
+      QPainter painter( &Hud );
+      painter.setRenderHint(QPainter::Antialiasing, true);
+      painter.setPen(QPen(fg_color_, line_width_ || 1, Qt::SolidLine));
+      uint16_t w = texture_->getWidth();
+      uint16_t h = texture_->getHeight();
 
+      // font
+      if (text_size_ != 0) {
+        //QFont font = painter.font();
+        QFont font(font_.length() > 0 ? font_.c_str(): "Arial");
+        font.setPointSize(text_size_);
+        font.setBold(true);
+        painter.setFont(font);
+      }
+      if (text_.length() > 0) {
+        //painter.drawText(0, 0, w, h, Qt::TextWordWrap | Qt::AlignLeft,
+        painter.drawText(0, 0, w, h,
+                         Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
+                         text_.c_str());
+      }
+      painter.end();
+    }
+    pixelBuffer->unlock();
+    panel_->setDimensions(texture_->getWidth(), texture_->getHeight());
+    require_update_texture_ = false;
+  }
+  
   void OverlayTextDisplay::processMessage
   (const jsk_rviz_plugins::OverlayText::ConstPtr& msg)
   {
-    if (!overlay_->isVisible()) {
-      overlay_->show();
+    if (!isEnabled()) {
+      return;
     }
+    if (msg->action == jsk_rviz_plugins::OverlayText::DELETE) {
+      if (overlay_->isVisible()) {
+        overlay_->hide();
+      }
+    }
+    else if (msg->action == jsk_rviz_plugins::OverlayText::ADD) {
+      if (!overlay_->isVisible()) {
+        overlay_->show();
+      }
+    }
+    texture_width_ = msg->width;
+    texture_height_ = msg->height;
     panel_->setPosition(msg->top, msg->left);
-    panel_->setDimensions(msg->width, msg->height);
-    //panel_->setMaterialName(panel_material_->getName());
-    updateTexture(msg->bg_color, false);
-    // panel_->setColour(Ogre::ColourValue(msg->bg_color.r,
-    //                                     msg->bg_color.g,
-    //                                     msg->bg_color.b,
-    //                                     msg->bg_color.a));
+    // store message for update method
+    text_ = msg->text;
+    font_ = msg->font;
+    bg_color_ = QColor(msg->bg_color.r * 255.0,
+                       msg->bg_color.g * 255.0,
+                       msg->bg_color.b * 255.0,
+                       msg->bg_color.a * 255.0);
+    fg_color_ = QColor(msg->fg_color.r * 255.0,
+                       msg->fg_color.g * 255.0,
+                       msg->fg_color.b * 255.0,
+                       msg->fg_color.a * 255.0);
+    text_size_ = msg->text_size;
+    line_width_ = msg->line_width;
+    require_update_texture_ = true;
+  }
+
+  void OverlayTextDisplay::updateTextureSize(int width, int height)
+  {
+    if ((width == 0) || (height == 0)) {
+      ROS_DEBUG("width or height is set to 0");
+      return;
+    }
     
-    textArea_->setColourBottom(Ogre::ColourValue(msg->fg_color.r,
-                                                 msg->fg_color.g,
-                                                 msg->fg_color.b,
-                                                 msg->fg_color.a));
-    textArea_->setColourTop(Ogre::ColourValue(msg->fg_color.r,
-                                              msg->fg_color.g,
-                                              msg->fg_color.b,
-                                              msg->fg_color.a));
-    textArea_->setCharHeight(msg->text_size);
-    textArea_->setCaption(msg->text);
+    if (texture_.isNull() ||
+        ((width != texture_->getWidth()) ||
+         (height != texture_->getHeight()))) {
+      if (!texture_.isNull()) {
+        Ogre::TextureManager::getSingleton().remove(texture_name_);
+        panel_material_->getTechnique(0)->getPass(0)->removeAllTextureUnitStates();
+      }
+      texture_ = Ogre::TextureManager::getSingleton().createManual(
+        texture_name_,        // name
+        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+        Ogre::TEX_TYPE_2D,   // type
+        width, height,   // width & height of the render window 
+        0,                   // number of mipmaps
+        Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
+        Ogre::TU_DEFAULT     // usage
+        );
+      panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
+      panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    }
   }
   
 }

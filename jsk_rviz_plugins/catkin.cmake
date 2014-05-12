@@ -7,7 +7,7 @@ project(jsk_rviz_plugins)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros
-  message_generation std_msgs)
+  message_generation std_msgs diagnostic_msgs)
 
 add_message_files(FILES OverlayText.msg)
 generate_messages(DEPENDENCIES std_msgs)
@@ -47,6 +47,7 @@ qt4_wrap_cpp(MOC_FILES
   src/overlay_text_display.h
   src/plotter_2d_display.h
   src/pie_chart_display.h
+  src/diagnostics_display.h
 )
 
 set(SOURCE_FILES
@@ -59,6 +60,7 @@ set(SOURCE_FILES
   src/overlay_text_display.cpp
   src/plotter_2d_display.cpp
   src/pie_chart_display.cpp
+  src/diagnostics_display.cpp
   ${MOC_FILES}
 )
 
@@ -72,3 +74,7 @@ install(FILES plugin_description.xml
 install(TARGETS jsk_rviz_plugins
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+
+install(DIRECTORY scripts launch cfg
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  USE_SOURCE_PERMISSIONS)
