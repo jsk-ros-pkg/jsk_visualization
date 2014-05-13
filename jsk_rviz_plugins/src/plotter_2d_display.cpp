@@ -97,6 +97,16 @@ namespace jsk_rviz_plugin
     update_interval_property_ = new rviz::FloatProperty("update interval", 0.04,
                                                         "update interval of the plotter",
                                                         this, SLOT(updateUpdateInterval()));
+    auto_color_change_property_
+      = new rviz::BoolProperty("auto color change",
+                               false,
+                               "change the color automatically",
+                               this, SLOT(updateAutoColorChange()));
+    max_color_property_
+      = new rviz::ColorProperty("max color",
+                                QColor(255, 0, 0),
+                                "only used if auto color change is set to True.",
+                                this, SLOT(updateMaxColor()));
   }
 
   Plotter2DDisplay::~Plotter2DDisplay()
@@ -116,6 +126,8 @@ namespace jsk_rviz_plugin
     delete height_property_;
     delete line_width_property_;
     delete show_border_property_;
+    delete auto_color_change_property_;
+    delete max_color_property_;
     delete update_interval_property_;
     delete show_caption_property_;
     delete text_size_property_;
@@ -162,6 +174,8 @@ namespace jsk_rviz_plugin
     updateLineWidth();
     updateUpdateInterval();
     updateShowBorder();
+    updateAutoColorChange();
+    updateMaxColor();
     updateShowCaption();
     updateTextSize();
     updateTextureSize(width_property_->getInt(), height_property_->getInt());
@@ -174,7 +188,9 @@ namespace jsk_rviz_plugin
     if (texture_.isNull() ||
         ((width != texture_->getWidth()) ||
          (height != texture_->getHeight() - caption_offset_))) {
+      bool firsttime = true;
       if (!texture_.isNull()) {
+        firsttime = false;
         // remove the texture first if previous texture exists
         Ogre::TextureManager::getSingleton().remove(texture_name_);
       }
@@ -189,8 +205,10 @@ namespace jsk_rviz_plugin
         Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
         Ogre::TU_DEFAULT     // usage
         );
-      panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-      panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      if (firsttime) {
+        panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
+        panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      }
     }
   }
 
@@ -200,6 +218,18 @@ namespace jsk_rviz_plugin
     QColor bg_color(bg_color_);
     fg_color.setAlpha(fg_alpha_);
     bg_color.setAlpha(bg_alpha_);
+
+    if (auto_color_change_) {
+      double r
+        = std::max((buffer_[buffer_.size() - 1] - min_value_) / (max_value_ - min_value_),
+                   0.0);
+      fg_color.setRed((max_color_.red() - fg_color_.red()) * r
+                      + fg_color_.red());
+      fg_color.setGreen((max_color_.green() - fg_color_.green()) * r
+                      + fg_color_.green());
+      fg_color.setBlue((max_color_.blue() - fg_color_.blue()) * r
+                       + fg_color_.blue());
+    }
     
     // Get the pixel buffer
     Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
@@ -425,6 +455,16 @@ namespace jsk_rviz_plugin
     initializeBuffer();
   }
 
+  void Plotter2DDisplay::updateAutoColorChange()
+  {
+    auto_color_change_ = auto_color_change_property_->getBool();
+  }
+
+  void Plotter2DDisplay::updateMaxColor()
+  {
+    max_color_ = max_color_property_->getColor();
+  }
+  
   void Plotter2DDisplay::updateUpdateInterval()
   {
     update_interval_ = update_interval_property_->getFloat();

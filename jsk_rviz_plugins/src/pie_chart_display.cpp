@@ -110,6 +110,17 @@ namespace jsk_rviz_plugin
       = new rviz::FloatProperty("min value", 0.0,
                                 "min value of pie chart",
                                 this, SLOT(updateMinValue()));
+    auto_color_change_property_
+      = new rviz::BoolProperty("auto color change",
+                               false,
+                               "change the color automatically",
+                               this, SLOT(updateAutoColorChange()));
+    max_color_property_
+      = new rviz::ColorProperty("max color",
+                                QColor(255, 0, 0),
+                                "only used if auto color change is set to True.",
+                                this, SLOT(updateMaxColor()));
+
   }
 
   PieChartDisplay::~PieChartDisplay()
@@ -167,6 +178,8 @@ namespace jsk_rviz_plugin
     updateTextAlpha();
     updateTextSize();
     updateShowCaption();
+    updateAutoColorChange();
+    updateMaxColor();
     updateTextureSize(size_property_->getInt(), size_property_->getInt());
   }
 
@@ -176,7 +189,9 @@ namespace jsk_rviz_plugin
     
     if (texture_.isNull() ||
         ((width != texture_->getWidth()) || (height != texture_->getHeight() - caption_offset_))) {
+      bool firsttime = true;
       if (!texture_.isNull()) {
+        firsttime = false;
         // remove the texture first if previous texture exists
         Ogre::TextureManager::getSingleton().remove(texture_name_);
       }
@@ -189,8 +204,10 @@ namespace jsk_rviz_plugin
         Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
         Ogre::TU_DEFAULT     // usage
         );
-      panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-      panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      if (firsttime) {
+        panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
+        panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      }
     }
   }
 
@@ -211,7 +228,21 @@ namespace jsk_rviz_plugin
   void PieChartDisplay::drawPlot(double val)
   {
     QColor fg_color(fg_color_);
-    QColor fg_color2(fg_color_);
+
+    if (auto_color_change_) {
+      double r
+        = std::max((val - min_value_) / (max_value_ - min_value_),
+                   0.0);
+      fg_color.setRed((max_color_.red() - fg_color_.red()) * r
+                      + fg_color_.red());
+      fg_color.setGreen((max_color_.green() - fg_color_.green()) * r
+                      + fg_color_.green());
+      fg_color.setBlue((max_color_.blue() - fg_color_.blue()) * r
+                       + fg_color_.blue());
+    }
+
+    
+    QColor fg_color2(fg_color);
     QColor bg_color(bg_color_);
     QColor text_color(text_color_);
     fg_color.setAlpha(fg_alpha_);
@@ -412,6 +443,17 @@ namespace jsk_rviz_plugin
     unsubscribe();
     subscribe();
   }
+
+  void PieChartDisplay::updateAutoColorChange()
+  {
+    auto_color_change_ = auto_color_change_property_->getBool();
+  }
+
+  void PieChartDisplay::updateMaxColor()
+  {
+    max_color_ = max_color_property_->getColor();
+  }
+
   
 }
 
