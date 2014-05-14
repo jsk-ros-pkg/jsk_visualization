@@ -110,6 +110,17 @@ namespace jsk_rviz_plugin
       = new rviz::FloatProperty("min value", 0.0,
                                 "min value of pie chart",
                                 this, SLOT(updateMinValue()));
+    auto_color_change_property_
+      = new rviz::BoolProperty("auto color change",
+                               false,
+                               "change the color automatically",
+                               this, SLOT(updateAutoColorChange()));
+    max_color_property_
+      = new rviz::ColorProperty("max color",
+                                QColor(255, 0, 0),
+                                "only used if auto color change is set to True.",
+                                this, SLOT(updateMaxColor()));
+
   }
 
   PieChartDisplay::~PieChartDisplay()
@@ -167,6 +178,8 @@ namespace jsk_rviz_plugin
     updateTextAlpha();
     updateTextSize();
     updateShowCaption();
+    updateAutoColorChange();
+    updateMaxColor();
     updateTextureSize(size_property_->getInt(), size_property_->getInt());
   }
 
@@ -215,7 +228,20 @@ namespace jsk_rviz_plugin
   void PieChartDisplay::drawPlot(double val)
   {
     QColor fg_color(fg_color_);
-    QColor fg_color2(fg_color_);
+
+    if (auto_color_change_) {
+      double r
+        = std::min(1.0, fabs((val - min_value_) / (max_value_ - min_value_)));
+      fg_color.setRed((max_color_.red() - fg_color_.red()) * r
+                      + fg_color_.red());
+      fg_color.setGreen((max_color_.green() - fg_color_.green()) * r
+                      + fg_color_.green());
+      fg_color.setBlue((max_color_.blue() - fg_color_.blue()) * r
+                       + fg_color_.blue());
+    }
+
+    
+    QColor fg_color2(fg_color);
     QColor bg_color(bg_color_);
     QColor text_color(text_color_);
     fg_color.setAlpha(fg_alpha_);
@@ -416,6 +442,17 @@ namespace jsk_rviz_plugin
     unsubscribe();
     subscribe();
   }
+
+  void PieChartDisplay::updateAutoColorChange()
+  {
+    auto_color_change_ = auto_color_change_property_->getBool();
+  }
+
+  void PieChartDisplay::updateMaxColor()
+  {
+    max_color_ = max_color_property_->getColor();
+  }
+
   
 }
 
