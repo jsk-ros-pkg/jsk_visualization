@@ -81,19 +81,28 @@ namespace jsk_rviz_plugin
     rviz::IntProperty* left_property_;
     rviz::IntProperty* top_property_;
     rviz::IntProperty* line_width_property_;
+    rviz::BoolProperty* auto_color_change_property_;
+    rviz::ColorProperty* max_color_property_;
     rviz::BoolProperty* show_caption_property_;
     rviz::IntProperty* text_size_property_;
+    rviz::BoolProperty* auto_scale_property_;
+    rviz::FloatProperty* max_value_property_;
+    rviz::FloatProperty* min_value_property_;
+    
     Ogre::Overlay* overlay_;
     Ogre::PanelOverlayElement* panel_;
     Ogre::MaterialPtr panel_material_;
     Ogre::TexturePtr texture_;
 
     QColor fg_color_;
+    QColor max_color_;
     QColor bg_color_;
    
     double fg_alpha_;
     double bg_alpha_;
+    bool auto_scale_;
     bool show_border_;
+    bool auto_color_change_;
     bool show_caption_;
     bool draw_required_;
     float last_time_;
@@ -130,9 +139,14 @@ namespace jsk_rviz_plugin
     void updateLeft();
     void updateLineWidth();
     void updateShowBorder();
+    void updateAutoColorChange();
+    void updateMaxColor();
     void updateUpdateInterval();
     void updateShowCaption();
     void updateTextSize();
+    void updateAutoScale();
+    void updateMinValue();
+    void updateMaxValue();
   private:
   };
 }

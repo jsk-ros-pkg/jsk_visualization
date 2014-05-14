@@ -70,6 +70,15 @@ namespace jsk_rviz_plugin
     top_property_ = new rviz::IntProperty("top", 128,
                                           "top of the plotter window",
                                           this, SLOT(updateTop()));
+    auto_scale_property_ = new rviz::BoolProperty("auto scale", true,
+                                                  "enable auto scale",
+                                                  this, SLOT(updateAutoScale()));
+    max_value_property_ = new rviz::FloatProperty("max value", 1.0,
+                                                  "max value, used only if auto scale is disabled",
+                                                  this, SLOT(updateMaxValue()));
+    min_value_property_ = new rviz::FloatProperty("min value", -1.0,
+                                                  "min value, used only if auto scale is disabled",
+                                                  this, SLOT(updateMinValue()));
     fg_color_property_ = new rviz::ColorProperty("foreground color", QColor(25, 255, 240),
                                                  "color to draw line",
                                                  this, SLOT(updateFGColor()));
@@ -97,6 +106,16 @@ namespace jsk_rviz_plugin
     update_interval_property_ = new rviz::FloatProperty("update interval", 0.04,
                                                         "update interval of the plotter",
                                                         this, SLOT(updateUpdateInterval()));
+    auto_color_change_property_
+      = new rviz::BoolProperty("auto color change",
+                               false,
+                               "change the color automatically",
+                               this, SLOT(updateAutoColorChange()));
+    max_color_property_
+      = new rviz::ColorProperty("max color",
+                                QColor(255, 0, 0),
+                                "only used if auto color change is set to True.",
+                                this, SLOT(updateMaxColor()));
   }
 
   Plotter2DDisplay::~Plotter2DDisplay()
@@ -116,9 +135,14 @@ namespace jsk_rviz_plugin
     delete height_property_;
     delete line_width_property_;
     delete show_border_property_;
+    delete auto_color_change_property_;
+    delete max_color_property_;
     delete update_interval_property_;
     delete show_caption_property_;
     delete text_size_property_;
+    delete min_value_property_;
+    delete max_value_property_;
+    delete auto_color_change_property_;
   }
 
   void Plotter2DDisplay::initializeBuffer()
@@ -162,8 +186,13 @@ namespace jsk_rviz_plugin
     updateLineWidth();
     updateUpdateInterval();
     updateShowBorder();
+    updateAutoColorChange();
+    updateMaxColor();
     updateShowCaption();
     updateTextSize();
+    updateAutoScale();
+    updateMinValue();
+    updateMaxValue();
     updateTextureSize(width_property_->getInt(), height_property_->getInt());
   }
 
@@ -204,6 +233,18 @@ namespace jsk_rviz_plugin
     QColor bg_color(bg_color_);
     fg_color.setAlpha(fg_alpha_);
     bg_color.setAlpha(bg_alpha_);
+
+    if (auto_color_change_) {
+      double r
+        = std::min(std::max((buffer_[buffer_.size() - 1] - min_value_) / (max_value_ - min_value_),
+                            0.0), 1.0);
+      fg_color.setRed((max_color_.red() - fg_color_.red()) * r
+                      + fg_color_.red());
+      fg_color.setGreen((max_color_.green() - fg_color_.green()) * r
+                      + fg_color_.green());
+      fg_color.setBlue((max_color_.blue() - fg_color_.blue()) * r
+                       + fg_color_.blue());
+    }
     
     // Get the pixel buffer
     Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
@@ -245,18 +286,24 @@ namespace jsk_rviz_plugin
         double u_prev = (i - 1) / (float)buffer_length_;
         double u = i / (float)buffer_length_;
 
-        uint16_t x_prev = (int)(u_prev * texture_width_);
-        uint16_t x = (int)(u * texture_width_);
-        uint16_t y_prev = (int)(v_prev * texture_height_);
-        uint16_t y = (int)(v * texture_height_);
+        // chop within 0 ~ 1
+        v_prev = std::max(std::min(v_prev, 1.0), 0.0);
+        u_prev = std::max(std::min(u_prev, 1.0), 0.0);
+        v = std::max(std::min(v, 1.0), 0.0);
+        u = std::max(std::min(u, 1.0), 0.0);
+        
+        uint16_t x_prev = (int)(u_prev * w);
+        uint16_t x = (int)(u * w);
+        uint16_t y_prev = (int)(v_prev * h);
+        uint16_t y = (int)(v * h);
         painter.drawLine(x_prev, y_prev, x, y);
       }
       // draw border
       if (show_border_) {
-        painter.drawLine(0, 0, 0, texture_height_);
-        painter.drawLine(0, texture_height_, texture_width_, texture_height_);
-        painter.drawLine(texture_width_, texture_height_, texture_width_, 0);
-        painter.drawLine(texture_width_, 0, 0, 0);
+        painter.drawLine(0, 0, 0, h);
+        painter.drawLine(0, h, w, h);
+        painter.drawLine(w, h, w, 0);
+        painter.drawLine(w, 0, 0, 0);
       }
       // draw caption
       if (show_caption_) {
@@ -305,13 +352,14 @@ namespace jsk_rviz_plugin
     if (max_value < msg->data) {
       max_value = msg->data;
     }
-    min_value_ = min_value;
-    max_value_ = max_value;
-    if (min_value_ == max_value_) {
-      min_value_ = min_value_ - 0.5;
-      max_value_ = max_value_ + 0.5;
+    if (auto_scale_) {
+      min_value_ = min_value;
+      max_value_ = max_value;
+      if (min_value_ == max_value_) {
+        min_value_ = min_value_ - 0.5;
+        max_value_ = max_value_ + 0.5;
+      }
     }
-
     if (!overlay_->isVisible()) {
       return;
     }
@@ -429,6 +477,16 @@ namespace jsk_rviz_plugin
     initializeBuffer();
   }
 
+  void Plotter2DDisplay::updateAutoColorChange()
+  {
+    auto_color_change_ = auto_color_change_property_->getBool();
+  }
+
+  void Plotter2DDisplay::updateMaxColor()
+  {
+    max_color_ = max_color_property_->getColor();
+  }
+  
   void Plotter2DDisplay::updateUpdateInterval()
   {
     update_interval_ = update_interval_property_->getFloat();
@@ -445,6 +503,27 @@ namespace jsk_rviz_plugin
   void Plotter2DDisplay::updateShowCaption()
   {
     show_caption_  = show_caption_property_->getBool();
+  }
+
+  void Plotter2DDisplay::updateMinValue()
+  {
+    if (!auto_scale_) {
+      min_value_ = min_value_property_->getFloat();
+    }
+  }
+
+  void Plotter2DDisplay::updateMaxValue()
+  {
+    if (!auto_scale_) {
+      max_value_ = max_value_property_->getFloat();
+    }
+  }
+
+  void Plotter2DDisplay::updateAutoScale()
+  {
+    auto_scale_ = auto_scale_property_->getBool();
+    updateMinValue();
+    updateMaxValue();
   }
   
 }

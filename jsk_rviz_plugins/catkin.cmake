@@ -57,6 +57,7 @@ set(SOURCE_FILES
   src/select_point_cloud_publish_action.cpp
   src/polygon_array_display.cpp
   src/normal_display.cpp
+  src/normal_visual.cpp
   src/overlay_text_display.cpp
   src/plotter_2d_display.cpp
   src/pie_chart_display.cpp
@@ -74,3 +75,7 @@ install(FILES plugin_description.xml
 install(TARGETS jsk_rviz_plugins
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+
+install(DIRECTORY scripts launch cfg
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  USE_SOURCE_PERMISSIONS)
