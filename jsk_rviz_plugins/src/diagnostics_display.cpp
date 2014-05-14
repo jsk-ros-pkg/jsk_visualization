@@ -143,7 +143,7 @@ namespace jsk_rviz_plugin
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
     orbit_node_ = scene_node_->createChildSceneNode(); // ??
     line_ = new rviz::BillboardLine(context_->getSceneManager(), scene_node_);
-    msg_ = new rviz::MovableText("not initialized", "Arial", 0.1);
+    msg_ = new rviz::MovableText("not initialized", "Arial", 0.05);
     msg_->setTextAlignment(rviz::MovableText::H_CENTER,
                            rviz::MovableText::V_ABOVE);
     orbit_node_->attachObject(msg_);
@@ -208,7 +208,7 @@ namespace jsk_rviz_plugin
     Ogre::ColourValue font_color(color);
     font_color.a = 1.0;
     msg_->setColor(font_color);
-    msg_->setCaption(diagnostics_namespace_ + ": " + message);
+    msg_->setCaption(diagnostics_namespace_ + "\n" + message);
     context_->queueRender();
   }
 

@@ -231,8 +231,7 @@ namespace jsk_rviz_plugin
 
     if (auto_color_change_) {
       double r
-        = std::max((val - min_value_) / (max_value_ - min_value_),
-                   0.0);
+        = std::min(1.0, fabs((val - min_value_) / (max_value_ - min_value_)));
       fg_color.setRed((max_color_.red() - fg_color_.red()) * r
                       + fg_color_.red());
       fg_color.setGreen((max_color_.green() - fg_color_.green()) * r
