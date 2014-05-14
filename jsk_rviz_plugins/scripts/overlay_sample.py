@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+try:
+  from jsk_rviz_plugins.msg import *
+except:
+  import roslib;roslib.load_manifest("jsk_rviz_plugins")
+  from jsk_rviz_plugins.msg import *
 
-from jsk_rviz_plugins.msg import *
 from std_msgs.msg import ColorRGBA, Float32
 import rospy
 import math
