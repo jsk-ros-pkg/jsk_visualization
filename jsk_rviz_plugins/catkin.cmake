@@ -57,6 +57,7 @@ set(SOURCE_FILES
   src/select_point_cloud_publish_action.cpp
   src/polygon_array_display.cpp
   src/normal_display.cpp
+  src/normal_visual.cpp
   src/overlay_text_display.cpp
   src/plotter_2d_display.cpp
   src/pie_chart_display.cpp
