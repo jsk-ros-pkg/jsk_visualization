@@ -45,7 +45,6 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>rviz</build_depend>
-  <build_depend>hark_msgs</build_depend>
   <build_depend>jsk_hark_msgs</build_depend>
   <build_depend>jsk_footstep_msgs</build_depend>
   <build_depend>jsk_pcl_ros</build_depend>
@@ -54,7 +53,6 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>diagnostic_msgs</build_depend>
   <run_depend>rviz</run_depend>
-  <run_depend>hark_msgs</run_depend>
   <run_depend>jsk_hark_msgs</run_depend>
   <run_depend>jsk_footstep_msgs</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
