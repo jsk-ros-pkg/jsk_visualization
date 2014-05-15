@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_rviz_plugins</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>The jsk_rviz_plugins package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 

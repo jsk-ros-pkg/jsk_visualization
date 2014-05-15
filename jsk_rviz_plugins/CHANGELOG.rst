@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2014-05-15)
+------------------
 * overlay sample for groovy
 * make NormalDisplay work on catkin.
   add normal_visual.cpp to jsk_rviz_plugins.so

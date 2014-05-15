@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2014-05-15)
+------------------
 * compile executables after message generation
 * wait for service before making service client
 * remove dependency on hrpsys_gazebo_atlas when using pr2

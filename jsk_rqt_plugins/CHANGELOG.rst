@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2014-05-15)
+------------------
 * add --no-legend option to disable legend
 * support polygon mode. if you want to plot in line mode, please add -L option
 * implement 3d plotter
