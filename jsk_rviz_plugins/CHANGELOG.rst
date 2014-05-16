@@ -2,6 +2,12 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2014-05-15)
+------------------
+* supress erro message of NormalDisplay
+* depends to hark_msgs is no longer needed
+* Contributors: Kei Okada, Ryohei Ueda
+
 0.0.2 (2014-05-15)
 ------------------
 * overlay sample for groovy

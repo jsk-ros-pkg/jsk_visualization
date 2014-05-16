@@ -2,6 +2,9 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2014-05-15)
+------------------
+
 0.0.2 (2014-05-15)
 ------------------
 * add --no-legend option to disable legend

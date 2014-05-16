@@ -2,6 +2,9 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2014-05-15)
+------------------
+
 0.0.2 (2014-05-15)
 ------------------
 * compile executables after message generation
