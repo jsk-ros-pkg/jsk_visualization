@@ -2,6 +2,13 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* show border as default. add auto coloring option to show
+  clusters efficiently.
+* decrease the number of the error messages from NormalDispaly
+* Contributors: Ryohei Ueda
+
 0.0.3 (2014-05-15)
 ------------------
 * supress erro message of NormalDisplay
