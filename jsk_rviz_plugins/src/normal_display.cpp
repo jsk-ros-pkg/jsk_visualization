@@ -54,7 +54,6 @@ namespace jsk_rviz_plugin
 
   void NormalDisplay::processMessage( const sensor_msgs::PointCloud2::ConstPtr& msg )
   {
-    ROS_INFO("Here");
     //check x,y,z
     int32_t xi = findChannelIndex(msg, "x");
     int32_t yi = findChannelIndex(msg, "y");
@@ -161,10 +160,10 @@ namespace jsk_rviz_plugin
               break;
             }
             visuals_.push_back(visual);
-            ROS_INFO("normal valus %f %f %f %f %f %f / %d %d %d", x, y, z, normal_x, normal_y, normal_z, r, g, b);
-          }else{
-          ROS_ERROR("invalid floats are inputed");
-        }
+            //ROS_INFO("normal valus %f %f %f %f %f %f / %d %d %d", x, y, z, normal_x, normal_y, normal_z, r, g, b);
+          }// else{
+        //   //ROS_ERROR("invalid floats are inputed");
+        // }
 
         ptr += point_step;
       }
