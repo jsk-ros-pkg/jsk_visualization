@@ -58,7 +58,7 @@ generate_messages(
 )
 
 catkin_package(
-    DEPENDS orocos_kdl TinyXML
+    DEPENDS TinyXML
     CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
