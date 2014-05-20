@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2014-05-20)
+------------------
 * add README and images, modify some fails
 * Contributors: Yuto Inagaki
 
