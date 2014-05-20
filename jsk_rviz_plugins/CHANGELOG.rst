@@ -2,6 +2,11 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add README and images, modify some fails
+* Contributors: Yuto Inagaki
+
 1.0.0 (2014-05-17)
 ------------------
 * show border as default. add auto coloring option to show
