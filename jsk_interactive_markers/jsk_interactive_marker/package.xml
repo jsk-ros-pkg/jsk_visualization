@@ -22,7 +22,7 @@
   <build_depend>jsk_pcl_ros</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>tf_conversions</build_depend>
-  <build_depend>orocos_kdl</build_depend>
+  <build_depend>geometry</build_depend>
   <build_depend>tinyxml</build_depend>
   <build_depend>cmake_modules</build_depend>
   
@@ -38,7 +38,7 @@
   <run_depend>jsk_pcl_ros</run_depend>
   <run_depend>eigen_conversions</run_depend>
   <run_depend>tf_conversions</run_depend>
-  <run_depend>orocos_kdl</run_depend>
+  <run_depend>geometry</run_depend>
 </package>
 
 
