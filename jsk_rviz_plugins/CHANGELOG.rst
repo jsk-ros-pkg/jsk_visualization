@@ -2,6 +2,11 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixes a moc generation error with boost >= 1.48
+* add color which will be deviced by curvature
+
 1.0.1 (2014-05-20)
 ------------------
 * add README and images, modify some fails
