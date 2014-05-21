@@ -6,9 +6,29 @@ using namespace rviz;
 namespace jsk_rviz_plugin
 {
 
-  NormalDisplay::NormalDisplay():skip_rate_(100)
+  NormalDisplay::NormalDisplay():skip_rate_(1),scale_(0.3),alpha_(1.0)
   {
-    skip_rate_property_ = new IntProperty("Skip Rate", 100, "Skip the display normals for speed up", this, SLOT( updateSkipRate() ),this);
+    skip_rate_property_
+      = new FloatProperty("Display Rate (%)", 1,
+                                            "Skip the display normals for speed up. Around 1% is recommended",
+                                            this, SLOT( updateSkipRate() ));
+    skip_rate_property_->setMax(100.0);
+    skip_rate_property_->setMin(  0.0);
+
+    scale_property_
+      = new rviz::FloatProperty("Scale", 0.3,
+                                "set the scale of arrow",
+                                this, SLOT(updateScale()));
+
+    scale_property_->setMin(0.0);
+
+    alpha_property_
+      = new rviz::FloatProperty("Alpha", 1,
+                                "set the alpha of arrow",
+                                this, SLOT(updateAlpha()));
+
+    alpha_property_->setMax(1.0);
+    alpha_property_->setMin(0.0);
 
     style_property_ = new EnumProperty( "Style", "PointsColor",
                                         "Rendering mode to use, in order of computational complexity.",
@@ -58,9 +78,16 @@ namespace jsk_rviz_plugin
     }
   }
 
+  void NormalDisplay::updateScale(){
+    scale_ = scale_property_->getFloat();
+  };
+
+  void NormalDisplay::updateAlpha(){
+    alpha_ = alpha_property_->getFloat();
+  };
+
   void NormalDisplay::updateSkipRate(){
-    skip_rate_ = skip_rate_property_->getInt();
-    skip_rate_ = std::max(skip_rate_, 1);
+    skip_rate_ = skip_rate_property_->getFloat();
   }
 
   void NormalDisplay::updateStyle()
@@ -153,7 +180,6 @@ namespace jsk_rviz_plugin
     if(rgbai != -1)
       rgbaoff = msg->fields[rgbai].offset;
 
-
     //check other option values
     const uint32_t point_step = msg->point_step;
     const size_t point_count = msg->width * msg->height;
@@ -163,7 +189,6 @@ namespace jsk_rviz_plugin
         ROS_ERROR("doesn't have point_count > 0");
         return;
       }
-
 
     Ogre::Quaternion orientation;
     Ogre::Vector3 position;
@@ -176,9 +201,10 @@ namespace jsk_rviz_plugin
         return;
       }
 
-    int skip_rate = std::max(skip_rate_, 1);
-
-    visuals_.rset_capacity(int(point_count/skip_rate));
+    int skip_time = int( 100 / skip_rate_ );
+    skip_time = std::max(skip_time, 1);
+    skip_time = std::min(skip_time, int(point_count / 2));
+    visuals_.rset_capacity(int(point_count/skip_time));
     const uint8_t* ptr = &msg->data.front();
 
     //Use Prev Curvature max, min
@@ -191,7 +217,7 @@ namespace jsk_rviz_plugin
     Ogre::ColourValue min_color = min_color_property_->getOgreColor();
     for (size_t i = 0; i < point_count; ++i)
       {
-        if(i % skip_rate != 0){
+        if(i % skip_time != 0){
           ptr += point_step;
           continue;
         }
@@ -215,6 +241,7 @@ namespace jsk_rviz_plugin
             visual->setValues( x, y, z, normal_x, normal_y, normal_z );
             visual->setFramePosition( position );
             visual->setFrameOrientation( orientation );
+            visual->setScale( scale_ );
 
             QColor color = color_property_->getColor();
             Ogre::Vector3 dir_vec(normal_x, normal_y, normal_z);
@@ -227,14 +254,14 @@ namespace jsk_rviz_plugin
                   g = *reinterpret_cast<const uint8_t*>(ptr + rgbaoff + 1*sizeof(uint8_t));
                   r = *reinterpret_cast<const uint8_t*>(ptr + rgbaoff + 2*sizeof(uint8_t));
                 }
-                visual->setColor( r/256.0, g/256.0, b/256.0, 1 );
+                visual->setColor( r/256.0, g/256.0, b/256.0, alpha_ );
               }
               break;
             case (NormalDisplay::FLAT_COLOR):
-              visual->setColor(color.redF(), color.greenF(), color.blueF(), 1);
+              visual->setColor(color.redF(), color.greenF(), color.blueF(), alpha_);
               break;
             case (NormalDisplay::DIRECTION_COLOR):
-              visual->setColor( dir_vec.dotProduct(Ogre::Vector3(1,0,0)), dir_vec.dotProduct(Ogre::Vector3(0,1,0)), dir_vec.dotProduct(Ogre::Vector3(0,0,-1)), 1 );
+              visual->setColor( dir_vec.dotProduct(Ogre::Vector3(-1,0,0)), dir_vec.dotProduct(Ogre::Vector3(0,1,0)), dir_vec.dotProduct(Ogre::Vector3(0,0,-1)), alpha_ );
               break;
             case (NormalDisplay::CURVATURE_COLOR):
               if(use_rainbow){
@@ -242,7 +269,7 @@ namespace jsk_rviz_plugin
                 float value = 1 - (curvature - prev_min_curvature)/prev_diff;
                 float rf,gf,bf;
                 getRainbow(value ,rf, gf, bf);
-                visual->setColor( rf, gf, bf, 1);
+                visual->setColor( rf, gf, bf, alpha_);
               }else{
                 float value  = curvature/(prev_max_curvature - prev_min_curvature);
                 value = std::min(value, 1.0f);
@@ -251,7 +278,7 @@ namespace jsk_rviz_plugin
                 float rf = max_color.r * value + min_color.r * ( 1 - value );
                 float gf = max_color.g * value + min_color.g * ( 1 - value );
                 float bf = max_color.b * value + min_color.b * ( 1 - value );
-                visual->setColor( rf, gf, bf, 1);
+                visual->setColor( rf, gf, bf, alpha_);
               }
               max_curvature = std::max(max_curvature, curvature);
               min_curvature = std::min(min_curvature, curvature);

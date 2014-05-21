@@ -45,4 +45,9 @@ namespace jsk_rviz_plugin
     normal_arrow_->setColor( r, g, b, a );
   }
 
+  void NormalVisual::setScale( float scale )
+  {
+    normal_arrow_->setScale( Ogre::Vector3( scale, scale, scale ) );
+  }
+
 }
