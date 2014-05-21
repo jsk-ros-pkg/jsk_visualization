@@ -1,12 +1,14 @@
 #ifndef __AMBIENT_SOUND_DISPLAY__
 #define __AMBIENT_SOUND_DISPLAY__
 
+#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 #include <jsk_hark_msgs/HarkPower.h>
 #include <ambient_sound_visual.h>
 #include <boost/circular_buffer.hpp>
 #include <rviz/message_filter_display.h>
+#endif
 
 namespace Ogre
 {
