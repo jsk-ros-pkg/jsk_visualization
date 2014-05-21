@@ -16,6 +16,8 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>dynamic_tf_publisher</build_depend>
+  <build_depend>interactive_markers</build_depend>
+  <build_depend>urdf</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>jsk_footstep_msgs</build_depend>
   <build_depend>actionlib</build_depend>
@@ -32,6 +34,8 @@
   <run_depend>visualization_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>dynamic_tf_publisher</run_depend>
+  <run_depend>interactive_markers</run_depend>
+  <run_depend>urdf</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>jsk_footstep_msgs</run_depend>
   <run_depend>actionlib</run_depend>
