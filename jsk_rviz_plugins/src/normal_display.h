@@ -18,6 +18,7 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/bool_property.h>
+#include <rviz/properties/float_property.h>
 #include "normal_visual.h"
 
 namespace jsk_rviz_plugin
@@ -33,9 +34,13 @@ public:
   rviz::ColorProperty* color_property_;
   rviz::ColorProperty* min_color_property_;
   rviz::ColorProperty* max_color_property_;
-  rviz::IntProperty* skip_rate_property_;
+  rviz::FloatProperty* skip_rate_property_;
   rviz::BoolProperty* rainbow_property_;
-  int skip_rate_;
+  rviz::FloatProperty* scale_property_;
+  rviz::FloatProperty* alpha_property_;
+  float skip_rate_;
+  float scale_;
+  float alpha_;
 
   enum ColorTypes{
     POINTS_COLOR,
@@ -57,6 +62,8 @@ private Q_SLOTS:
   void updateStyle();
   void updateSkipRate();
   void updateRainbow();
+  void updateScale();
+  void updateAlpha();
   void getRainbow(float value , float& rf, float& gf, float& bf);
 };
 
