@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2014-05-22)
+------------------
 * add normals param and change skip_rate to set Percentage
 
 1.0.2 (2014-05-21)
