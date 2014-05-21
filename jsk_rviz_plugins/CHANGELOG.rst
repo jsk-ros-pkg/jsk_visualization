@@ -2,6 +2,10 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add normals param and change skip_rate to set Percentage
+
 1.0.2 (2014-05-21)
 ------------------
 * Fixes a moc generation error with boost >= 1.48
