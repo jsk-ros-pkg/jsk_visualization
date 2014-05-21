@@ -27,7 +27,9 @@
   <build_depend>geometry</build_depend>
   <build_depend>tinyxml</build_depend>
   <build_depend>cmake_modules</build_depend>
-  
+  <build_depend>roscpp</build_depend>
+  <build_depend>roslib</build_depend>
+
   <run_depend>roseus</run_depend>
   <run_depend>tinyxml</run_depend>
   <run_depend>geometry_msgs</run_depend>
@@ -43,6 +45,9 @@
   <run_depend>eigen_conversions</run_depend>
   <run_depend>tf_conversions</run_depend>
   <run_depend>geometry</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>roslib</run_depend>
+
 </package>
 
 
