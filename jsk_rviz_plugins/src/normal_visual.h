@@ -24,6 +24,7 @@ namespace jsk_rviz_plugin
     void setFramePosition( const Ogre::Vector3& position );
     void setFrameOrientation( const Ogre::Quaternion& orientation );
     void setColor( float r, float g, float b, float a );
+    void setScale( float scale );
 
   private:
     boost::shared_ptr<rviz::Arrow> normal_arrow_;
