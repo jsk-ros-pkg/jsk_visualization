@@ -64,13 +64,14 @@ namespace jsk_rviz_plugin
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::BoolProperty* only_edge_property_;
+    rviz::FloatProperty* line_width_property_;
     rviz::BoolProperty* auto_color_property_;
     QColor color_;
     std::vector<QColor> colors_;
     double alpha_;
     bool only_edge_;
     bool auto_color_;
-                    
+    double line_width_;
     std::vector<ShapePtr> shapes_;
     std::vector<BillboardLinePtr> edges_;
   private Q_SLOTS:
@@ -78,6 +79,7 @@ namespace jsk_rviz_plugin
     void updateAlpha();
     void updateOnlyEdge();
     void updateAutoColor();
+    void updateLineWidth();
   private:
     void processMessage(const jsk_pcl_ros::BoundingBoxArray::ConstPtr& msg);
   };

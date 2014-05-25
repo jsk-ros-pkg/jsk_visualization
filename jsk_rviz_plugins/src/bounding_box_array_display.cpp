@@ -47,6 +47,9 @@ namespace jsk_rviz_plugin
     only_edge_property_ = new rviz::BoolProperty("only edge", false,
                                                  "show only the edges of the boxes",
                                                  this, SLOT(updateOnlyEdge()));
+    line_width_property_ = new rviz::FloatProperty("line width", 0.005,
+                                                   "line width of the edges",
+                                                   this, SLOT(updateLineWidth()));
     auto_color_property_ = new rviz::BoolProperty("auto color", false,
                                                   "change the color of the boxes automatically",
                                                   this, SLOT(updateAutoColor()));
@@ -86,8 +89,14 @@ namespace jsk_rviz_plugin
     updateAlpha();
     updateOnlyEdge();
     updateAutoColor();
+    updateLineWidth();
   }
 
+  void BoundingBoxArrayDisplay::updateLineWidth()
+  {
+    line_width_ = line_width_property_->getFloat();
+  }
+  
   void BoundingBoxArrayDisplay::updateColor()
   {
     color_ = color_property_->getColor();
@@ -201,7 +210,7 @@ namespace jsk_rviz_plugin
 
         edge->setMaxPointsPerLine(2);
         edge->setNumLines(12);
-        edge->setLineWidth(0.03);
+        edge->setLineWidth(line_width_);
         QColor color = getColor(i);
         edge->setColor(color.red() / 255.0,
                        color.green() / 255.0,
