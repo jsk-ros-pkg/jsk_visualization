@@ -52,6 +52,10 @@ add_executable(world2yaml src/world2yaml)
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
 add_dependencies(world2yaml ${PROJECT_NAME}_gencpp)
 
+add_executable(bounding_box_marker src/bounding_box_marker.cpp)
+target_link_libraries(bounding_box_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+add_dependencies(bounding_box_marker ${PROJECT_NAME}_gencpp)
+
 
 generate_messages(
   DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs jsk_pcl_ros
