@@ -48,6 +48,7 @@ qt4_wrap_cpp(MOC_FILES
   src/plotter_2d_display.h
   src/pie_chart_display.h
   src/diagnostics_display.h
+  src/bounding_box_array_display.h
 )
 
 set(SOURCE_FILES
@@ -62,6 +63,7 @@ set(SOURCE_FILES
   src/plotter_2d_display.cpp
   src/pie_chart_display.cpp
   src/diagnostics_display.cpp
+  src/bounding_box_array_display.cpp
   ${MOC_FILES}
 )
 

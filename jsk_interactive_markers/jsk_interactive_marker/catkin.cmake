@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_interactive_marker)
 
 find_package(catkin REQUIRED COMPONENTS
-  cmake_modules jsk_pcl_ros jsk_footstep_msgs geometry_msgs visualization_msgs interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions actionlib
+  cmake_modules jsk_pcl_ros jsk_footstep_msgs geometry_msgs visualization_msgs interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions actionlib roscpp roslib
   urdf)
 find_package(orocos_kdl REQUIRED)
 find_package(TinyXML REQUIRED)
@@ -52,13 +52,17 @@ add_executable(world2yaml src/world2yaml)
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
 add_dependencies(world2yaml ${PROJECT_NAME}_gencpp)
 
+add_executable(bounding_box_marker src/bounding_box_marker.cpp)
+target_link_libraries(bounding_box_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+add_dependencies(bounding_box_marker ${PROJECT_NAME}_gencpp)
+
 
 generate_messages(
   DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs jsk_pcl_ros
 )
 
 catkin_package(
-    DEPENDS orocos_kdl TinyXML
+    DEPENDS TinyXML
     CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO

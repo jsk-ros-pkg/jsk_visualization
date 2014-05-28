@@ -16,7 +16,9 @@
 #include <rviz/frame_manager.h>
 #include <rviz/properties/enum_property.h>
 #include <rviz/properties/color_property.h>
-
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/float_property.h>
 #include "normal_visual.h"
 
 namespace jsk_rviz_plugin
@@ -30,11 +32,21 @@ public:
   virtual ~NormalDisplay();
   rviz::EnumProperty* style_property_;
   rviz::ColorProperty* color_property_;
+  rviz::ColorProperty* min_color_property_;
+  rviz::ColorProperty* max_color_property_;
+  rviz::FloatProperty* skip_rate_property_;
+  rviz::BoolProperty* rainbow_property_;
+  rviz::FloatProperty* scale_property_;
+  rviz::FloatProperty* alpha_property_;
+  float skip_rate_;
+  float scale_;
+  float alpha_;
 
   enum ColorTypes{
     POINTS_COLOR,
     FLAT_COLOR,
-    DIRECTION_COLOR
+    DIRECTION_COLOR,
+    CURVATURE_COLOR
   };
 
 protected:
@@ -48,7 +60,11 @@ protected:
 private Q_SLOTS:
   void processMessage( const sensor_msgs::PointCloud2::ConstPtr& msg );
   void updateStyle();
-
+  void updateSkipRate();
+  void updateRainbow();
+  void updateScale();
+  void updateAlpha();
+  void getRainbow(float value , float& rf, float& gf, float& bf);
 };
 
 }
