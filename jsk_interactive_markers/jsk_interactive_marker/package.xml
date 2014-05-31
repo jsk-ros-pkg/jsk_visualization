@@ -10,7 +10,11 @@
   <maintainer email="furuta@jsk.t.u-tokyo.ac.jp">furuta</maintainer>
   <license>BSD</license>
   <url>http://ros.org/wiki/interactive_marker</url>
+
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>mk</build_depend>
+  <build_depend>rosbuild</build_depend>
   <build_depend>roseus</build_depend>
   <build_depend>visualization_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
