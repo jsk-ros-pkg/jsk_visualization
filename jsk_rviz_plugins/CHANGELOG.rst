@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2014-05-31)
+------------------
 * jsk_rviz_plugins: use depend tag add mk/rosbuild to build_depend
 * update the initial parameter of FootstepDisplay
 * add line width property to BoundingBoxArrayDisplay

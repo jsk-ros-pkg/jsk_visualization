@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2014-05-31)
+------------------
 * jsk_interactive_marker: fix for rosbuild, add mk/rosbuild to package.xml
 * add "execute the plan" and "force to replan" mouse menu to footstep_marker
 * add bounding_box_marker to select jsk_pcl_ros/BoundingBoxArray
