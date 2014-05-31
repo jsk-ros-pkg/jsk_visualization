@@ -2,6 +2,14 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* jsk_rviz_plugins: use depend tag add mk/rosbuild to build_depend
+* update the initial parameter of FootstepDisplay
+* add line width property to BoundingBoxArrayDisplay
+* add new plugin: BoundingBoxArray for jsk_pcl_ros/BoundingBoxArray
+* Contributors: Kei Okada, Ryohei Ueda
+
 1.0.3 (2014-05-22)
 ------------------
 * add normals param and change skip_rate to set Percentage

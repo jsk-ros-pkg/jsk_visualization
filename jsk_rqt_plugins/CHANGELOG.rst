@@ -2,6 +2,12 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* jsk_rqt_plugins: add mk/rosbuild to build_depend
+* jsk_rqt_plugins) install missing .ui file
+* Contributors: Isaac IY Saito, Kei Okada
+
 1.0.3 (2014-05-22)
 ------------------
 
