@@ -44,6 +44,8 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>mk</build_depend>
+  <build_depend>rosbuild</build_depend>
   <build_depend>rviz</build_depend>
   <build_depend>jsk_hark_msgs</build_depend>
   <build_depend>jsk_footstep_msgs</build_depend>
