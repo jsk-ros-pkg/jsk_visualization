@@ -9,6 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/jsk_interactive_test</url>
   
+  <depend package="mk" />
   <depend package="rospy" />
   <depend package="visualization_msgs" />
 

@@ -9,8 +9,8 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/jsk_rviz_plugins</url>
 
-  <rosdep name="rviz"/>
-  <rosdep name="actionlib_msgs"/>
+  <depend package="mk"/>
+  <depend package="actionlib_msgs"/>
   <depend package="jsk_hark_msgs"/>
   <depend package="jsk_footstep_msgs"/>
   <depend package="jsk_pcl_ros" />
