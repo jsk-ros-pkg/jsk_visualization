@@ -53,6 +53,7 @@ qt4_wrap_cpp(MOC_FILES
   src/pie_chart_display.h
   src/diagnostics_display.h
   src/ambient_sound_display_groovy.h
+  src/bounding_box_array_display.h
 )
 
 set(SOURCE_FILES
@@ -69,6 +70,7 @@ set(SOURCE_FILES
   src/diagnostics_display.cpp
   src/ambient_sound_display_groovy.cpp
   src/ambient_sound_visual.cpp
+  src/bounding_box_array_display.cpp
   ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(jsk_rviz_plugins ${SOURCE_FILES})
