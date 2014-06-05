@@ -265,7 +265,7 @@ class Plot3DWidget(QWidget):
 
         self.subscribe_topic_button.setEnabled(False)
         if start_paused:
-            self.pause_button.setChecked(True)            
+            self.pause_button.setChecked(True)
 
         self._topic_completer = TopicCompleter(self.topic_edit)
         self._topic_completer.update_topics()
