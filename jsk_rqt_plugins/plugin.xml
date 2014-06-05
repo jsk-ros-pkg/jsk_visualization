@@ -15,4 +15,20 @@
     </qtgui>
 
   </class>
+  <class name="HistogramPlot" type="jsk_rqt_plugins.hist.HistogramPlot" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A plugin visualizing histogram
+    </description>
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>HistogramPlot</label>
+      <icon type="theme">utilities-system-monitor</icon>
+      <statustip>A plugin visualizing histogram</statustip>
+    </qtgui>
+
+  </class>
 </library>
