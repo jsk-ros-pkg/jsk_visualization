@@ -250,8 +250,8 @@ void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr 
     KDL::Frame robotFrame;
     KDL::Frame markerFrame;
     KDL::Frame robotMarkerFrame;
-    tf::TransformTFToKDL(stf_robot, robotFrame);
-    tf::TransformTFToKDL(stf_marker, markerFrame);
+    tf::transformTFToKDL(stf_robot, robotFrame);
+    tf::transformTFToKDL(stf_marker, markerFrame);
     
     robotMarkerFrame = robotFrame * markerFrame;
 
@@ -302,7 +302,7 @@ void UrdfModelMarker::graspPointCB( const visualization_msgs::InteractiveMarkerF
 
   KDL::Vector graspVec(feedback->mouse_point.x, feedback->mouse_point.y, feedback->mouse_point.z);
   KDL::Frame parentFrame;
-  tf::PoseMsgToKDL (linkMarkerMap[feedback->marker_name].pose, parentFrame);
+  tf::poseMsgToKDL (linkMarkerMap[feedback->marker_name].pose, parentFrame);
 
   graspVec = parentFrame.Inverse(graspVec);
 
@@ -539,8 +539,8 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
     case Joint::CONTINUOUS:
       {
       linkProperty *link_property = &linkMarkerMap[link_frame_name_];
-      tf::PoseMsgToKDL (link_property->initial_pose, initialFrame);
-      tf::PoseMsgToKDL (link_property->pose, presentFrame);
+      tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
+      tf::poseMsgToKDL (link_property->pose, presentFrame);
       rot = initialFrame.M.Inverse() * presentFrame.M;
       jointAngle = rot.GetRotAngle(rotVec);
       jointVec = KDL::Vector(link_property->joint_axis.x,
@@ -581,8 +581,8 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
       {
 	KDL::Vector pos;
 	linkProperty *link_property = &linkMarkerMap[link_frame_name_];
-	tf::PoseMsgToKDL (link_property->initial_pose, initialFrame);
-	tf::PoseMsgToKDL (link_property->pose, presentFrame);
+	tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
+	tf::poseMsgToKDL (link_property->pose, presentFrame);
 
 	pos = presentFrame.p - initialFrame.p;
 
@@ -660,14 +660,14 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
       link_property->joint_angle = joint_angle;
       link_property->rotation_count = rotation_count;
 
-      tf::PoseMsgToKDL (link_property->initial_pose, initialFrame);
-      tf::PoseMsgToKDL (link_property->initial_pose, presentFrame);
+      tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
+      tf::poseMsgToKDL (link_property->initial_pose, presentFrame);
       jointVec = KDL::Vector(link_property->joint_axis.x,
 			     link_property->joint_axis.y,
 			     link_property->joint_axis.z);
 
       presentFrame.M = KDL::Rotation::Rot(jointVec, joint_angle) * initialFrame.M;
-      tf::PoseKDLToMsg(presentFrame, link_property->pose);
+      tf::poseKDLToMsg(presentFrame, link_property->pose);
 
       break;
       }
@@ -676,14 +676,14 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
       linkProperty *link_property = &linkMarkerMap[link_frame_name_];
       link_property->joint_angle = joint_angle;
       link_property->rotation_count = rotation_count;
-      tf::PoseMsgToKDL (link_property->initial_pose, initialFrame);
-      tf::PoseMsgToKDL (link_property->initial_pose, presentFrame);
+      tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
+      tf::poseMsgToKDL (link_property->initial_pose, presentFrame);
       jointVec = KDL::Vector(link_property->joint_axis.x,
 			     link_property->joint_axis.y,
 			     link_property->joint_axis.z);
       jointVec = jointVec / jointVec.Norm(); // normalize vector
       presentFrame.p = joint_angle * jointVec + initialFrame.p;
-      tf::PoseKDLToMsg(presentFrame, link_property->pose);
+      tf::poseKDLToMsg(presentFrame, link_property->pose);
       break;
       }
   default:

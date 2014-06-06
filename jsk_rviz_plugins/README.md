@@ -1,0 +1,57 @@
+# jsk\_rviz\_plugins
+
+## Introduction
+jsk\_rviz\_plugins is a package to provide original rviz plugins.
+
+You can use this rviz plugins just launch rviz.
+
+## rviz\_plugins
+
+### Displays
+#### AmbientSound
+#### Diagnostics
+#### FootStep
+#### Normal
+
+##### What Is This
+
+This will show the Normal which is subcribed from topic (sensor_msgs::PointCloud2).
+The normal is assumed to have the features x,y,z,normal\_x,normal\_y,normal\_z.
+
+![Normal Plugin](cfg/image/normal_sample.png "Normal Plugins in RViz")
+
+##### Samples
+Plug the depth sensor which could be launched by openni.launch and execute below command.
+
+```
+roslaunch jsk_rviz_plugins normal_sample.launch
+```
+
+---
+
+#### OverlayText
+#### PieChart
+#### Plotter2D
+##### What Are These
+
+
+These will show text or graph on the rviz main view.
+
+![Plotter2D PieChart OverlayText Plugin](cfg/image/overlay_sample.png "Overlay Plugins in RViz")
+
+##### Samples
+
+Just run below commands
+
+```
+roslaunch jsk_rviz_plugins overlay_sample.launch
+```
+
+---
+
+#### PolygonArray
+
+### Panels
+#### CancelAction
+#### PublishTopic
+#### SelectPointCloudPublishAction

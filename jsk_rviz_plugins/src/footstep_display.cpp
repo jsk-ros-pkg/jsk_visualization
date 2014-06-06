@@ -8,10 +8,10 @@ namespace jsk_rviz_plugin
     alpha_property_ =  new rviz::FloatProperty( "Alpha", 0.5,
                                                 "0 is fully transparent, 1.0 is fully opaque.",
                                                 this, SLOT( updateAlpha() ));
-    width_property_ =  new rviz::FloatProperty( "Width", 0.23,
+    width_property_ =  new rviz::FloatProperty( "Width", 0.15,
                                                 "width of the footstep",
                                                 this, SLOT( updateFootstepSize() ));
-    height_property_ =  new rviz::FloatProperty( "height", 0.1,
+    height_property_ =  new rviz::FloatProperty( "height", 0.01,
                                                 "height of the footstep",
                                                 this, SLOT( updateFootstepSize() ));
 

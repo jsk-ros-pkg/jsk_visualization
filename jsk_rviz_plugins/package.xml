@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_rviz_plugins</name>
-  <version>0.0.10</version>
+  <version>1.0.4</version>
   <description>The jsk_rviz_plugins package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
@@ -44,19 +44,25 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>mk</build_depend>
+  <build_depend>rosbuild</build_depend>
   <build_depend>rviz</build_depend>
-  <build_depend>hark_msgs</build_depend>
   <build_depend>jsk_hark_msgs</build_depend>
   <build_depend>jsk_footstep_msgs</build_depend>
   <build_depend>jsk_pcl_ros</build_depend>
   <build_depend>wxwidgets</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>diagnostic_msgs</build_depend>
   <run_depend>rviz</run_depend>
-  <run_depend>hark_msgs</run_depend>
   <run_depend>jsk_hark_msgs</run_depend>
   <run_depend>jsk_footstep_msgs</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
   <run_depend>wxwidgets</run_depend>
-  
+  <run_depend>message_generation</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>diagnostic_msgs</run_depend>
+    
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

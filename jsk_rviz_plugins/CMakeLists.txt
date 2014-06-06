@@ -21,7 +21,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #uncomment if you have defined messages
-#rosbuild_genmsg()
+rosbuild_genmsg()
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
@@ -47,9 +47,31 @@ qt4_wrap_cpp(MOC_FILES
   src/select_point_cloud_publish_action.h
   src/footstep_display.h
   src/polygon_array_display.h
+  src/normal_display.h
+  src/overlay_text_display.h
+  src/plotter_2d_display.h
+  src/pie_chart_display.h
+  src/diagnostics_display.h
+  src/ambient_sound_display_groovy.h
+  src/bounding_box_array_display.h
 )
 
-set(SOURCE_FILES src/footstep_display.cpp src/cancel_action.cpp src/publish_topic.cpp src/select_point_cloud_publish_action.cpp src/polygon_array_display.cpp ${MOC_FILES})
+set(SOURCE_FILES
+  src/footstep_display.cpp
+  src/cancel_action.cpp
+  src/publish_topic.cpp
+  src/select_point_cloud_publish_action.cpp
+  src/polygon_array_display.cpp
+  src/normal_display.cpp
+  src/normal_visual.cpp
+  src/overlay_text_display.cpp
+  src/plotter_2d_display.cpp
+  src/pie_chart_display.cpp
+  src/diagnostics_display.cpp
+  src/ambient_sound_display_groovy.cpp
+  src/ambient_sound_visual.cpp
+  src/bounding_box_array_display.cpp
+  ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(jsk_rviz_plugins ${SOURCE_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES})

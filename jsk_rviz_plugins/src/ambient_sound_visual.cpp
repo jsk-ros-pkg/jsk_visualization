@@ -12,9 +12,10 @@ namespace jsk_rviz_plugin
 
     // BEGIN_TUTORIAL
     AmbientSoundVisual::AmbientSoundVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ): /*{{{*/
-        width_ (1.0),
-        scale_ (2),
-        bias_ (16)
+        width_ (0.1),
+        scale_ (1.0),
+        bias_ (10),
+        grad_ (0.1)
     {
         scene_manager_ = scene_manager;
 
@@ -67,7 +68,7 @@ namespace jsk_rviz_plugin
         ambient_sound_power_line_->setLineWidth(width_);
         for (int i = 0; i <= directions ; i++) {
             float biased_power = (powers[(i%directions)] - bias_) * grad_;
-            if (biased_power < 0) { biased_power=0; }
+            if (biased_power <= 0.0) { biased_power = 0.001; }
             Ogre::Vector3 point = Ogre::Vector3((biased_power*scale_)*cos(i*(2*M_PI/directions)- M_PI), (biased_power*scale_)*sin(i*(2*M_PI/directions) - M_PI), 0);
             ambient_sound_power_line_->addPoint(orientation_ * point + position_);
             //std::cout << biased_power << " ";
