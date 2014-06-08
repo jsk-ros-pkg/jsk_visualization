@@ -9,6 +9,8 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/interactive_marker</url>
 
+  <depend package="mk" />
+
   <depend package="roseus" />
   <depend package="jsk_pcl_ros" />
   <depend package="jsk_footstep_msgs" />
@@ -17,29 +19,16 @@
   <depend package="geometry_msgs" />
   <depend package="sensor_msgs" />
   <depend package="dynamic_tf_publisher" />
-  <depend package="interactive_marker_helpers" />
   <depend package="interactive_markers" />
   <depend package="tf" />
   <depend package="tf_conversions" />
   <depend package="actionlib" />
   <depend package="eigen_conversions" />
   <depend package="orocos_kdl" />
+  <depend package="roslib" />
   <depend package="cmake_modules" />
-  
-  <rosdep name="visualization_msgs" />
-  <rosdep name="geometry_msgs" />
-  <rosdep name="sensor_msgs" />
-  <rosdep name="dynamic_tf_publisher" />
-  <rosdep name="interactive_marker_helpers" />
-  <rosdep name="interactive_markers" />
-  <rosdep name="tf" />
-  <rosdep name="tf_conversions" />
-  <rosdep name="actionlib" />
-  <rosdep name="eigen_conversions" />
-  <rosdep name="orocos_kdl" />
-  <rosdep name="tinyxml" />
-  <rosdep name="eigen" />
-  <rosdep name="cmake_modules" />
+  <depend package="urdf" />
+
 </package>
 
 
