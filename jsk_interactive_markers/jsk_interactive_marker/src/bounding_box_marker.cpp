@@ -41,7 +41,7 @@
 
 boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
 boost::mutex mutex;
-ros::Publisher pub, box_pub;
+ros::Publisher pub, box_pub, box_arr_pub;
 jsk_pcl_ros::BoundingBoxArray::ConstPtr box_msg;
 
 void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
@@ -61,6 +61,10 @@ void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr
     index.data = boost::lexical_cast<int>(splitted_string.front());
     pub.publish(index);
     box_pub.publish(box_msg->boxes[index.data]);
+    jsk_pcl_ros::BoundingBoxArray array_msg;
+    array_msg.header = box_msg->header;
+    array_msg.boxes.push_back(box_msg->boxes[index.data]);
+    box_arr_pub.publish(array_msg);
   }
 }
 
@@ -115,6 +119,7 @@ int main(int argc, char** argv)
   server.reset(new interactive_markers::InteractiveMarkerServer("bounding_box_interactive_marker", "", false));
   pub = pnh.advertise<jsk_pcl_ros::Int32Stamped>("selected_index", 1);
   box_pub = pnh.advertise<jsk_pcl_ros::BoundingBox>("selected_box", 1);
+  box_arr_pub = pnh.advertise<jsk_pcl_ros::BoundingBoxArray>("selected_box_array", 1);
   ros::Subscriber sub = pnh.subscribe("bounding_box_array", 1, boxCallback);
   ros::spin();
   server.reset();
