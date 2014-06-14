@@ -373,11 +373,11 @@ void FootstepMarker::transformPolygon(
   }
 }
 
-void FootstepMarker::projectMarkerToPlane()
+bool FootstepMarker::projectMarkerToPlane()
 {
   if (latest_planes_->polygons.size() == 0) {
     ROS_WARN("it's not valid polygons");
-    return;
+    return false;
   }
   ROS_ERROR("projecting");
   double min_distance = DBL_MAX;
@@ -402,6 +402,10 @@ void FootstepMarker::projectMarkerToPlane()
     marker_pose_.pose = min_pose.pose;
     server_->setPose("footstep_marker", min_pose.pose);
     server_->applyChanges();
+    return true;
+  }
+  else {
+    return false;
   }
 }
 
@@ -414,6 +418,7 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
   marker_pose_.header = feedback->header;
   marker_pose_.pose = feedback->pose;
   marker_frame_id_ = feedback->header.frame_id;
+  bool skip_plan = false;
   if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP) {
     if (use_plane_snap_) {
       if (!latest_planes_) {
@@ -421,11 +426,13 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
       }
       else {
         // do something magicalc
-        projectMarkerToPlane();
+        skip_plan = !projectMarkerToPlane();
       }
     }
   }
-  planIfPossible();
+  if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP && !skip_plan) {
+    planIfPossible();
+  }
 }
 
 void FootstepMarker::executeFootstep() {
