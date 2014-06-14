@@ -51,7 +51,7 @@ protected:
   boost::mutex plane_mutex_;
 
   // projection to the planes
-  void projectMarkerToPlane();
+  bool projectMarkerToPlane();
   void transformPolygon(const geometry_msgs::PolygonStamped& polygon,
                         const std_msgs::Header& target_header,
                         std::vector<geometry_msgs::PointStamped>& output_points);
