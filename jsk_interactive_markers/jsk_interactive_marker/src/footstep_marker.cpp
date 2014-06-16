@@ -5,6 +5,7 @@
 #include <jsk_interactive_marker/interactive_marker_helpers.h>
 #include <jsk_footstep_msgs/PlanFootstepsGoal.h>
 #include <jsk_footstep_msgs/PlanFootstepsResult.h>
+#include <std_srvs/Empty.h>
 #include <jsk_pcl_ros/CallSnapIt.h>
 #include <Eigen/StdVector>
 #include <eigen_conversions/eigen_msg.h>
@@ -35,6 +36,7 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   pnh.param("frame_id", marker_frame_id_, std::string("/map"));
   footstep_pub_ = nh.advertise<jsk_footstep_msgs::FootstepArray>("footstep", 1);
   snapit_client_ = nh.serviceClient<jsk_pcl_ros::CallSnapIt>("snapit");
+  estimate_occlusion_client_ = nh.serviceClient<std_srvs::Empty>("require_estimation");
   if (wait_snapit_server_) {
     snapit_client_.waitForExistence();
   }
@@ -50,10 +52,16 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   }
     
   server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
-  menu_handler_.insert( "Snap Legs", boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
-  menu_handler_.insert( "Reset Legs", boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
-  menu_handler_.insert( "Execute the Plan", boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
-  menu_handler_.insert( "Force to replan", boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Snap Legs",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Reset Legs",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Execute the Plan",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Force to replan",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Estimate occlusion",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
 
   marker_pose_.header.frame_id = marker_frame_id_;
   marker_pose_.header.stamp = ros::Time::now();
@@ -281,10 +289,20 @@ void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
     planIfPossible();
     break;
   }
+  case 5: {                     // estimate
+    callEstimateOcclusion();
+    break;
+  }
   default: {
     break;
   }
   }
+}
+
+void FootstepMarker::callEstimateOcclusion()
+{
+  std_srvs::Empty srv;
+  estimate_occlusion_client_.call(srv);
 }
 
 double FootstepMarker::projectPoseToPlane(
