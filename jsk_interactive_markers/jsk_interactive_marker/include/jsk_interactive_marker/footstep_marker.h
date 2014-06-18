@@ -46,12 +46,13 @@ protected:
   void snapLegs();
   geometry_msgs::Pose computeLegTransformation(uint8_t leg);
   geometry_msgs::Pose getFootstepPose(bool leftp);
+  void callEstimateOcclusion();
   void planIfPossible();
   void resetLegPoses();
   boost::mutex plane_mutex_;
 
   // projection to the planes
-  void projectMarkerToPlane();
+  bool projectMarkerToPlane();
   void transformPolygon(const geometry_msgs::PolygonStamped& polygon,
                         const std_msgs::Header& target_header,
                         std::vector<geometry_msgs::PointStamped>& output_points);
@@ -91,6 +92,7 @@ protected:
   
   ros::Publisher footstep_pub_;
   ros::ServiceClient snapit_client_;
+  ros::ServiceClient estimate_occlusion_client_;
   boost::shared_ptr<tf::TransformListener> tf_listener_;
   actionlib::SimpleActionClient<jsk_footstep_msgs::PlanFootstepsAction> ac_;
   actionlib::SimpleActionClient<jsk_footstep_msgs::ExecFootstepsAction> ac_exec_;
