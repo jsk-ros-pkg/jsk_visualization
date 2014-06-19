@@ -9,7 +9,7 @@ project(jsk_rviz_plugins)
 find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros
   message_generation std_msgs diagnostic_msgs)
 
-add_message_files(FILES OverlayText.msg)
+add_message_files(FILES OverlayText.msg OverlayMenu.msg)
 generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
@@ -45,6 +45,7 @@ qt4_wrap_cpp(MOC_FILES
   src/polygon_array_display.h
   src/normal_display.h
   src/overlay_text_display.h
+  src/overlay_menu_display.h
   src/plotter_2d_display.h
   src/pie_chart_display.h
   src/diagnostics_display.h
@@ -60,6 +61,7 @@ set(SOURCE_FILES
   src/normal_display.cpp
   src/normal_visual.cpp
   src/overlay_text_display.cpp
+  src/overlay_menu_display.cpp
   src/plotter_2d_display.cpp
   src/pie_chart_display.cpp
   src/diagnostics_display.cpp
