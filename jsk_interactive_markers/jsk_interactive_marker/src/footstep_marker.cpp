@@ -5,6 +5,7 @@
 #include <jsk_interactive_marker/interactive_marker_helpers.h>
 #include <jsk_footstep_msgs/PlanFootstepsGoal.h>
 #include <jsk_footstep_msgs/PlanFootstepsResult.h>
+#include <std_srvs/Empty.h>
 #include <jsk_pcl_ros/CallSnapIt.h>
 #include <Eigen/StdVector>
 #include <eigen_conversions/eigen_msg.h>
@@ -28,22 +29,39 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   
   pnh.param("footstep_margin", footstep_margin_, 0.2);
   pnh.param("use_footstep_planner", use_footstep_planner_, true);
+  pnh.param("use_plane_snap", use_plane_snap_, true);
   pnh.param("use_footstep_controller", use_footstep_controller_, true);
   pnh.param("use_initial_footstep_tf", use_initial_footstep_tf_, true);
   pnh.param("wait_snapit_server", wait_snapit_server_, false);
   pnh.param("frame_id", marker_frame_id_, std::string("/map"));
   footstep_pub_ = nh.advertise<jsk_footstep_msgs::FootstepArray>("footstep", 1);
   snapit_client_ = nh.serviceClient<jsk_pcl_ros::CallSnapIt>("snapit");
+  estimate_occlusion_client_ = nh.serviceClient<std_srvs::Empty>("require_estimation");
   if (wait_snapit_server_) {
     snapit_client_.waitForExistence();
   }
   
+  if (use_plane_snap_) {
+    //plane_sub_ = pnh.subscribe("planes", 1, &FootstepMarker::planesCB, this);
+    polygons_sub_.subscribe(pnh, "planes", 1);
+    coefficients_sub_.subscribe(pnh, "planes_coefficients", 1);
+    sync_ = boost::make_shared<message_filters::Synchronizer<PlaneSyncPolicy> >(100);
+    sync_->connectInput(polygons_sub_, coefficients_sub_);
+    sync_->registerCallback(boost::bind(&FootstepMarker::planeCB,
+                                        this, _1, _2));
+  }
     
   server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
-  menu_handler_.insert( "Snap Legs", boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
-  menu_handler_.insert( "Reset Legs", boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
-  menu_handler_.insert( "Execute the Plan", boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
-  menu_handler_.insert( "Force to replan", boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Snap Legs",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Reset Legs",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Execute the Plan",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Force to replan",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Estimate occlusion",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
 
   marker_pose_.header.frame_id = marker_frame_id_;
   marker_pose_.header.stamp = ros::Time::now();
@@ -271,9 +289,141 @@ void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
     planIfPossible();
     break;
   }
+  case 5: {                     // estimate
+    callEstimateOcclusion();
+    break;
+  }
   default: {
     break;
   }
+  }
+}
+
+void FootstepMarker::callEstimateOcclusion()
+{
+  std_srvs::Empty srv;
+  estimate_occlusion_client_.call(srv);
+}
+
+double FootstepMarker::projectPoseToPlane(
+  const std::vector<geometry_msgs::PointStamped>& polygon,
+  const geometry_msgs::PoseStamped& point,
+  geometry_msgs::PoseStamped& foot)
+{
+  Eigen::Vector3d orig(polygon[1].point.x, polygon[1].point.y, polygon[1].point.z);
+  Eigen::Vector3d A(polygon[0].point.x, polygon[0].point.y, polygon[0].point.z);
+  Eigen::Vector3d B(polygon[2].point.x, polygon[2].point.y, polygon[2].point.z);
+  Eigen::Vector3d normal = (B - orig).cross(A - orig).normalized();
+  Eigen::Vector3d g(0, 0, 1);   // should be parameterize
+  bool reversed = false;
+  if (normal.dot(g) < 0) {
+    normal = - normal;
+    reversed = true;
+  }
+  Eigen::Vector3d p(point.pose.position.x, point.pose.position.y, point.pose.position.z);
+  Eigen::Vector3d v = (p - orig);
+  double d = v.dot(normal);
+  Eigen::Vector3d projected_point = p - d * normal;
+
+  ROS_INFO("normal: [%f, %f, %f]", normal[0], normal[1], normal[2]);
+  
+  // check the point is inside of the polygon or not...
+  for (size_t i = 0; i < polygon.size() - 1; i++) {
+    Eigen::Vector3d O(polygon[i].point.x, polygon[i].point.y, polygon[i].point.z);
+    Eigen::Vector3d Q(polygon[i + 1].point.x, polygon[i + 1].point.y, polygon[i + 1].point.z);
+    Eigen::Vector3d n2 = (Q - O).cross(projected_point - O);
+    if (reversed) {
+      if (normal.dot(n2) > 0) {
+        d = DBL_MAX;
+      }
+    }
+    else {
+      if (normal.dot(n2) < 0) {
+        d = DBL_MAX;
+      }
+    }
+  }
+  foot.header = point.header;
+  foot.pose.position.x = projected_point[0];
+  foot.pose.position.y = projected_point[1];
+  foot.pose.position.z = projected_point[2];
+  // compute orientation...
+  Eigen::Quaterniond q(point.pose.orientation.w,
+                       point.pose.orientation.x,
+                       point.pose.orientation.y,
+                       point.pose.orientation.z);
+  Eigen::Quaterniond q2;
+  Eigen::Matrix3d m = q.toRotationMatrix();
+  Eigen::Vector3d e_x = m.col(0);
+  Eigen::Vector3d e_y = m.col(1);
+  Eigen::Vector3d e_z = m.col(2);
+  Eigen::Quaterniond trans;
+  trans.setFromTwoVectors(e_z, normal); // ???
+  // we need to check if trans is flipped
+  
+  q2 = trans * q;
+  Eigen::Vector3d e_z2 = q2.toRotationMatrix().col(2);
+  ROS_INFO("e_z: [%f, %f, %f]", e_z[0], e_z[1], e_z[2]);
+  ROS_INFO("e_z2: [%f, %f, %f]", e_z2[0], e_z2[1], e_z2[2]);
+  //q2 = q * trans;
+  foot.pose.orientation.x = q2.x();
+  foot.pose.orientation.y = q2.y();
+  foot.pose.orientation.z = q2.z();
+  foot.pose.orientation.w = q2.w();
+  return fabs(d);
+}
+
+void FootstepMarker::transformPolygon(
+  const geometry_msgs::PolygonStamped& polygon,
+  const std_msgs::Header& target_header,
+  std::vector<geometry_msgs::PointStamped>& output_points)
+{
+  for (size_t i = 0; i < polygon.polygon.points.size(); i++) {
+    geometry_msgs::PointStamped point, output;
+    point.header = polygon.header;
+    point.point.x = polygon.polygon.points[i].x;
+    point.point.y = polygon.polygon.points[i].y;
+    point.point.z = polygon.polygon.points[i].z;
+    tf_listener_->transformPoint(target_header.frame_id,
+                                 point,
+                                 output);
+    output_points.push_back(output);
+  }
+}
+
+bool FootstepMarker::projectMarkerToPlane()
+{
+  if (latest_planes_->polygons.size() == 0) {
+    ROS_WARN("it's not valid polygons");
+    return false;
+  }
+  ROS_ERROR("projecting");
+  double min_distance = DBL_MAX;
+  geometry_msgs::PoseStamped min_pose;
+  for (size_t i = 0; i < latest_planes_->polygons.size(); i++) {
+    std::vector<geometry_msgs::PointStamped> transformed_points;
+    transformPolygon(latest_planes_->polygons[i],
+                     marker_pose_.header,
+                     transformed_points);
+    geometry_msgs::PoseStamped foot;
+    geometry_msgs::PoseStamped from;
+    from.pose = marker_pose_.pose;
+    from.header = marker_pose_.header;
+    double distance = projectPoseToPlane(transformed_points,
+                                         from, foot);
+    if (min_distance > distance) {
+      min_pose = foot;
+      min_distance = distance;
+    }
+  }
+  if (min_distance < 0.3) {     // smaller than 30cm
+    marker_pose_.pose = min_pose.pose;
+    server_->setPose("footstep_marker", min_pose.pose);
+    server_->applyChanges();
+    return true;
+  }
+  else {
+    return false;
   }
 }
 
@@ -282,10 +432,25 @@ void FootstepMarker::menuFeedbackCB(const visualization_msgs::InteractiveMarkerF
 }
 
 void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
+  boost::mutex::scoped_lock(plane_mutex_);
   marker_pose_.header = feedback->header;
   marker_pose_.pose = feedback->pose;
   marker_frame_id_ = feedback->header.frame_id;
-  planIfPossible();
+  bool skip_plan = false;
+  if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP) {
+    if (use_plane_snap_) {
+      if (!latest_planes_) {
+        ROS_WARN("no planes are available yet");
+      }
+      else {
+        // do something magicalc
+        skip_plan = !projectMarkerToPlane();
+      }
+    }
+  }
+  if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP && !skip_plan) {
+    planIfPossible();
+  }
 }
 
 void FootstepMarker::executeFootstep() {
@@ -477,6 +642,15 @@ void FootstepMarker::initializeInteractiveMarker() {
 }
 
 FootstepMarker::~FootstepMarker() {
+}
+
+void FootstepMarker::planeCB(
+  const jsk_pcl_ros::PolygonArray::ConstPtr& planes,
+  const jsk_pcl_ros::ModelCoefficientsArray::ConstPtr& coefficients)
+{
+  boost::mutex::scoped_lock(plane_mutex_);
+  latest_planes_ = planes;
+  latest_coefficients_ = coefficients;
 }
 
 int main(int argc, char** argv) {
