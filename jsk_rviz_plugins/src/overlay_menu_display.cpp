@@ -74,7 +74,7 @@ namespace jsk_rviz_plugin
   {
     static int count = 0;
     rviz::UniformStringStream ss;
-    ss << "OverlayTextDisplayObject" << count++;
+    ss << "OverlayMenuDisplayObject" << count++;
     Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
     overlay_ = mOverlayMgr->create(ss.str());
     //panel_ = static_cast<Ogre::OverlayContainer*> (
