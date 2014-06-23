@@ -95,7 +95,7 @@ class HistogramPlotWidget(QWidget):
         self._start_time = rospy.get_time()
         self._rosdata = None
         if len(topics) != 0:
-            self.subscribe_topic(topics[0])
+            self.subscribe_topic(topics)
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.update_plot)
         self._update_plot_timer.start(self._redraw_interval)

@@ -16,6 +16,7 @@
   <depend package="jsk_pcl_ros" />
   <depend package="std_msgs" />
   <depend package="rviz" />
+  <depend package="cv_bridge" />
   <rosdep name="wxwidgets" />
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
