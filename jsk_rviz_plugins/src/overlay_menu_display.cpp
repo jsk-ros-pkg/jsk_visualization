@@ -253,6 +253,8 @@ namespace jsk_rviz_plugin
           openingAnimation();
         }
         else {
+          animation_t_ = 0;
+          openingAnimation();
           animation_state_ = CLOSED;
         }
       }
@@ -293,6 +295,8 @@ namespace jsk_rviz_plugin
           openingAnimation();
         }
         else {
+          animation_t_ = 0;
+          openingAnimation();
           animation_state_ = CLOSED;
         }
       }
