@@ -32,10 +32,10 @@ namespace jsk_rviz_plugin
           width_property_ = new rviz::FloatProperty("Width", 0.1,
                   "Width of line",
                   this, SLOT(updateAppearance()));
-          scale_property_ = new rviz::FloatProperty("Scale", 0.1,
+          scale_property_ = new rviz::FloatProperty("Scale", 1.0,
                   "Scale of line",
                   this, SLOT(updateAppearance()));
-          bias_property_ = new rviz::FloatProperty("Bias", 0.1,
+          bias_property_ = new rviz::FloatProperty("Bias", 10,
                   "Bias",
                   this, SLOT(updateAppearance()));
           grad_property_ = new rviz::FloatProperty("Gradient", 0.1,

@@ -1,4 +1,53 @@
 <library path="lib/libjsk_rviz_plugins">
+  <class name="jsk_rviz_plugin/BoundingBoxArray"
+         type="jsk_rviz_plugin::BoundingBoxArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize jsk_pcl_ros/BoundingBoxArray
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/Diagnostics"
+         type="jsk_rviz_plugin::DiagnosticsDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      diagnostics display
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/Plotter2D"
+         type="jsk_rviz_plugin::Plotter2DDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      2D plotter on rviz
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/PieChart"
+         type="jsk_rviz_plugin::PieChartDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      2D pie chart on rviz
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/OverlayText"
+         type="jsk_rviz_plugin::OverlayTextDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays text as overlay
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/OverlayMenu"
+         type="jsk_rviz_plugin::OverlayMenuDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays menu as overlay
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/OverlayImage"
+         type="jsk_rviz_plugin::OverlayImageDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays sensor_msgs::Image as overlay
+    </description>
+  </class>
   <class name="jsk_rviz_plugin/AmbientSound"
          type="jsk_rviz_plugin::AmbientSoundDisplay"
          base_class_type="rviz::Display">
@@ -15,7 +64,15 @@
     </description>
   </class>
 
-  <class name="jsk_rviz_plugin/PolygonArrayDisplay"
+  <class name="jsk_rviz_plugin/NormalDisplay"
+         type="jsk_rviz_plugin::NormalDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays for sensor_msgs::PointCloud2 message
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/PolygonArray"
          type="jsk_rviz_plugin::PolygonArrayDisplay"
          base_class_type="rviz::Display">
     <description>
@@ -47,5 +104,5 @@
       A panel widget to SelectPointCloudPublish action
     </description>
   </class>
-  
+
 </library>

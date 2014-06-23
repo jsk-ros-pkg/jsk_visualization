@@ -2,6 +2,7 @@
 
 (ros::load-ros-manifest "arm_navigation_msgs")
 (ros::load-ros-manifest "jsk_interactive")
+(ros::load-ros-manifest "jsk_interactive_marker")
 (ros::roseus "move_joint_interface")
 
 (load "package://pr2eus/pr2-interface.l")

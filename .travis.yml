@@ -1,4 +1,3 @@
-# Travis Continuous Integration Configuration File, based on ..
 language:
   - cpp
   - python
@@ -7,61 +6,21 @@ python:
 compiler:
   - gcc
 env:
-  - ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild BUILD_PACKAGES="jsk_interactive_marker jsk_interactive_test jsk_interactive jsk_rviz_plugins"
-  - ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin
-  - ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin
-#notifications:
-#  email:
-#    recipients:
-#      - roseus@jsk.t.u-tokyo.ac.jp
-#    on_success: always #[always|never|change] # default: change
-#    on_failure: always #[always|never|change] # default: always
-before_install: # Use this to prepare the system to install prerequisites or dependencies
-  # Define some config vars
-  - export CI_SOURCE_PATH=$(pwd)
-  - export REPOSITORY_NAME=${PWD##*/}
-  - echo "Testing branch $TRAVIS_BRANCH of $REPOSITORY_NAME"
-  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
-  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq -y python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-catkin ros-$ROS_DISTRO-ros python-rosinstall
-  # MongoDB hack - I don't fully understand this but its for moveit_warehouse
-  - sudo apt-get remove -y mongodb mongodb-10gen
-  - sudo apt-get install -y mongodb-clients mongodb-server -o Dpkg::Options::="--force-confdef" # default actions
-  ##### quick hack for missing python-tk on hrpsys/waitInput.py
-  - sudo apt-get install -qq -y python-tk
-  # Setup rosdep
-  - sudo rosdep init
-  - rosdep update
-install: # Use this to install any prerequisites or dependencies necessary to run your build
-  # Create workspace
-  - mkdir -p ~/ros/ws_$REPOSITORY_NAME/src
-  - cd ~/ros/ws_$REPOSITORY_NAME/src
-  - $ROSWS init .
-  - $ROSWS merge file://$CI_SOURCE_PATH/.rosinstall
-  - if [ $ROSWS = rosws ] ; then $ROSWS merge /opt/ros/$ROS_DISTRO/.rosinstall; fi
-  - $ROSWS update -j10
-  - if [ $ROSWS = rosws ] ; then $ROSWS set --git $REPOSITORY_NAME https://dummy.com/dummy -y; fi
-  - ln -s $CI_SOURCE_PATH . # Link the repo we are testing to the new workspace
-  - cd ../
-  # Install dependencies for source repos
-  - find -L src -name package.xml -exec dirname {} \; | xargs -n 1 -i find {} -name manifest.xml | xargs -n 1 -i mv {} {}.deprecated
-  - rosdep install -r -n --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y
-  - find -L src -name manifest.xml.deprecated | xargs -n 1 -i dirname {} | xargs -n 1 -i ln -sf `pwd`/{}/manifest.xml.deprecated `pwd`/{}/manifest.xml
-  - if [ $BUILDER = rosbuild ]; then source src/setup.sh; fi
-  - if [ $ROS_DISTRO = groovy ]; then sudo apt-get install ros-$ROS_DISTRO-common-tutorials ros-$ROS_DISTRO-object-manipulation; fi
-before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
-  - source /opt/ros/$ROS_DISTRO/setup.bash
-  - export CATKIN_PACKAGES="`find $CI_SOURCE_PATH -name package.xml | xargs -n 1 dirname | xargs -n 1 basename`"
-script: # All commands must exit with code 0 on success. Anything else is considered failure.
-  - cd ~/ros/ws_$REPOSITORY_NAME
-  - if [ $BUILDER = rosbuild ]; then source src/setup.sh; cd src; fi
-  - rospack profile
-  - if [ $BUILDER = catkin ]; then catkin_make -j4; else rosmake $BUILD_PACKAGES --profile --pjobs=4; fi
-  - if [ $BUILDER = catkin ]; then if [ "$CATKIN_PACKAGES" != "" ]; then catkin_make test --pkg $CATKIN_PACKAGES; fi; else rosmake $BUILD_PACKAGES --test-only; fi
-  - if [ $BUILDER = catkin ]; then catkin_make install; fi
-  - if [ $BUILDER = catkin ]; then rm -fr devel src build; source install/setup.bash; else source setup.sh; fi
-after_failure:
-  - if [ -e ./build/Testing/Temporary/LastTest.log ]; then cat ./build/Testing/Temporary/LastTest.log; fi
-  - find ${HOME}/.ros/test_results -type f -exec echo "== {} ==" \; -exec cat {} \;
-  - for file in ${HOME}/.ros/log/rostest-*; do echo "=== $file ==="; cat $file; done
+  - ROS_DISTRO=groovy ROSWS=rosws  BUILDER=rosbuild  USE_DEB=true ROS_PARALLEL_JOBS="-j6 -l6"
+  - ROS_DISTRO=groovy ROSWS=rosws  BUILDER=rosbuild  USE_DEB=false ROS_PARALLEL_JOBS="-j6 -l6"
+  - ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin    USE_DEB=true ROS_PARALLEL_JOBS="-j6 -l6"
+  - ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin    USE_DEB=false ROS_PARALLEL_JOBS="-j6 -l6"
+  - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=true ROS_PARALLEL_JOBS="-j6 -l6"
+  - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false ROS_PARALLEL_JOBS="-j6 -l6"
+  - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true ROS_PARALLEL_JOBS="-j6 -l6"
+  - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false ROS_PARALLEL_JOBS="-j6 -l6"
+matrix:
+  allow_failures:
+    - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true ROS_PARALLEL_JOBS="-j6 -l6"
+    - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false ROS_PARALLEL_JOBS="-j6 -l6"
+script: source .travis/travis.sh
+notifications:
+  email:
+    on_success: always
+    on_failure: always
+    
