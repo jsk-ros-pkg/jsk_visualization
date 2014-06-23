@@ -1,4 +1,5 @@
 <launch>
+  <arg name="origin_tf" default="/r_gripper_tool_frame"/>
   <arg name="dummy_camera_name" default="$(anon dummy_carmera)"/>
   <arg name="tf_pose" default="0 0 1 1.5708 3.1416 0"/>
   
@@ -9,5 +10,5 @@
 
   <node pkg="tf" type="static_transform_publisher"
 	name="$(arg dummy_camera_name)_tf"
-	args="$(arg tf_pose) /moving_marker $(arg dummy_camera_name) 30"/>
+	args="$(arg tf_pose) $(arg origin_tf) $(arg dummy_camera_name) 30"/>
 </launch>
