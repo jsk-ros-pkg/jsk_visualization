@@ -32,8 +32,8 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#ifndef JSK_RVIZ_PLUGIN_OVERLAY_MENU_DISPLAY_H_
-#define JSK_RVIZ_PLUGIN_OVERLAY_MENU_DISPLAY_H_
+#ifndef JSK_RVIZ_PLUGIN_OVERLAY_IMAGE_DISPLAY_H_
+#define JSK_RVIZ_PLUGIN_OVERLAY_IMAGE_DISPLAY_H_
 
 #include <rviz/display.h>
 #include <OGRE/OgreOverlayElement.h>
@@ -46,53 +46,42 @@
 #include <QPainter>
 
 #include <rviz/properties/ros_topic_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/float_property.h>
 
-#include <jsk_rviz_plugins/OverlayMenu.h>
+#include <image_transport/image_transport.h>
+#include <sensor_msgs/Image.h>
 
 namespace jsk_rviz_plugin
 {
-  class OverlayMenuDisplay : public rviz::Display
+  class OverlayImageDisplay : public rviz::Display
   {
     Q_OBJECT
   public:
-    OverlayMenuDisplay();
-    virtual ~OverlayMenuDisplay();
+    OverlayImageDisplay();
+    virtual ~OverlayImageDisplay();
 
-    enum AnimationState
-    {
-      CLOSED,
-      OPENED,
-      OPENING,
-      CLOSING,
-    };
-    
   protected:
+    boost::mutex mutex_;
     Ogre::Overlay* overlay_;
     Ogre::PanelOverlayElement* panel_;
     Ogre::MaterialPtr panel_material_;
     std::string material_name_;
     std::string texture_name_;
     Ogre::TexturePtr texture_;
-    ros::Subscriber sub_;
     rviz::RosTopicProperty* update_topic_property_;
-    AnimationState animation_state_;
-    bool require_update_texture_;
-    jsk_rviz_plugins::OverlayMenu::ConstPtr current_menu_;
-    jsk_rviz_plugins::OverlayMenu::ConstPtr next_menu_;
-    double animation_t_;
-    
-    virtual void openingAnimation();
-    virtual std::string getMenuString(
-      const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg,
-      size_t index);
-    virtual QFont font();
-    virtual QFontMetrics fontMetrics();
-    virtual int drawAreaWidth(
-      const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
-    virtual int drawAreaHeight(
-      const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
-    virtual bool isNeedToResize();
-    virtual bool isNeedToRedraw();
+    rviz::IntProperty* width_property_;
+    rviz::IntProperty* height_property_;
+    rviz::IntProperty* left_property_;
+    rviz::IntProperty* top_property_;
+    rviz::FloatProperty* alpha_property_;
+    int width_, height_, left_, top_;
+    double alpha_;
+    boost::shared_ptr<image_transport::ImageTransport> it_;
+    image_transport::Subscriber sub_;
+    sensor_msgs::Image::ConstPtr msg_;
+    bool require_update_;
+
     virtual void redraw();
     virtual void updateTextureSize(int width, int height);
     virtual void onInitialize();
@@ -101,11 +90,14 @@ namespace jsk_rviz_plugin
     virtual void update(float wall_dt, float ros_dt);
     virtual void subscribe();
     virtual void unsubscribe();
-    virtual void processMessage
-    (const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
+    virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
   protected Q_SLOTS:
     void updateTopic();
-    
+    void updateWidth();
+    void updateHeight();
+    void updateLeft();
+    void updateTop();
+    void updateAlpha();
   };
 
 }
