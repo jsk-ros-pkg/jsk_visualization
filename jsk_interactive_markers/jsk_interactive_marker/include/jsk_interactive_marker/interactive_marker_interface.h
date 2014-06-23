@@ -17,11 +17,22 @@
 #include <std_msgs/Int8.h>
 
 class InteractiveMarkerInterface {
+ private:
+  struct MeshProperty{
+    std::string link_name;
+    std::string mesh_file;
+    geometry_msgs::Point position;
+    geometry_msgs::Quaternion orientation;
+
+  };
+
  public:
   visualization_msgs::InteractiveMarker make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation);
 
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int type );
+  void pub_marker_tf ( std_msgs::Header header, geometry_msgs::Pose pose);
+  void pub_marker_pose ( std_msgs::Header header, geometry_msgs::Pose pose, std::string name, int type );
 
   void pub_marker_menu(std::string marker,int menu, int type);
   void pub_marker_menu(std::string marker,int menu);
@@ -57,11 +68,17 @@ class InteractiveMarkerInterface {
 
   void modeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
+  void changeMoveArm( std::string m_name, int menu );
+  
+  void setOriginCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, bool origin_hand);
+
   void ikmodeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void toggleIKModeCb( const std_msgs::EmptyConstPtr &msg);
   void useTorsoCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void usingIKCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+
+  void marker_menu_cb( const jsk_interactive_marker::MarkerMenuConstPtr &msg);
 
   void updateHeadGoal( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void updateBase( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
@@ -88,7 +105,8 @@ class InteractiveMarkerInterface {
   void changeMarkerMoveMode( std::string mk_name , int im_mode, float mk_size, geometry_msgs::PoseStamped dist_pose);
 
   void changeMarkerOperationModelMode( std::string mk_name );
-  
+
+  void addHandMarker(visualization_msgs::InteractiveMarkerControl &imc,std::vector < MeshProperty > mesh_vec, double mk_size);
   void makeCenterSphere(visualization_msgs::InteractiveMarker &mk, double mk_size);
 
   InteractiveMarkerInterface ();
@@ -99,13 +117,16 @@ class InteractiveMarkerInterface {
   bool markers_del_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
 			jsk_interactive_marker::MarkerSetPose::Response &res );
 
+  void move_marker_cb ( const geometry_msgs::PoseStampedConstPtr &msg);
+
   bool set_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
                 jsk_interactive_marker::MarkerSetPose::Response &res );
 
   bool reset_cb ( jsk_interactive_marker::SetPose::Request &req,
                   jsk_interactive_marker::SetPose::Response &res );
 
-  void loadMeshes(XmlRpc::XmlRpcValue v);
+  void loadMeshFromYaml(XmlRpc::XmlRpcValue val, std::string name, std::vector<MeshProperty>& mesh);
+  void loadMeshes(XmlRpc::XmlRpcValue val);
 
   void makeIMVisible(visualization_msgs::InteractiveMarker &im);
 
@@ -115,14 +136,19 @@ class InteractiveMarkerInterface {
   ros::NodeHandle pnh_;
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   ros::Publisher pub_;
+  ros::Publisher pub_update_;
   ros::Publisher pub_move_;
   ros::ServiceServer serv_reset_;
   ros::ServiceServer serv_set_;
   ros::ServiceServer serv_markers_set_;
   ros::ServiceServer serv_markers_del_;
+  ros::Subscriber sub_marker_pose_;
+  ros::Subscriber sub_marker_menu_;
   ros::Subscriber sub_toggle_start_ik_;
   ros::Subscriber sub_toggle_ik_mode_;
   //tf::TransformListener tfl_;
+  tf::TransformBroadcaster tfb_;
+  ros::ServiceClient dynamic_tf_publisher_client_;
 
   interactive_markers::MenuHandler menu_handler;
   interactive_markers::MenuHandler menu_handler1;
@@ -172,6 +198,8 @@ class InteractiveMarkerInterface {
   int h_mode_ikmode;
   int use_arm;
 
+  
+
   std::list<visualization_msgs::InteractiveMarker> imlist;
   //interactive_markers::MenuHandler menu_handler;
 
@@ -186,7 +214,7 @@ class InteractiveMarkerInterface {
 
   struct ControlState{
   ControlState() : posture_r_(false), posture_l_(false), torso_on_(false), head_on_(false),
-      projector_on_(false), init_head_goal_(false), base_on_(true),  r_finger_on_(false), l_finger_on_(false) {}
+      projector_on_(false), init_head_goal_(false), base_on_(true),  r_finger_on_(false), l_finger_on_(false), move_arm_(RARM), move_origin_state_(HAND_ORIGIN) {}
 
     void print()
     {
@@ -196,6 +224,13 @@ class InteractiveMarkerInterface {
                       posture_l_, posture_r_, torso_on_, base_on_, head_on_, projector_on_ );
     }
 
+    enum MoveArmState { RARM, LARM, ARMS};
+    enum MoveOriginState { HAND_ORIGIN, DESIGNATED_ORIGIN};
+
+    MoveArmState move_arm_;
+    MoveOriginState move_origin_state_;
+    
+    geometry_msgs::PoseStamped marker_pose_;
 
     bool posture_r_;
     bool posture_l_;
@@ -226,14 +261,7 @@ class InteractiveMarkerInterface {
 
   std::string head_link_frame_;
   std::string head_mesh_;
-  
-  struct MeshProperty{
-    std::string link_name;
-    std::string mesh_file;
-    geometry_msgs::Quaternion orientation;
-
-  };
-  std::vector< MeshProperty > rhand_mesh_, lhand_mesh;
+  std::vector< MeshProperty > rhand_mesh_, lhand_mesh_;
 
 };
 
