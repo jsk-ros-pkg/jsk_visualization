@@ -2,7 +2,11 @@
 import sys
 
 from rqt_gui.main import Main
-from jsk_rqt_plugins.hist import HistogramPlot
+try:
+    from jsk_rqt_plugins.hist import HistogramPlot
+except:
+    import roslib; roslib.load_manifest('jsk_rqt_plugins')
+    from jsk_rqt_plugins.hist import HistogramPlot
 
 plugin = 'HistogramPlot'
 main = Main(filename=plugin)
