@@ -19,9 +19,8 @@
 
 #include <jsk_interactive_marker/interactive_marker_interface.h>
 #include <jsk_interactive_marker/interactive_marker_utils.h>
-/*
-  visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation){
-*/
+
+#include <dynamic_tf_publisher/SetDynamicTF.h>
 
 visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation){
   
@@ -111,16 +110,52 @@ void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::Intera
   }else{
     proc_feedback(feedback, jsk_interactive_marker::MarkerPose::GENERAL);
   }
+  
 }
 
 void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int type ) {
+
   jsk_interactive_marker::MarkerPose mp;
   mp.pose.header = feedback->header;
   mp.pose.pose = feedback->pose;
   mp.marker_name = feedback->marker_name;
   mp.type = type;
   pub_.publish( mp );
+
+  //update Marker Pose Status
+  control_state_.marker_pose_.pose = feedback->pose;
+  control_state_.marker_pose_.header = feedback->header;
+
+  pub_marker_tf(feedback->header, feedback->pose);
+
 }
+
+void InteractiveMarkerInterface::pub_marker_tf ( std_msgs::Header header, geometry_msgs::Pose pose){
+  geometry_msgs::Transform tf;
+  tf.translation.x = pose.position.x;
+  tf.translation.y = pose.position.y;
+  tf.translation.z = pose.position.z;
+  tf.rotation = pose.orientation;
+  
+  dynamic_tf_publisher::SetDynamicTF SetTf;
+  SetTf.request.freq = 10;
+  SetTf.request.cur_tf.header.stamp = ros::Time::now();
+  SetTf.request.cur_tf.header.frame_id = header.frame_id;
+  SetTf.request.cur_tf.child_frame_id = "/moving_marker";
+  SetTf.request.cur_tf.transform = tf;
+  dynamic_tf_publisher_client_.call(SetTf);
+}
+
+void InteractiveMarkerInterface::pub_marker_pose ( std_msgs::Header header, geometry_msgs::Pose pose, std::string name, int type ) {
+  jsk_interactive_marker::MarkerPose mp;
+  mp.pose.header = header;
+  mp.pose.pose = pose;
+  mp.marker_name = name;
+  mp.type = type;
+  pub_.publish( mp );
+}
+
+
 
 
 void InteractiveMarkerInterface::pub_marker_menuCb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, int menu){
@@ -338,27 +373,66 @@ void InteractiveMarkerInterface::modeCb( const visualization_msgs::InteractiveMa
   h_mode_last = feedback->menu_entry_id;
   menu_handler.setCheckState( h_mode_last, interactive_markers::MenuHandler::CHECKED );
 
-  switch(h_mode_last-h_mode_rightarm){
+  switch(h_mode_last - h_mode_rightarm){
   case 0:
-    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM);
-    ROS_INFO("move Rarm");
+    changeMoveArm( feedback->marker_name, jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM);
     break;
   case 1:
-    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM);
-    ROS_INFO("move Larm");
+    changeMoveArm( feedback->marker_name, jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM);
     break;
   case 2:
-    pub_marker_menu(feedback->marker_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS);
-    ROS_INFO("move Arms");
+    changeMoveArm( feedback->marker_name, jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS);
     break;
   default:
     ROS_INFO("Switching Arm Error");
     break;
   }
-
   menu_handler.reApply( *server_ );
   server_->applyChanges();
 }
+
+void InteractiveMarkerInterface::changeMoveArm( std::string m_name, int menu ){
+  switch(menu){
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM:
+    pub_marker_menu(m_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM);
+    control_state_.move_arm_ = ControlState::RARM;
+    ROS_INFO("move Rarm");
+    changeMarkerMoveMode( marker_name.c_str(), 0, 0.5, control_state_.marker_pose_);
+    break;
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM:
+    pub_marker_menu(m_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM);
+    control_state_.move_arm_ = ControlState::LARM;
+    ROS_INFO("move Larm");
+    changeMarkerMoveMode( marker_name.c_str(), 0, 0.5, control_state_.marker_pose_);
+    break;
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS:
+    pub_marker_menu(m_name,jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS);
+    control_state_.move_arm_ = ControlState::ARMS;
+    ROS_INFO("move Arms");
+    changeMarkerMoveMode( marker_name.c_str(), 0, 0.5, control_state_.marker_pose_);
+    break;
+  default:
+    ROS_INFO("Switching Arm Error");
+    break;
+  }
+}
+
+void InteractiveMarkerInterface::setOriginCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback,  bool origin_hand){
+  if(origin_hand){
+    control_state_.move_origin_state_ = ControlState::HAND_ORIGIN;
+    changeMarkerMoveMode( marker_name.c_str(), 0, 0.5, control_state_.marker_pose_);
+    if(control_state_.move_arm_ == ControlState::RARM){
+      pub_marker_menuCb(feedback, jsk_interactive_marker::MarkerMenu::SET_ORIGIN_RHAND);}else{
+      pub_marker_menuCb(feedback, jsk_interactive_marker::MarkerMenu::SET_ORIGIN_LHAND);}
+  }else{
+    control_state_.move_origin_state_ = ControlState::DESIGNATED_ORIGIN;
+    changeMarkerMoveMode( marker_name.c_str(), 0, 0.5, control_state_.marker_pose_);
+    pub_marker_menuCb(feedback, jsk_interactive_marker::MarkerMenu::SET_ORIGIN);
+  }
+  
+
+}
+
 
 void InteractiveMarkerInterface::ikmodeCb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
@@ -403,6 +477,33 @@ void InteractiveMarkerInterface::toggleIKModeCb( const std_msgs::EmptyConstPtr &
 
     menu_handler.reApply( *server_ );
     server_->applyChanges();
+  }
+}
+
+void InteractiveMarkerInterface::marker_menu_cb( const jsk_interactive_marker::MarkerMenuConstPtr &msg){
+  switch (msg->menu){
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_RARM:
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_LARM:
+  case jsk_interactive_marker::MarkerMenu::SET_MOVE_ARMS:
+    changeMoveArm(msg->marker_name, msg->menu);
+    break;
+  case jsk_interactive_marker::MarkerMenu::IK_ROTATION_AXIS_NIL:
+  case jsk_interactive_marker::MarkerMenu::IK_ROTATION_AXIS_T:
+    {
+      std_msgs::EmptyConstPtr empty;
+      toggleIKModeCb(empty);
+    }
+    break;
+  case jsk_interactive_marker::MarkerMenu::PLAN:
+  case jsk_interactive_marker::MarkerMenu::CANCEL_PLAN:
+    {
+      std_msgs::EmptyConstPtr empty;
+      toggleStartIKCb(empty);
+    }
+    break;
+  default:
+    pub_marker_menu(msg->marker_name , msg->menu, msg->type);
+    break;
   }
 }
 
@@ -772,7 +873,7 @@ visualization_msgs::InteractiveMarker InteractiveMarkerInterface::makeBaseMarker
 
 
 void InteractiveMarkerInterface::initHandler(void){
-  use_arm=2;
+  //use_arm=2;
 
   bool use_menu;
   pnh_.param("force_mode_menu", use_menu, false );
@@ -784,11 +885,6 @@ void InteractiveMarkerInterface::initHandler(void){
   if(use_menu){
     pnh_.param("move_safety_menu", use_menu, false );
     if(use_menu){
-      /*
-	interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
-	sub_menu_move_ = menu_handler.insert( "Move" );
-	menu_handler.insert( sub_menu_move_,"Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
-      */
       interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
       sub_menu_move_ = menu_handler.insert( "Move" );
       menu_handler.insert( sub_menu_move_,"Plan",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::PLAN));
@@ -854,6 +950,15 @@ void InteractiveMarkerInterface::initHandler(void){
 
   pnh_.param("set_origin_menu", use_menu, false );
   if(use_menu){
+    //menu_handler.insert("Set Origin To Hand", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::SET_ORIGIN));
+    menu_handler.insert("Set Origin To Hand", boost::bind( &InteractiveMarkerInterface::setOriginCb, this, _1, true));
+
+    menu_handler.insert("Set Origin", boost::bind( &InteractiveMarkerInterface::setOriginCb, this, _1, false));
+  }
+
+  /*
+  pnh_.param("set_origin_menu", use_menu, false );
+  if(use_menu){
     menu_handler.insert("Set Origin", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::SET_ORIGIN));
   }
 
@@ -866,6 +971,7 @@ void InteractiveMarkerInterface::initHandler(void){
   if(use_menu){
     menu_handler.insert("Set Origin To LHand", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::SET_ORIGIN_LHAND));
   }
+  */
 
   pnh_.param("reset_marker_pos_menu", use_menu, false );
   if(use_menu){
@@ -947,6 +1053,7 @@ void InteractiveMarkerInterface::initHandler(void){
   if(use_menu){
     //menu_handler.insert("ManipulationMode", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MANIP_MODE));
     menu_handler.insert("Publish Marker",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::PUBLISH_MARKER));
+
   }
 
 
@@ -1035,24 +1142,63 @@ void InteractiveMarkerInterface::initHandler(void){
 
 }
 
+void InteractiveMarkerInterface::addHandMarker(visualization_msgs::InteractiveMarkerControl &imc,std::vector < MeshProperty > mesh_vec, double mk_size){
+  if(mesh_vec.size() > 0){
+    for(int i=0; i<mesh_vec.size(); i++){
+      visualization_msgs::Marker handMarker;
+      handMarker.type = visualization_msgs::Marker::MESH_RESOURCE;
+      handMarker.mesh_resource = mesh_vec[i].mesh_file;
+      handMarker.scale.x = 1.0;
+      handMarker.scale.y = 1.0;
+      handMarker.scale.z = 1.0;
+
+      handMarker.pose.position = mesh_vec[i].position;
+      handMarker.pose.orientation = mesh_vec[i].orientation;
+
+      //color
+      handMarker.color.r = 1.0;
+      handMarker.color.g = 1.0;
+      handMarker.color.b = 0.0;
+      handMarker.color.a = 0.7;
+
+      imc.markers.push_back(handMarker);
+    }
+  }else{
+    visualization_msgs::Marker sphereMarker;
+    sphereMarker.type = visualization_msgs::Marker::SPHERE;
+    double marker_scale = mk_size / 2;
+    sphereMarker.scale.x = marker_scale;
+    sphereMarker.scale.y = marker_scale;
+    sphereMarker.scale.z = marker_scale;
+
+    //gray
+    sphereMarker.color.r = 0.7;
+    sphereMarker.color.g = 0.7;
+    sphereMarker.color.b = 0.7;
+    sphereMarker.color.a = 0.5;
+
+    imc.markers.push_back(sphereMarker);
+  }
+
+}
+
+
 void InteractiveMarkerInterface::makeCenterSphere(visualization_msgs::InteractiveMarker &mk, double mk_size){
   visualization_msgs::InteractiveMarkerControl sphereControl;
   sphereControl.name = "center_sphere";
-
-  visualization_msgs::Marker sphereMarker;
-  sphereMarker.type = visualization_msgs::Marker::SPHERE;
-  double marker_scale = mk_size / 2;
-  sphereMarker.scale.x = marker_scale;
-  sphereMarker.scale.y = marker_scale;
-  sphereMarker.scale.z = marker_scale;
-
-  //gray
-  sphereMarker.color.r = 0.7;
-  sphereMarker.color.g = 0.7;
-  sphereMarker.color.b = 0.7;
-  sphereMarker.color.a = 0.5;
-
-  sphereControl.markers.push_back(sphereMarker);
+  
+  std::vector < MeshProperty > null_mesh;
+  if(control_state_.move_origin_state_ == ControlState::HAND_ORIGIN){
+    if(control_state_.move_arm_ == ControlState::RARM){
+      addHandMarker(sphereControl, rhand_mesh_, mk_size);
+    }else if(control_state_.move_arm_ == ControlState::LARM){
+      addHandMarker(sphereControl, lhand_mesh_, mk_size);
+    }else{
+      addHandMarker(sphereControl, null_mesh, mk_size);
+    }
+  }else{
+    addHandMarker(sphereControl, null_mesh, mk_size);
+  }
 
   sphereControl.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
   mk.controls.push_back(sphereControl);
@@ -1084,6 +1230,9 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
 
 void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int im_mode, float mk_size, geometry_msgs::PoseStamped dist_pose){
   ROS_INFO("changeMarkerMoveMode  marker:%s  mode:%d\n",mk_name.c_str(),im_mode);
+  
+  control_state_.marker_pose_ = dist_pose;
+
   interactive_markers::MenuHandler reset_handler;
 
   geometry_msgs::PoseStamped pose;
@@ -1111,11 +1260,10 @@ void InteractiveMarkerInterface::changeMarkerMoveMode( std::string mk_name , int
   switch(im_mode){
   case 0:
     pose.header.stamp = ros::Time(0);
-    //mk = im_helpers::make6DofMarker(mk_name.c_str(), pose, mk_size,
-    //true, false );
+
     mk = make6DofControlMarker(mk_name.c_str(), pose, mk_size,
 			       true, false );
-    //mk.description = mk_name.c_str();
+
     if(use_center_sphere_){
       makeCenterSphere(mk, mk_size);
     }
@@ -1238,6 +1386,7 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
   }
 
   pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
+  pub_update_ =  pnh_.advertise<geometry_msgs::PoseStamped> ("pose_update", 1);
   pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1);
 
   serv_set_ = pnh_.advertiseService("set_pose",
@@ -1249,11 +1398,16 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
   serv_reset_ = pnh_.advertiseService("reset_pose",
 				      &InteractiveMarkerInterface::reset_cb, this);
 
+  sub_marker_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> ("move_marker", 1, boost::bind( &InteractiveMarkerInterface::move_marker_cb, this, _1));
+  sub_marker_menu_ = pnh_.subscribe<jsk_interactive_marker::MarkerMenu> ("select_marker_menu", 1, boost::bind( &InteractiveMarkerInterface::marker_menu_cb, this, _1));
+
   sub_toggle_start_ik_ = pnh_.subscribe<std_msgs::Empty> ("toggle_start_ik", 1, boost::bind( &InteractiveMarkerInterface::toggleStartIKCb, this, _1));
   
   sub_toggle_ik_mode_ = pnh_.subscribe<std_msgs::Empty> ("toggle_ik_mode", 1, boost::bind( &InteractiveMarkerInterface::toggleIKModeCb, this, _1));
 
-  //server_.reset( new interactive_markers::InteractiveMarkerServer(server_name, "sid", false) );
+  ros::service::waitForService("set_dynamic_tf", -1);
+  dynamic_tf_publisher_client_ = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf", true);
+
   server_.reset( new interactive_markers::InteractiveMarkerServer(server_name));
 
   pnh_.param<std::string>("head_link_frame", head_link_frame_, "head_tilt_link");
@@ -1280,12 +1434,23 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
   changeMarkerMoveMode(marker_name.c_str(),0);
 }
 
-void InteractiveMarkerInterface::loadMeshes(XmlRpc::XmlRpcValue val){
-  for(int i=0; i< val["r_hand"].size(); i++){
-    XmlRpc::XmlRpcValue nval = val["r_hand"][i];
+void InteractiveMarkerInterface::loadMeshFromYaml(XmlRpc::XmlRpcValue val, std::string name, std::vector<MeshProperty>& mesh){
+  for(int i=0; i< val[name].size(); i++){
+    XmlRpc::XmlRpcValue nval = val[name][i];
     MeshProperty m;
     m.link_name = (std::string)nval["link"];
     m.mesh_file = (std::string)nval["mesh"];
+
+    if(nval.hasMember("position")){
+      XmlRpc::XmlRpcValue position = nval["position"];
+      m.position.x = (double)position["x"];
+      m.position.y = (double)position["y"];
+      m.position.z = (double)position["z"];
+    }else{
+      m.position.x = 0.0;
+      m.position.y = 0.0;
+      m.position.z = 0.0;
+    }
 
     if(nval.hasMember("orient")){
       XmlRpc::XmlRpcValue orient = nval["orient"];
@@ -1294,19 +1459,20 @@ void InteractiveMarkerInterface::loadMeshes(XmlRpc::XmlRpcValue val){
       m.orientation.y = (double)orient["y"];
       m.orientation.z = (double)orient["z"];
       m.orientation.w = (double)orient["w"];
+    }else{
+      m.orientation.x = 0.0;
+      m.orientation.y = 0.0;
+      m.orientation.z = 0.0;
+      m.orientation.w = 1.0;
     }
-    rhand_mesh_.push_back(m);
+    mesh.push_back(m);
     std::cerr << "load_link: " << nval["link"] << std::endl;
   }
-  
-  /*
-    for(int i =0; i < v.size(); i++)
-    {
-    //node_names_.push_back(v[i]);
-    std::cerr << "node_names: " << v[i] << std::endl;
-    }
-  */
-    
+}
+
+void InteractiveMarkerInterface::loadMeshes(XmlRpc::XmlRpcValue val){
+  loadMeshFromYaml(val, "r_hand", rhand_mesh_);
+  loadMeshFromYaml(val, "l_hand", lhand_mesh_);
 }
 
 bool InteractiveMarkerInterface::markers_set_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
@@ -1357,10 +1523,20 @@ bool InteractiveMarkerInterface::markers_del_cb ( jsk_interactive_marker::Marker
       }
       it++;
     }
-    
+  
   return true;
     
 }
+
+void InteractiveMarkerInterface::move_marker_cb ( const geometry_msgs::PoseStampedConstPtr &msg){
+  pub_marker_tf(msg->header, msg->pose);
+
+  pub_marker_pose( msg->header, msg->pose, marker_name, jsk_interactive_marker::MarkerPose::GENERAL);
+
+  server_->setPose(marker_name, msg->pose, msg->header);
+  server_->applyChanges();
+}
+
 
 bool InteractiveMarkerInterface::set_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
 					  jsk_interactive_marker::MarkerSetPose::Response &res ) {
@@ -1388,8 +1564,11 @@ bool InteractiveMarkerInterface::set_cb ( jsk_interactive_marker::MarkerSetPose:
   if(mName == ""){
     mName = marker_name;
   }
+  pub_marker_tf(req.pose.header, req.pose.pose);
+
   server_->setPose(mName, req.pose.pose, req.pose.header);
   server_->applyChanges();
+  pub_update_.publish(req.pose);
   return true;
 }
 
