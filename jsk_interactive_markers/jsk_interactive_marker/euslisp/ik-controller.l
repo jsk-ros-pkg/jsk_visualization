@@ -789,7 +789,7 @@
 	 (return)
 	 )
 	(t
-	 (ros::ros-info "map -> marker cannnot transform yet")
+	 (ros::ros-info "map -> marker cannot transform yet")
 	 (ros::sleep)
 	 )
 	)
@@ -806,7 +806,6 @@
        (send *irtviewer* :draw-objects))
      )
    (send self :publish-arrow-tf)
-   (ros::ros-error "~A" *origin-coords*)
    )
 
   (:tf-end-coords
@@ -908,8 +907,8 @@
 	 (return)
 	 )
 	(t
-	 (ros::ros-info "~A -> map cannnot transform yet" *robot-origin*)
-	 (ros::sleep)
+	 (ros::ros-info "~A -> map cannot transform yet" *robot-origin*)
+	 (unix:sleep 1)
 	 )
 	)
        )
@@ -1124,7 +1123,7 @@
      (setq *robot-name* "PR2")
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
-     (defvar *robot-origin* "base_link")
+     (defvar *robot-origin* "base_footprint")
      )
     ((equal (string-upcase *robot-name*) "ATLAS")
      (ros::load-ros-manifest "hrpsys_gazebo_atlas")
@@ -1146,7 +1145,7 @@
      (ros::ros-error "use PR2")
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
-     (defvar *robot-origin* "base_link")
+     (defvar *robot-origin* "base_footprint")
      )
     )
 
@@ -1454,3 +1453,5 @@
 (ros::subscribe
  (format nil "~A/marker_menu" server-nodename)
  jsk_interactive_marker::MarkerMenu #'send self :move-callback)
+
+|#

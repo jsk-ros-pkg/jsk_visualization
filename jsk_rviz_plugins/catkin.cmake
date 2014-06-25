@@ -47,6 +47,7 @@ qt4_wrap_cpp(MOC_FILES
   src/overlay_text_display.h
   src/overlay_menu_display.h
   src/overlay_image_display.h
+  src/overlay_camera_display.h
   src/plotter_2d_display.h
   src/pie_chart_display.h
   src/diagnostics_display.h
@@ -64,6 +65,7 @@ set(SOURCE_FILES
   src/overlay_text_display.cpp
   src/overlay_menu_display.cpp
   src/overlay_image_display.cpp
+  src/overlay_camera_display.cpp
   src/plotter_2d_display.cpp
   src/pie_chart_display.cpp
   src/diagnostics_display.cpp
