@@ -1112,7 +1112,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   std::string xml_string;
   
   if(use_robot_description_){
-    nh_.getParam("/robot_description", xml_string);
+    nh_.getParam(model_file_, xml_string);
 
   }else{
     model_file_ = getFilePathFromRosPath(model_file_);
