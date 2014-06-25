@@ -1,0 +1,30 @@
+<package>
+  <description brief="jsk_rqt_plugins">
+
+     jsk_rqt_plugins
+
+  </description>
+  <author>Ryohei Ueda</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/jsk_rqt_plugins</url>
+  <depend package="mk" />
+  <depend package="rosbuild" />
+
+  <depend package="rqt_gui" />
+  <depend package="rqt_gui_py" />
+  <depend package="rqt_plot" />
+  <depend package="rqt_gui" />
+  <depend package="rqt_gui_py" />
+  <depend package="rqt_plot" />
+  <depend package="qt_gui_py_common" />
+
+  
+  <rosdep name="wxwidgets" />
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml" />
+  </export>
+
+</package>
+
+

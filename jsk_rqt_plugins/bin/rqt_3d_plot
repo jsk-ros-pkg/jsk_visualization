@@ -2,7 +2,11 @@
 import sys
 
 from rqt_gui.main import Main
-from jsk_rqt_plugins.plot import Plot3D
+try:
+    from jsk_rqt_plugins.plot import Plot3D
+except:
+    import roslib; roslib.load_manifest('jsk_rqt_plugins')
+    from jsk_rqt_plugins.plot import Plot3D
 
 plugin = 'Plot3D'
 main = Main(filename=plugin)
