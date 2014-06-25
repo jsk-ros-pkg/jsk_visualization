@@ -977,6 +977,12 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     }
   }
 
+  //initialize JointState
+  if(init){
+    if(!root && initial_pose_map_.count(link->parent_joint->name) != 0){
+      setJointAngle(link, initial_pose_map_[link->parent_joint->name]);
+    }
+  }
 
   //  cout << "Link:" << link->name << endl;
 
@@ -993,7 +999,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 UrdfModelMarker::UrdfModelMarker ()
 {}
 
-UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map,  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
   pnh_.param("server_name", server_name, std::string ("") );
 
   if ( server_name == "" ) {
@@ -1020,6 +1026,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   use_robot_description_ = use_robot_description;
   use_visible_color_ = use_visible_color;
   tf_prefix_ = server_name + "/" + model_name_ + "/";
+  initial_pose_map_ = initial_pose_map;
 
   pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
   pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1);
