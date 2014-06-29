@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2014-06-29)
+------------------
 * add load-ros-manifest jsk_interactive_marker
 * Contributors: Yusuke Furuta
 

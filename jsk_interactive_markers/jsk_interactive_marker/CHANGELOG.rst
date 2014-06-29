@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2014-06-29)
+------------------
 * add param to designate tf origin
 * add new menu to call "estimate occlusion"
 * skip planning until release the marker

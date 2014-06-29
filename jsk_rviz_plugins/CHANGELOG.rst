@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2014-06-29)
+------------------
 * add overlay camera display
 * close overlay menu firmly
 * add new rviz plugin: OverlayImage
