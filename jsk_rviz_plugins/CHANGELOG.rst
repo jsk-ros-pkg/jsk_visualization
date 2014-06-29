@@ -2,6 +2,15 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add overlay camera display
+* close overlay menu firmly
+* add new rviz plugin: OverlayImage
+  visualize sensor_msgs::Image as HUD on rviz 3D rendering window
+* add new plugin: OverlayMenu
+* Contributors: Ryohei Ueda
+
 1.0.4 (2014-05-31)
 ------------------
 * jsk_rviz_plugins: use depend tag add mk/rosbuild to build_depend

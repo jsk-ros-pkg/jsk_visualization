@@ -2,6 +2,18 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add param to designate tf origin
+* add new menu to call "estimate occlusion"
+* skip planning until release the marker
+* automatically snap the footstep marker to the plane if ~use_plane_snap
+  is set to true
+* publish the selected bounding box as BondingBoxArray for visualization
+* publish the selected box as well as the index of the box
+* add dummy camera launch file
+* Contributors: Masaki Murooka, Ryohei Ueda, Yusuke Furuta
+
 1.0.4 (2014-05-31)
 ------------------
 * jsk_interactive_marker: fix for rosbuild, add mk/rosbuild to package.xml
