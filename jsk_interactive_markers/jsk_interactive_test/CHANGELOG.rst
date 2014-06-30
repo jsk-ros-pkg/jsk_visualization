@@ -2,6 +2,9 @@
 Changelog for package jsk_interactive_test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.5 (2014-06-29)
+------------------
+
 1.0.4 (2014-05-31)
 ------------------
 * jsk_interactive_test: catkinize pckage
