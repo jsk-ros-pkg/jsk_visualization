@@ -18,6 +18,8 @@ matrix:
   allow_failures:
     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true ROS_PARALLEL_JOBS="-j6 -l6"
     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false ROS_PARALLEL_JOBS="-j6 -l6"
+    - env: ROS_DISTRO=groovy ROSWS=rosws  BUILDER=rosbuild  USE_DEB=true ROS_PARALLEL_JOBS="-j6 -l6"
+    - env: ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin    USE_DEB=true ROS_PARALLEL_JOBS="-j6 -l6"
 script: source .travis/travis.sh
 notifications:
   email:
