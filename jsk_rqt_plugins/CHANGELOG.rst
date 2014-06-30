@@ -2,6 +2,14 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.5 (2014-06-29)
+------------------
+* fix jsk_rqt_plugins for groovy users
+* only one topic should be taken into account. the argument of the topics
+  cannot be an array
+* add rqt plugin to visualize histogram
+* Contributors: Ryohei Ueda
+
 1.0.4 (2014-05-31)
 ------------------
 * jsk_rqt_plugins: add mk/rosbuild to build_depend
