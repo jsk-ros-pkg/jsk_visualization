@@ -58,6 +58,7 @@ qt4_wrap_cpp(MOC_FILES
   src/ambient_sound_display_groovy.h
   src/quiet_interactive_marker_display.h
   src/bounding_box_array_display.h
+  src/sparse_occupancy_grid_array_display.h
 )
 
 set(SOURCE_FILES
@@ -79,6 +80,7 @@ set(SOURCE_FILES
   src/ambient_sound_visual.cpp
   src/quiet_interactive_marker_display.cpp
   src/bounding_box_array_display.cpp
+    src/sparse_occupancy_grid_array_display.cpp
   ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(jsk_rviz_plugins ${SOURCE_FILES})

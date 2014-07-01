@@ -53,6 +53,7 @@ qt4_wrap_cpp(MOC_FILES
   src/diagnostics_display.h
   src/quiet_interactive_marker_display.h
   src/bounding_box_array_display.h
+  src/sparse_occupancy_grid_array_display.h
 )
 
 set(SOURCE_FILES
@@ -72,6 +73,7 @@ set(SOURCE_FILES
   src/diagnostics_display.cpp
   src/bounding_box_array_display.cpp
   src/quiet_interactive_marker_display.cpp
+  src/sparse_occupancy_grid_array_display.cpp
   ${MOC_FILES}
 )
 
