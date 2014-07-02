@@ -35,7 +35,7 @@
 #include "bounding_box_array_display.h"
 
 namespace jsk_rviz_plugin
-{
+{  
   BoundingBoxArrayDisplay::BoundingBoxArrayDisplay()
   {
     color_property_ = new rviz::ColorProperty("color", QColor(25, 255, 0),

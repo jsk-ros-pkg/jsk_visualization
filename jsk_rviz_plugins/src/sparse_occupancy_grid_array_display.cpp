@@ -38,6 +38,15 @@
 namespace jsk_rviz_plugin
 {
   const double texture_margin = 1.2;
+
+  bool epsEqualVector3(Ogre::Vector3 a, Ogre::Vector3 b)
+  {
+    const double eps_thr = 0.001;
+    return (abs(a[0] - b[0]) < eps_thr &&
+            abs(a[1] - b[1]) < eps_thr &&
+            abs(a[2] - b[2]) < eps_thr);
+  }
+
   
   SparseOccupancyGridArrayDisplay::SparseOccupancyGridArrayDisplay()
   {
@@ -147,7 +156,11 @@ namespace jsk_rviz_plugin
           shape->setOrientation(quaternion);
           QColor color = gridColor(cell.value);
           shape->setColor(color.red(), color.green(), color.blue(), alpha_);
-          shape->setScale(Ogre::Vector3(grid.resolution, grid.resolution, 0.01));
+          Ogre::Vector3 dimensions(grid.resolution, grid.resolution, 0.01);
+          Ogre::Vector3 current_scale = shape->getRootNode()->getScale();
+          if (!epsEqualVector3(current_scale, dimensions)) {
+            shape->setScale(dimensions);
+          }
           cell_counter++;
         }
       }
