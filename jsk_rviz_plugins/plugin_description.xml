@@ -1,4 +1,18 @@
 <library path="lib/libjsk_rviz_plugins">
+  <class name="jsk_rviz_plugin/SparseOccupancyGridArray"
+         type="jsk_rviz_plugin::SparseOccupancyGridArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize jsk_pcl_ros/SparseOccupancyGridArray
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/QuietInteractiveMarker"
+         type="jsk_rviz_plugin::QuietInteractiveMarkerDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      quiet version of interactive marker
+    </description>
+  </class>
   <class name="jsk_rviz_plugin/BoundingBoxArray"
          type="jsk_rviz_plugin::BoundingBoxArrayDisplay"
          base_class_type="rviz::Display">
