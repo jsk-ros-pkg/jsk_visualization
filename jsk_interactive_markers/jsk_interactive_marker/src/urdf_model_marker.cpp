@@ -220,12 +220,17 @@ void UrdfModelMarker::republishJointState( sensor_msgs::JointState js){
 }
 
 void UrdfModelMarker::setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg ){
+  setRootPose(*msg);
+}
+
+void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
+  geometry_msgs::Pose pose = getRootPose(ps.pose);
   string root_frame = tf_prefix_ + model->getRoot()->name;
-  linkMarkerMap[frame_id_].pose = msg->pose;
-  CallSetDynamicTf(frame_id_, root_frame, Pose2Transform(msg->pose));
-  root_pose_ = msg->pose;
-  addChildLinkNames(model->getRoot(), true, false);
-  publishMarkerPose( msg->pose, msg->header, root_frame);
+  linkMarkerMap[frame_id_].pose = pose;
+  CallSetDynamicTf(frame_id_, root_frame, Pose2Transform(pose));
+  root_pose_ = pose;
+  //addChildLinkNames(model->getRoot(), true, false);
+  publishMarkerPose( pose, ps.header, root_frame);
   //publishJointState(feedback);
 }
 
@@ -288,8 +293,12 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
     if (mode_ != "visualization"){
       linkMarkerMap[linkMarkerMap[frame_id].movable_link].displayMoveMarker ^= true;
       addChildLinkNames(model->getRoot(), true, false);
+    }else{
+      geometry_msgs::PoseStamped ps = getOriginPoseStamped();
+      pub_selected_.publish(ps);
     }
     break;
+
   }
 }
 
@@ -457,7 +466,9 @@ visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerCont
   color.g = 0;
   color.b = 0;
   color.a = 0;
+  //color.a = 0.3;
   return makeMeshMarkerControl(mesh_resource, stamped, scale, color, false);
+  //return makeMeshMarkerControl(mesh_resource, stamped, scale, color, true);
 }
 
 visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerControl(const std::string &mesh_resource,
@@ -750,6 +761,28 @@ void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const se
   return;
 }
 
+geometry_msgs::Pose UrdfModelMarker::getRootPose(geometry_msgs::Pose pose){
+  KDL::Frame pose_frame, offset_frame;
+  tf::PoseMsgToKDL(pose, pose_frame);
+  tf::PoseMsgToKDL(root_offset_, offset_frame);
+  pose_frame = pose_frame * offset_frame.Inverse();
+  tf::PoseKDLToMsg(pose_frame, pose);
+  return pose;
+}
+
+geometry_msgs::PoseStamped UrdfModelMarker::getOriginPoseStamped(){
+  geometry_msgs::PoseStamped ps;
+  geometry_msgs::Pose pose;
+  pose = root_pose_;
+  KDL::Frame pose_frame, offset_frame;
+  tf::PoseMsgToKDL(pose, pose_frame);
+  tf::PoseMsgToKDL(root_offset_, offset_frame);
+  pose_frame = pose_frame * offset_frame;
+  tf::PoseKDLToMsg(pose_frame, pose);
+  ps.pose = pose;
+  ps.header.frame_id = frame_id_;
+  return ps;
+}
 
 
 void UrdfModelMarker::setOriginalPose(boost::shared_ptr<const Link> link)
@@ -776,7 +809,8 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 
   if(root){
     parent_link_frame_name_ = frame_id_;
-    ps.pose = root_pose_;
+    //ps.pose = root_pose_;
+    ps.pose = getRootPose(root_pose_);
   }else{
     parent_link_frame_name_ = link->parent_joint->parent_link_name;
     parent_link_frame_name_ = tf_prefix_ + parent_link_frame_name_;
@@ -977,6 +1011,12 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     }
   }
 
+  //initialize JointState
+  if(init){
+    if(!root && initial_pose_map_.count(link->parent_joint->name) != 0){
+      setJointAngle(link, initial_pose_map_[link->parent_joint->name]);
+    }
+  }
 
   //  cout << "Link:" << link->name << endl;
 
@@ -993,13 +1033,13 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 UrdfModelMarker::UrdfModelMarker ()
 {}
 
-UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index,  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
   pnh_.param("server_name", server_name, std::string ("") );
 
   if ( server_name == "" ) {
     server_name = ros::this_node::getName();
   }
-  
+
   pnh_.getParam("use_dynamic_tf", use_dynamic_tf_);
   if (use_dynamic_tf_) {
     ros::service::waitForService("set_dynamic_tf", -1);
@@ -1007,10 +1047,18 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   }
   std::cerr << "use_dynamic_tf_ is " << use_dynamic_tf_ << std::endl;
 
+  if(index != -1){
+    stringstream ss;
+    ss << model_name << index;
+    model_name_ = ss.str();
+  }else{
+    model_name_ = model_name;
+  }
+
   server_ = server;
-  model_name_ = model_name;
   model_file_ = model_file;
   frame_id_ = frame_id;
+  root_offset_ = root_offset;
   root_pose_ = root_pose;
   scale_factor_ = scale_factor;
   robot_mode_ = robot_mode;
@@ -1020,11 +1068,12 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   use_robot_description_ = use_robot_description;
   use_visible_color_ = use_visible_color;
   tf_prefix_ = server_name + "/" + model_name_ + "/";
+  initial_pose_map_ = initial_pose_map;
 
   pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
   pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1);
   pub_move_object_ =  pnh_.advertise<jsk_interactive_marker::MoveObject> ("move_object", 1);
-
+  pub_selected_ =  pnh_.advertise<geometry_msgs::PoseStamped> (model_name + "/selected", 1);
   pub_joint_state_ =  pnh_.advertise<sensor_msgs::JointState> (model_name_ + "/joint_states", 1);
   
   sub_set_root_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> (model_name_ + "/set_pose", 1, boost::bind( &UrdfModelMarker::setRootPoseCB, this, _1));
@@ -1112,7 +1161,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   std::string xml_string;
   
   if(use_robot_description_){
-    nh_.getParam("/robot_description", xml_string);
+    nh_.getParam(model_file_, xml_string);
 
   }else{
     model_file_ = getFilePathFromRosPath(model_file_);

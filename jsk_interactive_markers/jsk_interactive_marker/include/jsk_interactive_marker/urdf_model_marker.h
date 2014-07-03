@@ -33,7 +33,7 @@ class UrdfModelMarker {
  public:
   //  UrdfModelMarker(string file);
   UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
   UrdfModelMarker();
 
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
@@ -73,6 +73,8 @@ class UrdfModelMarker {
   void getJointState(boost::shared_ptr<const Link> link, sensor_msgs::JointState &js);
   void setJointState(boost::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js);
   void setJointAngle(boost::shared_ptr<const Link> link, double joint_angle);
+  geometry_msgs::Pose getRootPose(geometry_msgs::Pose pose);
+  geometry_msgs::PoseStamped getOriginPoseStamped();
   void setOriginalPose(boost::shared_ptr<const Link> link);
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init);
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index);
@@ -92,6 +94,7 @@ class UrdfModelMarker {
   void registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   
   void setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg );
+  void setRootPose( geometry_msgs::PoseStamped ps);
   void resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg);
   
  protected:
@@ -104,6 +107,7 @@ class UrdfModelMarker {
   ros::Publisher pub_move_object_;
   ros::Publisher pub_joint_state_;
   ros::Publisher pub_base_pose_;
+  ros::Publisher pub_selected_;
 
   /* publisher */
   ros::Subscriber sub_reset_joints_;
@@ -135,6 +139,7 @@ class UrdfModelMarker {
   std::string frame_id_;
   std::string model_file_;
   geometry_msgs::Pose root_pose_;
+  geometry_msgs::Pose root_offset_;
   double scale_factor_;
   bool robot_mode_;
   bool registration_;
@@ -144,6 +149,7 @@ class UrdfModelMarker {
   bool use_robot_description_;
   bool use_visible_color_;
   std::string tf_prefix_;
+  map<string, double> initial_pose_map_;
 
   struct graspPoint{
     graspPoint(){
