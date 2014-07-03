@@ -1,9 +1,11 @@
 #include "urdf_parser/urdf_parser.h"
 #include <iostream>
+#include <memory>
 #include <interactive_markers/tools.h>
 #include <jsk_interactive_marker/urdf_model_marker.h>
 #include <jsk_interactive_marker/interactive_marker_utils.h>
 #include <jsk_interactive_marker/interactive_marker_helpers.h>
+#include <geometry_msgs/PoseArray.h>
 
 using namespace urdf;
 using namespace std;
@@ -17,6 +19,7 @@ private:
   string model_name_;
   double scale_factor_;
   geometry_msgs::Pose pose_;
+  geometry_msgs::Pose root_offset_;
   bool use_visible_color_;
   string mode_;
   string model_file_;
@@ -25,32 +28,58 @@ private:
   string frame_id_;
   bool use_robot_description_;
   bool robot_mode_;
+  bool display_;
   map<string, double> initial_pose_map_;
 
+  typedef boost::shared_ptr<UrdfModelMarker> umm_ptr;
+  typedef vector<umm_ptr> umm_vec;
+  umm_vec umm_vec_;
+
 public:
-  void displayMarkerCB( const std_msgs::EmptyConstPtr &e){
-    server_->clear();
-    //addUrdfMarker();
-    new UrdfModelMarker(model_name_, model_file_, frame_id_, pose_, scale_factor_, mode_ , robot_mode_, registration_,fixed_link_, use_robot_description_, use_visible_color_,initial_pose_map_, server_);
-  }
-  /*
   void displayMarkerArrayCB( const geometry_msgs::PoseArrayConstPtr &msg){
-    //addUrdfMarker();
-    //geometry_msgs::Pose pose[] = msg->pose;
-    //std_msgs::header header = msg->header;
-    /*
-    for (int i=0; i<pose.size(); i++){
-      new UrdfModelMarker(model_name_ + i, model_file_, header.frame_id, pose[i], scale_factor_, mode_ , robot_mode_, registration_,fixed_link_, use_robot_description_, use_visible_color_, server_);
+    std_msgs::Header header = msg->header;
+    geometry_msgs::PoseStamped ps;
+    ps.header = header;
+
+    int msg_size = msg->poses.size();
+    int umm_vec_size = umm_vec_.size();
+
+    if(msg_size <= umm_vec_size){
+      for (int i = 0; i < msg_size; i++){
+	//change pose
+	ps.pose = msg->poses[i];
+	umm_vec_[i]->setRootPose(ps);
       }
-  }*/
+      for (int i = msg_size; i< umm_vec_size; i++){
+	//move far away
+	ps.pose.position.x = ps.pose.position.y = ps.pose.position.z = 1000000;
+	ps.pose.orientation.w = 1;
+	umm_vec_[i]->setRootPose(ps);
+      }
+    }else{
+      for (int i = 0; i < umm_vec_size; i++){
+	//change pose
+	ps.pose = msg->poses[i];
+	umm_vec_[i]->setRootPose(ps);
+      }
+      for (int i = umm_vec_size; i < msg_size; i++){
+	geometry_msgs::Pose pose = msg->poses[i];
+	umm_vec_.push_back(umm_ptr(new UrdfModelMarker(model_name_, model_file_, header.frame_id, pose, root_offset_, scale_factor_, mode_ , robot_mode_, registration_,fixed_link_, use_robot_description_, use_visible_color_, initial_pose_map_, i, server_)));
+      }
+    }
+  }
 
   void init(){
+    //name
     model_name_.assign(model_config_["name"]);
+    //scale
     scale_factor_ = 1.02;
     if(model_config_.hasMember("scale")){
       scale_factor_ = getXmlValue(model_config_["scale"]);
     }
+    //pose
     pose_ = getPose(model_config_["pose"]);
+    root_offset_ = getPose(model_config_["offset"]);
 
     //color
     use_visible_color_ = false;
@@ -107,18 +136,28 @@ public:
 	}
       }
     }
+
+    //default display
+    if(model_config_.hasMember("display")){
+      display_ = model_config_["display"];
+    }else{
+      display_ = true;
+    }
   }
 
   void addUrdfMarker(){
-    new UrdfModelMarker(model_name_, model_file_, frame_id_, pose_, scale_factor_, mode_ , robot_mode_, registration_,fixed_link_, use_robot_description_, use_visible_color_,initial_pose_map_, server_);
+    new UrdfModelMarker(model_name_, model_file_, frame_id_, pose_,root_offset_, scale_factor_, mode_ , robot_mode_, registration_,fixed_link_, use_robot_description_, use_visible_color_,initial_pose_map_, -1, server_);
   }
 
   UrdfModelSettings(XmlRpc::XmlRpcValue model,   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : pnh_("~"){
     model_config_ = model;
     server_ = server;
     init();
-    addUrdfMarker();
-    display_marker_sub_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/hoge", 1, boost::bind( &UrdfModelSettings::displayMarkerCB, this, _1));
+
+    if(display_){
+      addUrdfMarker();
+    }
+    display_marker_sub_ = pnh_.subscribe<geometry_msgs::PoseArray> (model_name_ + "/pose_array", 1, boost::bind( &UrdfModelSettings::displayMarkerArrayCB, this, _1));
   }
 };
 
@@ -129,6 +168,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "jsk_model_marker_interface");
   ros::NodeHandle n;
   ros::NodeHandle pnh_("~");
+  
 
   string server_name;
   pnh_.param("server_name", server_name, std::string ("") );
@@ -143,57 +183,6 @@ int main(int argc, char** argv)
   pnh_.param("model_config", v, v);
   for(int i=0; i< v.size(); i++){
     new UrdfModelSettings(v[i], server);
-    /*
-    XmlRpc::XmlRpcValue model = v[i];
-    std::cout << "name:" << model["name"] <<endl;
-    geometry_msgs::Pose p = getPose(model["pose"]);
-    double scale_factor = 1.02;
-    if(model.hasMember("scale")){
-      scale_factor = getXmlValue(model["scale"]);
-    }
-    string mode = "model";
-    string model_name;
-    model_name.assign (model["name"]);
-    string model_file = "";
-    bool registration = false;
-    string fixed_link = "";
-    if(model.hasMember("registration")){
-      registration = model["registration"];
-      mode = "registration";
-      if(model.hasMember("fixed-link")){
-	fixed_link.assign( model["fixed-link"]);
-	//fixed_link = model["fixed-link"];
-      }
-    }
-    if(model.hasMember("model")){
-      model_file.assign(model["model"]);
-    }
-    bool use_robot_description = false;
-    if(model.hasMember("use_robot_description")){
-      model_file = "/robot_description";
-      use_robot_description = model["use_robot_description"];
-    }
-    if(model.hasMember("model_param")){
-      use_robot_description = true;
-      model_file.assign(model["model_param"]);
-    }
-
-    bool use_visible_color = false;
-    if(model.hasMember("use_visible_color")){
-      use_visible_color = model["use_visible_color"];
-    }
-    std::cout << use_visible_color <<std::endl;
-
-    if(model["robot"]){
-      mode = "robot";
-    }
-    if(model.hasMember("mode")){
-      mode.assign(model["mode"]);
-    }
-
-    new UrdfModelMarker(model_name, model_file, model["frame-id"], p, scale_factor, mode , model["robot"], registration,fixed_link, use_robot_description, use_visible_color, server);
-    ros::Subscriber display_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name + "/display_marker", 1, viewMarkerCB);
-    */
   }
   ros::spin();
   return 0;
