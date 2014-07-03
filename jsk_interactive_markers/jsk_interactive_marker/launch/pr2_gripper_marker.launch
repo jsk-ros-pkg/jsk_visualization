@@ -1,0 +1,16 @@
+<launch>
+  <param name="pr2_gripper_urdf" command="$(find xacro)/xacro.py '$(find jsk_interactive_marker)/urdf/pr2_gripper_l.urdf.xacro'"/>
+  <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="true" />
+  <arg name="models" default="$(find jsk_interactive_marker)/launch/models/pr2_gripper_marker.yaml" />
+
+  <node pkg="jsk_interactive_marker" type="urdf_model_marker" name="jsk_model_marker_interface" clear_params="true" output="screen" alaunch-prefix="gdb -ex run --args">
+    <rosparam command="load" param="model_config" file="$(arg models)"/>
+    <param name="use_dynamic_tf" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
+  </node>
+
+  <group if="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)">
+    <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_for_pr2_gripper_marker">
+      <param name="use_cache" type="bool" value="false"/>
+    </node>
+  </group>
+</launch>
