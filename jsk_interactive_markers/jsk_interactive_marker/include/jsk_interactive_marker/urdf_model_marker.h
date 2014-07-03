@@ -74,6 +74,7 @@ class UrdfModelMarker {
   void setJointState(boost::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js);
   void setJointAngle(boost::shared_ptr<const Link> link, double joint_angle);
   geometry_msgs::Pose getRootPose(geometry_msgs::Pose pose);
+  geometry_msgs::PoseStamped getOriginPoseStamped();
   void setOriginalPose(boost::shared_ptr<const Link> link);
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init);
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index);

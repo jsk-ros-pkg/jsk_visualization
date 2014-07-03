@@ -294,10 +294,7 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
       linkMarkerMap[linkMarkerMap[frame_id].movable_link].displayMoveMarker ^= true;
       addChildLinkNames(model->getRoot(), true, false);
     }else{
-      string rootlink_name = tf_prefix_ + model->getRoot()->name;
-      geometry_msgs::PoseStamped ps;
-      ps.pose = linkMarkerMap[rootlink_name].pose;
-      ps.header.frame_id = linkMarkerMap[rootlink_name].frame_id;
+      geometry_msgs::PoseStamped ps = getOriginPoseStamped();
       pub_selected_.publish(ps);
     }
     break;
@@ -771,6 +768,20 @@ geometry_msgs::Pose UrdfModelMarker::getRootPose(geometry_msgs::Pose pose){
   pose_frame = pose_frame * offset_frame.Inverse();
   tf::PoseKDLToMsg(pose_frame, pose);
   return pose;
+}
+
+geometry_msgs::PoseStamped UrdfModelMarker::getOriginPoseStamped(){
+  geometry_msgs::PoseStamped ps;
+  geometry_msgs::Pose pose;
+  pose = root_pose_;
+  KDL::Frame pose_frame, offset_frame;
+  tf::PoseMsgToKDL(pose, pose_frame);
+  tf::PoseMsgToKDL(root_offset_, offset_frame);
+  pose_frame = pose_frame * offset_frame;
+  tf::PoseKDLToMsg(pose_frame, pose);
+  ps.pose = pose;
+  ps.header.frame_id = frame_id_;
+  return ps;
 }
 
 
