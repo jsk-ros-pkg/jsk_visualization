@@ -47,6 +47,9 @@ namespace jsk_rviz_plugin
     alpha_property_->setMin(0.0);
     alpha_property_->setMax(1.0);
 
+    axis_color_property_ = new rviz::BoolProperty("Axis Color", false,
+                                                  "coloring according to the angle of the plane",
+                                                  this, SLOT(updateAxisColor()));
     max_color_property_ = new rviz::ColorProperty("Max Color", QColor(255, 255, 255),
                                                   "maximum color to draw grid map",
                                                   this, SLOT(updateMaxColor()));
@@ -60,6 +63,7 @@ namespace jsk_rviz_plugin
     delete alpha_property_;
     delete max_color_property_;
     delete min_color_property_;
+    delete axis_color_property_;
     allocateCloudsAndNodes(0);
   }
 
@@ -111,6 +115,22 @@ namespace jsk_rviz_plugin
       (value * (max_color_.green() - min_color_.green()) + min_color_.green()),
       (value * (max_color_.blue() - min_color_.blue()) + min_color_.blue()));
   }
+
+  QColor SparseOccupancyGridArrayDisplay::axisColor(const Ogre::Quaternion& q,
+                                                    const Ogre::Vector3& p)
+  {
+    Ogre::Vector3 zaxis = q.zAxis();
+    Ogre::Vector3 reference = p.normalisedCopy();
+    double dot = zaxis.dotProduct(reference);
+    if (dot < -1) {
+      dot = -1.0;
+    }
+    else if (dot > 1) {
+      dot = 1.0;
+    }
+    double scale = (dot + 1) / 2.0;
+    return gridColor(scale);
+  }
   
   void SparseOccupancyGridArrayDisplay::processMessage(
     const jsk_pcl_ros::SparseOccupancyGridArray::ConstPtr& msg)
@@ -140,13 +160,21 @@ namespace jsk_rviz_plugin
         for (size_t ri = 0; ri < column.cells.size(); ri++) {
           const jsk_pcl_ros::SparseOccupancyGridCell cell = column.cells[ri];
           const int row_index = cell.row_index;
-          QColor color = gridColor(cell.value);
-          Ogre::ColourValue ogre_color = rviz::qtToOgre(color);
           rviz::PointCloud::Point point;
+          if (!axis_color_) {
+            QColor color = gridColor(cell.value);
+            Ogre::ColourValue ogre_color = rviz::qtToOgre(color);
+            point.color = ogre_color;
+          }
+          else {
+            QColor color = axisColor(quaternion, Ogre::Vector3(1, 0, 0));
+            Ogre::ColourValue ogre_color = rviz::qtToOgre(color);
+            point.color = ogre_color;
+          }
           point.position.x = grid.resolution * column_index;
           point.position.y = grid.resolution * row_index;
           point.position.z = 0.0;
-          point.color = ogre_color;
+          
           points.push_back(point);
         }
       }
@@ -173,7 +201,11 @@ namespace jsk_rviz_plugin
   {
     min_color_ = min_color_property_->getColor();
   }
-  
+
+  void SparseOccupancyGridArrayDisplay::updateAxisColor()
+  {
+    axis_color_ = axis_color_property_->getBool();
+  }
 }
 
 #include <pluginlib/class_list_macros.h>
