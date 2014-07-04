@@ -41,6 +41,7 @@
 #include <rviz/properties/float_property.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/properties/color_property.h>
+#include <rviz/ogre_helpers/point_cloud.h>
 
 namespace jsk_rviz_plugin
 {
@@ -48,22 +49,21 @@ namespace jsk_rviz_plugin
   {
     Q_OBJECT
   public:
-    typedef boost::shared_ptr<rviz::Shape> ShapePtr;
+    typedef boost::shared_ptr<rviz::PointCloud> PointCloudPtr;
     SparseOccupancyGridArrayDisplay();
     virtual ~SparseOccupancyGridArrayDisplay();
-
   protected:
     virtual void onInitialize();
     virtual void reset();
-    virtual void allocateShapes(
-      const jsk_pcl_ros::SparseOccupancyGridArray::ConstPtr& msg);
+    virtual void allocateCloudsAndNodes(const size_t num);
     virtual QColor gridColor(double value);
     // ?? do we need to track the planes for efficient rendering?
     rviz::ColorProperty* max_color_property_;
     rviz::ColorProperty* min_color_property_;
     rviz::FloatProperty* alpha_property_;
     double alpha_;
-    std::vector<ShapePtr> shapes_;
+    std::vector<rviz::PointCloud*> clouds_;
+    std::vector<Ogre::SceneNode*> nodes_;
     QColor max_color_;
     QColor min_color_;
   private:
