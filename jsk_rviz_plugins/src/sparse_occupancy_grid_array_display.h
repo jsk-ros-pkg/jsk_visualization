@@ -39,6 +39,7 @@
 #include <jsk_pcl_ros/SparseOccupancyGridArray.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/bool_property.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/ogre_helpers/point_cloud.h>
@@ -57,15 +58,19 @@ namespace jsk_rviz_plugin
     virtual void reset();
     virtual void allocateCloudsAndNodes(const size_t num);
     virtual QColor gridColor(double value);
+    virtual QColor axisColor(const Ogre::Quaternion& q,
+                             const Ogre::Vector3& p);
     // ?? do we need to track the planes for efficient rendering?
     rviz::ColorProperty* max_color_property_;
     rviz::ColorProperty* min_color_property_;
     rviz::FloatProperty* alpha_property_;
+    rviz::BoolProperty* axis_color_property_;
     double alpha_;
     std::vector<rviz::PointCloud*> clouds_;
     std::vector<Ogre::SceneNode*> nodes_;
     QColor max_color_;
     QColor min_color_;
+    bool axis_color_;
   private:
     void processMessage(
       const jsk_pcl_ros::SparseOccupancyGridArray::ConstPtr& msg);
@@ -73,6 +78,7 @@ namespace jsk_rviz_plugin
     void updateAlpha();
     void updateMaxColor();
     void updateMinColor();
+    void updateAxisColor();
   };
 
 }
