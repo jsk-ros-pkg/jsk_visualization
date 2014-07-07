@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<robot xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+       xmlns:xacro="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+       name="pr2" >
+  
+  <!-- The following included files set up definitions of parts of the robot body -->
+  <!-- misc common stuff? -->
+  <include filename="$(find pr2_description)/urdf/common.xacro" />
+  <!-- PR2 Arm -->
+  <include filename="$(find pr2_description)/urdf/shoulder_v0/shoulder.urdf.xacro" />
+  <include filename="$(find pr2_description)/urdf/upper_arm_v0/upper_arm.urdf.xacro" />
+  <include filename="$(find pr2_description)/urdf/forearm_v0/forearm.urdf.xacro" />
+  <!-- PR2 gripper -->
+  <include filename="$(find pr2_description)/urdf/gripper_v0/gripper.urdf.xacro" />
+  <!-- PR2 head -->
+  <include filename="$(find pr2_description)/urdf/head_v0/head.urdf.xacro" />
+  <!-- PR2 tilting laser mount -->
+  <include filename="$(find pr2_description)/urdf/tilting_laser_v0/tilting_laser.urdf.xacro" />
+  <!-- PR2 torso -->
+  <include filename="$(find pr2_description)/urdf/torso_v0/torso.urdf.xacro" />
+  <!-- PR2 base -->
+  <include filename="$(find pr2_description)/urdf/base_v0/base.urdf.xacro" />
+  <!-- Head sensors -->
+  <include filename="$(find pr2_description)/urdf/sensors/head_sensor_package.urdf.xacro" />
+  <include filename="$(find pr2_description)/urdf/sensors/kinect_prosilica_camera.urdf.xacro" />
+  <!-- Camera sensors -->
+  <include filename="$(find pr2_description)/urdf/sensors/wge100_camera.urdf.xacro" />
+  <!-- Texture projector -->
+  <include filename="$(find pr2_description)/urdf/sensors/projector_wg6802418.urdf.xacro" />
+  <!-- generic simulator_gazebo plugins for starting mechanism control, ros time, ros battery -->
+  <include filename="$(find pr2_description)/gazebo/gazebo.urdf.xacro" />
+  <!-- materials for visualization -->
+  <include filename="$(find pr2_description)/urdf/materials.urdf.xacro" />
+
+  <!-- Now we can start using the macros included above to define the actual PR2 -->
+
+  <!-- The first use of a macro.  This one was defined in base.urdf.xacro above.
+       A macro like this will expand to a set of link and joint definitions, and to additional
+       Gazebo-related extensions (sensor plugins, etc).  The macro takes an argument, name, 
+       that equals "base", and uses it to generate names for its component links and joints 
+       (e.g., base_link).  The included origin block is also an argument to the macro.  By convention, 
+       the origin block defines where the component is w.r.t its parent (in this case the parent 
+       is the world frame). For more, see http://www.ros.org/wiki/xacro -->
+
+  <xacro:pr2_gripper_v0 reflect="1.0" side="l" parent="l_wrist_roll_link"
+               screw_reduction="${4.0/1000.0}"
+               gear_ratio="${(729.0/25.0)*(22.0/16.0)}"
+               theta0="${3.6029*M_PI/180.0}"
+               phi0="${29.7089*M_PI/180.0}"
+               t0="${-0.1914/1000.0}"
+               L0="${37.5528/1000.0}"
+               h="${0.0/1000.0}"
+               a="${68.3698/1000.0}"
+               b="${43.3849/1000.0}"
+               r="${91.5/1000.0}" >
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:pr2_gripper_v0>
+
+  <link name="l_wrist_roll_link" />
+</robot>

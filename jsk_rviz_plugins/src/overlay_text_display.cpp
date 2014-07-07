@@ -206,7 +206,7 @@ namespace jsk_rviz_plugin
     }
     texture_width_ = msg->width;
     texture_height_ = msg->height;
-    panel_->setPosition(msg->top, msg->left);
+    panel_->setPosition(msg->left, msg->top);
     // store message for update method
     text_ = msg->text;
     font_ = msg->font;
