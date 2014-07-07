@@ -47,6 +47,7 @@ rosbuild_add_executable(world2yaml src/world2yaml)
 rosbuild_add_executable(footstep_marker src/footstep_marker.cpp src/interactive_marker_helpers.cpp)
 rosbuild_add_executable(marker_6dof src/marker_6dof.cpp)
 rosbuild_add_executable(bounding_box_marker src/bounding_box_marker.cpp)
+rosbuild_add_executable(interactive_point_cloud src/interactive_point_cloud_node.cpp src/interactive_point_cloud.cpp)
 
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
 #rosbuild_add_executable(interactive_marker_interface_both_arm src/interactive_marker_interface_both_arm.cpp)
