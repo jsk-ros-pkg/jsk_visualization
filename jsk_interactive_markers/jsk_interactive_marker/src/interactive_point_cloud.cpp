@@ -4,12 +4,6 @@
 #include <std_msgs/String.h>
 #include <tf/tf.h>
 
-// #include <pcl/io/pcd_io.h>
-// #include <pcl/point_types.h>
-// #include <pcl/filters/voxel_grid.h>
-// #include <pcl/features/normal_3d_omp.h>
-// #include <pcl/search/kdtree.h>
-// #include <pcl/filters/filter.h>
 #include <jsk_interactive_marker/interactive_marker_helpers.h>
 #include <jsk_interactive_marker/interactive_point_cloud.h>
 
@@ -27,26 +21,37 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
   , marker_server_(topic_name, server_name, false)
 {
 
-  pnh_.param<double>("voxel_size", voxel_size_, 0.010);
-  pnh_.param<std::string>("head_pointing_frame", head_pointing_frame_, "/default_head_pointing_frame");
+  pnh_.param<double>("point_size", point_size_, 0.002);
+  pnh_.param<std::string>("input", input_pointcloud_, "/selected_pointcloud");
 
-  pub_click_point_ = pnh_.advertise<geometry_msgs::PointStamped>("/right_click_point", 1);
-  pub_left_click_ = pnh_.advertise<geometry_msgs::PointStamped>("/left_click_point", 1);
+  pub_click_point_ = pnh_.advertise<geometry_msgs::PointStamped>("right_click_point", 1);
+  pub_left_click_ = pnh_.advertise<geometry_msgs::PointStamped>("left_click_point", 1);
   pub_marker_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("marker_pose", 1);
 
-  //sub_point_cloud_ = pnh_.subscribe("/head_mount_kinect/depth_registered/points", 1, 
-  sub_point_cloud_ = pnh_.subscribe("/selected_pointcloud", 1, 
+  sub_point_cloud_ = pnh_.subscribe(input_pointcloud_, 1,
 				    &InteractivePointCloud::pointCloudCallback, this);
+
+  srv_ = boost::make_shared <dynamic_reconfigure::Server<Config> > (pnh_);
+  dynamic_reconfigure::Server<Config>::CallbackType f =
+    boost::bind (&InteractivePointCloud::configCallback, this, _1, _2);
+  srv_->setCallback (f);
 
   makeMenu();
 }
 
 InteractivePointCloud::~InteractivePointCloud(){};
 
+void InteractivePointCloud::configCallback(Config &config, uint32_t level)
+{
+  boost::mutex::scoped_lock(mutex_);
+  point_size_ = config.point_size;
+}
+
+
 
 void InteractivePointCloud::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cloud){
-  ROS_INFO("%lf",voxel_size_);
-  makeMarker(cloud, voxel_size_ * 1.8);
+  ROS_INFO("%lf",point_size_);
+  makeMarker(cloud, point_size_ );
 }
 
 void InteractivePointCloud::makeMenu()
@@ -54,7 +59,7 @@ void InteractivePointCloud::makeMenu()
   // create menu
   menu_handler_.insert( "Move",  boost::bind( &InteractivePointCloud::move, this, _1) );
 
-  menu_handler_.insert( "Broadcast click position",  boost::bind( &InteractivePointCloud::leftClickPoint, this, _1) );
+  menu_handler_.insert( "Broadcast click point",  boost::bind( &InteractivePointCloud::leftClickPoint, this, _1) );
 
   menu_handler_.insert( "Clear",    boost::bind( &InteractivePointCloud::clear, this) );
 }
@@ -90,10 +95,8 @@ void InteractivePointCloud::clear()
 
 
 void InteractivePointCloud::markerFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
-  ROS_INFO("aaa");
   marker_pose_.pose = feedback->pose;
   marker_pose_.header = feedback->header;
-  
 }
 
 void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, float size)
@@ -152,7 +155,7 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
 
     int_marker.controls.push_back( control );
     
-    add6DofControl(int_marker);
+    addVisible6DofControl(int_marker);
 
     marker_server_.insert( int_marker, boost::bind( &InteractivePointCloud::leftClickPoint, this, _1 ),
 			   visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK);
