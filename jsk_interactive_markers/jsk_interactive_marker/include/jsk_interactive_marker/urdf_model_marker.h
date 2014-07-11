@@ -25,6 +25,12 @@
 #include "urdf_parser/urdf_parser.h"
 #include <iostream>
 #include <fstream>
+
+#include <diagnostic_updater/diagnostic_updater.h>
+#include <diagnostic_updater/publisher.h>
+
+#include <jsk_pcl_ros/pcl_util.h>
+
 using namespace urdf;
 using namespace std;
 
@@ -96,11 +102,18 @@ class UrdfModelMarker {
   void setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg );
   void setRootPose( geometry_msgs::PoseStamped ps);
   void resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg);
-  
+  void updateDiagnostic(diagnostic_updater::DiagnosticStatusWrapper &stat);
+
+
  protected:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  
+  /* diagnostics */
+  boost::shared_ptr<diagnostic_updater::Updater> diagnostic_updater_;
+  jsk_pcl_ros::TimeAccumulator reset_joint_states_check_time_acc_;
+  jsk_pcl_ros::TimeAccumulator dynamic_tf_check_time_acc_;
   /* publisher */
   ros::Publisher pub_;
   ros::Publisher pub_move_;

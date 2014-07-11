@@ -51,6 +51,46 @@
     )
   )
 
+(defun joint-trajectory-callback
+  (msg)
+  (let ((joint-names (send msg :joint_names))
+	(joint-trajectory-points (send msg :points))
+	joint-trajectory-point
+	joint-angles
+	joint-name joint-angle
+	avs tms
+       )
+
+    (dolist (joint-trajectory-point joint-trajectory-points)
+      (setq joint-angles (send joint-trajectory-point :positions))
+
+      (dotimes (x (length joint-names))
+	(setq joint-name (elt joint-names x))
+	(let ((hand-method (intern (string-upcase joint-name) *keyword-package*)))
+	  (when (find-method *robot* hand-method)
+	    (if (subclassp (class (send *robot* hand-method)) rotational-joint)
+		(setq joint-angle (rad2deg (elt joint-angles x)))
+	      (setq joint-angle (* 1000.0 (elt joint-angles x)))
+	      )
+	    (send *robot* hand-method :joint-angle joint-angle)))
+	)
+      (push (send *robot* :angle-vector) avs)
+      (let ((time-from-start (send (send joint-trajectory-point :time_from_start) :to-sec))
+	    (time-prev 0))
+	(push (* 1000 (- time-from-start time-prev)) tms)
+	(setq time-prev time-from-start)
+	)
+      (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+
+      )
+    (setq avs (reverse avs))
+    (setq tms (reverse tms))
+
+    (send *ri* :angle-vector-sequence avs tms)
+    (send *ri* :wait-interpolation)
+    )
+  )
+
 (defun hand-callback
   (msg)
   (let ((hand-msg (send msg :data))
@@ -133,6 +173,9 @@
 
 (ros::subscribe (format nil "~A/~A/joint_states_ri_move" server-nodename *robot-name*)
 		sensor_msgs::JointState #'joint-state-callback)
+
+(ros::subscribe (format nil "~A/~A/joint_trajectory_ri_move" server-nodename *robot-name*)
+		trajectory_msgs::JointTrajectory #'joint-trajectory-callback)
 
 (ros::subscribe (format nil "~A/~A/hand_ri_move" server-nodename *robot-name*)
 		std_msgs::String #'hand-callback)

@@ -6,6 +6,7 @@
 #include <jsk_interactive_marker/interactive_marker_helpers.h>
 #include <dynamic_tf_publisher/SetDynamicTF.h>
 #include <Eigen/Geometry>
+#include <jsk_pcl_ros/pcl_util.h>
 
 #include <kdl/frames_io.hpp>
 #include <tf_conversions/tf_kdl.h>
@@ -146,8 +147,10 @@ geometry_msgs::Pose UrdfModelMarker::UrdfPose2Pose( const urdf::Pose pose){
 }
 
 void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform){
+  jsk_pcl_ros::ScopedTimer timer = dynamic_tf_check_time_acc_.scopedTimer();
   dynamic_tf_publisher::SetDynamicTF SetTf;
-  SetTf.request.freq = 10;
+  //SetTf.request.freq = 10;
+  SetTf.request.freq = 100;
   SetTf.request.cur_tf.header.stamp = ros::Time::now();
   SetTf.request.cur_tf.header.frame_id = parent_frame_id;
   SetTf.request.cur_tf.child_frame_id = frame_id;
@@ -236,6 +239,7 @@ void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
 
 
 void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg){
+  jsk_pcl_ros::ScopedTimer timer = reset_joint_states_check_time_acc_.scopedTimer();
   setJointState(model->getRoot(), msg);
   addChildLinkNames(model->getRoot(), true, false);
   republishJointState(*msg);
@@ -277,6 +281,7 @@ void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr 
 void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string parent_frame_id, string frame_id){
   switch ( feedback->event_type ){
   case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
+  case visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP:
     linkMarkerMap[frame_id].pose = feedback->pose;
     //root link
     if(parent_frame_id == frame_id_){
@@ -300,6 +305,7 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
     break;
 
   }
+  diagnostic_updater_->update();
 }
 
 
@@ -1034,6 +1040,10 @@ UrdfModelMarker::UrdfModelMarker ()
 {}
 
 UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index,  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
+  diagnostic_updater_.reset(new diagnostic_updater::Updater);
+  diagnostic_updater_->setHardwareID(ros::this_node::getName());
+  diagnostic_updater_->add("Modeling Stats", boost::bind(&UrdfModelMarker::updateDiagnostic, this, _1));
+
   pnh_.param("server_name", server_name, std::string ("") );
 
   if ( server_name == "" ) {
@@ -1083,6 +1093,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   show_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/show_marker", 1, boost::bind( &UrdfModelMarker::showModelMarkerCB, this, _1));
 
   pub_base_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>(model_name_ + "/base_pose", 1);
+
 
   /*
     serv_set_ = pnh_.advertiseService("set_pose",
@@ -1207,3 +1218,28 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
 
 }
 
+
+void UrdfModelMarker::updateDiagnostic(
+						diagnostic_updater::DiagnosticStatusWrapper &stat)
+{
+  boost::mutex::scoped_lock(mutex_);
+  stat.summary(diagnostic_msgs::DiagnosticStatus::OK, "UrdfModelMarker running");
+  stat.add("Time to set dynamic tf (Avg.)",
+	   dynamic_tf_check_time_acc_.mean());
+  stat.add("Time to set dynamic tf (Max)",
+	   dynamic_tf_check_time_acc_.max());
+  stat.add("Time to set dynamic tf (Min)",
+	   dynamic_tf_check_time_acc_.min());
+  stat.add("Time to set dynamic tf (Var.)",
+	   dynamic_tf_check_time_acc_.variance());
+
+  stat.add("Time to set joint states (Avg.)",
+	   reset_joint_states_check_time_acc_.mean());
+  stat.add("Time to set joint states (Max)",
+	   reset_joint_states_check_time_acc_.max());
+  stat.add("Time to set joint states (Min)",
+	   reset_joint_states_check_time_acc_.min());
+  stat.add("Time to set joint states (Var.)",
+	   reset_joint_states_check_time_acc_.variance());
+
+}
