@@ -39,6 +39,8 @@
 #include <rviz/display.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/string_property.h>
+#include <rviz/properties/editable_enum_property.h>
+#include <rviz/properties/tf_frame_property.h>
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/enum_property.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
@@ -69,8 +71,8 @@ namespace jsk_rviz_plugin
     (const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
     
     rviz::RosTopicProperty* ros_topic_property_;
-    rviz::StringProperty* diagnostics_namespace_property_;
-    rviz::StringProperty* frame_id_property_;
+    rviz::EditableEnumProperty* diagnostics_namespace_property_;
+    rviz::TfFrameProperty* frame_id_property_;
     rviz::FloatProperty* radius_property_;
     rviz::FloatProperty* line_width_property_;
     rviz::EnumProperty* axis_property_;
@@ -83,16 +85,17 @@ namespace jsk_rviz_plugin
     rviz::MovableText* msg_;
     rviz::BillboardLine* line_;
     Ogre::SceneNode* orbit_node_;
+    std::set<std::string> namespaces_;
     int axis_;
     double orbit_theta_;
     bool line_update_required_;
   protected Q_SLOTS:
     virtual void updateRosTopic();
-    virtual void updateFrameId();
     virtual void updateDiagnosticsNamespace();
     virtual void updateRadius();
     virtual void updateLineWidth();
     virtual void updateAxis();
+    virtual void fillNamespaceList();
   private:
     
   };
