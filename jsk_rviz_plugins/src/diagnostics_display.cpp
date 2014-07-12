@@ -72,9 +72,10 @@ namespace jsk_rviz_plugin
     axis_property_->addOption("x", 0);
     axis_property_->addOption("y", 1);
     axis_property_->addOption("z", 2);
-    // connect(diagnostics_namespace_property_,
-    //         SIGNAL(requestOptions(rviz::EditableEnumProperty*)),
-    //         this, SLOT(fillNamespaceList()));
+    font_size_property_ = new rviz::FloatProperty(
+      "font size", 0.05,
+      "font size",
+      this, SLOT(updateFontSize()));
   }
 
   DiagnosticsDisplay::~DiagnosticsDisplay()
@@ -87,6 +88,7 @@ namespace jsk_rviz_plugin
     delete axis_property_;
     delete line_;
     delete msg_;
+    delete font_size_property_;
   }
 
   void DiagnosticsDisplay::update(float wall_dt, float ros_dt)
@@ -98,6 +100,8 @@ namespace jsk_rviz_plugin
     if (!isEnabled()) {
       return;
     }
+
+    msg_->setCharacterHeight(font_size_);
     
     const float round_trip = 10.0;
     Ogre::Quaternion orientation;
@@ -158,6 +162,7 @@ namespace jsk_rviz_plugin
     updateDiagnosticsNamespace();
     updateRadius();
     updateRosTopic();
+    updateFontSize();
   }
   
   void DiagnosticsDisplay::processMessage
@@ -338,6 +343,11 @@ namespace jsk_rviz_plugin
       diagnostics_namespace_property_->addOptionStd(*it);
     }
     diagnostics_namespace_property_->sortOptions();
+  }
+
+  void DiagnosticsDisplay::updateFontSize()
+  {
+    font_size_ = font_size_property_->getFloat();
   }
   
 }
