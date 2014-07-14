@@ -75,6 +75,7 @@ namespace jsk_rviz_plugin
     rviz::TfFrameProperty* frame_id_property_;
     rviz::FloatProperty* radius_property_;
     rviz::FloatProperty* line_width_property_;
+    rviz::FloatProperty* font_size_property_;
     rviz::EnumProperty* axis_property_;
     ros::Subscriber sub_;
     
@@ -88,6 +89,7 @@ namespace jsk_rviz_plugin
     std::set<std::string> namespaces_;
     int axis_;
     double orbit_theta_;
+    double font_size_;
     bool line_update_required_;
   protected Q_SLOTS:
     virtual void updateRosTopic();
@@ -95,6 +97,7 @@ namespace jsk_rviz_plugin
     virtual void updateRadius();
     virtual void updateLineWidth();
     virtual void updateAxis();
+    virtual void updateFontSize();
     virtual void fillNamespaceList();
   private:
     
