@@ -2,6 +2,21 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.6 (2014-07-14)
+------------------
+* add new plugin to visualize diagnostic status on ovrelay layer
+* hide movable text of DiagnosticDisplay at first
+* support font size field in DiagnosticDisplay
+* diagnostics namespace and frame_id fields of DiagnosticsDisplay is now
+  selectable according to the current ROS topics
+* support axis color to colorize SparseOccupancyGridMap
+* use rviz::PointCloud to render jsk_pcl_ros::SparseOccupancyGridArray to optimize
+* hotfix to fix the position of overlay text
+* does not update scale if the dimension is same to the previous data in OccupancyGridDisplay
+* implement rviz plugin to visualize jsk_pcl_ros::SparseOccupancyGridArray
+* add QuietInteractiveMarker
+* Contributors: Ryohei Ueda
+
 1.0.5 (2014-06-29)
 ------------------
 * add overlay camera display

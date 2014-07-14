@@ -32,78 +32,96 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-
-#ifndef JSK_RVIZ_PLUGIN_DIAGNOSTICS_DISPLAY_H_
-#define JSK_RVIZ_PLUGIN_DIAGNOSTICS_DISPLAY_H_
+#ifndef JSK_RVIZ_PLUGIN_OVERLAY_DIAGNOSTIC_DISPLAY_H_
+#define JSK_RVIZ_PLUGIN_OVERLAY_DIAGNOSTIC_DISPLAY_H_
 
 #include <rviz/display.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/string_property.h>
-#include <rviz/properties/editable_enum_property.h>
-#include <rviz/properties/tf_frame_property.h>
+#include <OGRE/OgreOverlayElement.h>
+#include <OGRE/OgreOverlayContainer.h>
+#include <OGRE/OgrePanelOverlayElement.h>
+#include <OGRE/OgreTexture.h>
+#include <OGRE/OgreColourValue.h>
+#include <OGRE/OgreMaterial.h>
+
+#include <QPainter>
+
 #include <rviz/properties/ros_topic_property.h>
-#include <rviz/properties/enum_property.h>
+#include <rviz/properties/editable_enum_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/color_property.h>
+
 #include <diagnostic_msgs/DiagnosticArray.h>
-#include <rviz/ogre_helpers/billboard_line.h>
-#include <rviz/display_context.h>
-#include <rviz/frame_manager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <rviz/ogre_helpers/movable_text.h>
 
 namespace jsk_rviz_plugin
 {
-  class DiagnosticsDisplay : public rviz::Display
+  class OverlayDiagnosticDisplay: public rviz::Display
   {
     Q_OBJECT
   public:
-    DiagnosticsDisplay();
-    virtual ~DiagnosticsDisplay();
+    OverlayDiagnosticDisplay();
+    virtual ~OverlayDiagnosticDisplay();
+    
   protected:
+    virtual void processMessage(
+      const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
+    virtual void update(float wall_dt, float ros_dt);
     virtual void onEnable();
     virtual void onDisable();
     virtual void onInitialize();
     virtual void subscribe();
     virtual void unsubscribe();
-    virtual void updateLine();
-    virtual void update(float wall_dt, float ros_dt);
-    virtual void processMessage
-    (const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
+    virtual void updateTextureSize(int width, int height);
+    virtual void redraw();
+    virtual void fillNamespaceList();
+    virtual QColor foregroundColor();
+    virtual QColor blendColor(QColor a, QColor b, double a_rate);
+    virtual void drawText(QPainter& painter, QColor fg_color,
+                          const std::string& text);
+    virtual double drawAnimatingText(QPainter& painter,
+                                     QColor fg_color,
+                                     const double height,
+                                     const double font_size,
+                                     const std::string text);
+    virtual std::string statusText();
+    boost::mutex mutex_;
+    Ogre::Overlay* overlay_;
+    Ogre::PanelOverlayElement* panel_;
+    Ogre::MaterialPtr panel_material_;
+    std::string overlay_name_;
+    std::string material_name_;
+    std::string texture_name_;
+    Ogre::TexturePtr texture_;
+
+    diagnostic_msgs::DiagnosticStatus::Ptr latest_status_;
     
+    int size_;
+    std::string diagnostics_namespace_;
+    std::set<std::string> namespaces_;
+    double alpha_;
+    QColor color_;
+    int top_, left_;
+    double t_;
     rviz::RosTopicProperty* ros_topic_property_;
     rviz::EditableEnumProperty* diagnostics_namespace_property_;
-    rviz::TfFrameProperty* frame_id_property_;
-    rviz::FloatProperty* radius_property_;
-    rviz::FloatProperty* line_width_property_;
-    rviz::FloatProperty* font_size_property_;
-    rviz::EnumProperty* axis_property_;
+    rviz::IntProperty* top_property_;
+    rviz::IntProperty* left_property_;
+    rviz::ColorProperty* color_property_;
+    rviz::FloatProperty* alpha_property_;
+    rviz::IntProperty* size_property_;
+
     ros::Subscriber sub_;
-    
-    double radius_;
-    double line_width_;
-    std::string frame_id_;
-    std::string diagnostics_namespace_;
-    rviz::MovableText* msg_;
-    rviz::BillboardLine* line_;
-    Ogre::SceneNode* orbit_node_;
-    std::set<std::string> namespaces_;
-    int axis_;
-    double orbit_theta_;
-    double font_size_;
-    bool line_update_required_;
   protected Q_SLOTS:
     virtual void updateRosTopic();
     virtual void updateDiagnosticsNamespace();
-    virtual void updateRadius();
-    virtual void updateLineWidth();
-    virtual void updateAxis();
-    virtual void updateFontSize();
-    virtual void fillNamespaceList();
+    virtual void updateSize();
+    virtual void updateColor();
+    virtual void updateAlpha();
+    virtual void updateTop();
+    virtual void updateLeft();
   private:
     
   };
-  
 }
-
 
 #endif
