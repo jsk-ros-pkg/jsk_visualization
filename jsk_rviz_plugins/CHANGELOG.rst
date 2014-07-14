@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.6 (2014-07-14)
+------------------
 * add new plugin to visualize diagnostic status on ovrelay layer
 * hide movable text of DiagnosticDisplay at first
 * support font size field in DiagnosticDisplay

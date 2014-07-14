@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.6 (2014-07-14)
+------------------
 * add grasp method
 * publish root pose when clicked
 * launch file for pr2 gripper marker
