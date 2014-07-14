@@ -156,6 +156,7 @@ namespace jsk_rviz_plugin
                            rviz::MovableText::V_ABOVE);
     frame_id_property_->setFrameManager(context_->getFrameManager());
     orbit_node_->attachObject(msg_);
+    msg_->setVisible(false);
     orbit_theta_ = M_PI * 2.0 / 6 * counter++;
     updateLineWidth();
     updateAxis();
@@ -281,12 +282,14 @@ namespace jsk_rviz_plugin
   void DiagnosticsDisplay::onEnable()
   {
     line_update_required_ = true;
+    msg_->setVisible(true);
   }
 
   void DiagnosticsDisplay::onDisable()
   {
     unsubscribe();
     line_->clear();
+    msg_->setVisible(false);
   }
   
   void DiagnosticsDisplay::unsubscribe()
