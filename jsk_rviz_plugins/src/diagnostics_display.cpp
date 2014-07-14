@@ -49,11 +49,11 @@ namespace jsk_rviz_plugin
         ros::message_traits::datatype<diagnostic_msgs::DiagnosticArray>(),
         "diagnostic_msgs::DiagnosticArray topic to subscribe to.",
         this, SLOT( updateRosTopic() ));
-    frame_id_property_ = new rviz::StringProperty(
-      "frame_id", "base_link",
+    frame_id_property_ = new rviz::TfFrameProperty(
+      "frame_id", rviz::TfFrameProperty::FIXED_FRAME_STRING,
       "the parent frame_id to visualize diagnostics",
-      this, SLOT(updateFrameId()));
-    diagnostics_namespace_property_ = new rviz::StringProperty(
+      this, 0, true);
+    diagnostics_namespace_property_ = new rviz::EditableEnumProperty(
       "diagnostics namespace", "/",
       "diagnostics namespace to visualize diagnostics",
       this, SLOT(updateDiagnosticsNamespace()));
@@ -72,6 +72,10 @@ namespace jsk_rviz_plugin
     axis_property_->addOption("x", 0);
     axis_property_->addOption("y", 1);
     axis_property_->addOption("z", 2);
+    font_size_property_ = new rviz::FloatProperty(
+      "font size", 0.05,
+      "font size",
+      this, SLOT(updateFontSize()));
   }
 
   DiagnosticsDisplay::~DiagnosticsDisplay()
@@ -84,6 +88,7 @@ namespace jsk_rviz_plugin
     delete axis_property_;
     delete line_;
     delete msg_;
+    delete font_size_property_;
   }
 
   void DiagnosticsDisplay::update(float wall_dt, float ros_dt)
@@ -95,16 +100,19 @@ namespace jsk_rviz_plugin
     if (!isEnabled()) {
       return;
     }
+
+    msg_->setCharacterHeight(font_size_);
     
     const float round_trip = 10.0;
     Ogre::Quaternion orientation;
     Ogre::Vector3 position;
-    if( !context_->getFrameManager()->getTransform( frame_id_,
+    std::string frame_id = frame_id_property_->getFrame().toStdString();
+    if( !context_->getFrameManager()->getTransform( frame_id,
                                                     ros::Time(0.0),
                                                     position, orientation ))
     {
       ROS_WARN( "Error transforming from frame '%s' to frame '%s'",
-                frame_id_.c_str(), qPrintable( fixed_frame_ ));
+                frame_id.c_str(), qPrintable( fixed_frame_ ));
       return;
     }
     scene_node_->setPosition(position);
@@ -146,14 +154,15 @@ namespace jsk_rviz_plugin
     msg_ = new rviz::MovableText("not initialized", "Arial", 0.05);
     msg_->setTextAlignment(rviz::MovableText::H_CENTER,
                            rviz::MovableText::V_ABOVE);
+    frame_id_property_->setFrameManager(context_->getFrameManager());
     orbit_node_->attachObject(msg_);
     orbit_theta_ = M_PI * 2.0 / 6 * counter++;
     updateLineWidth();
     updateAxis();
-    updateFrameId();
     updateDiagnosticsNamespace();
     updateRadius();
     updateRosTopic();
+    updateFontSize();
   }
   
   void DiagnosticsDisplay::processMessage
@@ -162,10 +171,38 @@ namespace jsk_rviz_plugin
     if (!isEnabled()) {
       return;
     }
+
+    // update namespaces_ if needed
+    std::set<std::string> new_namespaces;
+    for (size_t i = 0; i < msg->status.size(); i++) {
+      new_namespaces.insert(msg->status[i].name);
+    }
+    
+    std::set<std::string> difference_namespaces;
+    std::set_difference(namespaces_.begin(), namespaces_.end(),
+                        new_namespaces.begin(), new_namespaces.end(),
+                        std::inserter(difference_namespaces,
+                                      difference_namespaces.end()));
+    if (difference_namespaces.size() != 0) {
+      namespaces_ = new_namespaces;
+      fillNamespaceList();
+    }
+    else {
+      difference_namespaces.clear();
+      std::set_difference(new_namespaces.begin(), new_namespaces.end(),
+                          namespaces_.begin(), namespaces_.end(),
+                          std::inserter(difference_namespaces,
+                                        difference_namespaces.end()));
+      if (difference_namespaces.size() != 0) {
+        namespaces_ = new_namespaces;
+        fillNamespaceList();
+      }
+    }
+    
     if (diagnostics_namespace_.length() == 0) {
       return;
     }
-
+    
     const float alpha = 0.8;
     const Ogre::ColourValue OK(0.3568627450980392, 0.7529411764705882, 0.8705882352941177, alpha);
     const Ogre::ColourValue WARN(0.9411764705882353, 0.6784313725490196, 0.3058823529411765, alpha);
@@ -272,11 +309,6 @@ namespace jsk_rviz_plugin
     subscribe();
   }
 
-  void DiagnosticsDisplay::updateFrameId()
-  {
-    frame_id_ = frame_id_property_->getStdString();
-  }
-
   void DiagnosticsDisplay::updateDiagnosticsNamespace()
   {
     diagnostics_namespace_ = diagnostics_namespace_property_->getStdString();
@@ -300,6 +332,24 @@ namespace jsk_rviz_plugin
     axis_ = axis_property_->getOptionInt();
     line_update_required_ = true;
   }
+
+  void DiagnosticsDisplay::fillNamespaceList()
+  {
+    //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    diagnostics_namespace_property_->clearOptions();
+    for (std::set<std::string>::iterator it = namespaces_.begin();
+         it != namespaces_.end();
+         it++) {
+      diagnostics_namespace_property_->addOptionStd(*it);
+    }
+    diagnostics_namespace_property_->sortOptions();
+  }
+
+  void DiagnosticsDisplay::updateFontSize()
+  {
+    font_size_ = font_size_property_->getFloat();
+  }
+  
 }
 
 #include <pluginlib/class_list_macros.h>
