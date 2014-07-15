@@ -1048,6 +1048,49 @@
      )
    )
 
+  (:publish-joint-trajectory
+   (avs &optional (tms (list 3000)) &key
+	(real? nil))
+   (let (joint-list
+	 (joint-traj-msg
+	  (instance trajectory_msgs::JointTrajectory :init
+		    :header (instance std_msgs::header :init
+				      :stamp (ros::time-now))))
+	 (now-av (send *robot* :angle-vector))
+	 points
+	 (time-total 0)
+	 )
+
+     (if (atom tms) (setq tms (make-list (length avs) :initial-element tms)))
+     (if (< (length tms) (length avs))
+	 (setq tms (append tms (make-list (- (length avs) (length tms)) :initial-element (car (last tms))))))
+
+     (dotimes (i (length avs))
+       (let ((jtp (instance trajectory_msgs::JointTrajectoryPoint :init))
+	     time
+	     )
+	 (send *robot* :angle-vector (elt avs i))
+	 (setq joint-list (send *robot* :joint-list))
+	 (send jtp :positions (mapcar #'(lambda (joint) (send joint :ros-joint-angle)) joint-list))
+
+	 (setq time (elt tms i))
+	 (setq time-total (+ time-total time))
+	 (send jtp :time_from_start (ros::time (/ time-total 1000.0)))
+	 (push jtp points)
+	 ))
+     (setq points (reverse points))
+
+     (send joint-traj-msg :joint_names (send-all joint-list :name))
+     (send joint-traj-msg :points points)
+
+     (cond
+      (real?
+       (ros::publish (format nil "~A/~A/joint_trajectory_ri_move" *im-nodename* *robot-name*)
+		     joint-traj-msg))
+      ))
+   )
+
+
   (:publish-base-target
    ()
    (when *base-target-coords*
@@ -1062,6 +1105,74 @@
    (msg)
    (setq *base-target-coords* (ros::tf-pose-stamped->coords msg))
    (print "update target")
+   )
+
+  (:grasp-pose-callback
+   (msg)
+   (setq hoge msg)
+   ;;grasp
+   (let* ((pose msg)
+	  (cds (ros::tf-pose-stamped->coords msg))
+	  map->marker
+	  pre-pose
+	  )
+     (while t
+       (send pose :header :stamp (ros::time 0.0)) ;cheat!
+       (setq map->marker
+	     (send *tfl* :lookup-transform
+		   *robot-origin* (send pose :header :frame_id) (ros::time 0)))
+       ;;(setq map->marker (send *tfl* :transform-pose "pelvis" pose))
+       (cond
+	(map->marker
+	 (send cds :transform map->marker :world)
+	 (return)
+	 )
+	(t
+	 (ros::ros-info "map -> marker cannot transform yet")
+	 (ros::sleep)
+	 )
+	)
+       )
+     (send *target-coords* :move-to
+	   (send *robot* :worldcoords) :world)
+     (send *target-coords* :transform cds)
+     (setq *tmp-rotation-axis* t)
+
+     (send self :stop-grasp :arm :rarm)
+     (unix::sleep 1)
+
+     (let (avs)
+       (send *robot* :rarm :move-end-pos #f(-100 0 0))
+       (push (send *robot* :angle-vector) avs)
+
+       (setq pre-pose (send (send *target-coords* :copy-worldcoords) :translate (float-vector -100 0 0)))
+
+       (send *robot* :inverse-kinematics
+	     pre-pose
+	     :move-arm :rarm
+	     :use-torso nil
+	     :rotation-axis t
+	     :debug-view nil)
+       (push (send *robot* :angle-vector) avs)
+
+       (send *robot* :inverse-kinematics
+	     *target-coords*
+	     :move-arm :rarm
+	     :use-torso nil
+	     :rotation-axis t
+	     :debug-view nil)
+       (push (send *robot* :angle-vector) avs)
+       (setq avs (reverse avs))
+
+       (send self :publish-joint-trajectory avs (list 1000 3000 1000) :real? t)
+       )
+     (send self :start-grasp :arm :rarm)
+
+     (when (boundp '*irtviewer*)
+       (send *irtviewer* :draw-objects))
+     )
+   (send self :publish-arrow-tf)
+   ;;grasp
    )
 
 
@@ -1089,7 +1200,7 @@
    ()
    (setq *centroid-object* (make-cylinder 20 400))
    (send *centroid-object* :set-color #F(1 1 0)))
-  
+
   (:fix-centroid-object
    ()
    )
@@ -1219,6 +1330,10 @@
     sensor_msgs::JointState)
 
    (ros::advertise
+    (format nil "~A/~A/joint_trajectory_ri_move" *im-nodename* *robot-name*)
+    trajectory_msgs::JointTrajectory)
+
+   (ros::advertise
     (format nil "~A/~A/hand_ri_move" *im-nodename* *robot-name*)
     std_msgs::String)
 
@@ -1229,6 +1344,9 @@
     (format nil "~A/~A/base_pose" *im-nodename* *robot-name*)
     geometry_msgs::PoseStamped #'send self :base-target-callback)
 
+   (ros::subscribe
+    (format nil "~A/grasp_pose" *server-nodename*)
+    geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
 
    ;;(switch-end-coords :id 2)
    (setq *real-robot* (copy-object *robot*))
@@ -1330,8 +1448,9 @@
 				 (let* ((origin->hand (send (send *origin-coords* :transformation (send *real-robot* arm :end-coords)) :copy-worldcoords))
 					(hand (send origin->hand :transform *target-coords* :world)))
 				   hand)
-			       (send *real-robot* arm :end-coords)))
+			       (send *real-robot* arm :end-coords :copy-worldcoords)))
 			 '(:larm :rarm) move-arms))
+
 
 	   (setq tmp
 		 (send *robot* :inverse-kinematics
@@ -1339,8 +1458,11 @@
 		       :move-arm :arms
 		       :use-torso use-torso
 		       :rotation-axis rotation-axis
+		       :stop 100
 		       :debug-view nil)
-		 ))
+		 )
+	   )
+
 
 	 #|
 
