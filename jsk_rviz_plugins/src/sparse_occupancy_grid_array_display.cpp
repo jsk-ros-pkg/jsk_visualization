@@ -37,17 +37,6 @@
 
 namespace jsk_rviz_plugin
 {
-  const double texture_margin = 1.2;
-
-  bool epsEqualVector3(Ogre::Vector3 a, Ogre::Vector3 b)
-  {
-    const double eps_thr = 0.001;
-    return (abs(a[0] - b[0]) < eps_thr &&
-            abs(a[1] - b[1]) < eps_thr &&
-            abs(a[2] - b[2]) < eps_thr);
-  }
-
-  
   SparseOccupancyGridArrayDisplay::SparseOccupancyGridArrayDisplay()
   {
     alpha_property_ = new rviz::FloatProperty(
@@ -58,6 +47,9 @@ namespace jsk_rviz_plugin
     alpha_property_->setMin(0.0);
     alpha_property_->setMax(1.0);
 
+    axis_color_property_ = new rviz::BoolProperty("Axis Color", false,
+                                                  "coloring according to the angle of the plane",
+                                                  this, SLOT(updateAxisColor()));
     max_color_property_ = new rviz::ColorProperty("Max Color", QColor(255, 255, 255),
                                                   "maximum color to draw grid map",
                                                   this, SLOT(updateMaxColor()));
@@ -71,6 +63,8 @@ namespace jsk_rviz_plugin
     delete alpha_property_;
     delete max_color_property_;
     delete min_color_property_;
+    delete axis_color_property_;
+    allocateCloudsAndNodes(0);
   }
 
   void SparseOccupancyGridArrayDisplay::onInitialize()
@@ -81,55 +75,70 @@ namespace jsk_rviz_plugin
     updateMinColor();
   }
   
-  void SparseOccupancyGridArrayDisplay::allocateShapes(
-    const jsk_pcl_ros::SparseOccupancyGridArray::ConstPtr& msg)
+  void SparseOccupancyGridArrayDisplay::allocateCloudsAndNodes(const size_t num)
   {
-    // countup all the cells
-    int num = 0;
-    for (size_t i = 0; i < msg->grids.size(); i++) {
-      const jsk_pcl_ros::SparseOccupancyGrid grid = msg->grids[i];
-      for (size_t ci = 0; ci < grid.columns.size(); ci++) {
-        const jsk_pcl_ros::SparseOccupancyGridColumn column = grid.columns[ci];
-        for (size_t ri = 0; ri < column.cells.size(); ri++) {
-          const jsk_pcl_ros::SparseOccupancyGridCell cell = column.cells[ri];
-          ++num;
-        }
+    if (num > clouds_.size()) { // need to allocate new node and clouds
+      for (size_t i = clouds_.size(); i < num; i++) {
+        Ogre::SceneNode* node = scene_node_->createChildSceneNode();
+        rviz::PointCloud* cloud = new rviz::PointCloud();
+        cloud->setRenderMode(rviz::PointCloud::RM_TILES);
+        cloud->setCommonDirection( Ogre::Vector3::UNIT_Z );
+        cloud->setCommonUpVector( Ogre::Vector3::UNIT_Y );
+        node->attachObject(cloud);
+        clouds_.push_back(cloud);
+        nodes_.push_back(node);
       }
     }
-    if (num > shapes_.size()) {
-      for (size_t i = shapes_.size(); i < num; i++) {
-        ShapePtr shape (new rviz::Shape(rviz::Shape::Cube, context_->getSceneManager(),
-                                        scene_node_));
-        shapes_.push_back(shape);
-      }
-    }
-    else if (num < shapes_.size())
+    else if (num < clouds_.size()) // need to destroy
     {
-      shapes_.resize(num);
+      for (size_t i = num; i < clouds_.size(); i++) {
+        nodes_[i]->detachObject(clouds_[i]);
+        delete clouds_[i];
+        scene_manager_->destroySceneNode(nodes_[i]);
+      }
+      clouds_.resize(num);
+      nodes_.resize(num);
     }
   }
 
   void SparseOccupancyGridArrayDisplay::reset()
   {
     MFDClass::reset();
-    shapes_.clear();
+    allocateCloudsAndNodes(0);
   }
 
   QColor SparseOccupancyGridArrayDisplay::gridColor(double value)
   {
     // normalize to 0~1
     return QColor(
-      (value * (max_color_.red() - min_color_.red()) + min_color_.red()) / 255.0,
-      (value * (max_color_.green() - min_color_.green()) + min_color_.green()) / 255.0,
-      (value * (max_color_.blue() - min_color_.blue()) + min_color_.blue()) / 255.0);
+      (value * (max_color_.red() - min_color_.red()) + min_color_.red()),
+      (value * (max_color_.green() - min_color_.green()) + min_color_.green()),
+      (value * (max_color_.blue() - min_color_.blue()) + min_color_.blue()));
+  }
+
+  QColor SparseOccupancyGridArrayDisplay::axisColor(const Ogre::Quaternion& q,
+                                                    const Ogre::Vector3& p)
+  {
+    Ogre::Vector3 zaxis = q.zAxis();
+    Ogre::Vector3 reference = p.normalisedCopy();
+    double dot = zaxis.dotProduct(reference);
+    if (dot < -1) {
+      dot = -1.0;
+    }
+    else if (dot > 1) {
+      dot = 1.0;
+    }
+    double scale = (dot + 1) / 2.0;
+    return gridColor(scale);
   }
   
   void SparseOccupancyGridArrayDisplay::processMessage(
     const jsk_pcl_ros::SparseOccupancyGridArray::ConstPtr& msg)
   {
-    allocateShapes(msg); // not enough
-    int cell_counter = 0;
+    allocateCloudsAndNodes(msg->grids.size()); // not enough
     for (size_t i = 0; i < msg->grids.size(); i++) {
+      Ogre::SceneNode* node = nodes_[i];
+      rviz::PointCloud* cloud = clouds_[i];
       const jsk_pcl_ros::SparseOccupancyGrid grid = msg->grids[i];
       Ogre::Vector3 position;
       Ogre::Quaternion quaternion;
@@ -141,28 +150,38 @@ namespace jsk_rviz_plugin
                    qPrintable( fixed_frame_ ));
         return;                 // return?
       }
+      node->setPosition(position);
+      node->setOrientation(quaternion);
+      cloud->setDimensions(grid.resolution, grid.resolution, 0.0);
+      std::vector<rviz::PointCloud::Point> points;
       for (size_t ci = 0; ci < grid.columns.size(); ci++) {
         const jsk_pcl_ros::SparseOccupancyGridColumn column = grid.columns[ci];
         const int column_index = column.column_index;
         for (size_t ri = 0; ri < column.cells.size(); ri++) {
           const jsk_pcl_ros::SparseOccupancyGridCell cell = column.cells[ri];
           const int row_index = cell.row_index;
-          ShapePtr shape = shapes_[cell_counter];
-          Ogre::Vector3 offset(grid.resolution * column_index,
-                               grid.resolution * row_index,
-                               0);
-          Ogre::Vector3 cell_position = position + quaternion * offset;
-          shape->setPosition(cell_position);
-          shape->setOrientation(quaternion);
-          QColor color = gridColor(cell.value);
-          shape->setColor(color.red(), color.green(), color.blue(), alpha_);
-          Ogre::Vector3 dimensions(grid.resolution, grid.resolution, 0.01);
-          Ogre::Vector3 current_scale = shape->getRootNode()->getScale();
-          if (!epsEqualVector3(current_scale, dimensions)) {
-            shape->setScale(dimensions);
+          rviz::PointCloud::Point point;
+          if (!axis_color_) {
+            QColor color = gridColor(cell.value);
+            Ogre::ColourValue ogre_color = rviz::qtToOgre(color);
+            point.color = ogre_color;
           }
-          cell_counter++;
+          else {
+            QColor color = axisColor(quaternion, Ogre::Vector3(1, 0, 0));
+            Ogre::ColourValue ogre_color = rviz::qtToOgre(color);
+            point.color = ogre_color;
+          }
+          point.position.x = grid.resolution * column_index;
+          point.position.y = grid.resolution * row_index;
+          point.position.z = 0.0;
+          
+          points.push_back(point);
         }
+      }
+      cloud->clear();
+      cloud->setAlpha(alpha_);
+      if (!points.empty()) {
+        cloud->addPoints(&points.front(), points.size());
       }
     }
     context_->queueRender();
@@ -182,7 +201,11 @@ namespace jsk_rviz_plugin
   {
     min_color_ = min_color_property_->getColor();
   }
-  
+
+  void SparseOccupancyGridArrayDisplay::updateAxisColor()
+  {
+    axis_color_ = axis_color_property_->getBool();
+  }
 }
 
 #include <pluginlib/class_list_macros.h>
