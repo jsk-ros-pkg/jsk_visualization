@@ -363,7 +363,7 @@ namespace jsk_rviz_plugin
                                                facing_node_);
     msg_ = new rviz::MovableText("not initialized", "Arial", 0.05);
     msg_->setVisible(false);
-    msg_->setTextAlignment(rviz::MovableText::H_CENTER,
+    msg_->setTextAlignment(rviz::MovableText::H_LEFT,
                            rviz::MovableText::V_ABOVE);
     //msg_->setVisible(false);
     target_text_node_->attachObject(msg_);
