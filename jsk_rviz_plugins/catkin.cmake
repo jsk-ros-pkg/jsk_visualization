@@ -42,6 +42,8 @@ qt4_wrap_cpp(MOC_FILES
   src/ambient_sound_display_groovy.h
   src/select_point_cloud_publish_action.h
   src/footstep_display.h
+  src/publish_topic.h
+  src/cancel_action.h
   src/polygon_array_display.h
   src/normal_display.h
   src/overlay_text_display.h
@@ -62,6 +64,8 @@ set(SOURCE_FILES
   src/ambient_sound_display_groovy.cpp
   src/ambient_sound_visual.cpp
   src/footstep_display.cpp
+  src/publish_topic.cpp
+  src/cancel_action.cpp
   src/select_point_cloud_publish_action.cpp
   src/polygon_array_display.cpp
   src/normal_display.cpp
