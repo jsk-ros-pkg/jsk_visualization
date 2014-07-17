@@ -471,21 +471,12 @@ void FootstepMarker::executeFootstep() {
 }
 
 void FootstepMarker::planIfPossible() {
+  boost::mutex::scoped_lock(plan_run_mutex_);
   // check the status of the ac_
   if (!use_footstep_planner_) {
     return;                     // do nothing
   }
   bool call_planner = !plan_run_;
-  if (plan_run_) {
-    actionlib::SimpleClientGoalState state = ac_.getState();
-    if (state.isDone()) {
-      plan_result_ = ac_.getResult();
-      footstep_pub_.publish(plan_result_->result);
-      ROS_INFO("planning is finished");
-      call_planner = true;
-    }
-  }
-
   if (call_planner) {
     plan_run_ = true;
     jsk_footstep_msgs::PlanFootstepsGoal goal;
@@ -516,6 +507,16 @@ void FootstepMarker::planIfPossible() {
     goal.initial_footstep = initial_footstep;
     ac_.sendGoal(goal);
   }
+}
+
+void FootstepMarker::planeDoneCB(const actionlib::SimpleClientGoalState &state, 
+                                 const PlanResult::ConstPtr &result)
+{
+  boost::mutex::scoped_lock(plan_run_mutex_);
+  plan_result_ = ac_.getResult();
+  footstep_pub_.publish(plan_result_->result);
+  ROS_INFO("planning is finished");
+  plan_run_ = false;
 }
 
 geometry_msgs::Pose FootstepMarker::getFootstepPose(bool leftp) {
