@@ -34,7 +34,7 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   pnh.param("use_initial_footstep_tf", use_initial_footstep_tf_, true);
   pnh.param("wait_snapit_server", wait_snapit_server_, false);
   pnh.param("frame_id", marker_frame_id_, std::string("/map"));
-  footstep_pub_ = nh.advertise<jsk_footstep_msgs::FootstepArray>("footstep", 1);
+  footstep_pub_ = nh.advertise<jsk_footstep_msgs::FootstepArray>("footstep_from_marker", 1);
   snapit_client_ = nh.serviceClient<jsk_pcl_ros::CallSnapIt>("snapit");
   estimate_occlusion_client_ = nh.serviceClient<std_srvs::Empty>("require_estimation");
   if (wait_snapit_server_) {
@@ -505,14 +505,15 @@ void FootstepMarker::planIfPossible() {
     initial_right.pose = rleg_initial_pose_;
     initial_footstep.footsteps.push_back(initial_right);
     goal.initial_footstep = initial_footstep;
-    ac_.sendGoal(goal);
+    ac_.sendGoal(goal, boost::bind(&FootstepMarker::planDoneCB, this, _1, _2));
   }
 }
 
-void FootstepMarker::planeDoneCB(const actionlib::SimpleClientGoalState &state, 
+void FootstepMarker::planDoneCB(const actionlib::SimpleClientGoalState &state, 
                                  const PlanResult::ConstPtr &result)
 {
   boost::mutex::scoped_lock(plan_run_mutex_);
+  ROS_INFO("planDoneCB");
   plan_result_ = ac_.getResult();
   footstep_pub_.publish(plan_result_->result);
   ROS_INFO("planning is finished");
