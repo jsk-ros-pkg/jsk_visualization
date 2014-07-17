@@ -31,7 +31,11 @@ public:
   void updateInitialFootstep();
   typedef message_filters::sync_policies::ExactTime< jsk_pcl_ros::PolygonArray,
                                                      jsk_pcl_ros::ModelCoefficientsArray> PlaneSyncPolicy;
-  
+  typedef actionlib::SimpleActionClient<jsk_footstep_msgs::PlanFootstepsAction>
+  PlanningActionClient;
+  typedef actionlib::SimpleActionClient<jsk_footstep_msgs::ExecFootstepsAction>
+  ExecuteActionClient;
+  typedef jsk_footstep_msgs::PlanFootstepsResult PlanResult;
 protected:
   void initializeInteractiveMarker();
   void processFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
@@ -41,6 +45,8 @@ protected:
   void executeCB(const std_msgs::Empty::ConstPtr& msg);
   void planeCB(const jsk_pcl_ros::PolygonArray::ConstPtr& planes,
                const jsk_pcl_ros::ModelCoefficientsArray::ConstPtr& coefficients);
+  void planeDoneCB(const actionlib::SimpleClientGoalState &state, 
+                   const PlanResult::ConstPtr &result);
   void processMenuFeedback(uint8_t id);
   geometry_msgs::Polygon computePolygon(uint8_t leg);
   void snapLegs();
@@ -50,6 +56,7 @@ protected:
   void planIfPossible();
   void resetLegPoses();
   boost::mutex plane_mutex_;
+  boost::mutex plan_run_mutex_;
 
   // projection to the planes
   bool projectMarkerToPlane();
@@ -94,8 +101,8 @@ protected:
   ros::ServiceClient snapit_client_;
   ros::ServiceClient estimate_occlusion_client_;
   boost::shared_ptr<tf::TransformListener> tf_listener_;
-  actionlib::SimpleActionClient<jsk_footstep_msgs::PlanFootstepsAction> ac_;
-  actionlib::SimpleActionClient<jsk_footstep_msgs::ExecFootstepsAction> ac_exec_;
+  PlanningActionClient ac_;
+  ExecuteActionClient ac_exec_;
   bool use_footstep_planner_;
   bool use_footstep_controller_;
   bool use_plane_snap_;
@@ -112,5 +119,5 @@ protected:
   std::string rfoot_frame_id_;
 
   // footstep plannner result
-  jsk_footstep_msgs::PlanFootstepsResult::ConstPtr plan_result_;
+  PlanResult::ConstPtr plan_result_;
 };
