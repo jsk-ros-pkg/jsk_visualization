@@ -69,7 +69,8 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   menu_handler_.insert( "Estimate occlusion",
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
-
+  menu_handler_.insert( "Cancel Walk",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   marker_pose_.header.frame_id = marker_frame_id_;
   marker_pose_.header.stamp = ros::Time::now();
   marker_pose_.pose.orientation.w = 1.0;
@@ -320,10 +321,21 @@ void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
     callEstimateOcclusion();
     break;
   }
+  case 6: {                     // cancel walk
+    cancelWalk();
+    break;
+  }
   default: {
     break;
   }
   }
+}
+
+void FootstepMarker::cancelWalk()
+{
+  ROS_WARN("canceling walking");
+  ac_exec_.cancelAllGoals();
+  ROS_WARN("canceled walking");
 }
 
 void FootstepMarker::callEstimateOcclusion()
@@ -484,17 +496,24 @@ void FootstepMarker::executeFootstep() {
   if (!use_footstep_controller_) {
     return;
   }
+  actionlib::SimpleClientGoalState state = ac_exec_.getState();
+  if (!state.isDone()) {
+    ROS_ERROR("still executing footstep");
+    return;
+  }
   if (!plan_result_) {
     ROS_ERROR("no planner result is available");
     return;
   }
+  
+  
   jsk_footstep_msgs::ExecFootstepsGoal goal;
   goal.footstep = plan_result_->result;
   //goal.strategy = jsk_footstep_msgs::ExecFootstepsGoal::DEFAULT_STRATEGY;
   ROS_INFO("sending goal...");
   ac_exec_.sendGoal(goal);
-  ac_exec_.waitForResult();
-  ROS_INFO("done executing...");
+  // ac_exec_.waitForResult();
+  // ROS_INFO("done executing...");
 }
 
 void FootstepMarker::planIfPossible() {

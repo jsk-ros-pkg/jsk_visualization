@@ -53,6 +53,7 @@ protected:
   geometry_msgs::Pose computeLegTransformation(uint8_t leg);
   geometry_msgs::Pose getFootstepPose(bool leftp);
   void callEstimateOcclusion();
+  void cancelWalk();
   void planIfPossible();
   void resetLegPoses();
   boost::mutex plane_mutex_;
