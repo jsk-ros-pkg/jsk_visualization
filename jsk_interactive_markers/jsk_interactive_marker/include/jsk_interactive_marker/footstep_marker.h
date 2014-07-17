@@ -45,8 +45,8 @@ protected:
   void executeCB(const std_msgs::Empty::ConstPtr& msg);
   void planeCB(const jsk_pcl_ros::PolygonArray::ConstPtr& planes,
                const jsk_pcl_ros::ModelCoefficientsArray::ConstPtr& coefficients);
-  void planeDoneCB(const actionlib::SimpleClientGoalState &state, 
-                   const PlanResult::ConstPtr &result);
+  void planDoneCB(const actionlib::SimpleClientGoalState &state, 
+                  const PlanResult::ConstPtr &result);
   void processMenuFeedback(uint8_t id);
   geometry_msgs::Polygon computePolygon(uint8_t leg);
   void snapLegs();
