@@ -88,6 +88,11 @@ namespace jsk_rviz_plugin
 
   OverlayDiagnosticDisplay::~OverlayDiagnosticDisplay()
   {
+    if (overlay_) {
+      overlay_->hide();
+    }
+    panel_material_->unload();
+    Ogre::MaterialManager::getSingleton().remove(panel_material_->getName());
     delete ros_topic_property_;
     delete diagnostics_namespace_property_;
     delete top_property_;
@@ -172,6 +177,7 @@ namespace jsk_rviz_plugin
 
   void OverlayDiagnosticDisplay::onDisable()
   {
+    ROS_INFO("onDisable");
     if (overlay_) {
       overlay_->hide();
     }
