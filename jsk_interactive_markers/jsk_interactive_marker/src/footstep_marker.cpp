@@ -15,7 +15,7 @@ FootstepMarker::FootstepMarker():
 ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   plan_run_(false) {
   // read parameters
-  
+  tf_listener_.reset(new tf::TransformListener);
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
   pnh.param("foot_size_x", foot_size_x_, 0.247);
@@ -50,7 +50,14 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
     sync_->registerCallback(boost::bind(&FootstepMarker::planeCB,
                                         this, _1, _2));
   }
-    
+  
+  if (pnh.getParam("initial_reference_frame", initial_reference_frame_)) {
+    use_initial_reference_ = true;
+  }
+  else {
+    use_initial_reference_ = false;
+  }
+
   server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
   menu_handler_.insert( "Snap Legs",
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
@@ -75,12 +82,32 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   rleg_initial_pose_.position.y = - footstep_margin_ / 2.0;
   rleg_initial_pose_.orientation.w = 1.0;
   
+  if (use_initial_reference_) {
+    while (ros::ok()) {
+      if (tf_listener_->waitForTransform(marker_frame_id_, initial_reference_frame_,
+                                         ros::Time(0.0), ros::Duration(10.0))) {
+        break;
+      }
+      ROS_INFO("waiting for transform %s => %s", marker_frame_id_.c_str(),
+               initial_reference_frame_.c_str());
+    }
+    tf::StampedTransform transform;
+    tf_listener_->lookupTransform(marker_frame_id_, initial_reference_frame_,
+                                  ros::Time(0), transform);
+    marker_pose_.pose.position.x = transform.getOrigin().x();
+    marker_pose_.pose.position.y = transform.getOrigin().y();
+    marker_pose_.pose.position.z = transform.getOrigin().z();
+    marker_pose_.pose.orientation.x = transform.getRotation().x();
+    marker_pose_.pose.orientation.y = transform.getRotation().y();
+    marker_pose_.pose.orientation.z = transform.getRotation().z();
+    marker_pose_.pose.orientation.w = transform.getRotation().w();
+  }
+
   initializeInteractiveMarker();
   
   move_marker_sub_ = nh.subscribe("move_marker", 1, &FootstepMarker::moveMarkerCB, this);
   menu_command_sub_ = nh.subscribe("menu_command", 1, &FootstepMarker::menuCommandCB, this);
   exec_sub_ = pnh.subscribe("execute", 1, &FootstepMarker::executeCB, this);
-  tf_listener_.reset(new tf::TransformListener);
 
   if (use_initial_footstep_tf_) {
     // waiting TF
