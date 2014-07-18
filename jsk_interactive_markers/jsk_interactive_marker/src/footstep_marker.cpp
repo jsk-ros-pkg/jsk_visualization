@@ -603,10 +603,23 @@ void FootstepMarker::moveMarkerCB(const geometry_msgs::PoseStamped::ConstPtr& ms
   geometry_msgs::PoseStamped transformed_pose;
   tf_listener_->transformPose(marker_frame_id_, *msg, transformed_pose);
   marker_pose_ = transformed_pose;
+  bool skip_plan = false;
+  if (use_plane_snap_) {
+    if (!latest_planes_) {
+      ROS_WARN("no planes are available yet");
+    }
+    else {
+      // do something magicalc
+      skip_plan = !projectMarkerToPlane();
+    }
+  }
+  
   // need to solve TF
   server_->setPose("footstep_marker", transformed_pose.pose);
   server_->applyChanges();
-  planIfPossible();
+  if (!skip_plan) {
+    planIfPossible();
+  }
 }
 
 visualization_msgs::Marker FootstepMarker::makeFootstepMarker(geometry_msgs::Pose pose) {
