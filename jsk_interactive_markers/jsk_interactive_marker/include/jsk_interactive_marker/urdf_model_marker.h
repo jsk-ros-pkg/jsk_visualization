@@ -30,6 +30,7 @@
 #include <diagnostic_updater/publisher.h>
 
 #include <jsk_pcl_ros/pcl_util.h>
+#include <jsk_pcl_ros/Int32Stamped.h>
 
 using namespace urdf;
 using namespace std;
@@ -39,7 +40,7 @@ class UrdfModelMarker {
  public:
   //  UrdfModelMarker(string file);
   UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::PoseStamped  root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
   UrdfModelMarker();
 
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
@@ -121,6 +122,7 @@ class UrdfModelMarker {
   ros::Publisher pub_joint_state_;
   ros::Publisher pub_base_pose_;
   ros::Publisher pub_selected_;
+  ros::Publisher pub_selected_index_;
 
   /* publisher */
   ros::Subscriber sub_reset_joints_;
@@ -163,6 +165,8 @@ class UrdfModelMarker {
   bool use_visible_color_;
   std::string tf_prefix_;
   map<string, double> initial_pose_map_;
+  int index_;
+  ros::Time init_stamp_;
 
   struct graspPoint{
     graspPoint(){
