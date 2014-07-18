@@ -769,10 +769,10 @@ void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const se
 
 geometry_msgs::Pose UrdfModelMarker::getRootPose(geometry_msgs::Pose pose){
   KDL::Frame pose_frame, offset_frame;
-  tf::PoseMsgToKDL(pose, pose_frame);
-  tf::PoseMsgToKDL(root_offset_, offset_frame);
+  tf::poseMsgToKDL(pose, pose_frame);
+  tf::poseMsgToKDL(root_offset_, offset_frame);
   pose_frame = pose_frame * offset_frame.Inverse();
-  tf::PoseKDLToMsg(pose_frame, pose);
+  tf::poseKDLToMsg(pose_frame, pose);
   return pose;
 }
 
@@ -781,10 +781,10 @@ geometry_msgs::PoseStamped UrdfModelMarker::getOriginPoseStamped(){
   geometry_msgs::Pose pose;
   pose = root_pose_;
   KDL::Frame pose_frame, offset_frame;
-  tf::PoseMsgToKDL(pose, pose_frame);
-  tf::PoseMsgToKDL(root_offset_, offset_frame);
+  tf::poseMsgToKDL(pose, pose_frame);
+  tf::poseMsgToKDL(root_offset_, offset_frame);
   pose_frame = pose_frame * offset_frame;
-  tf::PoseKDLToMsg(pose_frame, pose);
+  tf::poseKDLToMsg(pose_frame, pose);
   ps.pose = pose;
   ps.header.frame_id = frame_id_;
   return ps;
