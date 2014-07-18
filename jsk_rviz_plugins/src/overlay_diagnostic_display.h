@@ -99,14 +99,12 @@ namespace jsk_rviz_plugin
     std::string diagnostics_namespace_;
     std::set<std::string> namespaces_;
     double alpha_;
-    QColor color_;
     int top_, left_;
     double t_;
     rviz::RosTopicProperty* ros_topic_property_;
     rviz::EditableEnumProperty* diagnostics_namespace_property_;
     rviz::IntProperty* top_property_;
     rviz::IntProperty* left_property_;
-    rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::IntProperty* size_property_;
 
@@ -115,7 +113,6 @@ namespace jsk_rviz_plugin
     virtual void updateRosTopic();
     virtual void updateDiagnosticsNamespace();
     virtual void updateSize();
-    virtual void updateColor();
     virtual void updateAlpha();
     virtual void updateTop();
     virtual void updateLeft();
