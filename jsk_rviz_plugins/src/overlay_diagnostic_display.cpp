@@ -74,10 +74,6 @@ namespace jsk_rviz_plugin
       "size of the widget",
       this, SLOT(updateSize()));
     size_property_->setMin(1);
-    color_property_ = new rviz::ColorProperty(
-      "foreground color", QColor(25, 255, 240),
-      "color to draw line",
-      this, SLOT(updateColor()));
     alpha_property_ = new rviz::FloatProperty(
       "alpha", 0.8,
       "alpha value",
@@ -97,7 +93,6 @@ namespace jsk_rviz_plugin
     delete diagnostics_namespace_property_;
     delete top_property_;
     delete left_property_;
-    delete color_property_;
     delete alpha_property_;
     delete size_property_;
   }
@@ -218,7 +213,6 @@ namespace jsk_rviz_plugin
     
     updateDiagnosticsNamespace();
     updateSize();
-    updateColor();
     updateAlpha();
     updateLeft();
     updateTop();
@@ -450,11 +444,6 @@ namespace jsk_rviz_plugin
   void OverlayDiagnosticDisplay::updateSize()
   {
     size_ = size_property_->getInt();
-  }
-
-  void OverlayDiagnosticDisplay::updateColor()
-  {
-    color_ = color_property_->getColor();
   }
 
   void OverlayDiagnosticDisplay::updateAlpha()
