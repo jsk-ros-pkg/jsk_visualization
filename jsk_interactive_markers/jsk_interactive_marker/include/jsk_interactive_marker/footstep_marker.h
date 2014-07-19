@@ -43,6 +43,7 @@ protected:
   void moveMarkerCB(const geometry_msgs::PoseStamped::ConstPtr& msg);
   void menuCommandCB(const std_msgs::UInt8::ConstPtr& msg);
   void executeCB(const std_msgs::Empty::ConstPtr& msg);
+  void resumeCB(const std_msgs::Empty::ConstPtr& msg);
   void planeCB(const jsk_pcl_ros::PolygonArray::ConstPtr& planes,
                const jsk_pcl_ros::ModelCoefficientsArray::ConstPtr& coefficients);
   void planDoneCB(const actionlib::SimpleClientGoalState &state, 
@@ -80,6 +81,7 @@ protected:
   // execute footstep
   // sending action goal to footstep controller
   void executeFootstep();
+  void resumeFootstep();
 
   visualization_msgs::Marker makeFootstepMarker(geometry_msgs::Pose pose);
   
@@ -94,6 +96,7 @@ protected:
   ros::Subscriber move_marker_sub_;
   ros::Subscriber menu_command_sub_;
   ros::Subscriber exec_sub_;
+  ros::Subscriber resume_sub_;
   message_filters::Subscriber<jsk_pcl_ros::PolygonArray> polygons_sub_;
   message_filters::Subscriber<jsk_pcl_ros::ModelCoefficientsArray> coefficients_sub_;
   boost::shared_ptr<message_filters::Synchronizer<PlaneSyncPolicy> >sync_;
