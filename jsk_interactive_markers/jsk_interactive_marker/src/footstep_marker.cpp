@@ -72,6 +72,8 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   menu_handler_.insert( "Cancel Walk",
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Toggle 6dof marker",
+                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   marker_pose_.header.frame_id = marker_frame_id_;
   marker_pose_.header.stamp = ros::Time::now();
   marker_pose_.pose.orientation.w = 1.0;
@@ -324,6 +326,10 @@ void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
   }
   case 6: {                     // cancel walk
     cancelWalk();
+    break;
+  }
+  case 7: {                     // toggle 6dof marker
+    show_6dof_control_ = !show_6dof_control_;
     break;
   }
   default: {
