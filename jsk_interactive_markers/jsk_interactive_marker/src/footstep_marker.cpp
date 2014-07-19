@@ -23,6 +23,7 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   pnh.param("foot_size_z", foot_size_z_, 0.01);
   pnh.param("lfoot_frame_id", lfoot_frame_id_, std::string("lfsensor"));
   pnh.param("rfoot_frame_id", rfoot_frame_id_, std::string("rfsensor"));
+  pnh.param("show_6dof_control", show_6dof_control_, true);
   // read lfoot_offset
   readPoseParam(pnh, "lfoot_offset", lleg_offset_);
   readPoseParam(pnh, "rfoot_offset", rleg_offset_);
@@ -658,9 +659,10 @@ void FootstepMarker::initializeInteractiveMarker() {
   right_box_control.markers.push_back( right_box_marker );
 
   int_marker.controls.push_back( right_box_control );
-
-  im_helpers::add6DofControl(int_marker, false);
-    
+  if (show_6dof_control_) {
+    im_helpers::add6DofControl(int_marker, false);
+  }
+  
   server_->insert(int_marker,
                   boost::bind(&FootstepMarker::processFeedbackCB, this, _1));
 

@@ -104,6 +104,7 @@ protected:
   boost::shared_ptr<tf::TransformListener> tf_listener_;
   PlanningActionClient ac_;
   ExecuteActionClient ac_exec_;
+  bool show_6dof_control_;
   bool use_footstep_planner_;
   bool use_footstep_controller_;
   bool use_plane_snap_;
