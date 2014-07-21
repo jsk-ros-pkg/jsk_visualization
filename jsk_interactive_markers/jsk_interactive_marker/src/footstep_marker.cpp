@@ -10,6 +10,7 @@
 #include <Eigen/StdVector>
 #include <eigen_conversions/eigen_msg.h>
 #include <tf_conversions/tf_eigen.h>
+#include <jsk_pcl_ros/geo_util.h>
 
 FootstepMarker::FootstepMarker():
 ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
@@ -37,6 +38,7 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   pnh.param("frame_id", marker_frame_id_, std::string("/map"));
   footstep_pub_ = nh.advertise<jsk_footstep_msgs::FootstepArray>("footstep_from_marker", 1);
   snapit_client_ = nh.serviceClient<jsk_pcl_ros::CallSnapIt>("snapit");
+  snapped_pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("snapped_pose", 1);
   estimate_occlusion_client_ = nh.serviceClient<std_srvs::Empty>("require_estimation");
   if (wait_snapit_server_) {
     snapit_client_.waitForExistence();
@@ -286,7 +288,7 @@ void FootstepMarker::menuCommandCB(const std_msgs::UInt8::ConstPtr& msg) {
 }
 
 void FootstepMarker::updateInitialFootstep() {
-  ROS_INFO("updateInitialFootstep");
+  //ROS_INFO("updateInitialFootstep");
   if (!use_initial_footstep_tf_) {
     return;
   } 
@@ -366,6 +368,17 @@ double FootstepMarker::projectPoseToPlane(
   const geometry_msgs::PoseStamped& point,
   geometry_msgs::PoseStamped& foot)
 {
+#ifdef PROJECT_DEBUG
+  ROS_INFO("---------");
+#endif
+  jsk_pcl_ros::ConvexPolygon::Vertices vertices;
+  for (size_t i = 0; i < polygon.size(); i++) {
+    geometry_msgs::Point p = polygon[i].point;
+    jsk_pcl_ros::ConvexPolygon::Vertex v (p.x, p.y, p.z);
+    //ROS_INFO("v[%lu] - [%f, %f, %f]", i, v[0], v[1], v[2]);
+    vertices.push_back(v);
+  }
+  jsk_pcl_ros::ConvexPolygon convex(vertices);
   Eigen::Vector3d orig(polygon[1].point.x, polygon[1].point.y, polygon[1].point.z);
   Eigen::Vector3d A(polygon[0].point.x, polygon[0].point.y, polygon[0].point.z);
   Eigen::Vector3d B(polygon[2].point.x, polygon[2].point.y, polygon[2].point.z);
@@ -376,28 +389,54 @@ double FootstepMarker::projectPoseToPlane(
     normal = - normal;
     reversed = true;
   }
+  // Eigen::Vector3d normal = convex.getNormal();
+  // Eigen::Vector3d g(0, 0, 1);   // should be parameterize
+  // bool reversed = false;
+  // if (normal.dot(g) < 0) {
+  //   normal = - normal;
+  //   reversed = true;
+  // }
   Eigen::Vector3d p(point.pose.position.x, point.pose.position.y, point.pose.position.z);
-  Eigen::Vector3d v = (p - orig);
-  double d = v.dot(normal);
+  // Eigen::Vector3d v = (p - orig);
+  //double d = v.dot(normal);
+  double d = convex.distanceToPoint(p);
   Eigen::Vector3d projected_point = p - d * normal;
-
+  // Eigen::Vector3d projected_point;
+  // convex.projectOnPlane(p, projected_point);
+#ifdef PROJECT_DEBUG
   ROS_INFO("normal: [%f, %f, %f]", normal[0], normal[1], normal[2]);
-  
+  ROS_INFO("plane d: %f", convex.getD());
+  ROS_INFO("distance: %f", d);
+#endif
   // check the point is inside of the polygon or not...
-  for (size_t i = 0; i < polygon.size() - 1; i++) {
-    Eigen::Vector3d O(polygon[i].point.x, polygon[i].point.y, polygon[i].point.z);
-    Eigen::Vector3d Q(polygon[i + 1].point.x, polygon[i + 1].point.y, polygon[i + 1].point.z);
-    Eigen::Vector3d n2 = (Q - O).cross(projected_point - O);
-    if (reversed) {
-      if (normal.dot(n2) > 0) {
-        d = DBL_MAX;
-      }
-    }
-    else {
-      if (normal.dot(n2) < 0) {
-        d = DBL_MAX;
-      }
-    }
+  bool insidep = convex.isInside(projected_point);
+  // for (size_t i = 0; i < polygon.size() - 1; i++) {
+  //   Eigen::Vector3d O(polygon[i].point.x, polygon[i].point.y, polygon[i].point.z);
+  //   Eigen::Vector3d Q(polygon[i + 1].point.x, polygon[i + 1].point.y, polygon[i + 1].point.z);
+  //   Eigen::Vector3d n2 = (Q - O).cross(projected_point - O);
+  //   if (reversed) {
+  //     if (normal.dot(n2) > 0) {
+  //       insidep = false;
+  //       d = DBL_MAX;
+  //     }
+  //   }
+  //   else {
+  //     if (normal.dot(n2) < 0) {
+  //       insidep = false;
+  //       d = DBL_MAX;
+  //     }
+  //   }
+  // }
+  if (insidep) {
+#ifdef PROJECT_DEBUG
+    ROS_INFO("insidep: true");
+#endif
+  }
+  else {
+#ifdef PROJECT_DEBUG
+     ROS_INFO("insidep: false");
+#endif
+     d = DBL_MAX;
   }
   foot.header = point.header;
   foot.pose.position.x = projected_point[0];
@@ -410,8 +449,8 @@ double FootstepMarker::projectPoseToPlane(
                        point.pose.orientation.z);
   Eigen::Quaterniond q2;
   Eigen::Matrix3d m = q.toRotationMatrix();
-  Eigen::Vector3d e_x = m.col(0);
-  Eigen::Vector3d e_y = m.col(1);
+  // Eigen::Vector3d e_x = m.col(0);
+  // Eigen::Vector3d e_y = m.col(1);
   Eigen::Vector3d e_z = m.col(2);
   Eigen::Quaterniond trans;
   trans.setFromTwoVectors(e_z, normal); // ???
@@ -419,8 +458,10 @@ double FootstepMarker::projectPoseToPlane(
   
   q2 = trans * q;
   Eigen::Vector3d e_z2 = q2.toRotationMatrix().col(2);
+#ifdef PROJECT_DEBUG
   ROS_INFO("e_z: [%f, %f, %f]", e_z[0], e_z[1], e_z[2]);
   ROS_INFO("e_z2: [%f, %f, %f]", e_z2[0], e_z2[1], e_z2[2]);
+#endif
   //q2 = q * trans;
   foot.pose.orientation.x = q2.x();
   foot.pose.orientation.y = q2.y();
@@ -472,13 +513,17 @@ bool FootstepMarker::projectMarkerToPlane()
       min_distance = distance;
     }
   }
+  ROS_INFO_STREAM("min_distance: " << min_distance);
   if (min_distance < 0.3) {     // smaller than 30cm
     marker_pose_.pose = min_pose.pose;
-    server_->setPose("footstep_marker", min_pose.pose);
-    server_->applyChanges();
+    snapped_pose_pub_.publish(min_pose);
+    // server_->setPose("footstep_marker", min_pose.pose);
+    // server_->applyChanges();
+    ROS_WARN("projected");
     return true;
   }
   else {
+    ROS_WARN("not projected");
     return false;
   }
 }
@@ -742,14 +787,20 @@ void FootstepMarker::planeCB(
   const jsk_pcl_ros::ModelCoefficientsArray::ConstPtr& coefficients)
 {
   boost::mutex::scoped_lock(plane_mutex_);
-  latest_planes_ = planes;
-  latest_coefficients_ = coefficients;
+  if (planes->polygons.size() > 0) {
+    latest_planes_ = planes;
+    latest_coefficients_ = coefficients;
+  }
+  else {
+    ROS_WARN_STREAM(__FUNCTION__ << "the size of the plane is 0, ignore");
+  }
 }
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "footstep_marker");
   FootstepMarker marker;
   ros::Rate r(10.0);
+  
   while (ros::ok()) {
     ros::spinOnce();
     marker.updateInitialFootstep();

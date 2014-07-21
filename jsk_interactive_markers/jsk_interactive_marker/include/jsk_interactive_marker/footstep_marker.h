@@ -101,6 +101,7 @@ protected:
   message_filters::Subscriber<jsk_pcl_ros::ModelCoefficientsArray> coefficients_sub_;
   boost::shared_ptr<message_filters::Synchronizer<PlaneSyncPolicy> >sync_;
   
+  ros::Publisher snapped_pose_pub_;
   ros::Publisher footstep_pub_;
   ros::ServiceClient snapit_client_;
   ros::ServiceClient estimate_occlusion_client_;
