@@ -74,6 +74,8 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   menu_handler_.insert( "Toggle 6dof marker",
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Resume Footstep",
+                      boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   marker_pose_.header.frame_id = marker_frame_id_;
   marker_pose_.header.stamp = ros::Time::now();
   marker_pose_.pose.orientation.w = 1.0;
@@ -112,7 +114,7 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   move_marker_sub_ = nh.subscribe("move_marker", 1, &FootstepMarker::moveMarkerCB, this);
   menu_command_sub_ = nh.subscribe("menu_command", 1, &FootstepMarker::menuCommandCB, this);
   exec_sub_ = pnh.subscribe("execute", 1, &FootstepMarker::executeCB, this);
-
+  resume_sub_ = pnh.subscribe("resume", 1, &FootstepMarker::resumeCB, this);
   if (use_initial_footstep_tf_) {
     // waiting TF
     while (ros::ok()) {
@@ -275,6 +277,10 @@ void FootstepMarker::executeCB(const std_msgs::Empty::ConstPtr& msg) {
   executeFootstep();
 }
 
+void FootstepMarker::resumeCB(const std_msgs::Empty::ConstPtr& msg) {
+  resumeFootstep();
+}
+
 void FootstepMarker::menuCommandCB(const std_msgs::UInt8::ConstPtr& msg) {
   processMenuFeedback(msg->data);
 }
@@ -330,6 +336,10 @@ void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
   }
   case 7: {                     // toggle 6dof marker
     show_6dof_control_ = !show_6dof_control_;
+    break;
+  }
+  case 8: {                     // resume
+    resumeCB(std_msgs::Empty::ConstPtr());
     break;
   }
   default: {
@@ -497,6 +507,20 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
   if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP && !skip_plan) {
     planIfPossible();
   }
+}
+
+void FootstepMarker::resumeFootstep() {
+  if (!use_footstep_controller_) {
+    return;
+  }
+  actionlib::SimpleClientGoalState state = ac_exec_.getState();
+  if (!state.isDone()) {
+    ROS_ERROR("still executing footstep");
+    return;
+  }
+  jsk_footstep_msgs::ExecFootstepsGoal goal;
+  goal.strategy = jsk_footstep_msgs::ExecFootstepsGoal::RESUME;
+  ac_exec_.sendGoal(goal);
 }
 
 void FootstepMarker::executeFootstep() {
