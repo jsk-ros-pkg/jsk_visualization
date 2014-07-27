@@ -246,7 +246,7 @@ namespace jsk_rviz_plugin
                                   radius_ * sin(45.0 / 180.0 * M_PI) + radius_ / 2.0,
                                   0);
       target_text_node_->setPosition(text_position);
-
+      Ogre::Vector3 msg_size = msg_->GetAABB().getSize();
       text_under_line_->clear();
       text_under_line_->setColor(color.r, color.g, color.b, color.a);
       
@@ -257,9 +257,7 @@ namespace jsk_rviz_plugin
                       radius_ * sin(45.0 / 180.0 * M_PI),
                       0);
       Ogre::Vector3 B(text_position + Ogre::Vector3(- radius_ / 4.0, 0, 0));
-      Ogre::Vector3 C(text_position
-                      + Ogre::Vector3(std::max(radius_ / 2.0, minimum_font_size),
-                                      0, 0));
+      Ogre::Vector3 C(text_position + Ogre::Vector3(msg_size[0], 0, 0));
       text_under_line_->addPoint(A);
       text_under_line_->addPoint(B);
       text_under_line_->addPoint(C);
@@ -393,6 +391,7 @@ namespace jsk_rviz_plugin
   {
     boost::mutex::scoped_lock(mutex_);
     target_name_ = target_name_property_->getStdString();
+    require_update_line_ = true;
   }
   
   void TargetVisualizerDisplay::updateRadius()
