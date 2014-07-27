@@ -379,28 +379,19 @@ double FootstepMarker::projectPoseToPlane(
     vertices.push_back(v);
   }
   jsk_pcl_ros::ConvexPolygon convex(vertices);
-  Eigen::Vector3d orig(polygon[1].point.x, polygon[1].point.y, polygon[1].point.z);
-  Eigen::Vector3d A(polygon[0].point.x, polygon[0].point.y, polygon[0].point.z);
-  Eigen::Vector3d B(polygon[2].point.x, polygon[2].point.y, polygon[2].point.z);
-  Eigen::Vector3d normal = (B - orig).cross(A - orig).normalized();
-  Eigen::Vector3d g(0, 0, 1);   // should be parameterize
+  Eigen::Vector3f orig(polygon[1].point.x, polygon[1].point.y, polygon[1].point.z);
+  Eigen::Vector3f A(polygon[0].point.x, polygon[0].point.y, polygon[0].point.z);
+  Eigen::Vector3f B(polygon[2].point.x, polygon[2].point.y, polygon[2].point.z);
+  Eigen::Vector3f normal = (B - orig).cross(A - orig).normalized();
+  Eigen::Vector3f g(0, 0, 1);   // should be parameterize
   bool reversed = false;
   if (normal.dot(g) < 0) {
     normal = - normal;
     reversed = true;
   }
-  // Eigen::Vector3d normal = convex.getNormal();
-  // Eigen::Vector3d g(0, 0, 1);   // should be parameterize
-  // bool reversed = false;
-  // if (normal.dot(g) < 0) {
-  //   normal = - normal;
-  //   reversed = true;
-  // }
-  Eigen::Vector3d p(point.pose.position.x, point.pose.position.y, point.pose.position.z);
-  // Eigen::Vector3d v = (p - orig);
-  //double d = v.dot(normal);
+  Eigen::Vector3f p(point.pose.position.x, point.pose.position.y, point.pose.position.z);
   double d = convex.distanceToPoint(p);
-  Eigen::Vector3d projected_point = p - d * normal;
+  Eigen::Vector3f projected_point = p - d * normal;
   // Eigen::Vector3d projected_point;
   // convex.projectOnPlane(p, projected_point);
 #ifdef PROJECT_DEBUG
@@ -410,23 +401,6 @@ double FootstepMarker::projectPoseToPlane(
 #endif
   // check the point is inside of the polygon or not...
   bool insidep = convex.isInside(projected_point);
-  // for (size_t i = 0; i < polygon.size() - 1; i++) {
-  //   Eigen::Vector3d O(polygon[i].point.x, polygon[i].point.y, polygon[i].point.z);
-  //   Eigen::Vector3d Q(polygon[i + 1].point.x, polygon[i + 1].point.y, polygon[i + 1].point.z);
-  //   Eigen::Vector3d n2 = (Q - O).cross(projected_point - O);
-  //   if (reversed) {
-  //     if (normal.dot(n2) > 0) {
-  //       insidep = false;
-  //       d = DBL_MAX;
-  //     }
-  //   }
-  //   else {
-  //     if (normal.dot(n2) < 0) {
-  //       insidep = false;
-  //       d = DBL_MAX;
-  //     }
-  //   }
-  // }
   if (insidep) {
 #ifdef PROJECT_DEBUG
     ROS_INFO("insidep: true");
@@ -443,21 +417,21 @@ double FootstepMarker::projectPoseToPlane(
   foot.pose.position.y = projected_point[1];
   foot.pose.position.z = projected_point[2];
   // compute orientation...
-  Eigen::Quaterniond q(point.pose.orientation.w,
+  Eigen::Quaternionf q(point.pose.orientation.w,
                        point.pose.orientation.x,
                        point.pose.orientation.y,
                        point.pose.orientation.z);
-  Eigen::Quaterniond q2;
-  Eigen::Matrix3d m = q.toRotationMatrix();
+  Eigen::Quaternionf q2;
+  Eigen::Matrix3f m = q.toRotationMatrix();
   // Eigen::Vector3d e_x = m.col(0);
   // Eigen::Vector3d e_y = m.col(1);
-  Eigen::Vector3d e_z = m.col(2);
-  Eigen::Quaterniond trans;
+  Eigen::Vector3f e_z = m.col(2);
+  Eigen::Quaternionf trans;
   trans.setFromTwoVectors(e_z, normal); // ???
   // we need to check if trans is flipped
   
   q2 = trans * q;
-  Eigen::Vector3d e_z2 = q2.toRotationMatrix().col(2);
+  Eigen::Vector3f e_z2 = q2.toRotationMatrix().col(2);
 #ifdef PROJECT_DEBUG
   ROS_INFO("e_z: [%f, %f, %f]", e_z[0], e_z[1], e_z[2]);
   ROS_INFO("e_z2: [%f, %f, %f]", e_z2[0], e_z2[1], e_z2[2]);
