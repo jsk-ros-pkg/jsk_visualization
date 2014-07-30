@@ -2,6 +2,9 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.6 (2014-07-14)
+------------------
+
 1.0.5 (2014-06-29)
 ------------------
 * fix jsk_rqt_plugins for groovy users

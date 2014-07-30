@@ -61,15 +61,21 @@ namespace jsk_rviz_plugin
     width_property_ = new rviz::IntProperty("width", 128,
                                             "width of the plotter window",
                                             this, SLOT(updateWidth()));
+    width_property_->setMin(1);
+    width_property_->setMax(2000);
     height_property_ = new rviz::IntProperty("height", 128,
                                              "height of the plotter window",
                                              this, SLOT(updateHeight()));
+    height_property_->setMin(1);
+    height_property_->setMax(2000);
     left_property_ = new rviz::IntProperty("left", 128,
                                            "left of the plotter window",
                                            this, SLOT(updateLeft()));
+    left_property_->setMin(0);
     top_property_ = new rviz::IntProperty("top", 128,
                                           "top of the plotter window",
                                           this, SLOT(updateTop()));
+    top_property_->setMin(0);
     auto_scale_property_ = new rviz::BoolProperty("auto scale", true,
                                                   "enable auto scale",
                                                   this, SLOT(updateAutoScale()));
@@ -85,27 +91,37 @@ namespace jsk_rviz_plugin
     fg_alpha_property_ = new rviz::FloatProperty("foreground alpha", 0.7,
                                                  "alpha belnding value for foreground",
                                                  this, SLOT(updateFGAlpha()));
+    fg_alpha_property_->setMin(0);
+    fg_alpha_property_->setMax(1.0);
     bg_color_property_ = new rviz::ColorProperty("background color", QColor(0, 0, 0),
                                                  "background color",
                                                  this, SLOT(updateBGColor()));
     bg_alpha_property_ = new rviz::FloatProperty("backround alpha", 0.0,
                                                  "alpha belnding value for background",
                                                  this, SLOT(updateBGAlpha()));
+    bg_alpha_property_->setMin(0);
+    bg_alpha_property_->setMax(1.0);
     line_width_property_ = new rviz::IntProperty("linewidth", 1,
                                                  "linewidth of the plot",
                                                  this, SLOT(updateLineWidth()));
+    line_width_property_->setMin(1);
+    line_width_property_->setMax(1000);
     show_border_property_ = new rviz::BoolProperty("border", true,
                                                    "show border or not",
                                                    this, SLOT(updateShowBorder()));
     text_size_property_ = new rviz::IntProperty("text size", 12,
                                                 "text size of the caption",
                                                 this, SLOT(updateTextSize()));
+    text_size_property_->setMin(1);
+    text_size_property_->setMax(1000);
     show_caption_property_ = new rviz::BoolProperty("caption", true,
                                                     "show caption or not",
                                                     this, SLOT(updateShowCaption()));
     update_interval_property_ = new rviz::FloatProperty("update interval", 0.04,
                                                         "update interval of the plotter",
                                                         this, SLOT(updateUpdateInterval()));
+    update_interval_property_->setMin(0.0);
+    update_interval_property_->setMax(100);
     auto_color_change_property_
       = new rviz::BoolProperty("auto color change",
                                false,
@@ -202,12 +218,11 @@ namespace jsk_rviz_plugin
     
     if (texture_.isNull() ||
         ((width != texture_->getWidth()) ||
-         (height != texture_->getHeight() - caption_offset_))) {
-      bool firsttime = true;
+         (height != (texture_->getHeight() - caption_offset_)))) {
       if (!texture_.isNull()) {
-        firsttime = false;
         // remove the texture first if previous texture exists
         Ogre::TextureManager::getSingleton().remove(texture_name_);
+        panel_material_->getTechnique(0)->getPass(0)->removeAllTextureUnitStates();
       }
       texture_width_ = width;
       texture_height_ = height;
@@ -220,10 +235,8 @@ namespace jsk_rviz_plugin
         Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
         Ogre::TU_DEFAULT     // usage
         );
-      if (firsttime) {
-        panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-        panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-      }
+      panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
+      panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
     }
   }
 
@@ -231,6 +244,7 @@ namespace jsk_rviz_plugin
   {
     QColor fg_color(fg_color_);
     QColor bg_color(bg_color_);
+    
     fg_color.setAlpha(fg_alpha_);
     bg_color.setAlpha(bg_alpha_);
 
@@ -366,7 +380,7 @@ namespace jsk_rviz_plugin
     
     updateTextureSize(texture_width_, texture_height_);
     panel_->setPosition(left_, top_);
-    panel_->setDimensions(texture_->getWidth(), texture_->getHeight() + caption_offset_);
+    panel_->setDimensions(texture_->getWidth(), texture_->getHeight());
     draw_required_ = true;
   }
 
