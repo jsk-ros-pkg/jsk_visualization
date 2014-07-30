@@ -600,6 +600,15 @@
        (send *target-coords* :move-to *old-coords* :world)
        (send self :set-marker-pose-robot (send *target-coords* :worldcoords))
        )
+      ;;reset joint and base
+      ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_JOINT*)
+       (format t "[marker-menu] reset robot joint!!~%")
+       (send self :realmodel2model)
+       (send self :publish-joint-states :real? nil)
+       ;;reset root pose
+       (ros::publish (format nil "~A/~A/reset_root_pose" *im-nodename* *robot-name*)
+		     (instance std_msgs::Empty :init))
+       )
       ;;set origin to hand
       ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
        (let ((message "set origin to rhand"))
@@ -1315,6 +1324,10 @@
    (ros::advertise
     (format nil "~A/~A/reset_joint_states" *im-nodename* *robot-name*)
     sensor_msgs::JointState)
+   ;; reset Interactive Marker Root Pose
+   (ros::advertise (format nil "~A/~A/reset_root_pose" *im-nodename* *robot-name*)
+		   std_msgs::Empty)
+
    
    ;;update real-robot joint state
    ;;   (ros::advertise
