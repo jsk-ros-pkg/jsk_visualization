@@ -96,7 +96,10 @@ class UrdfModelMarker {
   void graspPointCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void jointMoveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void resetMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
-  void resetBaseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void resetBaseMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void resetBaseMsgCB( const std_msgs::EmptyConstPtr &msg);
+  void resetBaseCB();
+
   void resetRobotBase();
   void registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   

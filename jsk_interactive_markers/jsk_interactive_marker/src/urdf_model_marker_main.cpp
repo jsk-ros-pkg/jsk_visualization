@@ -79,9 +79,20 @@ public:
       scale_factor_ = getXmlValue(model_config_["scale"]);
     }
     //pose
-    pose_stamped_.pose = getPose(model_config_["pose"]);
+    if(model_config_.hasMember("pose")){
+      pose_stamped_.pose = getPose(model_config_["pose"]);
+    }else{
+      pose_stamped_.pose = geometry_msgs::Pose();
+      pose_stamped_.pose.orientation.w = 1.0;
+    }
     pose_stamped_.header.stamp = ros::Time::now();
-    root_offset_ = getPose(model_config_["offset"]);
+
+    if(model_config_.hasMember("offset")){
+      root_offset_ = getPose(model_config_["offset"]);
+    }else{
+      root_offset_ = geometry_msgs::Pose();
+      root_offset_.orientation.w = 1.0;
+    }
 
     //color
     use_visible_color_ = false;
