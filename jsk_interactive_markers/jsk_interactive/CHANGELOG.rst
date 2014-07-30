@@ -2,6 +2,11 @@
 Changelog for package jsk_interactive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.6 (2014-07-14)
+------------------
+* add grasp method
+* Contributors: Yusuke Furuta
+
 1.0.5 (2014-06-29)
 ------------------
 * add load-ros-manifest jsk_interactive_marker

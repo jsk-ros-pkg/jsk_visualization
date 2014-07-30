@@ -33,11 +33,14 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef JSK_RVIZ_PLUGIN_DIAGNOSTICS_DISPLAY_H_
-#define JSK_RVIZ_PLUGIN_DIAGNOSTICS_DISPLAY_H_
+#ifndef JSK_RVIZ_PLUGIN_TARGET_VISUALIZER_DISPLAY_H_
+#define JSK_RVIZ_PLUGIN_TARGET_VISUALIZER_DISPLAY_H_
+
 
 #include <rviz/display.h>
+#include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/color_property.h>
 #include <rviz/properties/string_property.h>
 #include <rviz/properties/editable_enum_property.h>
 #include <rviz/properties/tf_frame_property.h>
@@ -50,60 +53,64 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <rviz/ogre_helpers/movable_text.h>
+#include <geometry_msgs/PoseStamped.h>
 
 namespace jsk_rviz_plugin
 {
-  class DiagnosticsDisplay : public rviz::Display
+  class TargetVisualizerDisplay:
+    public rviz::MessageFilterDisplay<geometry_msgs::PoseStamped>
   {
     Q_OBJECT
   public:
-    DiagnosticsDisplay();
-    virtual ~DiagnosticsDisplay();
+    TargetVisualizerDisplay();
+    virtual ~TargetVisualizerDisplay();
   protected:
-    virtual void onEnable();
-    virtual void onDisable();
     virtual void onInitialize();
-    virtual void subscribe();
-    virtual void unsubscribe();
-    virtual void updateLine();
-    virtual void update(float wall_dt, float ros_dt);
-    virtual void processMessage
-    (const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
-    
-    rviz::RosTopicProperty* ros_topic_property_;
-    rviz::EditableEnumProperty* diagnostics_namespace_property_;
-    rviz::TfFrameProperty* frame_id_property_;
+    virtual void reset();
+    void processMessage(const geometry_msgs::PoseStamped::ConstPtr& msg);
+    void update(float wall_dt, float ros_dt);
+    void createArrows();
+    void updateArrowsObjects(Ogre::ColourValue color);
+    rviz::StringProperty* target_name_property_;
+    rviz::FloatProperty* alpha_property_;
+    rviz::ColorProperty* color_property_;
     rviz::FloatProperty* radius_property_;
-    rviz::FloatProperty* line_width_property_;
-    rviz::FloatProperty* font_size_property_;
-    rviz::EnumProperty* axis_property_;
-    ros::Subscriber sub_;
-    
-    double radius_;
-    double line_width_;
-    std::string frame_id_;
-    std::string diagnostics_namespace_;
-    rviz::MovableText* msg_;
+    Ogre::SceneNode* facing_node_;
+    Ogre::SceneNode* target_text_node_;
     rviz::BillboardLine* line_;
-    Ogre::SceneNode* orbit_node_;
-    std::set<std::string> namespaces_;
-    int axis_;
-    double orbit_theta_;
-    double font_size_;
-    bool line_update_required_;
-  protected Q_SLOTS:
-    virtual void updateRosTopic();
-    virtual void updateDiagnosticsNamespace();
-    virtual void updateRadius();
-    virtual void updateLineWidth();
-    virtual void updateAxis();
-    virtual void updateFontSize();
-    virtual void fillNamespaceList();
+    rviz::BillboardLine* text_under_line_;
+    Ogre::ManualObject* upper_arrow_;
+    Ogre::ManualObject* lower_arrow_;
+    Ogre::ManualObject* left_arrow_;
+    Ogre::ManualObject* right_arrow_;
+    Ogre::SceneNode* upper_arrow_node_;
+    Ogre::SceneNode* lower_arrow_node_;
+    Ogre::SceneNode* left_arrow_node_;
+    Ogre::SceneNode* right_arrow_node_;
+    Ogre::MaterialPtr upper_material_;
+    Ogre::MaterialPtr lower_material_;
+    Ogre::MaterialPtr left_material_;
+    Ogre::MaterialPtr right_material_;
+    std::string upper_material_name_;
+    std::string left_material_name_;
+    std::string lower_material_name_;
+    std::string right_material_name_;
+    rviz::MovableText* msg_;
+    boost::mutex mutex_;
+    std::string target_name_;
+    float t_;
+    double alpha_;
+    QColor color_;
+    double radius_;
+    bool require_update_line_;
+  private Q_SLOTS:
+    void updateTargetName();
+    void updateAlpha();
+    void updateColor();
+    void updateRadius();
   private:
     
   };
-  
 }
-
 
 #endif

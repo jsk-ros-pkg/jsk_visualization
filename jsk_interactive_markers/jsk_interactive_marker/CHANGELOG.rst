@@ -2,6 +2,17 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.6 (2014-07-14)
+------------------
+* add grasp method
+* publish root pose when clicked
+* launch file for pr2 gripper marker
+* display multi marker
+* add PR2 gripper xacro and setting file
+* set initial joint state
+* add class to set urdf marker config
+* Contributors: Yusuke Furuta
+
 1.0.5 (2014-06-29)
 ------------------
 * add param to designate tf origin
