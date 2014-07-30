@@ -1,6 +1,3 @@
-Please copy *.rviz.default to *.rviz in launch directory.
-
-
 # To use robot joint interactive marker
 roslaunch jsk_interactive_marker urdf_model_markers.launch models:=/path/to/model.yaml
 
