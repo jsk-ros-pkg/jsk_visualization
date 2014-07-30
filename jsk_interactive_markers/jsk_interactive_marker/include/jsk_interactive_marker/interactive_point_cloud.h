@@ -7,6 +7,7 @@
 #include <interactive_markers/menu_handler.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <jsk_pcl_ros/BoundingBoxArray.h>
+#include <jsk_pcl_ros/BoundingBoxMovement.h>
 #include <jsk_pcl_ros/Int32Stamped.h>
 #include <geometry_msgs/PoseArray.h>
 
@@ -73,12 +74,13 @@ private:
   void leftClickPoint( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void markerFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void publishHandPose( geometry_msgs::PoseStamped box_pose);
   
 
   std::string marker_name_, topic_;
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
-  ros::Publisher pub_marker_pose_, pub_click_point_, pub_left_click_, pub_handle_pose_;
+  ros::Publisher pub_marker_pose_, pub_click_point_, pub_left_click_, pub_handle_pose_, pub_handle_pose_array_, pub_box_movement_;
   ros::Subscriber sub_handle_pose_;
   //ros::Subscriber sub_point_cloud_, sub_bounding_box_;
   message_filters::Subscriber<sensor_msgs::PointCloud2> sub_point_cloud_;
@@ -96,7 +98,6 @@ private:
   sensor_msgs::PointCloud2 msg_cloud_;
   double point_size_;
   bool use_bounding_box_;
-  //geometry_msgs::Pose handle_pose_;
 
   geometry_msgs::PoseStamped marker_pose_;
   std::string input_pointcloud_, input_bounding_box_;
@@ -106,6 +107,8 @@ private:
   geometry_msgs::PoseStamped handle_pose_;
   tf::Transform handle_tf_;
   bool exist_handle_tf_;
+
+  jsk_pcl_ros::BoundingBoxMovement box_movement_;
 };
 
 #endif
