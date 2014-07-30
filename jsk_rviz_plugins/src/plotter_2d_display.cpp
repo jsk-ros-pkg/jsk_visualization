@@ -61,15 +61,21 @@ namespace jsk_rviz_plugin
     width_property_ = new rviz::IntProperty("width", 128,
                                             "width of the plotter window",
                                             this, SLOT(updateWidth()));
+    width_property_->setMin(1);
+    width_property_->setMax(2000);
     height_property_ = new rviz::IntProperty("height", 128,
                                              "height of the plotter window",
                                              this, SLOT(updateHeight()));
+    height_property_->setMin(1);
+    height_property_->setMax(2000);
     left_property_ = new rviz::IntProperty("left", 128,
                                            "left of the plotter window",
                                            this, SLOT(updateLeft()));
+    left_property_->setMin(0);
     top_property_ = new rviz::IntProperty("top", 128,
                                           "top of the plotter window",
                                           this, SLOT(updateTop()));
+    top_property_->setMin(0);
     auto_scale_property_ = new rviz::BoolProperty("auto scale", true,
                                                   "enable auto scale",
                                                   this, SLOT(updateAutoScale()));
@@ -85,27 +91,37 @@ namespace jsk_rviz_plugin
     fg_alpha_property_ = new rviz::FloatProperty("foreground alpha", 0.7,
                                                  "alpha belnding value for foreground",
                                                  this, SLOT(updateFGAlpha()));
+    fg_alpha_property_->setMin(0);
+    fg_alpha_property_->setMax(1.0);
     bg_color_property_ = new rviz::ColorProperty("background color", QColor(0, 0, 0),
                                                  "background color",
                                                  this, SLOT(updateBGColor()));
     bg_alpha_property_ = new rviz::FloatProperty("backround alpha", 0.0,
                                                  "alpha belnding value for background",
                                                  this, SLOT(updateBGAlpha()));
+    bg_alpha_property_->setMin(0);
+    bg_alpha_property_->setMax(1.0);
     line_width_property_ = new rviz::IntProperty("linewidth", 1,
                                                  "linewidth of the plot",
                                                  this, SLOT(updateLineWidth()));
+    line_width_property_->setMin(1);
+    line_width_property_->setMax(1000);
     show_border_property_ = new rviz::BoolProperty("border", true,
                                                    "show border or not",
                                                    this, SLOT(updateShowBorder()));
     text_size_property_ = new rviz::IntProperty("text size", 12,
                                                 "text size of the caption",
                                                 this, SLOT(updateTextSize()));
+    text_size_property_->setMin(1);
+    text_size_property_->setMax(1000);
     show_caption_property_ = new rviz::BoolProperty("caption", true,
                                                     "show caption or not",
                                                     this, SLOT(updateShowCaption()));
     update_interval_property_ = new rviz::FloatProperty("update interval", 0.04,
                                                         "update interval of the plotter",
                                                         this, SLOT(updateUpdateInterval()));
+    update_interval_property_->setMin(0.0);
+    update_interval_property_->setMax(100);
     auto_color_change_property_
       = new rviz::BoolProperty("auto color change",
                                false,
@@ -198,7 +214,6 @@ namespace jsk_rviz_plugin
 
   void Plotter2DDisplay::updateTextureSize(uint16_t width, uint16_t height)
   {
-    ROS_INFO_STREAM("updateTextureSize: " << width << ", " << height);
     //boost::mutex::scoped_lock lock(mutex_);
     
     if (texture_.isNull() ||
@@ -276,9 +291,6 @@ namespace jsk_rviz_plugin
       uint16_t w = texture_->getWidth();
       uint16_t h = texture_->getHeight() - caption_offset_;
 
-      ROS_INFO_STREAM("w: " << w);
-      ROS_INFO_STREAM("h: " << h);
-      
       double margined_max_value = max_value_ + (max_value_ - min_value_) / 2;
       double margined_min_value = min_value_ - (max_value_ - min_value_) / 2;
       
