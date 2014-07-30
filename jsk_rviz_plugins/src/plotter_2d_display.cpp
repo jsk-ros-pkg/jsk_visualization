@@ -198,16 +198,16 @@ namespace jsk_rviz_plugin
 
   void Plotter2DDisplay::updateTextureSize(uint16_t width, uint16_t height)
   {
+    ROS_INFO_STREAM("updateTextureSize: " << width << ", " << height);
     //boost::mutex::scoped_lock lock(mutex_);
     
     if (texture_.isNull() ||
         ((width != texture_->getWidth()) ||
-         (height != texture_->getHeight() - caption_offset_))) {
-      bool firsttime = true;
+         (height != (texture_->getHeight() - caption_offset_)))) {
       if (!texture_.isNull()) {
-        firsttime = false;
         // remove the texture first if previous texture exists
         Ogre::TextureManager::getSingleton().remove(texture_name_);
+        panel_material_->getTechnique(0)->getPass(0)->removeAllTextureUnitStates();
       }
       texture_width_ = width;
       texture_height_ = height;
@@ -220,10 +220,8 @@ namespace jsk_rviz_plugin
         Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
         Ogre::TU_DEFAULT     // usage
         );
-      if (firsttime) {
-        panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-        panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-      }
+      panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
+      panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
     }
   }
 
@@ -231,6 +229,7 @@ namespace jsk_rviz_plugin
   {
     QColor fg_color(fg_color_);
     QColor bg_color(bg_color_);
+    
     fg_color.setAlpha(fg_alpha_);
     bg_color.setAlpha(bg_alpha_);
 
@@ -277,6 +276,9 @@ namespace jsk_rviz_plugin
       uint16_t w = texture_->getWidth();
       uint16_t h = texture_->getHeight() - caption_offset_;
 
+      ROS_INFO_STREAM("w: " << w);
+      ROS_INFO_STREAM("h: " << h);
+      
       double margined_max_value = max_value_ + (max_value_ - min_value_) / 2;
       double margined_min_value = min_value_ - (max_value_ - min_value_) / 2;
       
@@ -366,7 +368,7 @@ namespace jsk_rviz_plugin
     
     updateTextureSize(texture_width_, texture_height_);
     panel_->setPosition(left_, top_);
-    panel_->setDimensions(texture_->getWidth(), texture_->getHeight() + caption_offset_);
+    panel_->setDimensions(texture_->getWidth(), texture_->getHeight());
     draw_required_ = true;
   }
 
