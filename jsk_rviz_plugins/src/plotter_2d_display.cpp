@@ -34,11 +34,6 @@
  *********************************************************************/
 
 #include "plotter_2d_display.h"
-#include <OGRE/OgreOverlayManager.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreTechnique.h>
 #include <OGRE/OgreHardwarePixelBuffer.h>
 #include <rviz/uniform_string_stream.h>
 #include <rviz/display_context.h>
@@ -136,29 +131,27 @@ namespace jsk_rviz_plugin
 
   Plotter2DDisplay::~Plotter2DDisplay()
   {
-    if (overlay_->isVisible()) {
-      overlay_->hide();
-    }
-    delete update_topic_property_;
-    delete buffer_length_property_;
-    delete fg_color_property_;
-    delete bg_color_property_;
-    delete fg_alpha_property_;
-    delete bg_alpha_property_;
-    delete top_property_;
-    delete left_property_;
-    delete width_property_;
-    delete height_property_;
-    delete line_width_property_;
-    delete show_border_property_;
-    delete auto_color_change_property_;
-    delete max_color_property_;
-    delete update_interval_property_;
-    delete show_caption_property_;
-    delete text_size_property_;
-    delete min_value_property_;
-    delete max_value_property_;
-    delete auto_color_change_property_;
+    onDisable();
+    // delete update_topic_property_;
+    // delete buffer_length_property_;
+    // delete fg_color_property_;
+    // delete bg_color_property_;
+    // delete fg_alpha_property_;
+    // delete bg_alpha_property_;
+    // delete top_property_;
+    // delete left_property_;
+    // delete width_property_;
+    // delete height_property_;
+    // delete line_width_property_;
+    // delete show_border_property_;
+    // delete auto_color_change_property_;
+    // delete max_color_property_;
+    // delete update_interval_property_;
+    // delete show_caption_property_;
+    // delete text_size_property_;
+    // delete min_value_property_;
+    // delete max_value_property_;
+    // delete auto_color_change_property_;
   }
 
   void Plotter2DDisplay::initializeBuffer()
@@ -176,20 +169,8 @@ namespace jsk_rviz_plugin
     static int count = 0;
     updateBufferSize();
     rviz::UniformStringStream ss;
-    Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
     ss << "Plotter2DDisplayObject" << count++;
-    material_name_ = ss.str() + "Material";
-    texture_name_ = ss.str() + "Texture";
-    overlay_ = mOverlayMgr->create(ss.str());
-    panel_ = static_cast<Ogre::PanelOverlayElement*> (
-      mOverlayMgr->createOverlayElement("Panel", ss.str() + "Panel"));
-    panel_->setMetricsMode(Ogre::GMM_PIXELS);
-    panel_material_
-      = Ogre::MaterialManager::getSingleton().create(
-        material_name_,
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    panel_->setMaterialName(panel_material_->getName());
-    overlay_->add2D(panel_);
+    overlay_.reset(new OverlayObject(ss.str()));
     onEnable();
     updateWidth();
     updateHeight();
@@ -209,35 +190,8 @@ namespace jsk_rviz_plugin
     updateAutoScale();
     updateMinValue();
     updateMaxValue();
-    updateTextureSize(width_property_->getInt(), height_property_->getInt());
-  }
-
-  void Plotter2DDisplay::updateTextureSize(uint16_t width, uint16_t height)
-  {
-    //boost::mutex::scoped_lock lock(mutex_);
-    
-    if (texture_.isNull() ||
-        ((width != texture_->getWidth()) ||
-         (height != (texture_->getHeight() - caption_offset_)))) {
-      if (!texture_.isNull()) {
-        // remove the texture first if previous texture exists
-        Ogre::TextureManager::getSingleton().remove(texture_name_);
-        panel_material_->getTechnique(0)->getPass(0)->removeAllTextureUnitStates();
-      }
-      texture_width_ = width;
-      texture_height_ = height;
-      texture_ = Ogre::TextureManager::getSingleton().createManual(
-        texture_name_,        // name
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        Ogre::TEX_TYPE_2D,   // type
-        width, height + caption_offset_,   // width & height of the render window 
-        0,                   // number of mipmaps
-        Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
-        Ogre::TU_DEFAULT     // usage
-        );
-      panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-      panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-    }
+    overlay_->updateTextureSize(width_property_->getInt(),
+                                height_property_->getInt() + caption_offset_);
   }
 
   void Plotter2DDisplay::drawPlot()
@@ -261,7 +215,7 @@ namespace jsk_rviz_plugin
     }
     
     // Get the pixel buffer
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
+    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
     // Lock the pixel buffer and get a pixel box
     pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
     const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
@@ -272,13 +226,13 @@ namespace jsk_rviz_plugin
     {
       // fill to get 100% transparent image
       // the buffer content is the colors R,G,B,A. Filling with zeros gets a 100% transparent image
-      memset( pDest, 0, texture_->getWidth() * texture_->getHeight() );
+      memset( pDest, 0, overlay_->getTextureWidth() * overlay_->getTextureHeight() );
       
       // tell QImage to use OUR buffer and a compatible image buffer format
-      QImage Hud( pDest, texture_->getWidth(), texture_->getHeight(), QImage::Format_ARGB32 );
+      QImage Hud( pDest, overlay_->getTextureWidth(), overlay_->getTextureHeight(), QImage::Format_ARGB32 );
       // initilize by the background color
-      for (int i = 0; i < texture_->getWidth(); i++) {
-        for (int j = 0; j < texture_->getHeight(); j++) {
+      for (int i = 0; i < overlay_->getTextureWidth(); i++) {
+        for (int j = 0; j < overlay_->getTextureHeight(); j++) {
           Hud.setPixel(i, j, bg_color.rgba());
         }
       }
@@ -288,8 +242,8 @@ namespace jsk_rviz_plugin
       painter.setRenderHint(QPainter::Antialiasing, true);
       painter.setPen(QPen(fg_color, line_width_, Qt::SolidLine));
       
-      uint16_t w = texture_->getWidth();
-      uint16_t h = texture_->getHeight() - caption_offset_;
+      uint16_t w = overlay_->getTextureWidth();
+      uint16_t h = overlay_->getTextureHeight() - caption_offset_;
 
       double margined_max_value = max_value_ + (max_value_ - min_value_) / 2;
       double margined_min_value = min_value_ - (max_value_ - min_value_) / 2;
@@ -378,9 +332,10 @@ namespace jsk_rviz_plugin
       return;
     }
     
-    updateTextureSize(texture_width_, texture_height_);
-    panel_->setPosition(left_, top_);
-    panel_->setDimensions(texture_->getWidth(), texture_->getHeight());
+    overlay_->updateTextureSize(texture_width_,
+                                texture_height_ + caption_offset_);
+    overlay_->setPosition(left_, top_);
+    overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     draw_required_ = true;
   }
 

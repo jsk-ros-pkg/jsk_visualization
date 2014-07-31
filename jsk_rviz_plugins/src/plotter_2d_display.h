@@ -37,9 +37,7 @@
 
 #include "std_msgs/Float32.h"
 #include <rviz/display.h>
-#include <OGRE/OgreOverlayElement.h>
-#include <OGRE/OgreOverlayContainer.h>
-#include <OGRE/OgrePanelOverlayElement.h>
+#include "overlay_utils.h"
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
@@ -89,11 +87,7 @@ namespace jsk_rviz_plugin
     rviz::FloatProperty* max_value_property_;
     rviz::FloatProperty* min_value_property_;
     
-    Ogre::Overlay* overlay_;
-    Ogre::PanelOverlayElement* panel_;
-    Ogre::MaterialPtr panel_material_;
-    Ogre::TexturePtr texture_;
-
+    OverlayObject::Ptr overlay_;
     QColor fg_color_;
     QColor max_color_;
     QColor bg_color_;
@@ -107,11 +101,7 @@ namespace jsk_rviz_plugin
     bool draw_required_;
     float last_time_;
     float update_interval_;
-    virtual void updateTextureSize(uint16_t width, uint16_t height);
     virtual void drawPlot();
-    
-    std::string material_name_;
-    std::string texture_name_;
     
     int buffer_length_;
     std::vector<double> buffer_;
