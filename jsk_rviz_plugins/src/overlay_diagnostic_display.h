@@ -36,9 +36,6 @@
 #define JSK_RVIZ_PLUGIN_OVERLAY_DIAGNOSTIC_DISPLAY_H_
 
 #include <rviz/display.h>
-#include <OGRE/OgreOverlayElement.h>
-#include <OGRE/OgreOverlayContainer.h>
-#include <OGRE/OgrePanelOverlayElement.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreMaterial.h>
@@ -52,6 +49,8 @@
 #include <rviz/properties/color_property.h>
 
 #include <diagnostic_msgs/DiagnosticArray.h>
+
+#include "overlay_utils.h"
 
 namespace jsk_rviz_plugin
 {
@@ -71,7 +70,6 @@ namespace jsk_rviz_plugin
     virtual void onInitialize();
     virtual void subscribe();
     virtual void unsubscribe();
-    virtual void updateTextureSize(int width, int height);
     virtual void redraw();
     virtual void fillNamespaceList();
     virtual QColor foregroundColor();
@@ -85,14 +83,8 @@ namespace jsk_rviz_plugin
                                      const std::string text);
     virtual std::string statusText();
     boost::mutex mutex_;
-    Ogre::Overlay* overlay_;
-    Ogre::PanelOverlayElement* panel_;
-    Ogre::MaterialPtr panel_material_;
-    std::string overlay_name_;
-    std::string material_name_;
-    std::string texture_name_;
-    Ogre::TexturePtr texture_;
-
+    OverlayObject::Ptr overlay_;
+    
     diagnostic_msgs::DiagnosticStatus::Ptr latest_status_;
     
     int size_;
