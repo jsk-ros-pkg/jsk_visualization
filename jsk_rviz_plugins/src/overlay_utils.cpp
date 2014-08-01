@@ -58,6 +58,8 @@ namespace jsk_rviz_plugin
   OverlayObject::~OverlayObject()
   {
     hide();
+    panel_material_->unload();
+    Ogre::MaterialManager::getSingleton().remove(panel_material_->getName());
     // Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
     // mOverlayMgr->destroyOverlayElement(panel_);
     //delete panel_;
