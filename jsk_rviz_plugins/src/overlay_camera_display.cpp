@@ -163,10 +163,6 @@ void OverlayCameraDisplay::onInitialize()
 {
   ImageDisplayBase::onInitialize();
   
-  static int count = 0;
-  rviz::UniformStringStream ss;
-  ss << "OverlayCameraDisplayObject" << count++;
-  overlay_.reset(new OverlayObject(ss.str()));
   caminfo_tf_filter_ = new tf::MessageFilter<sensor_msgs::CameraInfo>(
     *context_->getTFClient(), fixed_frame_.toStdString(),
     queue_size_property_->getInt(), update_nh_ );
@@ -282,7 +278,9 @@ void OverlayCameraDisplay::onEnable()
 {
   subscribe();
   render_panel_->getRenderWindow()->setActive(true);
-  overlay_->show();
+  if (overlay_) {
+    overlay_->show();
+  }
 }
 
 void OverlayCameraDisplay::onDisable()
@@ -290,7 +288,9 @@ void OverlayCameraDisplay::onDisable()
   render_panel_->getRenderWindow()->setActive(false);
   unsubscribe();
   clear();
-  overlay_->hide();
+  if (overlay_) {
+    overlay_->hide();
+  }
 }
 
 void OverlayCameraDisplay::subscribe()
@@ -389,18 +389,13 @@ void OverlayCameraDisplay::update( float wall_dt, float ros_dt )
   }
 
   render_panel_->getRenderWindow()->update();
-  // if (panel_material_.isNull()) {
-  //   Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
-  //   panel_material_
-  //     = Ogre::MaterialManager::getSingleton().create(
-  //       material_name_,
-  //       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
-  //   panel_->setMaterialName(panel_material_->getName());
-  //   panel_->setMetricsMode(Ogre::GMM_PIXELS);
-  //   overlay_->add2D(panel_);
-  // }
-  // updateTextureSize(render_panel_->getRenderWindow()->getWidth(),
-  //                   render_panel_->getRenderWindow()->getHeight());
+  if (!overlay_) {
+    static int count = 0;
+    rviz::UniformStringStream ss;
+    ss << "OverlayImageDisplayObject" << count++;
+    overlay_.reset(new OverlayObject(ss.str()));
+    overlay_->show();
+  }
   overlay_->updateTextureSize(render_panel_->getRenderWindow()->getWidth(),
                               render_panel_->getRenderWindow()->getHeight());
   redraw();
