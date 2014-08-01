@@ -31,7 +31,7 @@ include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
 include(${QT_USE_FILE})
-add_definitions(-DQT_NO_KEYWORDS)
+add_definitions(-DQT_NO_KEYWORDS -g)
 
 #find_package(wxWidgets REQUIRED)
 #include(${wxWidgets_USE_FILE})
@@ -82,6 +82,7 @@ set(SOURCE_FILES
   src/target_visualizer_display.cpp
   src/overlay_diagnostic_display.cpp
   src/sparse_occupancy_grid_array_display.cpp
+  src/overlay_utils.cpp
   ${MOC_FILES}
 )
 

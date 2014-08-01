@@ -1,4 +1,4 @@
-// -*- mode: c++; -*-
+// -*- mode: c++ -*-
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
@@ -32,58 +32,58 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#ifndef JSK_RVIZ_PLUGIN_OVERLAY_TEXT_DISPLAY_H_
-#define JSK_RVIZ_PLUGIN_OVERLAY_TEXT_DISPLAY_H_
 
-#include "jsk_rviz_plugins/OverlayText.h"
-#include <rviz/display.h>
-#include "overlay_utils.h"
-#include <OGRE/OgreColourValue.h>
-#include <OGRE/OgreMaterial.h>
-#include <std_msgs/ColorRGBA.h>
-#include <rviz/properties/ros_topic_property.h>
+#ifndef JSK_RVIZ_PLUGIN_OVERLAY_UTIL_H_
+#define JSK_RVIZ_PLUGIN_OVERLAY_UTIL_H_
+
+#include <OGRE/OgreOverlayManager.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreTextureManager.h>
+#include <OGRE/OgreTexture.h>
+#include <OGRE/OgreTechnique.h>
+#include <OGRE/OgreHardwarePixelBuffer.h>
+#include <OGRE/OgrePanelOverlayElement.h>
+#include <OGRE/OgreOverlayElement.h>
+#include <OGRE/OgreOverlayContainer.h>
 
 namespace jsk_rviz_plugin
 {
-  class OverlayTextDisplay
-  : public rviz::Display
+  // this is a class for put overlay object on rviz 3D panel.
+  // This class suppose to be instantiated in onInitialize method
+  // of rviz::Display class.
+  class OverlayObject
   {
-    Q_OBJECT
   public:
-    OverlayTextDisplay();
-    virtual ~OverlayTextDisplay();
+    typedef boost::shared_ptr<OverlayObject> Ptr;
+    
+    OverlayObject(const std::string& name);
+    virtual ~OverlayObject();
+    
+    virtual std::string getName();
+    virtual void hide();
+    virtual void show();
+    virtual bool isTextureReady();
+    virtual bool updateTextureSize(unsigned int width, unsigned int height);
+    virtual Ogre::HardwarePixelBufferSharedPtr getBuffer();
+    virtual void setPosition(double left, double top);
+    virtual void setDimensions(double width, double height);
+    virtual bool isVisible();
+    virtual unsigned int getTextureWidth();
+    virtual unsigned int getTextureHeight();
   protected:
-    OverlayObject::Ptr overlay_;
+    const std::string name_;
+    Ogre::Overlay* overlay_;
+    Ogre::PanelOverlayElement* panel_;
+    Ogre::MaterialPtr panel_material_;
+    Ogre::TexturePtr texture_;
 
-    int texture_width_;
-    int texture_height_;
-    
-    // std_msgs::ColorRGBA bg_color_;
-    // std_msgs::ColorRGBA fg_color_;
-    QColor bg_color_;
-    QColor fg_color_;
-    int text_size_;
-    int line_width_;
-    std::string text_;
-    std::string font_;
-    
-    
-    ros::Subscriber sub_;
-    
-    virtual void onInitialize();
-    virtual void subscribe();
-    virtual void unsubscribe();
-    virtual void onEnable();
-    virtual void onDisable();
-    virtual void update(float wall_dt, float ros_dt);
-    bool require_update_texture_;
-    rviz::RosTopicProperty* update_topic_property_;
-  protected Q_SLOTS:
-    void updateTopic();
-    
   private:
-    void processMessage(const jsk_rviz_plugins::OverlayText::ConstPtr& msg);
+    
   };
+  
+  // Ogre::Overlay* createOverlay(std::string name);
+  // Ogre::PanelOverlayElement* createOverlayPanel(Ogre::Overlay* overlay);
+  // Ogre::MaterialPtr createOverlayMaterial(Ogre::Overlay* overlay);
 }
 
 #endif
