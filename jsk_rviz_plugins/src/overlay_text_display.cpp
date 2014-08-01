@@ -121,21 +121,9 @@ namespace jsk_rviz_plugin
       return;
     }
     overlay_->updateTextureSize(texture_width_, texture_height_);
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
-    pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
-    const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-    Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
     {
-      memset( pDest, 0,
-              overlay_->getTextureWidth() * overlay_->getTextureHeight() );
-      QImage Hud( pDest,
-                  overlay_->getTextureWidth(), overlay_->getTextureHeight(), QImage::Format_ARGB32 );
-      // initilize by the background color
-      for (int i = 0; i < overlay_->getTextureWidth(); i++) {
-        for (int j = 0; j < overlay_->getTextureHeight(); j++) {
-          Hud.setPixel(i, j, bg_color_.rgba());
-        }
-      }
+      ScopedPixelBuffer buffer = overlay_->getBuffer();
+      QImage Hud = buffer.getQImage(*overlay_, bg_color_);
       QPainter painter( &Hud );
       painter.setRenderHint(QPainter::Antialiasing, true);
       painter.setPen(QPen(fg_color_, line_width_ || 1, Qt::SolidLine));
@@ -158,7 +146,6 @@ namespace jsk_rviz_plugin
       }
       painter.end();
     }
-    pixelBuffer->unlock();
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     require_update_texture_ = false;
   }

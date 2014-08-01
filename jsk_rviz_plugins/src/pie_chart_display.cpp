@@ -211,33 +211,9 @@ namespace jsk_rviz_plugin
     text_color.setAlpha(text_alpha_);
     int width = overlay_->getTextureWidth();
     int height = overlay_->getTextureHeight();
-    
-    // Get the pixel buffer
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
-    // Lock the pixel buffer and get a pixel box
-    pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
-    const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-    
-    Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-
-    // construct HUD image directly in the texture buffer
     {
-      // fill to get 100% transparent image
-      // the buffer content is the colors R,G,B,A. Filling with zeros gets a 100% transparent image
-      memset( pDest, 0, overlay_->getTextureWidth() * overlay_->getTextureHeight() );
-      
-      // tell QImage to use OUR buffer and a compatible image buffer format
-      QImage Hud( pDest,
-                  overlay_->getTextureWidth(),
-                  overlay_->getTextureHeight(), QImage::Format_ARGB32 );
-      // initilize by the background color
-      for (int i = 0; i < overlay_->getTextureWidth(); i++) {
-        for (int j = 0; j < overlay_->getTextureHeight(); j++) {
-          Hud.setPixel(i, j, bg_color.rgba());
-        }
-      }
-      // paste in HUD speedometer. I resize the image and offset it by 8 pixels from
-      // the bottom left edge of the render window
+      ScopedPixelBuffer buffer = overlay_->getBuffer();
+      QImage Hud = buffer.getQImage(*overlay_, bg_color);
       QPainter painter( &Hud );
       painter.setRenderHint(QPainter::Antialiasing, true);
 
@@ -289,9 +265,8 @@ namespace jsk_rviz_plugin
       
       // done
       painter.end();
+      // Unlock the pixel buffer
     }
-    // Unlock the pixel buffer
-    pixelBuffer->unlock();
   }
 
   

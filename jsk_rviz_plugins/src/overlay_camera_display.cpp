@@ -411,23 +411,17 @@ void OverlayCameraDisplay::redraw()
   Ogre::uchar *data = new Ogre::uchar[width * height * 3];
   Ogre::PixelBox pb(width, height, 1, Ogre::PF_BYTE_RGB, data);
   rt->copyContentsToMemory(pb);
-  
-  Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
-  pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
-  const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-  Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-  memset( pDest, 0, overlay_->getTextureWidth() * overlay_->getTextureHeight() );
-  //memcpy(data, pdest, overlay_->getTextureWidth() * overlay_->getTextureHeight());
-  QImage Hud( pDest, overlay_->getTextureWidth(),
-              overlay_->getTextureHeight(), QImage::Format_ARGB32 );
-  for (int i = 0; i < overlay_->getTextureWidth(); i++) {
-    for (int j = 0; j < overlay_->getTextureHeight(); j++) {
-      Ogre::ColourValue c = pb.getColourAt(i, j, 0);
-      QColor color(c.r * 255, c.g * 255, c.b * 255, texture_alpha_ * 255);
-      Hud.setPixel(i, j, color.rgba());
+  {
+    ScopedPixelBuffer buffer = overlay_->getBuffer();
+    QImage Hud = buffer.getQImage(*overlay_);
+    for (int i = 0; i < overlay_->getTextureWidth(); i++) {
+      for (int j = 0; j < overlay_->getTextureHeight(); j++) {
+        Ogre::ColourValue c = pb.getColourAt(i, j, 0);
+        QColor color(c.r * 255, c.g * 255, c.b * 255, texture_alpha_ * 255);
+        Hud.setPixel(i, j, color.rgba());
+      }
     }
   }
-  pixelBuffer->unlock();
   delete[] data;
 }
   
