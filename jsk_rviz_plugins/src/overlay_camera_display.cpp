@@ -35,7 +35,6 @@
 
 #include <boost/bind.hpp>
 
-#include <OGRE/OgreOverlayManager.h>
 #include <OgreManualObject.h>
 #include <OgreMaterialManager.h>
 #include <OgreRectangle2D.h>
@@ -68,6 +67,7 @@
 
 #include <image_transport/camera_common.h>
 #include "overlay_camera_display.h"
+
 namespace jsk_rviz_plugin
 {
 using namespace rviz;
@@ -166,13 +166,7 @@ void OverlayCameraDisplay::onInitialize()
   static int count = 0;
   rviz::UniformStringStream ss;
   ss << "OverlayCameraDisplayObject" << count++;
-  Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
-  overlay_ = mOverlayMgr->create(ss.str());
-  panel_ = static_cast<Ogre::PanelOverlayElement*> (
-    mOverlayMgr->createOverlayElement("BorderPanel", ss.str() + "Panel"));
-  material_name_ = ss.str() + "Material2";
-  texture_name_ = ss.str() + "Texture";
-  
+  overlay_.reset(new OverlayObject(ss.str()));
   caminfo_tf_filter_ = new tf::MessageFilter<sensor_msgs::CameraInfo>(
     *context_->getTFClient(), fixed_frame_.toStdString(),
     queue_size_property_->getInt(), update_nh_ );
@@ -395,21 +389,23 @@ void OverlayCameraDisplay::update( float wall_dt, float ros_dt )
   }
 
   render_panel_->getRenderWindow()->update();
-  if (panel_material_.isNull()) {
-    Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
-    panel_material_
-      = Ogre::MaterialManager::getSingleton().create(
-        material_name_,
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
-    panel_->setMaterialName(panel_material_->getName());
-    panel_->setMetricsMode(Ogre::GMM_PIXELS);
-    overlay_->add2D(panel_);
-  }
-  updateTextureSize(render_panel_->getRenderWindow()->getWidth(),
-                    render_panel_->getRenderWindow()->getHeight());
+  // if (panel_material_.isNull()) {
+  //   Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
+  //   panel_material_
+  //     = Ogre::MaterialManager::getSingleton().create(
+  //       material_name_,
+  //       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
+  //   panel_->setMaterialName(panel_material_->getName());
+  //   panel_->setMetricsMode(Ogre::GMM_PIXELS);
+  //   overlay_->add2D(panel_);
+  // }
+  // updateTextureSize(render_panel_->getRenderWindow()->getWidth(),
+  //                   render_panel_->getRenderWindow()->getHeight());
+  overlay_->updateTextureSize(render_panel_->getRenderWindow()->getWidth(),
+                              render_panel_->getRenderWindow()->getHeight());
   redraw();
-  panel_->setDimensions(width_, height_);
-  panel_->setPosition(left_, top_);
+  overlay_->setDimensions(width_, height_);
+  overlay_->setPosition(left_, top_);
 }
 
 void OverlayCameraDisplay::redraw()
@@ -421,16 +417,16 @@ void OverlayCameraDisplay::redraw()
   Ogre::PixelBox pb(width, height, 1, Ogre::PF_BYTE_RGB, data);
   rt->copyContentsToMemory(pb);
   
-  Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_texture_->getBuffer();
+  Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
   pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
   const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
   Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-  memset( pDest, 0, overlay_texture_->getWidth() * overlay_texture_->getHeight() );
-  //memcpy(data, pdest, overlay_texture_->getWidth() * overlay_texture_->getHeight());
-  QImage Hud( pDest, overlay_texture_->getWidth(),
-              overlay_texture_->getHeight(), QImage::Format_ARGB32 );
-  for (int i = 0; i < overlay_texture_->getWidth(); i++) {
-    for (int j = 0; j < overlay_texture_->getHeight(); j++) {
+  memset( pDest, 0, overlay_->getTextureWidth() * overlay_->getTextureHeight() );
+  //memcpy(data, pdest, overlay_->getTextureWidth() * overlay_->getTextureHeight());
+  QImage Hud( pDest, overlay_->getTextureWidth(),
+              overlay_->getTextureHeight(), QImage::Format_ARGB32 );
+  for (int i = 0; i < overlay_->getTextureWidth(); i++) {
+    for (int j = 0; j < overlay_->getTextureHeight(); j++) {
       Ogre::ColourValue c = pb.getColourAt(i, j, 0);
       QColor color(c.r * 255, c.g * 255, c.b * 255, texture_alpha_ * 255);
       Hud.setPixel(i, j, color.rgba());
@@ -616,35 +612,6 @@ void OverlayCameraDisplay::reset()
 {
   ImageDisplayBase::reset();
   clear();
-}
-
-void OverlayCameraDisplay::updateTextureSize(int width, int height)
-{
-  if ((width == 0) || (height == 0)) {
-    ROS_DEBUG("width or height is set to 0");
-    return;
-  }
-    
-  if (overlay_texture_.isNull() ||
-      ((width != overlay_texture_->getWidth()) ||
-       (height != overlay_texture_->getHeight()))) {
-    if (!overlay_texture_.isNull()) {
-      Ogre::TextureManager::getSingleton().remove(texture_name_);
-      panel_material_->getTechnique(0)->getPass(0)->removeAllTextureUnitStates();
-    }
-    ROS_DEBUG("texture size: (%d, %d)", width, height);
-    overlay_texture_ = Ogre::TextureManager::getSingleton().createManual(
-      texture_name_,        // name
-      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-      Ogre::TEX_TYPE_2D,   // type
-      width, height,   // width & height of the render window 
-      0,                   // number of mipmaps
-      Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
-      Ogre::TU_DEFAULT     // usage
-      );
-    panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-    panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-  }
 }
 
 void OverlayCameraDisplay::updateWidth()
