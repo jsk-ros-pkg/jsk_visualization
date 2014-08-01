@@ -27,6 +27,10 @@ rosbuild_genmsg()
 
 rosbuild_gensrv()
 
+rosbuild_find_ros_package (dynamic_reconfigure)
+include (${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
+gencfg ()
+
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
@@ -47,9 +51,12 @@ rosbuild_add_executable(world2yaml src/world2yaml)
 rosbuild_add_executable(footstep_marker src/footstep_marker.cpp src/interactive_marker_helpers.cpp)
 rosbuild_add_executable(marker_6dof src/marker_6dof.cpp)
 rosbuild_add_executable(bounding_box_marker src/bounding_box_marker.cpp)
+rosbuild_add_executable(pointcloud_cropper
+  src/pointcloud_cropper.cpp
+  src/interactive_marker_helpers.cpp)
+
 
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
 #rosbuild_add_executable(interactive_marker_interface_both_arm src/interactive_marker_interface_both_arm.cpp)
 #rosbuild_add_executable(button_interactive_marker_interface src/button_interactive_marker_interface.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
-
