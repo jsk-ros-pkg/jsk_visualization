@@ -90,17 +90,7 @@ namespace jsk_rviz_plugin
   {
     ros::NodeHandle nh;
     it_ = boost::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
-
-    static int count = 0;
-    rviz::UniformStringStream ss;
-    ss << "OverlayImageDisplayObject" << count++;
-    Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
-    overlay_ = mOverlayMgr->create(ss.str());
-    //panel_ = static_cast<Ogre::OverlayContainer*> (
-    panel_ = static_cast<Ogre::PanelOverlayElement*> (
-      mOverlayMgr->createOverlayElement("BorderPanel", ss.str() + "Panel"));
-    material_name_ = ss.str() + "Material";
-    texture_name_ = ss.str() + "Texture";
+    
     updateWidth();
     updateHeight();
     updateTop();
@@ -111,12 +101,16 @@ namespace jsk_rviz_plugin
   
   void OverlayImageDisplay::onEnable()
   {
-    overlay_->show();
+    if (overlay_) {
+      overlay_->show();
+    }
     subscribe();
   }
   void OverlayImageDisplay::onDisable()
   {
-    overlay_->hide();
+    if (overlay_) {
+      overlay_->hide();
+    }
     unsubscribe();
   }
 
@@ -148,22 +142,26 @@ namespace jsk_rviz_plugin
   {
     boost::mutex::scoped_lock(mutex_);
 
+    if (!isEnabled()) {
+      return;
+    }
+    
     if (require_update_) {
-      if (panel_material_.isNull()) {
-        Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
-        panel_material_
-          = Ogre::MaterialManager::getSingleton().create(material_name_,
-                                                         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
-        panel_->setMaterialName(panel_material_->getName());
-        panel_->setMetricsMode(Ogre::GMM_PIXELS);
-        overlay_->add2D(panel_);
+      if (!overlay_) {
+        static int count = 0;
+        rviz::UniformStringStream ss;
+        ss << "OverlayImageDisplayObject" << count++;
+        overlay_.reset(new OverlayObject(ss.str()));
+        overlay_->show();
       }
-      updateTextureSize(msg_->width, msg_->height);
+      overlay_->updateTextureSize(msg_->width, msg_->height);
       redraw();
       require_update_ = false;
     }
-    panel_->setDimensions(width_, height_);
-    panel_->setPosition(left_, top_);
+    if (overlay_) {
+      overlay_->setDimensions(width_, height_);
+      overlay_->setPosition(left_, top_);
+    }
   }
 
   void OverlayImageDisplay::redraw()
@@ -173,14 +171,14 @@ namespace jsk_rviz_plugin
     {
       cv_ptr = cv_bridge::toCvCopy(msg_, sensor_msgs::image_encodings::RGB8);
       cv::Mat mat = cv_ptr->image;
-      Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
+      Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
       pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
       const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
       Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-      memset( pDest, 0, texture_->getWidth() * texture_->getHeight() );
-      QImage Hud( pDest, texture_->getWidth(), texture_->getHeight(), QImage::Format_ARGB32 );
-      for (int i = 0; i < texture_->getWidth(); i++) {
-        for (int j = 0; j < texture_->getHeight(); j++) {
+      memset( pDest, 0, overlay_->getTextureWidth() * overlay_->getTextureHeight() );
+      QImage Hud( pDest, overlay_->getTextureWidth(), overlay_->getTextureHeight(), QImage::Format_ARGB32 );
+      for (int i = 0; i < overlay_->getTextureWidth(); i++) {
+        for (int j = 0; j < overlay_->getTextureHeight(); j++) {
           QColor color(mat.data[j * mat.step + i * mat.elemSize() + 0],
                        mat.data[j * mat.step + i * mat.elemSize() + 1],
                        mat.data[j * mat.step + i * mat.elemSize() + 2],
@@ -195,37 +193,7 @@ namespace jsk_rviz_plugin
       ROS_ERROR("cv_bridge exception: %s", e.what());
     }
   }
-  
-  void OverlayImageDisplay::updateTextureSize(int width, int height)
-  {
-    if ((width == 0) || (height == 0)) {
-      ROS_DEBUG("width or height is set to 0");
-      return;
-    }
-    
-    if (texture_.isNull() ||
-        ((width != texture_->getWidth()) ||
-         (height != texture_->getHeight()))) {
-      if (!texture_.isNull()) {
-        Ogre::TextureManager::getSingleton().remove(texture_name_);
-        panel_material_->getTechnique(0)->getPass(0)->removeAllTextureUnitStates();
-      }
-      ROS_DEBUG("texture size: (%d, %d)", width, height);
-      texture_ = Ogre::TextureManager::getSingleton().createManual(
-        texture_name_,        // name
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        Ogre::TEX_TYPE_2D,   // type
-        width, height,   // width & height of the render window 
-        0,                   // number of mipmaps
-        Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
-        Ogre::TU_DEFAULT     // usage
-        );
-      panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-      panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-    }
-  }
 
-  
   void OverlayImageDisplay::updateTopic()
   {
     unsubscribe();
