@@ -80,6 +80,12 @@ namespace jsk_rviz_plugin
       this, SLOT(updateAlpha()));
     alpha_property_->setMin(0.0);
     alpha_property_->setMax(1.0);
+    stall_duration_property_ = new rviz::FloatProperty(
+      "stall duration", 5.0,
+      "seconds to be regarded as stalled",
+      this, SLOT(updateStallDuration())
+      );
+    stall_duration_property_->setMin(0.0);
   }
 
   OverlayDiagnosticDisplay::~OverlayDiagnosticDisplay()
@@ -138,9 +144,10 @@ namespace jsk_rviz_plugin
       if (status.name == diagnostics_namespace_) {
         latest_status_
           = boost::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
+        latest_message_time_ = ros::WallTime::now();
+        break;
       }
     }
-    
   }
 
   void OverlayDiagnosticDisplay::update(float wall_dt, float ros_dt)
@@ -195,7 +202,7 @@ namespace jsk_rviz_plugin
     updateAlpha();
     updateLeft();
     updateTop();
-    
+    updateStallDuration();
     updateRosTopic();
   }
   
@@ -213,17 +220,39 @@ namespace jsk_rviz_plugin
                        this);
   }
 
+  bool OverlayDiagnosticDisplay::isStalled()
+  {
+    if (latest_status_) {
+      ros::WallDuration message_duration
+        = ros::WallTime::now() - latest_message_time_;
+      if (message_duration.toSec() < stall_duration_) {
+        return false;
+      }
+      else {
+        return true;
+      }
+    }
+    else {
+      return true;
+    }
+  }
+  
   std::string OverlayDiagnosticDisplay::statusText()
   {
     if (latest_status_) {
-      if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
-        return "OK";
-      }
-      else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::WARN) {
-        return "WARN";
-      }
-      else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::ERROR) {
-        return "ERROR";
+      if (!isStalled()) {
+        if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
+          return "OK";
+        }
+        else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::WARN) {
+          return "WARN";
+        }
+        else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::ERROR) {
+          return "ERROR";
+        }
+        else {
+          return "UNKNOWN";
+        }
       }
       else {
         return "UNKNOWN";
@@ -244,16 +273,21 @@ namespace jsk_rviz_plugin
     //QColor fg_color = stall_color;
     
     if (latest_status_) {
-      if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
-        return ok_color;
-      }
-      else if (latest_status_->level
-               == diagnostic_msgs::DiagnosticStatus::WARN) {
-        return warn_color;
-      }
-      else if (latest_status_->level
-               == diagnostic_msgs::DiagnosticStatus::ERROR) {
-        return error_color;
+      if (!isStalled()) {
+        if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
+          return ok_color;
+        }
+        else if (latest_status_->level
+                 == diagnostic_msgs::DiagnosticStatus::WARN) {
+          return warn_color;
+        }
+        else if (latest_status_->level
+                 == diagnostic_msgs::DiagnosticStatus::ERROR) {
+          return error_color;
+        }
+        else {
+          return stall_color;
+        }
       }
       else {
         return stall_color;
@@ -313,11 +347,22 @@ namespace jsk_rviz_plugin
     double namespace_size = drawAnimatingText(painter, fg_color,
                                               overlay_->getTextureHeight() / 3.0 + status_size,
                                               10, diagnostics_namespace_);
+    std::string message;
     if (latest_status_) {
-      drawAnimatingText(painter, fg_color,
-                        overlay_->getTextureHeight() / 3.0 + status_size + namespace_size,
-                        10, latest_status_->message);
+      if (!isStalled()) {
+        message = latest_status_->message;
+      }
+      else {
+        message = "stalled";
+      }
     }
+    else {
+      message = "stalled";
+    }
+    drawAnimatingText(painter, fg_color,
+                      overlay_->getTextureHeight() / 3.0
+                      + status_size + namespace_size,
+                      10, message);
   }
   
   void OverlayDiagnosticDisplay::redraw()
@@ -393,8 +438,11 @@ namespace jsk_rviz_plugin
   {
     left_ = left_property_->getInt();
   }
-    
   
+  void OverlayDiagnosticDisplay::updateStallDuration()
+  {
+    stall_duration_ = stall_duration_property_->getFloat();
+  }
 }
 
 #include <pluginlib/class_list_macros.h>

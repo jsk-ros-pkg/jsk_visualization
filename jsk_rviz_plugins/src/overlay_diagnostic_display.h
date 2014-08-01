@@ -62,6 +62,7 @@ namespace jsk_rviz_plugin
     virtual ~OverlayDiagnosticDisplay();
     
   protected:
+    virtual bool isStalled();
     virtual void processMessage(
       const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
     virtual void update(float wall_dt, float ros_dt);
@@ -86,20 +87,22 @@ namespace jsk_rviz_plugin
     OverlayObject::Ptr overlay_;
     
     diagnostic_msgs::DiagnosticStatus::Ptr latest_status_;
-    
+    ros::WallTime latest_message_time_;
     int size_;
     std::string diagnostics_namespace_;
     std::set<std::string> namespaces_;
     double alpha_;
     int top_, left_;
     double t_;
+    double stall_duration_;
     rviz::RosTopicProperty* ros_topic_property_;
     rviz::EditableEnumProperty* diagnostics_namespace_property_;
     rviz::IntProperty* top_property_;
     rviz::IntProperty* left_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::IntProperty* size_property_;
-
+    rviz::FloatProperty* stall_duration_property_;
+    
     ros::Subscriber sub_;
   protected Q_SLOTS:
     virtual void updateRosTopic();
@@ -108,6 +111,7 @@ namespace jsk_rviz_plugin
     virtual void updateAlpha();
     virtual void updateTop();
     virtual void updateLeft();
+    virtual void updateStallDuration();
   private:
     
   };
