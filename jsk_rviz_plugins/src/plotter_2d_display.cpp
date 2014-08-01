@@ -214,22 +214,9 @@ namespace jsk_rviz_plugin
                        + fg_color_.blue());
     }
     
-    // Get the pixel buffer
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
-    // Lock the pixel buffer and get a pixel box
-    pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
-    const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-    
-    Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-
-    // construct HUD image directly in the texture buffer
     {
-      // fill to get 100% transparent image
-      // the buffer content is the colors R,G,B,A. Filling with zeros gets a 100% transparent image
-      memset( pDest, 0, overlay_->getTextureWidth() * overlay_->getTextureHeight() );
-      
-      // tell QImage to use OUR buffer and a compatible image buffer format
-      QImage Hud( pDest, overlay_->getTextureWidth(), overlay_->getTextureHeight(), QImage::Format_ARGB32 );
+      ScopedPixelBuffer buffer = overlay_->getBuffer();
+      QImage Hud = buffer.getQImage(*overlay_);
       // initilize by the background color
       for (int i = 0; i < overlay_->getTextureWidth(); i++) {
         for (int j = 0; j < overlay_->getTextureHeight(); j++) {
@@ -288,9 +275,6 @@ namespace jsk_rviz_plugin
       // done
       painter.end();
     }
-    // Unlock the pixel buffer
-    pixelBuffer->unlock();
-
   }
   
   void Plotter2DDisplay::processMessage(const std_msgs::Float32::ConstPtr& msg)

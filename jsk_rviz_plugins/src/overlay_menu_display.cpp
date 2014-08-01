@@ -280,29 +280,25 @@ namespace jsk_rviz_plugin
   {
     int current_width = animation_t_ / animate_duration * overlay_->getTextureWidth();
     int current_height = animation_t_ / animate_duration * overlay_->getTextureHeight();
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
-    QColor bg_color(0, 0, 0, 255.0 / 2.0);
-    QColor transparent(0, 0, 0, 0.0);
-    pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
-    const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-    Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-    memset( pDest, 0, overlay_->getTextureWidth() * overlay_->getTextureHeight() );
-    QImage Hud( pDest, overlay_->getTextureWidth(), overlay_->getTextureHeight(), QImage::Format_ARGB32 );
-    
-    for (int i = 0; i < overlay_->getTextureWidth(); i++) {
-      for (int j = 0; j < overlay_->getTextureHeight(); j++) {
-        if (i > (overlay_->getTextureWidth() - current_width) / 2.0 &&
-            i < overlay_->getTextureWidth() - (overlay_->getTextureWidth() - current_width) / 2.0 &&
-            j > (overlay_->getTextureHeight() - current_height) / 2.0 &&
-            j < overlay_->getTextureHeight() - (overlay_->getTextureHeight() - current_height) / 2.0) {
-          Hud.setPixel(i, j, bg_color.rgba());
-        }
-        else {
-          Hud.setPixel(i, j, transparent.rgba());
+    {
+      ScopedPixelBuffer buffer = overlay_->getBuffer();
+      QColor bg_color(0, 0, 0, 255.0 / 2.0);
+      QColor transparent(0, 0, 0, 0.0);
+      QImage Hud = buffer.getQImage(*overlay_);
+      for (int i = 0; i < overlay_->getTextureWidth(); i++) {
+        for (int j = 0; j < overlay_->getTextureHeight(); j++) {
+          if (i > (overlay_->getTextureWidth() - current_width) / 2.0 &&
+              i < overlay_->getTextureWidth() - (overlay_->getTextureWidth() - current_width) / 2.0 &&
+              j > (overlay_->getTextureHeight() - current_height) / 2.0 &&
+              j < overlay_->getTextureHeight() - (overlay_->getTextureHeight() - current_height) / 2.0) {
+            Hud.setPixel(i, j, bg_color.rgba());
+          }
+          else {
+            Hud.setPixel(i, j, transparent.rgba());
+          }
         }
       }
     }
-    pixelBuffer->unlock();
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     int window_width = context_->getViewManager()->getRenderPanel()->width();
     int window_height = context_->getViewManager()->getRenderPanel()->height();
@@ -312,58 +308,50 @@ namespace jsk_rviz_plugin
   
   void OverlayMenuDisplay::redraw()
   {
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
-    QColor bg_color(0, 0, 0, 255.0 / 2.0);
-    QColor fg_color(25, 255, 240, 255.0);
-    pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
-    const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-    Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-    memset( pDest, 0, overlay_->getTextureWidth() * overlay_->getTextureHeight() );
-    QImage Hud( pDest, overlay_->getTextureWidth(), overlay_->getTextureHeight(), QImage::Format_ARGB32 );
-    for (int i = 0; i < overlay_->getTextureWidth(); i++) {
-      for (int j = 0; j < overlay_->getTextureHeight(); j++) {
-        Hud.setPixel(i, j, bg_color.rgba());
+    {
+      ScopedPixelBuffer buffer = overlay_->getBuffer();
+      QColor bg_color(0, 0, 0, 255.0 / 2.0);
+      QColor fg_color(25, 255, 240, 255.0);
+      QImage Hud = buffer.getQImage(*overlay_, bg_color);
+      QPainter painter( &Hud );
+      painter.setRenderHint(QPainter::Antialiasing, true);
+      painter.setPen(QPen(fg_color, 1, Qt::SolidLine));
+      painter.setFont(font());
+      int line_height = fontMetrics().height();
+      int w = drawAreaWidth(next_menu_);
+      painter.drawText(menu_padding_x,  menu_padding_y,
+                       w, line_height,
+                       Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
+                       next_menu_->title.c_str());
+      for (size_t i = 0; i < next_menu_->menus.size(); i++) {
+        std::string menu = getMenuString(next_menu_, i);
+        painter.drawText(menu_padding_x, line_height * ( 1 + i ) + menu_padding_y + menu_last_padding_y,
+                         w, line_height,
+                         Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
+                         menu.c_str());
       }
-    }
-    QPainter painter( &Hud );
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    painter.setPen(QPen(fg_color, 1, Qt::SolidLine));
-    painter.setFont(font());
-    int line_height = fontMetrics().height();
-    int w = drawAreaWidth(next_menu_);
-    painter.drawText(menu_padding_x,  menu_padding_y,
-                     w, line_height,
-                     Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
-                     next_menu_->title.c_str());
-    for (size_t i = 0; i < next_menu_->menus.size(); i++) {
-      std::string menu = getMenuString(next_menu_, i);
-      painter.drawText(menu_padding_x, line_height * ( 1 + i ) + menu_padding_y + menu_last_padding_y,
-                       w, line_height,
-                       Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
-                       menu.c_str());
-    }
-    if (next_menu_->current_index <= next_menu_->menus.size()) {
-      // draw '>'
-      painter.drawText(menu_padding_x - fontMetrics().width(">") * 2,
-                       line_height * ( 1 + next_menu_->current_index ) + menu_padding_y + menu_last_padding_y,
-                       w, line_height,
-                       Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
-                       ">");
-    }
-    // draw line
-    int texture_width = overlay_->getTextureWidth();
-    int texture_height = overlay_->getTextureHeight();
-    painter.drawLine(menu_padding_x / 2, menu_last_padding_y / 2 + line_height,
-                     menu_padding_x / 2, texture_height - menu_last_padding_y / 2);
-    painter.drawLine(texture_width - menu_padding_x / 2, menu_last_padding_y / 2 + line_height,
-                     texture_width - menu_padding_x / 2, texture_height - menu_last_padding_y / 2);
-    painter.drawLine(menu_padding_x / 2, menu_last_padding_y / 2 + line_height,
-                     texture_width - menu_padding_x / 2, menu_last_padding_y / 2 + line_height);
-    painter.drawLine(menu_padding_x / 2, texture_height - menu_last_padding_y / 2,
-                     texture_width - menu_padding_x / 2, texture_height - menu_last_padding_y / 2);
+      if (next_menu_->current_index <= next_menu_->menus.size()) {
+        // draw '>'
+        painter.drawText(menu_padding_x - fontMetrics().width(">") * 2,
+                         line_height * ( 1 + next_menu_->current_index ) + menu_padding_y + menu_last_padding_y,
+                         w, line_height,
+                         Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
+                         ">");
+      }
+      // draw line
+      int texture_width = overlay_->getTextureWidth();
+      int texture_height = overlay_->getTextureHeight();
+      painter.drawLine(menu_padding_x / 2, menu_last_padding_y / 2 + line_height,
+                       menu_padding_x / 2, texture_height - menu_last_padding_y / 2);
+      painter.drawLine(texture_width - menu_padding_x / 2, menu_last_padding_y / 2 + line_height,
+                       texture_width - menu_padding_x / 2, texture_height - menu_last_padding_y / 2);
+      painter.drawLine(menu_padding_x / 2, menu_last_padding_y / 2 + line_height,
+                       texture_width - menu_padding_x / 2, menu_last_padding_y / 2 + line_height);
+      painter.drawLine(menu_padding_x / 2, texture_height - menu_last_padding_y / 2,
+                       texture_width - menu_padding_x / 2, texture_height - menu_last_padding_y / 2);
       
-    painter.end();
-    pixelBuffer->unlock();
+      painter.end();
+    }
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     int window_width = context_->getViewManager()->getRenderPanel()->width();
     int window_height = context_->getViewManager()->getRenderPanel()->height();

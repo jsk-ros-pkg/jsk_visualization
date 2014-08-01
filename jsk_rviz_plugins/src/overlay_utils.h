@@ -46,8 +46,30 @@
 #include <OGRE/OgreOverlayElement.h>
 #include <OGRE/OgreOverlayContainer.h>
 
+#include <QImage>
+#include <QColor>
+
 namespace jsk_rviz_plugin
 {
+  class OverlayObject;
+  
+  class ScopedPixelBuffer
+  {
+  public:
+    ScopedPixelBuffer(Ogre::HardwarePixelBufferSharedPtr pixel_buffer);
+    virtual ~ScopedPixelBuffer();
+    virtual Ogre::HardwarePixelBufferSharedPtr getPixelBuffer();
+    virtual QImage getQImage(unsigned int width, unsigned int height);
+    virtual QImage getQImage(OverlayObject& overlay);
+    virtual QImage getQImage(unsigned int width, unsigned int height, QColor& bg_color);
+    virtual QImage getQImage(OverlayObject& overlay, QColor& bg_color);
+  protected:
+    Ogre::HardwarePixelBufferSharedPtr pixel_buffer_;
+  private:
+    
+  };
+
+  
   // this is a class for put overlay object on rviz 3D panel.
   // This class suppose to be instantiated in onInitialize method
   // of rviz::Display class.
@@ -64,7 +86,7 @@ namespace jsk_rviz_plugin
     virtual void show();
     virtual bool isTextureReady();
     virtual bool updateTextureSize(unsigned int width, unsigned int height);
-    virtual Ogre::HardwarePixelBufferSharedPtr getBuffer();
+    virtual ScopedPixelBuffer getBuffer();
     virtual void setPosition(double left, double top);
     virtual void setDimensions(double width, double height);
     virtual bool isVisible();

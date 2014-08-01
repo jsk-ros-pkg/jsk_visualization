@@ -37,6 +37,54 @@
 
 namespace jsk_rviz_plugin
 {
+  ScopedPixelBuffer::ScopedPixelBuffer(Ogre::HardwarePixelBufferSharedPtr pixel_buffer):
+    pixel_buffer_(pixel_buffer)
+  {
+    pixel_buffer_->lock( Ogre::HardwareBuffer::HBL_NORMAL );
+  }
+
+  ScopedPixelBuffer::~ScopedPixelBuffer()
+  {
+    pixel_buffer_->unlock();
+  }
+
+  Ogre::HardwarePixelBufferSharedPtr ScopedPixelBuffer::getPixelBuffer()
+  {
+    return pixel_buffer_;
+  }
+
+  QImage ScopedPixelBuffer::getQImage(unsigned int width, unsigned int height)
+  {
+    const Ogre::PixelBox& pixelBox = pixel_buffer_->getCurrentLock();
+    Ogre::uint8* pDest = static_cast<Ogre::uint8*> (pixelBox.data);
+    memset(pDest, 0, width * height);
+    return QImage(pDest, width, height, QImage::Format_ARGB32 );
+  }
+
+  QImage ScopedPixelBuffer::getQImage(
+    unsigned int width, unsigned int height, QColor& bg_color)
+  {
+    QImage Hud = getQImage(width, height);
+    for (unsigned int i = 0; i < width; i++) {
+      for (unsigned int j = 0; j < height; j++) {
+        Hud.setPixel(i, j, bg_color.rgba());
+      }
+    }
+    return Hud;
+  }
+
+  QImage ScopedPixelBuffer::getQImage(OverlayObject& overlay)
+  {
+    return getQImage(overlay.getTextureWidth(), overlay.getTextureHeight());
+  }
+  
+  QImage ScopedPixelBuffer::getQImage(OverlayObject& overlay,
+                                      QColor& bg_color)
+  {
+    return getQImage(overlay.getTextureWidth(), overlay.getTextureHeight(),
+                     bg_color);
+  }
+  
   OverlayObject::OverlayObject(const std::string& name)
     : name_(name)
   {
@@ -118,13 +166,13 @@ namespace jsk_rviz_plugin
     }
   }
 
-  Ogre::HardwarePixelBufferSharedPtr OverlayObject::getBuffer()
+  ScopedPixelBuffer OverlayObject::getBuffer()
   {
     if (isTextureReady()) {
-      return texture_->getBuffer();
+      return ScopedPixelBuffer(texture_->getBuffer());
     }
     else {
-      return Ogre::HardwarePixelBufferSharedPtr();
+      return ScopedPixelBuffer(Ogre::HardwarePixelBufferSharedPtr());
     }
   }
 

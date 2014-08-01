@@ -171,12 +171,8 @@ namespace jsk_rviz_plugin
     {
       cv_ptr = cv_bridge::toCvCopy(msg_, sensor_msgs::image_encodings::RGB8);
       cv::Mat mat = cv_ptr->image;
-      Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
-      pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
-      const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-      Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-      memset( pDest, 0, overlay_->getTextureWidth() * overlay_->getTextureHeight() );
-      QImage Hud( pDest, overlay_->getTextureWidth(), overlay_->getTextureHeight(), QImage::Format_ARGB32 );
+      ScopedPixelBuffer buffer = overlay_->getBuffer();
+      QImage Hud = buffer.getQImage(*overlay_);
       for (int i = 0; i < overlay_->getTextureWidth(); i++) {
         for (int j = 0; j < overlay_->getTextureHeight(); j++) {
           QColor color(mat.data[j * mat.step + i * mat.elemSize() + 0],
@@ -186,7 +182,6 @@ namespace jsk_rviz_plugin
           Hud.setPixel(i, j, color.rgba());
         }
       }
-    pixelBuffer->unlock();
     }
     catch (cv_bridge::Exception& e)
     {

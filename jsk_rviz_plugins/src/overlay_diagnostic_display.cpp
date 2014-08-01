@@ -322,22 +322,11 @@ namespace jsk_rviz_plugin
   
   void OverlayDiagnosticDisplay::redraw()
   {
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = overlay_->getBuffer();
+    ScopedPixelBuffer buffer = overlay_->getBuffer();
     QColor fg_color = foregroundColor();
     QColor transparent(0, 0, 0, 0.0);
     
-    pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL );
-    const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-    Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-    memset( pDest, 0, overlay_->getTextureWidth() * overlay_->getTextureHeight() );
-    QImage Hud( pDest, overlay_->getTextureWidth(), overlay_->getTextureHeight(),
-                QImage::Format_ARGB32 );
-    for (int i = 0; i < overlay_->getTextureWidth(); i++) {
-      for (int j = 0; j < overlay_->getTextureHeight(); j++) {
-        Hud.setPixel(i, j, transparent.rgba());
-      }
-    }
-
+    QImage Hud = buffer.getQImage(*overlay_, transparent);
     // draw outer circle
     // line-width - margin - inner-line-width < size
     QPainter painter( &Hud );
@@ -357,13 +346,7 @@ namespace jsk_rviz_plugin
     const double draw_angle = 250;
     const double inner_circle_start
       = line_width + margin + inner_line_width / 2.0;
-    // painter.drawArc(QRectF(inner_circle_start, inner_circle_start,
-    //                        overlay_->getTextureWidth() - inner_circle_start * 2.0,
-    //                        texture_->getHeight() - inner_circle_start * 2.0),
-    //                 start_angle * 16, draw_angle * 16);
-    
     drawText(painter, fg_color, statusText());
-    pixelBuffer->unlock();
   }
 
   void OverlayDiagnosticDisplay::fillNamespaceList()
