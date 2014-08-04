@@ -34,3 +34,4 @@
     - name: "l_gripper_r_finger_tip_joint"
       position: 0.547
   display: false
+  initial_mum: 6

@@ -36,9 +36,7 @@
 #define JSK_RVIZ_PLUGINS_PIE_CHART_DISPLAY_H_
 #include "std_msgs/Float32.h"
 #include <rviz/display.h>
-#include <OGRE/OgreOverlayElement.h>
-#include <OGRE/OgreOverlayContainer.h>
-#include <OGRE/OgrePanelOverlayElement.h>
+#include "overlay_utils.h"
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
@@ -64,7 +62,6 @@ namespace jsk_rviz_plugin
     virtual void onDisable();
     virtual void onInitialize();
     virtual void processMessage(const std_msgs::Float32::ConstPtr& msg);
-    virtual void updateTextureSize(uint16_t width, uint16_t height);
     virtual void drawPlot(double val);
 
     // properties
@@ -104,14 +101,8 @@ namespace jsk_rviz_plugin
     double bg_alpha_;
     double max_value_;
     double min_value_;
-    // ogre objects
-    Ogre::Overlay* overlay_;
-    Ogre::PanelOverlayElement* panel_;
-    Ogre::MaterialPtr panel_material_;
-    Ogre::TexturePtr texture_;
-    std::string material_name_;
-    std::string texture_name_;
-
+    OverlayObject::Ptr overlay_;
+    
     boost::mutex mutex_;
                             
   protected Q_SLOTS:
