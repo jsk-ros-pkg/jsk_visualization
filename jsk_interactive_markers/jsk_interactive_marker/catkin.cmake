@@ -19,40 +19,40 @@ link_directories(${orocos_kdl_LIBRARY_DIRS})
 
 add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(interactive_marker_interface ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
-add_dependencies(interactive_marker_interface ${PROJECT_NAME}_gencpp)
+add_dependencies(interactive_marker_interface ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(urdf_model_marker src/urdf_model_marker.cpp src/urdf_model_marker_main.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(urdf_model_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
-add_dependencies(urdf_model_marker ${PROJECT_NAME}_gencpp)
+add_dependencies(urdf_model_marker ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(point_cloud_config_marker src/point_cloud_config_marker.cpp)
 target_link_libraries(point_cloud_config_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
-add_dependencies(point_cloud_config_marker ${PROJECT_NAME}_gencpp)
+add_dependencies(point_cloud_config_marker ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(triangle_foot src/triangle_foot.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(triangle_foot ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
-add_dependencies(triangle_foot ${PROJECT_NAME}_gencpp)
+add_dependencies(triangle_foot ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(door_foot src/door_foot.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(door_foot ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
-add_dependencies(door_foot ${PROJECT_NAME}_gencpp)
+add_dependencies(door_foot ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(footstep_marker src/footstep_marker.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(footstep_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
-add_dependencies(footstep_marker ${PROJECT_NAME}_gencpp)
+add_dependencies(footstep_marker ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(marker_6dof src/marker_6dof.cpp)
 target_link_libraries(marker_6dof ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
-add_dependencies(marker_6dof ${PROJECT_NAME}_gencpp)
+add_dependencies(marker_6dof ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 
 add_executable(world2yaml src/world2yaml)
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
-add_dependencies(world2yaml ${PROJECT_NAME}_gencpp)
+add_dependencies(world2yaml ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(bounding_box_marker src/bounding_box_marker.cpp)
 target_link_libraries(bounding_box_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
-add_dependencies(bounding_box_marker ${PROJECT_NAME}_gencpp)
+add_dependencies(bounding_box_marker ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 
 generate_messages(
@@ -76,6 +76,15 @@ install(TARGETS footstep_marker door_foot triangle_foot point_cloud_config_marke
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 
-
-
-
+# copy *.rviz.default to *.rviz
+file(GLOB _rviz_default_files "${PROJECT_SOURCE_DIR}/launch/*.rviz.default")
+foreach(_rviz_default_file ${_rviz_default_files})
+  string(REGEX REPLACE "\\.default$" "" _rviz_file "${_rviz_default_file}")
+  if(EXISTS "${_rviz_file}")
+    message("${_rviz_file} exists")
+  else()
+    execute_process(
+      COMMAND cmake -E copy "${_rviz_default_file}" "${_rviz_file}")
+    message("copy ${_rviz_default_file} to ${_rviz_file}")
+  endif()
+endforeach()

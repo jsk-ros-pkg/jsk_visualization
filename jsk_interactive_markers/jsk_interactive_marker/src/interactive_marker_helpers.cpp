@@ -92,9 +92,47 @@ visualization_msgs::Marker makeSphere( float scale )
   return marker;
 }
 
-void add6DofControl( visualization_msgs::InteractiveMarker &msg, bool fixed )
+  void add6DofControl( visualization_msgs::InteractiveMarker &msg, bool fixed)
 {
   visualization_msgs::InteractiveMarkerControl control;
+
+  if(fixed)
+    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;
+
+  control.orientation.w = 1;
+  control.orientation.x = 1;
+  control.orientation.y = 0;
+  control.orientation.z = 0;
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  msg.controls.push_back(control);
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  msg.controls.push_back(control);
+
+  control.orientation.w = 1;
+  control.orientation.x = 0;
+  control.orientation.y = 1;
+  control.orientation.z = 0;
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  msg.controls.push_back(control);
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  msg.controls.push_back(control);
+
+  control.orientation.w = 1;
+  control.orientation.x = 0;
+  control.orientation.y = 0;
+  control.orientation.z = 1;
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  msg.controls.push_back(control);
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  msg.controls.push_back(control);
+}
+
+  void addVisible6DofControl( visualization_msgs::InteractiveMarker &msg, bool fixed, bool visible)
+  {
+  visualization_msgs::InteractiveMarkerControl control;
+  
+  if(visible)
+    control.always_visible = true;
 
   if(fixed)
     control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;

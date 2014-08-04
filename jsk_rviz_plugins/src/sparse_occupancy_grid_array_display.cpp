@@ -171,8 +171,8 @@ namespace jsk_rviz_plugin
             Ogre::ColourValue ogre_color = rviz::qtToOgre(color);
             point.color = ogre_color;
           }
-          point.position.x = grid.resolution * column_index;
-          point.position.y = grid.resolution * row_index;
+          point.position.x = grid.resolution * (column_index + 0.5);
+          point.position.y = grid.resolution * (row_index + 0.5);
           point.position.z = 0.0;
           
           points.push_back(point);

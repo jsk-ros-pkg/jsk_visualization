@@ -18,7 +18,7 @@ private:
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   string model_name_;
   double scale_factor_;
-  geometry_msgs::Pose pose_;
+  geometry_msgs::PoseStamped pose_stamped_;
   geometry_msgs::Pose root_offset_;
   bool use_visible_color_;
   string mode_;
@@ -63,8 +63,9 @@ public:
 	umm_vec_[i]->setRootPose(ps);
       }
       for (int i = umm_vec_size; i < msg_size; i++){
-	geometry_msgs::Pose pose = msg->poses[i];
-	umm_vec_.push_back(umm_ptr(new UrdfModelMarker(model_name_, model_file_, header.frame_id, pose, root_offset_, scale_factor_, mode_ , robot_mode_, registration_,fixed_link_, use_robot_description_, use_visible_color_, initial_pose_map_, i, server_)));
+	//geometry_msgs::PoseStamped pose = msg->poses[i];
+	ps.pose = msg->poses[i];
+	umm_vec_.push_back(umm_ptr(new UrdfModelMarker(model_name_, model_file_, header.frame_id, ps, root_offset_, scale_factor_, mode_ , robot_mode_, registration_,fixed_link_, use_robot_description_, use_visible_color_, initial_pose_map_, i, server_)));
       }
     }
   }
@@ -78,8 +79,20 @@ public:
       scale_factor_ = getXmlValue(model_config_["scale"]);
     }
     //pose
-    pose_ = getPose(model_config_["pose"]);
-    root_offset_ = getPose(model_config_["offset"]);
+    if(model_config_.hasMember("pose")){
+      pose_stamped_.pose = getPose(model_config_["pose"]);
+    }else{
+      pose_stamped_.pose = geometry_msgs::Pose();
+      pose_stamped_.pose.orientation.w = 1.0;
+    }
+    pose_stamped_.header.stamp = ros::Time::now();
+
+    if(model_config_.hasMember("offset")){
+      root_offset_ = getPose(model_config_["offset"]);
+    }else{
+      root_offset_ = geometry_msgs::Pose();
+      root_offset_.orientation.w = 1.0;
+    }
 
     //color
     use_visible_color_ = false;
@@ -146,7 +159,7 @@ public:
   }
 
   void addUrdfMarker(){
-    new UrdfModelMarker(model_name_, model_file_, frame_id_, pose_,root_offset_, scale_factor_, mode_ , robot_mode_, registration_,fixed_link_, use_robot_description_, use_visible_color_,initial_pose_map_, -1, server_);
+    new UrdfModelMarker(model_name_, model_file_, frame_id_, pose_stamped_ ,root_offset_, scale_factor_, mode_ , robot_mode_, registration_,fixed_link_, use_robot_description_, use_visible_color_,initial_pose_map_, -1, server_);
   }
 
   UrdfModelSettings(XmlRpc::XmlRpcValue model,   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : pnh_("~"){
