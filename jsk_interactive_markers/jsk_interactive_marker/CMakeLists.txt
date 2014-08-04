@@ -36,6 +36,9 @@ gencfg ()
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
+rosbuild_find_ros_package (dynamic_reconfigure)
+include (${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
+gencfg ()
 
 find_package(Eigen REQUIRED)
 include_directories(${Eigen_INCLUDE_DIRS})
@@ -55,8 +58,24 @@ rosbuild_add_executable(pointcloud_cropper
   src/pointcloud_cropper.cpp
   src/interactive_marker_helpers.cpp)
 
+rosbuild_add_executable(interactive_point_cloud src/interactive_point_cloud_node.cpp src/interactive_point_cloud.cpp src/interactive_marker_helpers.cpp)
 
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
 #rosbuild_add_executable(interactive_marker_interface_both_arm src/interactive_marker_interface_both_arm.cpp)
 #rosbuild_add_executable(button_interactive_marker_interface src/button_interactive_marker_interface.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
+
+
+# copy *.rviz.default to *.rviz
+
+file(GLOB _rviz_default_files "${PROJECT_SOURCE_DIR}/launch/*.rviz.default")
+foreach(_rviz_default_file ${_rviz_default_files})
+  string(REGEX REPLACE "\\.default$" "" _rviz_file "${_rviz_default_file}")
+  if(EXISTS "${_rviz_file}")
+    message("${_rviz_file} exists")
+  else()
+    execute_process(
+      COMMAND cmake -E copy "${_rviz_default_file}" "${_rviz_file}")
+    message("copy ${_rviz_default_file} to ${_rviz_file}")
+  endif()
+endforeach()
