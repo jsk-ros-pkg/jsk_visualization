@@ -263,8 +263,9 @@ namespace jsk_interactive_marker {
         input_pose_stamped,
         transformed_pose_stamped);
     }
-    catch (tf2::ExtrapolationException& e) {
-      ROS_FATAL("tf2 exception: %s", e.what());
+    catch (...) {
+      ROS_FATAL("tf exception");
+      return;
     }
     Eigen::Affine3d pose_d;
     tf::poseMsgToEigen(transformed_pose_stamped.pose, pose_d);

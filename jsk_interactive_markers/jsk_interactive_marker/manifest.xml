@@ -27,6 +27,6 @@
   <depend package="roslib" />
   <depend package="cmake_modules" />
   <depend package="urdf" />
-  <depend package="message_filters" /><
+  <depend package="message_filters" />
 </package>
 
