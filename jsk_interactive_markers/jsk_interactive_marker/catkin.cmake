@@ -1,7 +1,21 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_interactive_marker)
 
-find_package(catkin REQUIRED COMPONENTS cmake_modules jsk_pcl_ros jsk_footstep_msgs geometry_msgs visualization_msgs interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions actionlib roscpp roslib urdf)
+if($ENV{ROS_DISTRO} STREQUAL "groovy")
+  set(PCL_MSGS pcl)
+else()
+  set(PCL_MSGS pcl_msgs) ## hydro and later
+endif()
+
+
+find_package(catkin REQUIRED COMPONENTS
+  cmake_modules jsk_pcl_ros jsk_footstep_msgs geometry_msgs visualization_msgs
+  dynamic_reconfigure
+  interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions
+  actionlib roscpp roslib urdf
+  pcl_conversions
+  ${PCL_MSGS}
+  jsk_topic_tools)
 find_package(orocos_kdl REQUIRED)
 find_package(TinyXML REQUIRED)
 
@@ -12,7 +26,14 @@ add_message_files(
 add_service_files(DIRECTORY srv
   FILES MarkerSetPose.srv SetPose.srv)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS})
+generate_dynamic_reconfigure_options(
+  cfg/PointCloudCropper.cfg
+  )
+
+add_definitions("-g")
+
+include_directories(include ${catkin_INCLUDE_DIRS}
+  ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS})
 # target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${TinyXML_LIBRARIES} ${orocos_kdl_LIBRARIES})
 link_directories(${catkin_LIBRARY_DIRS})
 link_directories(${orocos_kdl_LIBRARY_DIRS})
@@ -45,7 +66,6 @@ add_executable(marker_6dof src/marker_6dof.cpp)
 target_link_libraries(marker_6dof ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(marker_6dof ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
-
 add_executable(world2yaml src/world2yaml)
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
 add_dependencies(world2yaml ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
@@ -54,6 +74,10 @@ add_executable(bounding_box_marker src/bounding_box_marker.cpp)
 target_link_libraries(bounding_box_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(bounding_box_marker ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
+add_executable(pointcloud_cropper src/pointcloud_cropper.cpp
+  src/interactive_marker_helpers.cpp)
+target_link_libraries(pointcloud_cropper ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+add_dependencies(pointcloud_cropper ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 generate_messages(
   DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs jsk_pcl_ros
