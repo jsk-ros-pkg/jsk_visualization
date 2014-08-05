@@ -39,6 +39,8 @@
 #include <algorithm>
 #include <eigen_conversions/eigen_msg.h>
 
+#include <pcl_ros/pcl_nodelet.h>
+
 //using namespace jsk_interactive_marker;
 namespace jsk_interactive_marker {
   Cropper::Cropper(const unsigned int nr_parameter):
