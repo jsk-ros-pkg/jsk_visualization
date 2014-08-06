@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.7 (2014-08-06)
+------------------
 * show "stalled" if no diagnostic message received in OverlayDiagnosticDisplay
 * add utility class for Overlay: OverlayObject and ScopedPixelBuffer in overlay_utils.cpp
 * spcify max/min values for the properties of Plotter2D

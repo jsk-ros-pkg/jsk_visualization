@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.7 (2014-08-06)
+------------------
 * add new program: pointcloud_cropper to crop pointcloud with interactive marker
 * add config file for interactive point cloud
 * update launch for pr2 gripper
