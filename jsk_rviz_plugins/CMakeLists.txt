@@ -60,6 +60,7 @@ qt4_wrap_cpp(MOC_FILES
   src/bounding_box_array_display.h
   src/overlay_diagnostic_display.h
   src/target_visualizer_display.h
+  src/people_position_measurement_array_display.h
   src/sparse_occupancy_grid_array_display.h
 )
 
@@ -85,6 +86,7 @@ set(SOURCE_FILES
   src/overlay_diagnostic_display.cpp
   src/sparse_occupancy_grid_array_display.cpp
   src/target_visualizer_display.cpp
+  src/people_position_measurement_array_display.cpp
   src/overlay_utils.cpp
   ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)

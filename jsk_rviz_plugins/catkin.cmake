@@ -7,6 +7,7 @@ project(jsk_rviz_plugins)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros
+  people_msgs
   message_generation std_msgs diagnostic_msgs cv_bridge)
 
 add_message_files(FILES OverlayText.msg OverlayMenu.msg)
@@ -57,6 +58,7 @@ qt4_wrap_cpp(MOC_FILES
   src/bounding_box_array_display.h
   src/overlay_diagnostic_display.h
   src/target_visualizer_display.h
+  src/people_position_measurement_array_display.h
   src/sparse_occupancy_grid_array_display.h
 )
 
@@ -82,6 +84,7 @@ set(SOURCE_FILES
   src/target_visualizer_display.cpp
   src/overlay_diagnostic_display.cpp
   src/sparse_occupancy_grid_array_display.cpp
+  src/people_position_measurement_array_display.cpp
   src/overlay_utils.cpp
   ${MOC_FILES}
 )
