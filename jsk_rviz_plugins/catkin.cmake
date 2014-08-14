@@ -86,6 +86,7 @@ set(SOURCE_FILES
   src/sparse_occupancy_grid_array_display.cpp
   src/people_position_measurement_array_display.cpp
   src/overlay_utils.cpp
+  src/facing_visualizer.cpp
   ${MOC_FILES}
 )
 

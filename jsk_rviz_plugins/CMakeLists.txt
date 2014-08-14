@@ -88,6 +88,7 @@ set(SOURCE_FILES
   src/target_visualizer_display.cpp
   src/people_position_measurement_array_display.cpp
   src/overlay_utils.cpp
+  src/facing_visualizer.cpp
   ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(jsk_rviz_plugins ${SOURCE_FILES})
