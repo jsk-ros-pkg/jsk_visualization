@@ -1,3 +1,19 @@
+# does not depends on people_msgs on groovy
+if($ENV{ROS_DISTRO} STREQUAL "groovy")
+  list(APPEND _files ${CMAKE_CURRENT_SOURCE_DIR}/package.xml)
+  list(APPEND _files ${CMAKE_CURRENT_SOURCE_DIR}/manifest.xml)
+  foreach(_file ${_files})
+    message("remove people_msgs dependency from ${_file}")
+    execute_process(COMMAND sed -i "/people_msgs/d" ${_file})
+  endforeach()
+else($ENV{ROS_DISTRO} STREQUAL "groovy")
+  set(people_position_measurement_array_header
+    "src/people_position_measurement_array_display.h")
+  set(people_position_measurement_array_source
+    "src/people_position_measurement_array_display.cpp")
+  set(people_msgs "people_msgs")
+endif($ENV{ROS_DISTRO} STREQUAL "groovy")
+
 if(NOT USE_ROSBUILD)
   include(catkin.cmake)
   return()
@@ -60,7 +76,7 @@ qt4_wrap_cpp(MOC_FILES
   src/bounding_box_array_display.h
   src/overlay_diagnostic_display.h
   src/target_visualizer_display.h
-  src/people_position_measurement_array_display.h
+#  ${people_position_measurement_array_header}
   src/sparse_occupancy_grid_array_display.h
 )
 
@@ -86,7 +102,7 @@ set(SOURCE_FILES
   src/overlay_diagnostic_display.cpp
   src/sparse_occupancy_grid_array_display.cpp
   src/target_visualizer_display.cpp
-  src/people_position_measurement_array_display.cpp
+#  ${people_position_measurement_array_source}
   src/overlay_utils.cpp
   ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
