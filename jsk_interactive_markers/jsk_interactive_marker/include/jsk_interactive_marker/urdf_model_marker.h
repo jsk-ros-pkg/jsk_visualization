@@ -29,8 +29,9 @@
 #include <diagnostic_updater/diagnostic_updater.h>
 #include <diagnostic_updater/publisher.h>
 
-#include <jsk_pcl_ros/pcl_util.h>
 #include <jsk_pcl_ros/Int32Stamped.h>
+
+#include <jsk_topic_tools/time_accumulator.h>
 
 using namespace urdf;
 using namespace std;
@@ -116,8 +117,8 @@ class UrdfModelMarker {
   
   /* diagnostics */
   boost::shared_ptr<diagnostic_updater::Updater> diagnostic_updater_;
-  jsk_pcl_ros::TimeAccumulator reset_joint_states_check_time_acc_;
-  jsk_pcl_ros::TimeAccumulator dynamic_tf_check_time_acc_;
+  jsk_topic_tools::TimeAccumulator reset_joint_states_check_time_acc_;
+  jsk_topic_tools::TimeAccumulator dynamic_tf_check_time_acc_;
   /* publisher */
   ros::Publisher pub_;
   ros::Publisher pub_move_;

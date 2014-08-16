@@ -6,7 +6,6 @@
 #include <jsk_interactive_marker/interactive_marker_helpers.h>
 #include <dynamic_tf_publisher/SetDynamicTF.h>
 #include <Eigen/Geometry>
-#include <jsk_pcl_ros/pcl_util.h>
 
 #include <kdl/frames_io.hpp>
 #include <tf_conversions/tf_kdl.h>
@@ -147,7 +146,7 @@ geometry_msgs::Pose UrdfModelMarker::UrdfPose2Pose( const urdf::Pose pose){
 }
 
 void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform){
-  jsk_pcl_ros::ScopedTimer timer = dynamic_tf_check_time_acc_.scopedTimer();
+  jsk_topic_tools::ScopedTimer timer = dynamic_tf_check_time_acc_.scopedTimer();
   dynamic_tf_publisher::SetDynamicTF SetTf;
   //SetTf.request.freq = 10;
   SetTf.request.freq = 20;
@@ -248,7 +247,7 @@ void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
 
 
 void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg){
-  jsk_pcl_ros::ScopedTimer timer = reset_joint_states_check_time_acc_.scopedTimer();
+  jsk_topic_tools::ScopedTimer timer = reset_joint_states_check_time_acc_.scopedTimer();
   setJointState(model->getRoot(), msg);
   addChildLinkNames(model->getRoot(), true, false);
   republishJointState(*msg);
