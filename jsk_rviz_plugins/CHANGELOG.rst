@@ -2,6 +2,22 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.7 (2014-08-06)
+------------------
+* show "stalled" if no diagnostic message received in OverlayDiagnosticDisplay
+* add utility class for Overlay: OverlayObject and ScopedPixelBuffer in overlay_utils.cpp
+* spcify max/min values for the properties of Plotter2D
+* fix color error when changing the size of the window of Plotter2D
+* add offset to compute the absolute position of the grid
+* Remove non-used color property in OverlayDiagnosticsDisplay
+* Remove OverlayDiagnostic correctly (not remaining overlay texture).
+* under line of the caption should be longer than the length of the
+  caption in TargetVisualizer
+* align the position of the text of TargetVisualizer to left
+* add CancelAction and PublishTopic plugin to hydro of jsk_rviz_plugin
+* add visualizer to visualize pose stamped with target mark
+* Contributors: Ryohei Ueda
+
 1.0.6 (2014-07-14)
 ------------------
 * add new plugin to visualize diagnostic status on ovrelay layer

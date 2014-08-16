@@ -17,7 +17,7 @@
   <depend package="std_msgs" />
   <depend package="rviz" />
   <depend package="cv_bridge" />
-  <depend package="people_msgs" />
+  <!-- <depend package="people_msgs" /> -->
   <rosdep name="wxwidgets" />
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
