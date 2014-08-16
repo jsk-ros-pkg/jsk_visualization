@@ -41,6 +41,10 @@
 
 namespace jsk_rviz_plugin
 {
+
+  const double minimum_font_size = 0.2;
+  const float arrow_animation_duration = 1.0;
+  
   SquareObject::SquareObject(Ogre::SceneManager* manager,
                              double outer_radius,
                              double inner_radius,
@@ -159,7 +163,7 @@ namespace jsk_rviz_plugin
   FacingObject::FacingObject(Ogre::SceneManager* manager,
                              Ogre::SceneNode* parent,
                              double size):
-    scene_manager_(manager), size_(size)
+    scene_manager_(manager), size_(size), enable_(true)
   {
     node_ = parent->createChildSceneNode();
   }
@@ -186,6 +190,335 @@ namespace jsk_rviz_plugin
   void FacingObject::setSize(double size)
   {
     size_ = size;
+  }
+
+  void FacingObject::setEnable(bool enable)
+  {
+    enable_ = enable;
+    node_->setVisible(enable_);
+  }
+  
+  SimpleCircleFacingVisualizer::SimpleCircleFacingVisualizer(
+    Ogre::SceneManager* manager,
+    Ogre::SceneNode* parent,
+    rviz::DisplayContext* context,
+    double size,
+    std::string text):
+    FacingObject(manager, parent, size), text_(text)
+  {
+    line_ = new rviz::BillboardLine(
+      context->getSceneManager(),
+      node_);
+    text_under_line_ = new rviz::BillboardLine(
+      context->getSceneManager(),
+      node_);
+    target_text_node_ = node_->createChildSceneNode();
+    msg_ = new rviz::MovableText("not initialized", "Arial", 0.05);
+    msg_->setVisible(false);
+    msg_->setTextAlignment(rviz::MovableText::H_LEFT,
+                           rviz::MovableText::V_ABOVE);
+    target_text_node_->attachObject(msg_);
+    createArrows(context);
+    updateLine();
+    updateTextUnderLine();
+    updateText();
+    setEnable(false);
+  }
+
+  SimpleCircleFacingVisualizer::~SimpleCircleFacingVisualizer()
+  {
+    delete line_;
+    delete text_under_line_;
+    delete msg_;
+    scene_manager_->destroyManualObject(upper_arrow_);
+    scene_manager_->destroyManualObject(lower_arrow_);
+    scene_manager_->destroyManualObject(left_arrow_);
+    scene_manager_->destroyManualObject(right_arrow_);
+    upper_material_->unload();
+    lower_material_->unload();
+    left_material_->unload();
+    right_material_->unload();
+    Ogre::MaterialManager::getSingleton().remove(upper_material_->getName());
+    Ogre::MaterialManager::getSingleton().remove(lower_material_->getName());
+    Ogre::MaterialManager::getSingleton().remove(left_material_->getName());
+    Ogre::MaterialManager::getSingleton().remove(right_material_->getName());
+  }
+
+  void SimpleCircleFacingVisualizer::update(float wall_dt, float ros_dt)
+  {
+    double t_ = ros::WallTime::now().toSec();
+    double t_rate
+      = fmod(t_, arrow_animation_duration) / arrow_animation_duration;
+    upper_arrow_node_->setPosition(0, (1.3 - 0.3 * t_rate) * size_, 0);
+    lower_arrow_node_->setPosition(0, (-1.3 + 0.3 * t_rate) * size_, 0);
+    left_arrow_node_->setPosition((1.3 - 0.3 * t_rate) * size_, 0, 0);
+    right_arrow_node_->setPosition((-1.3 + 0.3 * t_rate) * size_, 0, 0);
+  }
+  
+  void SimpleCircleFacingVisualizer::reset()
+  {
+    line_->clear();
+    text_under_line_->clear();
+    msg_->setVisible(false);
+  }
+
+  void SimpleCircleFacingVisualizer::updateArrowsObjects(Ogre::ColourValue color)
+  {
+    const double size_factor = 0.15;
+    upper_arrow_node_->setPosition(Ogre::Vector3(0, size_ * 1.0, 0.0));
+    upper_arrow_->clear();
+    upper_arrow_->estimateVertexCount(3);
+    upper_arrow_->begin(upper_material_name_,
+                        Ogre::RenderOperation::OT_TRIANGLE_LIST);
+    
+    upper_arrow_->colour(color);
+    upper_arrow_->position(Ogre::Vector3(0, size_ * size_factor, 0));
+    upper_arrow_->colour(color);
+    upper_arrow_->position(Ogre::Vector3(size_ * size_factor,
+                                         size_ * size_factor * 2,
+                                         0));
+    upper_arrow_->colour(color);
+    upper_arrow_->position(Ogre::Vector3(-size_ * size_factor,
+                                         size_ * size_factor * 2,
+                                         0));
+    upper_arrow_->end();
+    
+    lower_arrow_node_->setPosition(Ogre::Vector3(0, -size_ * 1.0, 0.0));
+    lower_arrow_->clear();
+    lower_arrow_->estimateVertexCount(3);
+    lower_arrow_->begin(lower_material_name_,
+                        Ogre::RenderOperation::OT_TRIANGLE_LIST);
+    
+    lower_arrow_->colour(color);
+    lower_arrow_->position(Ogre::Vector3(0,
+                                         -size_ * size_factor,
+                                         0));
+    lower_arrow_->colour(color);
+    lower_arrow_->position(Ogre::Vector3(size_ * size_factor,
+                                         -size_ * size_factor * 2,
+                                         0));
+    lower_arrow_->colour(color);
+    lower_arrow_->position(Ogre::Vector3(-size_ * size_factor,
+                                         -size_ * size_factor * 2,
+                                         0));
+    lower_arrow_->end();
+    left_arrow_node_->setPosition(Ogre::Vector3(size_ * 1.0, 0.0, 0.0));
+    left_arrow_->clear();
+    left_arrow_->estimateVertexCount(3);
+    left_arrow_->begin(left_material_name_,
+                       Ogre::RenderOperation::OT_TRIANGLE_LIST);
+    
+    left_arrow_->colour(color);
+    left_arrow_->position(Ogre::Vector3(size_ * size_factor,
+                                        0.0,
+                                        0));
+    left_arrow_->colour(color);
+    left_arrow_->position(Ogre::Vector3(size_ * size_factor * 2,
+                                        size_ * size_factor,
+                                        0));
+    left_arrow_->colour(color);
+    left_arrow_->position(Ogre::Vector3(size_ * size_factor * 2,
+                                        - size_ * size_factor,
+                                        0));
+    left_arrow_->end();
+    
+    right_arrow_node_->setPosition(Ogre::Vector3(-size_ * 1.0, 0.0, 0.0));
+    right_arrow_->clear();
+    right_arrow_->estimateVertexCount(3);
+    right_arrow_->begin(right_material_name_,
+                        Ogre::RenderOperation::OT_TRIANGLE_LIST);
+    
+    right_arrow_->colour(color);
+    right_arrow_->position(Ogre::Vector3(-size_ * size_factor,
+                                         0.0,
+                                         0));
+    right_arrow_->colour(color);
+    right_arrow_->position(Ogre::Vector3(-size_ * size_factor * 2,
+                                         size_ * size_factor,
+                                         0));
+    right_arrow_->colour(color);
+    right_arrow_->position(Ogre::Vector3(-size_ * size_factor * 2,
+                                         - size_ * size_factor,
+                                         0));
+    right_arrow_->end();
+    
+    
+    upper_material_->getTechnique(0)->setLightingEnabled(false);
+    upper_material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    upper_material_->getTechnique(0)->setDepthWriteEnabled( false );
+    lower_material_->getTechnique(0)->setLightingEnabled(false);
+    lower_material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    lower_material_->getTechnique(0)->setDepthWriteEnabled( false );
+    left_material_->getTechnique(0)->setLightingEnabled(false);
+    left_material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    left_material_->getTechnique(0)->setDepthWriteEnabled( false );
+    right_material_->getTechnique(0)->setLightingEnabled(false);
+    right_material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
+    right_material_->getTechnique(0)->setDepthWriteEnabled( false );
+  }
+  
+  // allocate material and node for arrrows
+  void SimpleCircleFacingVisualizer::createArrows(
+    rviz::DisplayContext* context)
+  {
+    static uint32_t count = 0;
+    rviz::UniformStringStream ss;
+    ss << "TargetVisualizerDisplayTriangle" << count++;
+    ss << "Material";
+    ss << "0";
+    upper_material_name_ = std::string(ss.str());
+    ss << "1";
+    lower_material_name_ = std::string(ss.str());
+    ss << "2";
+    left_material_name_ = std::string(ss.str());
+    ss << "3";
+    right_material_name_ = std::string(ss.str());
+    upper_material_ = Ogre::MaterialManager::getSingleton().create(
+      upper_material_name_,
+      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    lower_material_ = Ogre::MaterialManager::getSingleton().create(
+      lower_material_name_,
+      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    left_material_ = Ogre::MaterialManager::getSingleton().create(
+      left_material_name_,
+      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    right_material_ = Ogre::MaterialManager::getSingleton().create(
+      right_material_name_,
+      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    
+    upper_material_->setReceiveShadows(false);
+    upper_material_->getTechnique(0)->setLightingEnabled(true);
+    upper_material_->setCullingMode(Ogre::CULL_NONE);
+    lower_material_->setReceiveShadows(false);
+    lower_material_->getTechnique(0)->setLightingEnabled(true);
+    lower_material_->setCullingMode(Ogre::CULL_NONE);
+    left_material_->setReceiveShadows(false);
+    left_material_->getTechnique(0)->setLightingEnabled(true);
+    left_material_->setCullingMode(Ogre::CULL_NONE);
+    right_material_->setReceiveShadows(false);
+    right_material_->getTechnique(0)->setLightingEnabled(true);
+    right_material_->setCullingMode(Ogre::CULL_NONE);
+
+    upper_arrow_ = context->getSceneManager()->createManualObject(
+      upper_material_name_);
+    upper_arrow_node_ = node_->createChildSceneNode();
+    upper_arrow_node_->attachObject(upper_arrow_);
+    lower_arrow_ = context->getSceneManager()->createManualObject(
+      lower_material_name_);
+    lower_arrow_node_ = node_->createChildSceneNode();
+    lower_arrow_node_->attachObject(lower_arrow_);
+    left_arrow_ = context->getSceneManager()->createManualObject(
+      left_material_name_);
+    left_arrow_node_ = node_->createChildSceneNode();
+    left_arrow_node_->attachObject(left_arrow_);
+    right_arrow_ = context->getSceneManager()->createManualObject(
+      right_material_name_);
+    right_arrow_node_ = node_->createChildSceneNode();
+    right_arrow_node_->attachObject(right_arrow_);
+    updateArrowsObjects(color_);
+  }
+
+  void SimpleCircleFacingVisualizer::updateLine()
+  {
+    const int resolution = 100;
+    line_->clear();
+    line_->setColor(color_.r, color_.g, color_.b, color_.a);
+    line_->setLineWidth(0.1 * size_);
+    line_->setNumLines(1);
+    line_->setMaxPointsPerLine(1024);
+    for (size_t i = 0; i < resolution + 1; i++) {
+      double x = size_ * cos(i * 2 * M_PI / resolution);
+      double y = size_ * sin(i * 2 * M_PI / resolution);
+      double z = 0;
+      Ogre::Vector3 p;
+      p[0] = x;
+      p[1] = y;
+      p[2] = z;
+      line_->addPoint(p);
+    }
+  }
+  
+  // need msg to be initialized beforehand
+  void SimpleCircleFacingVisualizer::updateTextUnderLine()
+  {
+    Ogre::Vector3 text_position(size_ * cos(45.0 / 180.0 * M_PI)
+                                + size_ / 2.0,
+                                size_ * sin(45.0 / 180.0 * M_PI)
+                                + size_ / 2.0,
+                                0);
+    target_text_node_->setPosition(text_position);
+    Ogre::Vector3 msg_size = msg_->GetAABB().getSize();
+    text_under_line_->clear();
+    text_under_line_->setColor(color_.r, color_.g, color_.b, color_.a);
+    
+    text_under_line_->setLineWidth(0.01);
+    text_under_line_->setNumLines(1);
+    text_under_line_->setMaxPointsPerLine(1024);
+    Ogre::Vector3 A(size_ * cos(45.0 / 180.0 * M_PI),
+                    size_ * sin(45.0 / 180.0 * M_PI),
+                    0);
+    Ogre::Vector3 B(text_position + Ogre::Vector3(- size_ / 4.0, 0, 0));
+    Ogre::Vector3 C(text_position + Ogre::Vector3(msg_size[0], 0, 0));
+    text_under_line_->addPoint(A);
+    text_under_line_->addPoint(B);
+    text_under_line_->addPoint(C);
+  }
+
+  void SimpleCircleFacingVisualizer::setSize(double size)
+  {
+    FacingObject::setSize(size);
+    updateLine();
+    updateText();
+    updateTextUnderLine();
+  }
+
+  void SimpleCircleFacingVisualizer::setEnable(bool enable)
+  {
+    FacingObject::setEnable(enable);
+    msg_->setVisible(enable);
+    line_->getSceneNode()->setVisible(enable);
+    text_under_line_->getSceneNode()->setVisible(enable);
+  }
+  
+  void SimpleCircleFacingVisualizer::updateText()
+  {
+    msg_->setCaption(text_);
+    msg_->setCharacterHeight(std::max(0.2 * size_, minimum_font_size));
+  }
+  
+  void SimpleCircleFacingVisualizer::setText(std::string text)
+  {
+    text_ = text;
+    updateTextUnderLine();
+    updateText();
+  }
+
+  void SimpleCircleFacingVisualizer::updateColor()
+  {
+    msg_->setColor(color_);
+    line_->setColor(color_.r, color_.g, color_.b, color_.a);
+    text_under_line_->setColor(color_.r, color_.g, color_.b, color_.a);
+    updateArrowsObjects(color_);
+  }
+  
+  void SimpleCircleFacingVisualizer::setAlpha(double alpha)
+  {
+    color_.a = alpha;
+    updateColor();
+  }
+
+  void SimpleCircleFacingVisualizer::setColor(QColor color)
+  {
+    color_.r = color.red() / 255.0;
+    color_.g = color.green() / 255.0;
+    color_.b = color.blue() / 255.0;
+    updateColor();
+  }
+
+  void SimpleCircleFacingVisualizer::setColor(Ogre::ColourValue color)
+  {
+    color_ = color;
+    updateColor();
   }
   
   FacingTexturedObject::FacingTexturedObject(Ogre::SceneManager* manager,

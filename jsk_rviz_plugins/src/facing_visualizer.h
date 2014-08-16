@@ -45,6 +45,8 @@
 #include <OGRE/OgreManualObject.h>
 #include <rviz/display_context.h>
 #include <ros/time.h>
+#include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz/ogre_helpers/movable_text.h>
 #include "overlay_utils.h"
 
 namespace jsk_rviz_plugin
@@ -106,10 +108,63 @@ namespace jsk_rviz_plugin
     virtual void setOrientation(rviz::DisplayContext* context);
     virtual void update(float wall_dt, float ros_dt) = 0;
     virtual void setSize(double size);
+    virtual void setEnable(bool enable);
   protected:
     Ogre::SceneManager* scene_manager_;
     Ogre::SceneNode* node_;
     double size_;
+    bool enable_;
+  private:
+    
+  };
+
+  class SimpleCircleFacingVisualizer: public FacingObject
+  {
+  public:
+    typedef boost::shared_ptr<SimpleCircleFacingVisualizer> Ptr;
+    SimpleCircleFacingVisualizer(Ogre::SceneManager* manager,
+                                 Ogre::SceneNode* parent,
+                                 rviz::DisplayContext* context,
+                                 double size,
+                                 std::string text = "");
+    virtual ~SimpleCircleFacingVisualizer();
+    virtual void update(float wall_dt, float ros_dt);
+    virtual void reset();
+    virtual void setText(std::string text);
+    virtual void setAlpha(double alpha);
+    virtual void setColor(QColor color);
+    virtual void setColor(Ogre::ColourValue color);
+    virtual void setSize(double size);
+    virtual void setEnable(bool enable);
+  protected:
+    virtual void updateArrowsObjects(Ogre::ColourValue color);
+    virtual void createArrows(rviz::DisplayContext* context);
+    virtual void updateLine();
+    virtual void updateTextUnderLine();
+    virtual void updateText();
+    virtual void updateColor();
+    rviz::BillboardLine* line_;
+    rviz::BillboardLine* text_under_line_;
+    Ogre::ManualObject* upper_arrow_;
+    Ogre::ManualObject* lower_arrow_;
+    Ogre::ManualObject* left_arrow_;
+    Ogre::ManualObject* right_arrow_;
+    Ogre::SceneNode* upper_arrow_node_;
+    Ogre::SceneNode* lower_arrow_node_;
+    Ogre::SceneNode* left_arrow_node_;
+    Ogre::SceneNode* right_arrow_node_;
+    Ogre::MaterialPtr upper_material_;
+    Ogre::MaterialPtr lower_material_;
+    Ogre::MaterialPtr left_material_;
+    Ogre::MaterialPtr right_material_;
+    std::string upper_material_name_;
+    std::string left_material_name_;
+    std::string lower_material_name_;
+    std::string right_material_name_;
+    rviz::MovableText* msg_;
+    std::string text_;
+    Ogre::ColourValue color_;
+    Ogre::SceneNode* target_text_node_;
   private:
     
   };
