@@ -49,48 +49,12 @@
 #include <rviz/properties/enum_property.h>
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
-#include <OGRE/OgreManualObject.h>
 #include <people_msgs/PositionMeasurementArray.h>
 #include "overlay_utils.h"
+#include "facing_visualizer.h"
 
 namespace jsk_rviz_plugin
 {
-
-  class SquareObject
-  {
-  public:
-    typedef boost::shared_ptr<SquareObject> Ptr;
-    SquareObject(Ogre::SceneManager* manager, double size, std::string name);
-    virtual ~SquareObject();
-    virtual Ogre::ManualObject* getManualObject();
-  protected:
-    Ogre::ManualObject* manual_;
-    Ogre::SceneManager* manager_;
-  private:
-    
-  };
-    
-  class TextureObject           // utility class for texture
-  {
-  public:
-    typedef boost::shared_ptr<TextureObject> Ptr;
-    TextureObject(const int width, const int height, const std::string name);
-    virtual ~TextureObject();
-    virtual int getWidth() { return width_; };
-    virtual int getHeight() { return height_; };
-    virtual ScopedPixelBuffer getBuffer();
-    virtual std::string getMaterialName();
-    virtual ros::WallTime getCreatedAt();
-  protected:
-    Ogre::TexturePtr texture_;
-    Ogre::MaterialPtr material_;
-    const int width_;
-    const int height_;
-    const std::string name_;
-    ros::WallTime created_at_;
-  private:
-    
-  };
   
   class PeoplePositionMeasurementArrayDisplay:
     public rviz::MessageFilterDisplay<people_msgs::PositionMeasurementArray>
@@ -115,9 +79,7 @@ namespace jsk_rviz_plugin
     bool anonymous_;
     std::string text_;
     std::vector<people_msgs::PositionMeasurement> faces_;
-    std::vector<TextureObject::Ptr> textures_;
-    std::vector<Ogre::SceneNode*> nodes_;
-    std::vector<SquareObject::Ptr> squares_;
+    std::vector<GISCircleVisualizer::Ptr> visualizers_;
     ros::Time latest_time_;
   private Q_SLOTS:
     void updateSize();
