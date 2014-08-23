@@ -37,6 +37,7 @@
 #include <rviz/uniform_string_stream.h>
 #include <rviz/render_panel.h>
 #include <rviz/view_manager.h>
+#include <rviz/properties/parse_color.h>
 #include <QPainter>
 
 namespace jsk_rviz_plugin
@@ -163,7 +164,7 @@ namespace jsk_rviz_plugin
   FacingObject::FacingObject(Ogre::SceneManager* manager,
                              Ogre::SceneNode* parent,
                              double size):
-    scene_manager_(manager), size_(size), enable_(true)
+    scene_manager_(manager), size_(size), enable_(true), text_("")
   {
     node_ = parent->createChildSceneNode();
   }
@@ -197,6 +198,33 @@ namespace jsk_rviz_plugin
     enable_ = enable;
     node_->setVisible(enable_);
   }
+
+  void FacingObject::setText(std::string text)
+  {
+    text_ = text;
+    //updateTextUnderLine();
+    updateText();
+  }
+
+  void FacingObject::setAlpha(double alpha)
+  {
+    color_.a = alpha;
+    updateColor();
+  }
+
+  void FacingObject::setColor(QColor color)
+  {
+    color_.r = color.red() / 255.0;
+    color_.g = color.green() / 255.0;
+    color_.b = color.blue() / 255.0;
+    updateColor();
+  }
+
+  void FacingObject::setColor(Ogre::ColourValue color)
+  {
+    color_ = color;
+    updateColor();
+  }
   
   SimpleCircleFacingVisualizer::SimpleCircleFacingVisualizer(
     Ogre::SceneManager* manager,
@@ -204,7 +232,7 @@ namespace jsk_rviz_plugin
     rviz::DisplayContext* context,
     double size,
     std::string text):
-    FacingObject(manager, parent, size), text_(text)
+    FacingObject(manager, parent, size)
   {
     line_ = new rviz::BillboardLine(
       context->getSceneManager(),
@@ -485,7 +513,7 @@ namespace jsk_rviz_plugin
     msg_->setCaption(text_);
     msg_->setCharacterHeight(std::max(0.2 * size_, minimum_font_size));
   }
-  
+
   void SimpleCircleFacingVisualizer::setText(std::string text)
   {
     text_ = text;
@@ -499,26 +527,6 @@ namespace jsk_rviz_plugin
     line_->setColor(color_.r, color_.g, color_.b, color_.a);
     text_under_line_->setColor(color_.r, color_.g, color_.b, color_.a);
     updateArrowsObjects(color_);
-  }
-  
-  void SimpleCircleFacingVisualizer::setAlpha(double alpha)
-  {
-    color_.a = alpha;
-    updateColor();
-  }
-
-  void SimpleCircleFacingVisualizer::setColor(QColor color)
-  {
-    color_.r = color.red() / 255.0;
-    color_.g = color.green() / 255.0;
-    color_.b = color.blue() / 255.0;
-    updateColor();
-  }
-
-  void SimpleCircleFacingVisualizer::setColor(Ogre::ColourValue color)
-  {
-    color_ = color;
-    updateColor();
   }
   
   FacingTexturedObject::FacingTexturedObject(Ogre::SceneManager* manager,
@@ -559,8 +567,8 @@ namespace jsk_rviz_plugin
     {
       ScopedPixelBuffer buffer = texture_object_->getBuffer();
       QColor transparent(0, 0, 0, 0);
-      QColor foreground(33, 73, 140, 255);
-      QColor white(255, 255, 255, 255);
+      QColor foreground = rviz::ogreToQt(color_);
+      QColor white(255, 255, 255, color_.a * 255);
       QImage Hud = buffer.getQImage(128, 128, transparent);
       double line_width = 5;
       double inner_line_width = 10;
@@ -599,28 +607,15 @@ namespace jsk_rviz_plugin
       painter.setBrush(transparent);
       painter.drawEllipse(cx - inner_r, cy - inner_r,
                           inner_r * 2, inner_r * 2);
-      // if (!anonymous_) {
-      //   // force to clear the inside of the circle
-      //   for (unsigned int i = 0; i < Hud.width(); i++) {
-      //     for (unsigned int j = 0; j < Hud.height(); j++) {
-      //       double dist = sqrt((i - cx) * (i - cx) + (j - cy) * (j - cy));
-      //       if (dist < inner_r) {
-      //         Hud.setPixel(i, j, transparent.rgba());
-      //       }
-      //     }
-      //   }
-      // }
-      // else {                    // overlay face ^^
-        double mouse_c_x = cx;
-        double mouse_c_y = cy - mouse_cy_offset;
-        double start_angle = -25 * M_PI / 180;
-        double end_angle = -125 * M_PI / 180;
-        painter.setPen(QPen(foreground, line_width, Qt::SolidLine));
-        painter.drawChord(mouse_c_x - mouse_r, mouse_c_y - mouse_r,
+      double mouse_c_x = cx;
+      double mouse_c_y = cy - mouse_cy_offset;
+      double start_angle = -25 * M_PI / 180;
+      double end_angle = -125 * M_PI / 180;
+      painter.setPen(QPen(foreground, line_width, Qt::SolidLine));
+      painter.drawChord(mouse_c_x - mouse_r, mouse_c_y - mouse_r,
                         2.0 * mouse_r, 2.0 * mouse_r,
                         start_angle * 180 / M_PI * 16,
                         end_angle * 180 / M_PI * 16);
-        //}
       painter.end();
     }
   }
@@ -637,5 +632,19 @@ namespace jsk_rviz_plugin
     }
     square_object_->rebuildPolygon();
   }
+
+  void GISCircleVisualizer::setSize(double size)
+  {
+    FacingObject::setSize(size);
+    square_object_->setOuterRadius(size_);
+    if (!anonymous_) {
+      square_object_->setInnerRadius(size_ * 0.6);
+    }
+    else {
+      square_object_->setInnerRadius(0.0);
+    }
+    square_object_->rebuildPolygon();
+  }
+
   
 }
