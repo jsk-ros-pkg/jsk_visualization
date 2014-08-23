@@ -1,4 +1,4 @@
-// -*- mode: c++; -*-
+// -*- mode: c++ -*-
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
@@ -33,8 +33,9 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef JSK_RVIZ_PLUGIN_TARGET_VISUALIZER_DISPLAY_H_
-#define JSK_RVIZ_PLUGIN_TARGET_VISUALIZER_DISPLAY_H_
+
+#ifndef JSK_RVIZ_PLUGIN_PEOPLE_POSITION_MEASUREMENT_ARRAY_DISPLAY_H_
+#define JSK_RVIZ_PLUGIN_PEOPLE_POSITION_MEASUREMENT_ARRAY_DISPLAY_H_
 
 
 #include <rviz/display.h>
@@ -46,49 +47,47 @@
 #include <rviz/properties/tf_frame_property.h>
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/enum_property.h>
-#include <diagnostic_msgs/DiagnosticArray.h>
-#include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <rviz/ogre_helpers/movable_text.h>
-#include <geometry_msgs/PoseStamped.h>
-
+#include <people_msgs/PositionMeasurementArray.h>
+#include "overlay_utils.h"
 #include "facing_visualizer.h"
 
 namespace jsk_rviz_plugin
 {
-  class TargetVisualizerDisplay:
-    public rviz::MessageFilterDisplay<geometry_msgs::PoseStamped>
+  
+  class PeoplePositionMeasurementArrayDisplay:
+    public rviz::MessageFilterDisplay<people_msgs::PositionMeasurementArray>
   {
     Q_OBJECT
   public:
-    TargetVisualizerDisplay();
-    virtual ~TargetVisualizerDisplay();
+    PeoplePositionMeasurementArrayDisplay();
+    virtual ~PeoplePositionMeasurementArrayDisplay();
   protected:
     virtual void onInitialize();
     virtual void reset();
-    virtual void onEnable();
-    void processMessage(const geometry_msgs::PoseStamped::ConstPtr& msg);
+    void processMessage(const people_msgs::PositionMeasurementArray::ConstPtr& msg);
     void update(float wall_dt, float ros_dt);
-    rviz::StringProperty* target_name_property_;
-    rviz::FloatProperty* alpha_property_;
-    rviz::ColorProperty* color_property_;
-    rviz::FloatProperty* radius_property_;
-    SimpleCircleFacingVisualizer::Ptr visualizer_;
+    void clearObjects();
+    rviz::FloatProperty* size_property_;
+    rviz::FloatProperty* timeout_property_;
+    rviz::BoolProperty* anonymous_property_;
+    rviz::StringProperty* text_property_;
     boost::mutex mutex_;
-    std::string target_name_;
-    double alpha_;
-    QColor color_;
-    double radius_;
-    bool message_recieved_;
+    double size_;
+    double timeout_;
+    bool anonymous_;
+    std::string text_;
+    std::vector<people_msgs::PositionMeasurement> faces_;
+    std::vector<GISCircleVisualizer::Ptr> visualizers_;
+    ros::Time latest_time_;
   private Q_SLOTS:
-    void updateTargetName();
-    void updateAlpha();
-    void updateColor();
-    void updateRadius();
+    void updateSize();
+    void updateTimeout();
+    void updateAnonymous();
+    void updateText();
   private:
+  
     
   };
 }
