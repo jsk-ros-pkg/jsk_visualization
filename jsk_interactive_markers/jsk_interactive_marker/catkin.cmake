@@ -13,7 +13,7 @@ add_service_files(DIRECTORY srv
   FILES MarkerSetPose.srv SetPose.srv)
 
 generate_dynamic_reconfigure_options(
-  cfg/interactive_point_cloud.cfg
+  cfg/InteractivePointCloud.cfg
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS})
