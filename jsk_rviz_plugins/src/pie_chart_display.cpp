@@ -35,7 +35,6 @@
 
 #include "pie_chart_display.h"
 
-#include <OGRE/OgreOverlayManager.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreTextureManager.h>
 #include <OGRE/OgreTexture.h>
@@ -149,20 +148,8 @@ namespace jsk_rviz_plugin
   {
     static int count = 0;
     rviz::UniformStringStream ss;
-    Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
     ss << "PieChartDisplayObject" << count++;
-    material_name_ = ss.str() + "Material";
-    texture_name_ = ss.str() + "Texture";
-    overlay_ = mOverlayMgr->create(ss.str());
-    panel_ = static_cast<Ogre::PanelOverlayElement*> (
-      mOverlayMgr->createOverlayElement("Panel", ss.str() + "Panel"));
-    panel_->setMetricsMode(Ogre::GMM_PIXELS);
-    panel_material_
-      = Ogre::MaterialManager::getSingleton().create(
-        material_name_,
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    panel_->setMaterialName(panel_material_->getName());
-    overlay_->add2D(panel_);
+    overlay_.reset(new OverlayObject(ss.str()));
     onEnable();
     updateSize();
     updateLeft();
@@ -180,35 +167,8 @@ namespace jsk_rviz_plugin
     updateShowCaption();
     updateAutoColorChange();
     updateMaxColor();
-    updateTextureSize(size_property_->getInt(), size_property_->getInt());
-  }
-
-  void PieChartDisplay::updateTextureSize(uint16_t width, uint16_t height)
-  {
-    //boost::mutex::scoped_lock lock(mutex_);
-    
-    if (texture_.isNull() ||
-        ((width != texture_->getWidth()) || (height != texture_->getHeight() - caption_offset_))) {
-      bool firsttime = true;
-      if (!texture_.isNull()) {
-        firsttime = false;
-        // remove the texture first if previous texture exists
-        Ogre::TextureManager::getSingleton().remove(texture_name_);
-      }
-      texture_ = Ogre::TextureManager::getSingleton().createManual(
-        texture_name_,        // name
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        Ogre::TEX_TYPE_2D,   // type
-        width, height + caption_offset_,   // width & height of the render window 
-        0,                   // number of mipmaps
-        Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
-        Ogre::TU_DEFAULT     // usage
-        );
-      if (firsttime) {
-        panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-        panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-      }
-    }
+    overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
+    overlay_->hide();
   }
 
   void PieChartDisplay::processMessage(const std_msgs::Float32::ConstPtr& msg)
@@ -219,10 +179,11 @@ namespace jsk_rviz_plugin
       return;
     }
 
-    updateTextureSize(texture_size_, texture_size_);
+    overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
     drawPlot(msg->data);
-    panel_->setPosition(left_, top_);
-    panel_->setDimensions(texture_->getWidth(), texture_->getHeight());
+    overlay_->setPosition(left_, top_);
+    overlay_->setDimensions(overlay_->getTextureWidth(),
+                            overlay_->getTextureHeight());
   }
   
   void PieChartDisplay::drawPlot(double val)
@@ -248,33 +209,11 @@ namespace jsk_rviz_plugin
     fg_color2.setAlpha(fg_alpha2_);
     bg_color.setAlpha(bg_alpha_);
     text_color.setAlpha(text_alpha_);
-    int width = texture_->getWidth();
-    int height = texture_->getHeight();
-    
-    // Get the pixel buffer
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
-    // Lock the pixel buffer and get a pixel box
-    pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL ); // for best performance use HBL_DISCARD!
-    const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-    
-    Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-
-    // construct HUD image directly in the texture buffer
+    int width = overlay_->getTextureWidth();
+    int height = overlay_->getTextureHeight();
     {
-      // fill to get 100% transparent image
-      // the buffer content is the colors R,G,B,A. Filling with zeros gets a 100% transparent image
-      memset( pDest, 0, texture_->getWidth() * texture_->getHeight() );
-      
-      // tell QImage to use OUR buffer and a compatible image buffer format
-      QImage Hud( pDest, texture_->getWidth(), texture_->getHeight(), QImage::Format_ARGB32 );
-      // initilize by the background color
-      for (int i = 0; i < texture_->getWidth(); i++) {
-        for (int j = 0; j < texture_->getHeight(); j++) {
-          Hud.setPixel(i, j, bg_color.rgba());
-        }
-      }
-      // paste in HUD speedometer. I resize the image and offset it by 8 pixels from
-      // the bottom left edge of the render window
+      ScopedPixelBuffer buffer = overlay_->getBuffer();
+      QImage Hud = buffer.getQImage(*overlay_, bg_color);
       QPainter painter( &Hud );
       painter.setRenderHint(QPainter::Antialiasing, true);
 
@@ -326,9 +265,8 @@ namespace jsk_rviz_plugin
       
       // done
       painter.end();
+      // Unlock the pixel buffer
     }
-    // Unlock the pixel buffer
-    pixelBuffer->unlock();
   }
 
   

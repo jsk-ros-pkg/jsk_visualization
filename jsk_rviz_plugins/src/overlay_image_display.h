@@ -36,9 +36,6 @@
 #define JSK_RVIZ_PLUGIN_OVERLAY_IMAGE_DISPLAY_H_
 
 #include <rviz/display.h>
-#include <OGRE/OgreOverlayElement.h>
-#include <OGRE/OgreOverlayContainer.h>
-#include <OGRE/OgrePanelOverlayElement.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreMaterial.h>
@@ -52,6 +49,8 @@
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
 
+#include "overlay_utils.h"
+
 namespace jsk_rviz_plugin
 {
   class OverlayImageDisplay : public rviz::Display
@@ -63,12 +62,7 @@ namespace jsk_rviz_plugin
 
   protected:
     boost::mutex mutex_;
-    Ogre::Overlay* overlay_;
-    Ogre::PanelOverlayElement* panel_;
-    Ogre::MaterialPtr panel_material_;
-    std::string material_name_;
-    std::string texture_name_;
-    Ogre::TexturePtr texture_;
+    OverlayObject::Ptr overlay_;
     rviz::RosTopicProperty* update_topic_property_;
     rviz::IntProperty* width_property_;
     rviz::IntProperty* height_property_;
@@ -83,7 +77,6 @@ namespace jsk_rviz_plugin
     bool require_update_;
 
     virtual void redraw();
-    virtual void updateTextureSize(int width, int height);
     virtual void onInitialize();
     virtual void onEnable();
     virtual void onDisable();
