@@ -68,6 +68,12 @@ namespace jsk_rviz_plugin
       "color", QColor(25, 255, 240),
       "color of the target",
       this, SLOT(updateColor()));
+    shape_type_property_ = new rviz::EnumProperty(
+      "type", "Simple Circle",
+      "Shape to display the pose as",
+      this, SLOT(updateShapeType()));
+    shape_type_property_->addOption("Simple Circle", SimpleCircle);
+    shape_type_property_->addOption("Decoreted Circle", GISCircle);
   }
 
   TargetVisualizerDisplay::~TargetVisualizerDisplay()
@@ -88,7 +94,7 @@ namespace jsk_rviz_plugin
   void TargetVisualizerDisplay::processMessage(
     const geometry_msgs::PoseStamped::ConstPtr& msg)
   {
-    boost::mutex::scoped_lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
     message_recieved_ = true;
     visualizer_->setEnable(isEnabled());
     if (!isEnabled()) {
@@ -121,16 +127,12 @@ namespace jsk_rviz_plugin
   {
     MFDClass::onInitialize();
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-    updateTargetName();
+    
     updateRadius();
-    visualizer_.reset(new SimpleCircleFacingVisualizer(
-                        scene_manager_,
-                        scene_node_,
-                        context_,
-                        radius_,
-                        target_name_));
-    updateColor();
-    updateAlpha();
+    updateShapeType();
+    // updateTargetName();
+    // updateColor();
+    // updateAlpha();
   }
 
   void TargetVisualizerDisplay::reset()
@@ -142,7 +144,7 @@ namespace jsk_rviz_plugin
 
   void TargetVisualizerDisplay::updateTargetName()
   {
-    boost::mutex::scoped_lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
     target_name_ = target_name_property_->getStdString();
     if (visualizer_) {
       visualizer_->setText(target_name_);
@@ -151,7 +153,7 @@ namespace jsk_rviz_plugin
   
   void TargetVisualizerDisplay::updateRadius()
   {
-    boost::mutex::scoped_lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
     radius_ = radius_property_->getFloat();
     if (visualizer_) {
       visualizer_->setSize(radius_);
@@ -160,7 +162,7 @@ namespace jsk_rviz_plugin
 
   void TargetVisualizerDisplay::updateAlpha()
   {
-    boost::mutex::scoped_lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
     alpha_ = alpha_property_->getFloat();
     if (visualizer_) {
       visualizer_->setAlpha(alpha_);
@@ -169,13 +171,44 @@ namespace jsk_rviz_plugin
 
   void TargetVisualizerDisplay::updateColor()
   {
-    boost::mutex::scoped_lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
     color_ = color_property_->getColor();
     if (visualizer_) {
       visualizer_->setColor(color_);
     }
   }
   
+  void TargetVisualizerDisplay::updateShapeType()
+  {
+    if (current_type_ != shape_type_property_->getOptionInt()) {
+      {
+        boost::mutex::scoped_lock lock(mutex_);
+        if (shape_type_property_->getOptionInt() == SimpleCircle) {
+          current_type_ = SimpleCircle;
+          // simple circle
+          visualizer_.reset(new SimpleCircleFacingVisualizer(
+                              scene_manager_,
+                              scene_node_,
+                              context_,
+                              radius_));
+        }
+        else {
+          current_type_ = GISCircle;
+          // GIS
+          GISCircleVisualizer* v = new GISCircleVisualizer(
+            scene_manager_,
+            scene_node_,
+            radius_);
+          v->setAnonymous(false);
+          visualizer_.reset(v);
+          
+        }
+      }
+      updateTargetName();
+      updateColor();
+      updateAlpha();
+    }
+  }
 }
 
 #include <pluginlib/class_list_macros.h>

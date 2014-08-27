@@ -109,11 +109,19 @@ namespace jsk_rviz_plugin
     virtual void update(float wall_dt, float ros_dt) = 0;
     virtual void setSize(double size);
     virtual void setEnable(bool enable);
+    virtual void setColor(QColor color);
+    virtual void setColor(Ogre::ColourValue color);
+    virtual void setText(std::string text);
+    virtual void setAlpha(double alpha);
   protected:
+    virtual void updateColor() = 0;
+    virtual void updateText() = 0;
     Ogre::SceneManager* scene_manager_;
     Ogre::SceneNode* node_;
+    Ogre::ColourValue color_;
     double size_;
     bool enable_;
+    std::string text_;
   private:
     
   };
@@ -130,12 +138,10 @@ namespace jsk_rviz_plugin
     virtual ~SimpleCircleFacingVisualizer();
     virtual void update(float wall_dt, float ros_dt);
     virtual void reset();
-    virtual void setText(std::string text);
-    virtual void setAlpha(double alpha);
-    virtual void setColor(QColor color);
-    virtual void setColor(Ogre::ColourValue color);
+    
     virtual void setSize(double size);
     virtual void setEnable(bool enable);
+    virtual void setText(std::string text);
   protected:
     virtual void updateArrowsObjects(Ogre::ColourValue color);
     virtual void createArrows(rviz::DisplayContext* context);
@@ -162,8 +168,6 @@ namespace jsk_rviz_plugin
     std::string lower_material_name_;
     std::string right_material_name_;
     rviz::MovableText* msg_;
-    std::string text_;
-    Ogre::ColourValue color_;
     Ogre::SceneNode* target_text_node_;
   private:
     
@@ -198,6 +202,9 @@ namespace jsk_rviz_plugin
     virtual void update(float wall_dt, float ros_dt);
     virtual void setAnonymous(bool anonymous);
   protected:
+    virtual void updateColor() {}
+    virtual void updateText() {}
+    virtual void setSize(double size);
     bool anonymous_;
     std::string text_;
   private:
