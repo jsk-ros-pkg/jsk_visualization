@@ -6,7 +6,6 @@
 #include <jsk_interactive_marker/interactive_marker_helpers.h>
 #include <dynamic_tf_publisher/SetDynamicTF.h>
 #include <Eigen/Geometry>
-#include <jsk_pcl_ros/pcl_util.h>
 
 #include <kdl/frames_io.hpp>
 #include <tf_conversions/tf_kdl.h>
@@ -147,10 +146,11 @@ geometry_msgs::Pose UrdfModelMarker::UrdfPose2Pose( const urdf::Pose pose){
 }
 
 void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform){
-  jsk_pcl_ros::ScopedTimer timer = dynamic_tf_check_time_acc_.scopedTimer();
+  jsk_topic_tools::ScopedTimer timer = dynamic_tf_check_time_acc_.scopedTimer();
   dynamic_tf_publisher::SetDynamicTF SetTf;
   //SetTf.request.freq = 10;
-  SetTf.request.freq = 100;
+  SetTf.request.freq = 20;
+  //SetTf.request.freq = 100;
   SetTf.request.cur_tf.header.stamp = ros::Time::now();
   SetTf.request.cur_tf.header.frame_id = parent_frame_id;
   SetTf.request.cur_tf.child_frame_id = frame_id;
@@ -227,19 +227,27 @@ void UrdfModelMarker::setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &m
 }
 
 void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
-  geometry_msgs::Pose pose = getRootPose(ps.pose);
-  string root_frame = tf_prefix_ + model->getRoot()->name;
-  linkMarkerMap[frame_id_].pose = pose;
-  CallSetDynamicTf(frame_id_, root_frame, Pose2Transform(pose));
-  root_pose_ = pose;
-  //addChildLinkNames(model->getRoot(), true, false);
-  publishMarkerPose( pose, ps.header, root_frame);
-  //publishJointState(feedback);
+  try{
+    init_stamp_ = ps.header.stamp;
+    tfl_.transformPose(frame_id_, ps, ps);
+
+    geometry_msgs::Pose pose = getRootPose(ps.pose);
+
+    string root_frame = tf_prefix_ + model->getRoot()->name;
+    linkMarkerMap[frame_id_].pose = pose;
+    CallSetDynamicTf(frame_id_, root_frame, Pose2Transform(pose));
+    root_pose_ = pose;
+    publishMarkerPose( pose, ps.header, root_frame);
+  }
+  catch (tf::TransformException ex){
+    ROS_ERROR("%s",ex.what());
+  }
+
 }
 
 
 void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg){
-  jsk_pcl_ros::ScopedTimer timer = reset_joint_states_check_time_acc_.scopedTimer();
+  jsk_topic_tools::ScopedTimer timer = reset_joint_states_check_time_acc_.scopedTimer();
   setJointState(model->getRoot(), msg);
   addChildLinkNames(model->getRoot(), true, false);
   republishJointState(*msg);
@@ -301,6 +309,10 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
     }else{
       geometry_msgs::PoseStamped ps = getOriginPoseStamped();
       pub_selected_.publish(ps);
+      jsk_pcl_ros::Int32Stamped index_msg;
+      index_msg.data = index_;
+      index_msg.header.stamp = init_stamp_;
+      pub_selected_index_.publish(index_msg);
     }
     break;
 
@@ -346,13 +358,23 @@ void UrdfModelMarker::resetMarkerCB( const visualization_msgs::InteractiveMarker
   publishMarkerMenu(feedback, jsk_interactive_marker::MarkerMenu::RESET_JOINT);
 }
 
-void UrdfModelMarker::resetBaseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+void UrdfModelMarker::resetBaseMsgCB( const std_msgs::EmptyConstPtr &msg){
+  resetBaseCB();
+}
+
+void UrdfModelMarker::resetBaseMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+  resetBaseCB();
+}
+void UrdfModelMarker::resetBaseCB(){
   resetRobotBase();
-  string rootlink_name = tf_prefix_ + model->getRoot()->name;
-  linkMarkerMap[rootlink_name].pose = feedback->pose;
-  CallSetDynamicTf(frame_id_, rootlink_name, Pose2Transform(root_pose_));
+
+  geometry_msgs::PoseStamped ps;
+  ps.header.frame_id = frame_id_;
+  ps.pose = root_pose_;
+  setRootPose( ps );
+
+  // to update root link marker
   addChildLinkNames(model->getRoot(), true, false);
-  publishBasePose(root_pose_, feedback->header);
 }
 
 void UrdfModelMarker::resetRobotBase(){
@@ -363,7 +385,7 @@ void UrdfModelMarker::resetRobotBase(){
     tfl_.lookupTransform(frame_id_, model->getRoot()->name,
 			 ros::Time(0), transform);
     tf::transformStampedTFToMsg(transform, ts_msg);
-      
+
     root_pose_ = Transform2Pose(ts_msg.transform);
   }
   catch (tf::TransformException ex){
@@ -787,6 +809,7 @@ geometry_msgs::PoseStamped UrdfModelMarker::getOriginPoseStamped(){
   tf::poseKDLToMsg(pose_frame, pose);
   ps.pose = pose;
   ps.header.frame_id = frame_id_;
+  ps.header.stamp = init_stamp_;
   return ps;
 }
 
@@ -1004,7 +1027,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 
 	grasp_int_marker.header = grasp_ps.header;
 	grasp_int_marker.name = grasp_link_frame_name_;
-	grasp_int_marker.scale = 1.0;
+	grasp_int_marker.scale = grasp_scale_factor;
 	grasp_int_marker.pose = grasp_ps.pose;
 
 	addGraspPointControl(grasp_int_marker, link_frame_name_);
@@ -1039,7 +1062,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 UrdfModelMarker::UrdfModelMarker ()
 {}
 
-UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index,  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::PoseStamped root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index,  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
   diagnostic_updater_.reset(new diagnostic_updater::Updater);
   diagnostic_updater_->setHardwareID(ros::this_node::getName());
   diagnostic_updater_->add("Modeling Stats", boost::bind(&UrdfModelMarker::updateDiagnostic, this, _1));
@@ -1069,7 +1092,8 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   model_file_ = model_file;
   frame_id_ = frame_id;
   root_offset_ = root_offset;
-  root_pose_ = root_pose;
+  root_pose_ = root_pose.pose;
+  init_stamp_ = root_pose.header.stamp;
   scale_factor_ = scale_factor;
   robot_mode_ = robot_mode;
   registration_ = registration;
@@ -1079,11 +1103,13 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   use_visible_color_ = use_visible_color;
   tf_prefix_ = server_name + "/" + model_name_ + "/";
   initial_pose_map_ = initial_pose_map;
+  index_ = index;
 
   pub_ =  pnh_.advertise<jsk_interactive_marker::MarkerPose> ("pose", 1);
   pub_move_ =  pnh_.advertise<jsk_interactive_marker::MarkerMenu> ("marker_menu", 1);
   pub_move_object_ =  pnh_.advertise<jsk_interactive_marker::MoveObject> ("move_object", 1);
   pub_selected_ =  pnh_.advertise<geometry_msgs::PoseStamped> (model_name + "/selected", 1);
+  pub_selected_index_ =  pnh_.advertise<jsk_pcl_ros::Int32Stamped> (model_name + "/selected_index", 1);
   pub_joint_state_ =  pnh_.advertise<sensor_msgs::JointState> (model_name_ + "/joint_states", 1);
   
   sub_set_root_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> (model_name_ + "/set_pose", 1, boost::bind( &UrdfModelMarker::setRootPoseCB, this, _1));
@@ -1091,6 +1117,8 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   
   hide_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/hide_marker", 1, boost::bind( &UrdfModelMarker::hideModelMarkerCB, this, _1));
   show_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/show_marker", 1, boost::bind( &UrdfModelMarker::showModelMarkerCB, this, _1));
+
+  show_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/reset_root_pose", 1, boost::bind( &UrdfModelMarker::resetBaseMsgCB, this, _1));
 
   pub_base_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>(model_name_ + "/base_pose", 1);
 
@@ -1133,7 +1161,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
     model_menu_.insert( sub_menu_reset_, "Joint",
 			boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
     model_menu_.insert( sub_menu_reset_, "Base",
-			boost::bind( &UrdfModelMarker::resetBaseCB, this, _1) );
+			boost::bind( &UrdfModelMarker::resetBaseMarkerCB, this, _1) );
 
 
     interactive_markers::MenuHandler::EntryHandle sub_menu_pose_;

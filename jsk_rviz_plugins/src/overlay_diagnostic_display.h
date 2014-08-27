@@ -36,9 +36,6 @@
 #define JSK_RVIZ_PLUGIN_OVERLAY_DIAGNOSTIC_DISPLAY_H_
 
 #include <rviz/display.h>
-#include <OGRE/OgreOverlayElement.h>
-#include <OGRE/OgreOverlayContainer.h>
-#include <OGRE/OgrePanelOverlayElement.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreMaterial.h>
@@ -53,6 +50,8 @@
 
 #include <diagnostic_msgs/DiagnosticArray.h>
 
+#include "overlay_utils.h"
+
 namespace jsk_rviz_plugin
 {
   class OverlayDiagnosticDisplay: public rviz::Display
@@ -63,6 +62,7 @@ namespace jsk_rviz_plugin
     virtual ~OverlayDiagnosticDisplay();
     
   protected:
+    virtual bool isStalled();
     virtual void processMessage(
       const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
     virtual void update(float wall_dt, float ros_dt);
@@ -71,7 +71,6 @@ namespace jsk_rviz_plugin
     virtual void onInitialize();
     virtual void subscribe();
     virtual void unsubscribe();
-    virtual void updateTextureSize(int width, int height);
     virtual void redraw();
     virtual void fillNamespaceList();
     virtual QColor foregroundColor();
@@ -85,29 +84,25 @@ namespace jsk_rviz_plugin
                                      const std::string text);
     virtual std::string statusText();
     boost::mutex mutex_;
-    Ogre::Overlay* overlay_;
-    Ogre::PanelOverlayElement* panel_;
-    Ogre::MaterialPtr panel_material_;
-    std::string overlay_name_;
-    std::string material_name_;
-    std::string texture_name_;
-    Ogre::TexturePtr texture_;
-
-    diagnostic_msgs::DiagnosticStatus::Ptr latest_status_;
+    OverlayObject::Ptr overlay_;
     
+    diagnostic_msgs::DiagnosticStatus::Ptr latest_status_;
+    ros::WallTime latest_message_time_;
     int size_;
     std::string diagnostics_namespace_;
     std::set<std::string> namespaces_;
     double alpha_;
     int top_, left_;
     double t_;
+    double stall_duration_;
     rviz::RosTopicProperty* ros_topic_property_;
     rviz::EditableEnumProperty* diagnostics_namespace_property_;
     rviz::IntProperty* top_property_;
     rviz::IntProperty* left_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::IntProperty* size_property_;
-
+    rviz::FloatProperty* stall_duration_property_;
+    
     ros::Subscriber sub_;
   protected Q_SLOTS:
     virtual void updateRosTopic();
@@ -116,6 +111,7 @@ namespace jsk_rviz_plugin
     virtual void updateAlpha();
     virtual void updateTop();
     virtual void updateLeft();
+    virtual void updateStallDuration();
   private:
     
   };
