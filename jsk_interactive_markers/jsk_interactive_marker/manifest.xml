@@ -10,11 +10,10 @@
   <url>http://ros.org/wiki/interactive_marker</url>
 
   <depend package="mk" />
-
   <depend package="roseus" />
   <depend package="jsk_pcl_ros" />
   <depend package="jsk_footstep_msgs" />
-
+  <depend package="jsk_topic_tools" />
   <depend package="visualization_msgs" />
   <depend package="geometry_msgs" />
   <depend package="sensor_msgs" />
@@ -31,5 +30,4 @@
   <depend package="message_filters" />
   <depend package="jsk_topic_tools" />
 </package>
-
 

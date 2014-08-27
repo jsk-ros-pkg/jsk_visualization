@@ -6,7 +6,6 @@
 #include <jsk_interactive_marker/interactive_marker_helpers.h>
 #include <dynamic_tf_publisher/SetDynamicTF.h>
 #include <Eigen/Geometry>
-#include <jsk_pcl_ros/pcl_util.h>
 
 #include <kdl/frames_io.hpp>
 #include <tf_conversions/tf_kdl.h>

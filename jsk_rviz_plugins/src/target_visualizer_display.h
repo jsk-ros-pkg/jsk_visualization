@@ -55,6 +55,8 @@
 #include <rviz/ogre_helpers/movable_text.h>
 #include <geometry_msgs/PoseStamped.h>
 
+#include "facing_visualizer.h"
+
 namespace jsk_rviz_plugin
 {
   class TargetVisualizerDisplay:
@@ -64,50 +66,38 @@ namespace jsk_rviz_plugin
   public:
     TargetVisualizerDisplay();
     virtual ~TargetVisualizerDisplay();
+    enum ShapeType
+    {
+      SimpleCircle,
+      GISCircle
+    };
+    
   protected:
     virtual void onInitialize();
     virtual void reset();
+    virtual void onEnable();
     void processMessage(const geometry_msgs::PoseStamped::ConstPtr& msg);
     void update(float wall_dt, float ros_dt);
-    void createArrows();
-    void updateArrowsObjects(Ogre::ColourValue color);
     rviz::StringProperty* target_name_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* radius_property_;
-    Ogre::SceneNode* facing_node_;
-    Ogre::SceneNode* target_text_node_;
-    rviz::BillboardLine* line_;
-    rviz::BillboardLine* text_under_line_;
-    Ogre::ManualObject* upper_arrow_;
-    Ogre::ManualObject* lower_arrow_;
-    Ogre::ManualObject* left_arrow_;
-    Ogre::ManualObject* right_arrow_;
-    Ogre::SceneNode* upper_arrow_node_;
-    Ogre::SceneNode* lower_arrow_node_;
-    Ogre::SceneNode* left_arrow_node_;
-    Ogre::SceneNode* right_arrow_node_;
-    Ogre::MaterialPtr upper_material_;
-    Ogre::MaterialPtr lower_material_;
-    Ogre::MaterialPtr left_material_;
-    Ogre::MaterialPtr right_material_;
-    std::string upper_material_name_;
-    std::string left_material_name_;
-    std::string lower_material_name_;
-    std::string right_material_name_;
-    rviz::MovableText* msg_;
+    rviz::EnumProperty* shape_type_property_;
+    FacingObject::Ptr visualizer_;
+    
     boost::mutex mutex_;
     std::string target_name_;
-    float t_;
     double alpha_;
     QColor color_;
     double radius_;
-    bool require_update_line_;
+    bool message_recieved_;
+    ShapeType current_type_;        
   private Q_SLOTS:
     void updateTargetName();
     void updateAlpha();
     void updateColor();
     void updateRadius();
+    void updateShapeType();
   private:
     
   };
