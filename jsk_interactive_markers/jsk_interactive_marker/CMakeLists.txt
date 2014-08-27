@@ -55,6 +55,7 @@ rosbuild_add_executable(pointcloud_cropper
   src/interactive_marker_helpers.cpp)
 
 rosbuild_add_executable(interactive_point_cloud src/interactive_point_cloud_node.cpp src/interactive_point_cloud.cpp src/interactive_marker_helpers.cpp)
+rosbuild_add_executable(urdf_control_marker src/urdf_control_marker.cpp)
 
 target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
 #rosbuild_add_executable(interactive_marker_interface_both_arm src/interactive_marker_interface_both_arm.cpp)
