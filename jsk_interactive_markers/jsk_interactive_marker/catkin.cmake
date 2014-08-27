@@ -46,6 +46,10 @@ add_executable(urdf_model_marker src/urdf_model_marker.cpp src/urdf_model_marker
 target_link_libraries(urdf_model_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(urdf_model_marker ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
+add_executable(urdf_control_marker src/urdf_control_marker.cpp)
+target_link_libraries(urdf_control_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+add_dependencies(urdf_control_marker ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+
 add_executable(point_cloud_config_marker src/point_cloud_config_marker.cpp)
 target_link_libraries(point_cloud_config_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(point_cloud_config_marker ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
