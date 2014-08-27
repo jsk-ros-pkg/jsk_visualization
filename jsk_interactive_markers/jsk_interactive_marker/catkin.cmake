@@ -27,6 +27,7 @@ add_service_files(DIRECTORY srv
   FILES MarkerSetPose.srv SetPose.srv)
 
 generate_dynamic_reconfigure_options(
+  cfg/InteractivePointCloud.cfg
   cfg/PointCloudCropper.cfg
   )
 
@@ -34,6 +35,7 @@ add_definitions("-g")
 
 include_directories(include ${catkin_INCLUDE_DIRS}
   ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS})
+
 # target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${TinyXML_LIBRARIES} ${orocos_kdl_LIBRARIES})
 link_directories(${catkin_LIBRARY_DIRS})
 link_directories(${orocos_kdl_LIBRARY_DIRS})
@@ -73,6 +75,10 @@ add_dependencies(world2yaml ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPOR
 add_executable(bounding_box_marker src/bounding_box_marker.cpp)
 target_link_libraries(bounding_box_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(bounding_box_marker ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+
+add_executable(interactive_point_cloud src/interactive_point_cloud_node.cpp src/interactive_point_cloud.cpp src/interactive_marker_helpers.cpp)
+target_link_libraries(interactive_point_cloud ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+add_dependencies(interactive_point_cloud ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(pointcloud_cropper src/pointcloud_cropper.cpp
   src/interactive_marker_helpers.cpp)
