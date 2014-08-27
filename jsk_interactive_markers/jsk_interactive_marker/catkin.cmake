@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+ncmake_minimum_required(VERSION 2.8.3)
 project(jsk_interactive_marker)
 
 if($ENV{ROS_DISTRO} STREQUAL "groovy")
@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   ${PCL_MSGS}
   jsk_topic_tools)
+
 find_package(orocos_kdl REQUIRED)
 find_package(TinyXML REQUIRED)
 

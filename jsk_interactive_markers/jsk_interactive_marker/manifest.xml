@@ -28,5 +28,6 @@
   <depend package="cmake_modules" />
   <depend package="urdf" />
   <depend package="message_filters" />
+  <depend package="jsk_topic_tools" />
 </package>
 
