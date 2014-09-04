@@ -2,6 +2,17 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add enum menu to TargetVisualizer and PeoplePositionMeasurementDisplay
+  to select the style of the visualizer
+* do not depends on people_msgs on groovy
+* add SimpeCircleFacingVisualizer class
+* separate a code to draw visualizer into facing_visualizer.cpp
+* add rviz plugin for face_detector
+* cleanup package.xml of jsk_rviz_plugins
+* Contributors: Ryohei Ueda
+
 1.0.7 (2014-08-06)
 ------------------
 * show "stalled" if no diagnostic message received in OverlayDiagnosticDisplay

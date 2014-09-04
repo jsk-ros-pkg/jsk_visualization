@@ -2,6 +2,11 @@
 Changelog for package jsk_interactive_test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use joy_mouse package
+* Contributors: Ryohei Ueda
+
 1.0.7 (2014-08-06)
 ------------------
 

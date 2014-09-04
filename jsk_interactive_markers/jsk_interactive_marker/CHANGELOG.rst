@@ -2,6 +2,17 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* control marker with topic
+* reset hand pose
+* update catkin.cmake for urdf_control_marker
+* root control marker for urdf marker
+* rename config file
+* use jsk_topic_tools::TimeAccumulator instead of jsk_pcl_ros::TimeAccumulator
+* add include for catkin
+* Contributors: Ryohei Ueda, Yusuke Furuta
+
 1.0.7 (2014-08-06)
 ------------------
 * add new program: pointcloud_cropper to crop pointcloud with interactive marker
