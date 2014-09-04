@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.8 (2014-09-04)
+------------------
 * control marker with topic
 * reset hand pose
 * update catkin.cmake for urdf_control_marker
