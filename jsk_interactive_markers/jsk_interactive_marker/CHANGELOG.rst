@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.9 (2014-09-07)
+------------------
 * add ${PROJECT_NAME}_gencfg to all depends
 * Contributors: Kei Okada
 
