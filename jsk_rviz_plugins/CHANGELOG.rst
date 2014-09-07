@@ -2,6 +2,9 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.8 (2014-09-04)
 ------------------
 * add enum menu to TargetVisualizer and PeoplePositionMeasurementDisplay
