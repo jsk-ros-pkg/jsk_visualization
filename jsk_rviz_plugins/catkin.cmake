@@ -8,7 +8,8 @@ project(jsk_rviz_plugins)
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros
   ${people_msgs}
-  message_generation std_msgs diagnostic_msgs cv_bridge)
+  message_generation std_msgs diagnostic_msgs cv_bridge
+  image_geometry)
 
 add_message_files(FILES OverlayText.msg OverlayMenu.msg)
 generate_messages(DEPENDENCIES std_msgs)
@@ -16,7 +17,7 @@ generate_messages(DEPENDENCIES std_msgs)
 catkin_package(
     DEPENDS rviz
     CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
-    jsk_pcl_ros cv_bridge ${people_msgs}
+    jsk_pcl_ros cv_bridge ${people_msgs} image_geometry
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
@@ -61,6 +62,7 @@ qt4_wrap_cpp(MOC_FILES
   src/target_visualizer_display.h
   ${people_position_measurement_array_header}
   src/sparse_occupancy_grid_array_display.h
+  src/camera_info_display.h
 )
 
 set(SOURCE_FILES
@@ -88,6 +90,7 @@ set(SOURCE_FILES
   ${people_position_measurement_array_source}
   src/overlay_utils.cpp
   src/facing_visualizer.cpp
+  src/camera_info_display.cpp
   ${MOC_FILES}
 )
 
