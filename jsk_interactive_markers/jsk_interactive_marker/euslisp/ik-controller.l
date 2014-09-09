@@ -608,7 +608,12 @@
        ;;reset root pose
        (ros::publish (format nil "~A/~A/reset_root_pose" *im-nodename* *robot-name*)
 		     (instance std_msgs::Empty :init))
-       )
+       (case *move-limb*
+	 (:arms
+	  )
+	 (t
+	  (send self :set-origin-to-hand *move-limb*)
+	  )))
       ;;set origin to hand
       ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
        (let ((message "set origin to rhand"))
@@ -928,12 +933,20 @@
   (:set-marker-pose
    (coords &key (marker-name) (frame "/map") (markers) (server *server-nodename*))
    (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
-	 (msg (ros::coords->tf-pose-stamped coords frame)))
+	 (msg (ros::coords->tf-pose-stamped coords frame))
+	 (ps (instance geometry_msgs::PoseStamped :init)))
      (send req :marker_name marker-name)
      (send req :pose msg)
      (send req :markers markers)
      (ros::service-call (format nil "~A/set_pose" server)
 			req)
+
+     ;;publish set pose
+     (send ps :pose msg)
+     (send ps :header :frame_id frame)
+     (ros::publish (format nil "~A/set_pose" *server-nodename*)
+		   msg)
+     
      ))
 
   (:set-marker-pose-robot
@@ -1487,6 +1500,8 @@
 
    (ros::advertise (format nil "~A/marker" *server-nodename*)
 		   visualization_msgs::Marker)
+   (ros::advertise (format nil "~A/set_pose" *server-nodename*)
+		   geometry_msgs::PoseStamped)
    (ros::advertise
     (format nil "~A/origin_marker" *server-nodename*)
     visualization_msgs::Marker)

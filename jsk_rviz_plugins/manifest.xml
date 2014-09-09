@@ -17,6 +17,7 @@
   <depend package="std_msgs" />
   <depend package="rviz" />
   <depend package="cv_bridge" />
+  <depend package="image_geometry" />
   <!-- <depend package="people_msgs" /> -->
   <rosdep name="wxwidgets" />
   <export>
