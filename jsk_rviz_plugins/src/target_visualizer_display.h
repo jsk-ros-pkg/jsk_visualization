@@ -66,6 +66,12 @@ namespace jsk_rviz_plugin
   public:
     TargetVisualizerDisplay();
     virtual ~TargetVisualizerDisplay();
+    enum ShapeType
+    {
+      SimpleCircle,
+      GISCircle
+    };
+    
   protected:
     virtual void onInitialize();
     virtual void reset();
@@ -76,18 +82,22 @@ namespace jsk_rviz_plugin
     rviz::FloatProperty* alpha_property_;
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* radius_property_;
-    SimpleCircleFacingVisualizer::Ptr visualizer_;
+    rviz::EnumProperty* shape_type_property_;
+    FacingObject::Ptr visualizer_;
+    
     boost::mutex mutex_;
     std::string target_name_;
     double alpha_;
     QColor color_;
     double radius_;
     bool message_recieved_;
+    ShapeType current_type_;        
   private Q_SLOTS:
     void updateTargetName();
     void updateAlpha();
     void updateColor();
     void updateRadius();
+    void updateShapeType();
   private:
     
   };

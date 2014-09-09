@@ -9,6 +9,7 @@
 #include <tf/transform_datatypes.h>
 #include <pcl_ros/transforms.h>
 #include <tf/transform_listener.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 
 using namespace visualization_msgs;
