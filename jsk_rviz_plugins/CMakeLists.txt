@@ -78,6 +78,7 @@ qt4_wrap_cpp(MOC_FILES
   src/target_visualizer_display.h
 #  ${people_position_measurement_array_header}
   src/sparse_occupancy_grid_array_display.h
+  src/camera_info_display.h
 )
 
 set(SOURCE_FILES
@@ -105,6 +106,7 @@ set(SOURCE_FILES
 #  ${people_position_measurement_array_source}
   src/overlay_utils.cpp
   src/facing_visualizer.cpp
+  src/camera_info_display.cpp
   ${MOC_FILES})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(jsk_rviz_plugins ${SOURCE_FILES})
