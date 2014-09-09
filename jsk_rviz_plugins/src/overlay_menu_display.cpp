@@ -180,6 +180,12 @@ namespace jsk_rviz_plugin
       ROS_DEBUG("next_menu_ is null, no need to update");
       return;
     }
+    if (!overlay_ &&
+        next_menu_->action == jsk_rviz_plugins::OverlayMenu::ACTION_CLOSE &&
+        animation_state_ == CLOSED) {
+      ROS_DEBUG("first message is CLOSE requirement, we ignore it.");
+      return;
+    }
     if (!overlay_) {
       static int count = 0;
       rviz::UniformStringStream ss;
