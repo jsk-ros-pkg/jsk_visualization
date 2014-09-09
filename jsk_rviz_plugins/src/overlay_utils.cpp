@@ -144,7 +144,7 @@ namespace jsk_rviz_plugin
     if (!isTextureReady() ||
         ((width != texture_->getWidth()) ||
          (height != texture_->getHeight()))) {
-      if (!isTextureReady()) {
+      if (isTextureReady()) {
         Ogre::TextureManager::getSingleton().remove(texture_name);
         panel_material_->getTechnique(0)->getPass(0)
           ->removeAllTextureUnitStates();
