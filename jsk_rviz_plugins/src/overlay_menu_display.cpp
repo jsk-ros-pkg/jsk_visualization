@@ -114,25 +114,34 @@ namespace jsk_rviz_plugin
   bool OverlayMenuDisplay::isNeedToResize()
   {
     if (!current_menu_ && next_menu_) { // first time
+      ROS_DEBUG("need to resize because this is the first time to draw");
       return true;
     }
     else if (!current_menu_ && !next_menu_) {
+      // both are null, it means that ...
+      // the plugin tries to draw without message reception
+      ROS_DEBUG("no need to resize because the plugin tries to draw without message reception");
       return false;
     }
     else if (current_menu_ && !next_menu_) {
+      // this is unexpected case
+      ROS_DEBUG("no need to resize, this is unexpected case. please debug");
       return false;
     }
     else {
       if (current_menu_->menus.size() != next_menu_->menus.size()) {
+        ROS_DEBUG("need to resize because the length of menu is different");
         return true;
       }
       else {
         // check all the menu is same or not
         for (size_t i = 0; i < current_menu_->menus.size(); i++) {
           if (current_menu_->menus[i] != next_menu_->menus[i]) {
+            ROS_DEBUG("need to resize because the content of menu is different");
             return true;
           }
         }
+        ROS_DEBUG("no need to resize because the content of menu is same");
         return false;
       }
     }
@@ -180,78 +189,79 @@ namespace jsk_rviz_plugin
       ROS_DEBUG("next_menu_ is null, no need to update");
       return;
     }
-    if (!overlay_ &&
-        next_menu_->action == jsk_rviz_plugins::OverlayMenu::ACTION_CLOSE &&
+    if (next_menu_->action == jsk_rviz_plugins::OverlayMenu::ACTION_CLOSE &&
         animation_state_ == CLOSED) {
-      ROS_DEBUG("first message is CLOSE requirement, we ignore it.");
+      ROS_DEBUG("request is close and state is closed, we ignore it completely");
       return;
     }
-    if (!overlay_) {
-      static int count = 0;
-      rviz::UniformStringStream ss;
-      ss << "OverlayMenuDisplayObject" << count++;
-      overlay_.reset(new OverlayObject(ss.str()));
-      overlay_->show();
-    }
+    // if (!overlay_) {
+    //   static int count = 0;
+    //   rviz::UniformStringStream ss;
+    //   ss << "OverlayMenuDisplayObject" << count++;
+    //   overlay_.reset(new OverlayObject(ss.str()));
+    //   overlay_->show();
+    // }
     
-    if (isNeedToResize()) {
-      overlay_->updateTextureSize(drawAreaWidth(next_menu_), drawAreaHeight(next_menu_));
-    }
-    else {
-      ROS_DEBUG("no need to update texture size");
-    }
+    // if (isNeedToResize()) {
+    //   overlay_->updateTextureSize(drawAreaWidth(next_menu_), drawAreaHeight(next_menu_));
+    // }
+    // else {
+    //   ROS_DEBUG("no need to update texture size");
+    // }
     if (next_menu_->action == jsk_rviz_plugins::OverlayMenu::ACTION_CLOSE) {
       // need to close...
       if (animation_state_ == CLOSED) {
-        // do nothing
+        // do nothing, it should be ignored above if sentence
+        ROS_WARN("request is CLOSE and state is CLOSED, it should be ignored before...");
       }
-      else if (animation_state_ == OPENED) {
+      else if (animation_state_ == OPENED) { // OPENED -> CLOSING
         animation_state_ = CLOSING;
         animation_t_ = animate_duration;
       }
       else if (animation_state_ == CLOSING) {
         animation_t_ -= wall_dt;
-        if (animation_t_ > 0) {
+        if (animation_t_ > 0) { // CLOSING -> CLOSING
           openingAnimation();
         }
-        else {
+        else { // CLOSING -> CLOSED
           animation_t_ = 0;
           openingAnimation();
           animation_state_ = CLOSED;
         }
       }
-      else if (animation_state_ == OPENING) {
+      else if (animation_state_ == OPENING) { // if the status is OPENING, we open it anyway...??
         animation_t_ += wall_dt;
-        if (animation_t_ < animate_duration) {
+        if (animation_t_ < animate_duration) { // OPENING -> OPENING
           openingAnimation();
         }
-        else {
+        else {                  // OPENING -> OPENED
           redraw();
           animation_state_ = OPENED;
         }
       }
     }
-    else {
-      if (animation_state_ == CLOSED) {
+    else {                      // OPEN request
+      if (animation_state_ == CLOSED) { // CLOSED -> OPENING, do nothing just change the state
         animation_t_ = 0.0;
         animation_state_ = OPENING;
       }
       else if (animation_state_ == OPENING) {
         animation_t_ += wall_dt;
-        if (animation_t_ < animate_duration) {
+        ROS_DEBUG("animation_t: %f", animation_t_);
+        if (animation_t_ < animate_duration) { // OPENING -> OPENING
           openingAnimation();
         }
-        else {
+        else {                  // OPENING -> OPENED
           redraw();
           animation_state_ = OPENED;
         }
       }
-      else if (animation_state_ == OPENED) {
+      else if (animation_state_ == OPENED) { // OPENED -> OPENED
         if (isNeedToRedraw()) {
           redraw();
         }
       }
-      else if (animation_state_ == CLOSING) {
+      else if (animation_state_ == CLOSING) { // CLOSING, we close it anyway...
         animation_t_ -= wall_dt;
         if (animation_t_ > 0) {
           openingAnimation();
@@ -263,7 +273,8 @@ namespace jsk_rviz_plugin
         }
       }
     }
-    current_menu_ = next_menu_;
+    //redraw();
+    //current_menu_ = next_menu_;
   }
 
   bool OverlayMenuDisplay::isNeedToRedraw() {
@@ -282,8 +293,27 @@ namespace jsk_rviz_plugin
     }
   }
 
+  void OverlayMenuDisplay::prepareOverlay()
+  {
+    if (!overlay_) {
+      static int count = 0;
+      rviz::UniformStringStream ss;
+      ss << "OverlayMenuDisplayObject" << count++;
+      overlay_.reset(new OverlayObject(ss.str()));
+      overlay_->show();
+    }
+    if (!overlay_->isTextureReady() || isNeedToResize()) {
+      overlay_->updateTextureSize(drawAreaWidth(next_menu_), drawAreaHeight(next_menu_));
+    }
+    else {
+      ROS_DEBUG("no need to update texture size");
+    }
+  }
+  
   void OverlayMenuDisplay::openingAnimation()
   {
+    ROS_DEBUG("openningAnimation");
+    prepareOverlay();
     int current_width = animation_t_ / animate_duration * overlay_->getTextureWidth();
     int current_height = animation_t_ / animate_duration * overlay_->getTextureHeight();
     {
@@ -310,10 +340,13 @@ namespace jsk_rviz_plugin
     int window_height = context_->getViewManager()->getRenderPanel()->height();
     overlay_->setPosition((window_width - overlay_->getTextureWidth()) / 2.0,
                           (window_height - overlay_->getTextureHeight()) / 2.0);
+    current_menu_ = next_menu_;
   }
   
   void OverlayMenuDisplay::redraw()
   {
+    ROS_DEBUG("redraw");
+    prepareOverlay();
     {
       ScopedPixelBuffer buffer = overlay_->getBuffer();
       QColor bg_color(0, 0, 0, 255.0 / 2.0);
@@ -357,6 +390,7 @@ namespace jsk_rviz_plugin
                        texture_width - menu_padding_x / 2, texture_height - menu_last_padding_y / 2);
       
       painter.end();
+      current_menu_ = next_menu_;
     }
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     int window_width = context_->getViewManager()->getRenderPanel()->width();

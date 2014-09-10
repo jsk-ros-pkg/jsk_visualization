@@ -74,7 +74,7 @@ namespace jsk_rviz_plugin
     jsk_rviz_plugins::OverlayMenu::ConstPtr current_menu_;
     jsk_rviz_plugins::OverlayMenu::ConstPtr next_menu_;
     double animation_t_;
-    
+    virtual void prepareOverlay();
     virtual void openingAnimation();
     virtual std::string getMenuString(
       const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg,
