@@ -29,6 +29,7 @@ add_service_files(DIRECTORY srv
 generate_dynamic_reconfigure_options(
   cfg/InteractivePointCloud.cfg
   cfg/PointCloudCropper.cfg
+  cfg/CameraInfoPublisher.cfg
   )
 
 add_definitions("-g")
@@ -43,6 +44,10 @@ link_directories(${orocos_kdl_LIBRARY_DIRS})
 add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(interactive_marker_interface ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(interactive_marker_interface ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(camera_info_publisher src/camera_info_publisher.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
+target_link_libraries(camera_info_publisher ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+add_dependencies(camera_info_publisher ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 add_executable(urdf_model_marker src/urdf_model_marker.cpp src/urdf_model_marker_main.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(urdf_model_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
