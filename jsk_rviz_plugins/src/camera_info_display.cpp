@@ -38,6 +38,8 @@
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreBlendMode.h>
+#include <QImage>
+#include <OGRE/OgreHardwarePixelBuffer.h>
 
 namespace jsk_rviz_plugin
 {
@@ -226,14 +228,19 @@ namespace jsk_rviz_plugin
         Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
     
       material_->getTechnique(0)->getPass(0)->setColourWriteEnabled(true);
-      //material_->getTechnique(0)->getPass(0)->setAmbient(colour);
+      Ogre::ColourValue color = rviz::qtToOgre(color_);
+      color.a = alpha_;
+      material_->getTechnique(0)->getPass(0)->setAmbient(color);
       material_->setReceiveShadows(false);
       material_->getTechnique(0)->setLightingEnabled(true);
-    
-      material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      material_->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+      material_->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+      material_->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+      material_->getTechnique(0)->getPass(0)->setDepthCheckEnabled(true);
+      
       material_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
-      //material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
       material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_->getName());
+      material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
     }
   }
 
@@ -284,6 +291,16 @@ namespace jsk_rviz_plugin
       color.a = alpha_;
       prepareMaterial();
       material_->getTechnique(0)->getPass(0)->setAmbient(color);
+      {      
+        texture_->getBuffer()->lock( Ogre::HardwareBuffer::HBL_NORMAL );
+        const Ogre::PixelBox& pixelBox = texture_->getBuffer()->getCurrentLock();
+        Ogre::uint8* pDest = static_cast<Ogre::uint8*> (pixelBox.data);
+        memset(pDest, 0, 1);
+        QImage Hud(pDest, 1, 1, QImage::Format_ARGB32 );
+        Hud.setPixel(0, 0, color_.rgba());
+        texture_->getBuffer()->unlock();
+      }
+
       addPolygon(O, scaled_B, scaled_A);
       addPolygon(O, scaled_C, scaled_B);
       addPolygon(O, scaled_D, scaled_C);
