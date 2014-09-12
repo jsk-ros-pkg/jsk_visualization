@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_rviz_plugins</name>
-  <version>1.0.9</version>
+  <version>1.0.10</version>
   <description>The jsk_rviz_plugins package</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
   <license>BSD</license>

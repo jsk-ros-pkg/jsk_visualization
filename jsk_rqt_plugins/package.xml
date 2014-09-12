@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_rqt_plugins</name>
-  <version>1.0.9</version>
+  <version>1.0.10</version>
   <description>The jsk_rqt_plugins package</description>
   <maintainer email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</maintainer>
   <license>BSD</license>

@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2014-09-13)
+-------------------
 * Fix color of people visualizer by initializing color to sky blue
 * Fix texture color of camera info by filling color value of texture image
 * Fix caching of overlay textures of OverlayMenuDisplay to support
