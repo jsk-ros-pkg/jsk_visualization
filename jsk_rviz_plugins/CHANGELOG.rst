@@ -2,6 +2,17 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix color of people visualizer by initializing color to sky blue
+* Fix texture color of camera info by filling color value of texture image
+* Fix caching of overlay textures of OverlayMenuDisplay to support
+  changing menus
+* add relay camera info node
+* Add new plugin to visualize sensor_msgs/CameraInfo
+* Ignore first message means CLOSE in OverlayMenuDisplay
+* Contributors: Ryohei Ueda, Yusuke Furuta
+
 1.0.9 (2014-09-07)
 ------------------
 
