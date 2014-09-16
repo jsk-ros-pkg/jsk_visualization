@@ -44,7 +44,6 @@ namespace jsk_rviz_plugin
     std::vector<Ogre::SceneNode*> scene_nodes_;
     std::vector<Ogre::MaterialPtr> materials_;
     std::vector<rviz::BillboardLine*> lines_;
-    std::vector<QColor> colors_;
   };
 }
 
