@@ -2,6 +2,11 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.10 (2014-09-13)
+-------------------
+* add new executable to control CameraInfo with interactive marker
+* Contributors: Ryohei Ueda
+
 1.0.9 (2014-09-07)
 ------------------
 * add ${PROJECT_NAME}_gencfg to all depends

@@ -127,7 +127,7 @@ namespace jsk_rviz_plugin
       name,
       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
       Ogre::TEX_TYPE_2D,
-      width, height,
+       width, height,
       0,
       Ogre::PF_A8R8G8B8,
       Ogre::TU_DEFAULT
@@ -138,6 +138,17 @@ namespace jsk_rviz_plugin
  
     material_->getTechnique(0)->getPass(0)->createTextureUnitState(
       texture_->getName());
+    material_->setReceiveShadows(false);
+    material_->getTechnique(0)->setLightingEnabled(true);
+    material_->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+    material_->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+    material_->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+    material_->getTechnique(0)->getPass(0)->setDepthCheckEnabled(true);
+      
+    material_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
+    material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_->getName());
+    material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+
     material_->getTechnique(0)->getPass(0)
       ->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
      // material_->getTechnique(0)->getPass(0)
