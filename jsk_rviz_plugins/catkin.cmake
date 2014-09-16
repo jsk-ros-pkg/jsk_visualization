@@ -9,6 +9,7 @@ project(jsk_rviz_plugins)
 find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros
   ${people_msgs}
   message_generation std_msgs diagnostic_msgs cv_bridge
+  jsk_topic_tools
   image_geometry)
 
 add_message_files(FILES OverlayText.msg OverlayMenu.msg)

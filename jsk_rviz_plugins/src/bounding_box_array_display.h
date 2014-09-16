@@ -67,7 +67,6 @@ namespace jsk_rviz_plugin
     rviz::FloatProperty* line_width_property_;
     rviz::BoolProperty* auto_color_property_;
     QColor color_;
-    std::vector<QColor> colors_;
     double alpha_;
     bool only_edge_;
     bool auto_color_;
