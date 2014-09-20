@@ -108,6 +108,9 @@ namespace jsk_rviz_plugin
                                                           size_,
                                                           text_)));
         visualizers_[visualizers_.size() - 1]->setAnonymous(anonymous_);
+        visualizers_[visualizers_.size() - 1]->update(0, 0);
+        QColor color(25.0, 255.0, 240.0);
+        visualizers_[visualizers_.size() - 1]->setColor(color);
       }
     }
     else {

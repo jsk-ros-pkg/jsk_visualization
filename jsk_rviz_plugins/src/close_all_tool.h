@@ -1,4 +1,4 @@
-// -*- mode: c++; -*-
+// -*- mode: c++ -*-
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
@@ -33,55 +33,29 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
-#define JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
 
-#include <jsk_pcl_ros/BoundingBoxArray.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/bool_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/message_filter_display.h>
-#include <rviz/ogre_helpers/shape.h>
-#include <rviz/ogre_helpers/billboard_line.h>
-#include <OGRE/OgreSceneNode.h>
+#ifndef JSK_RVIZ_PLUGIN_CLOSE_ALL_TOOL_H_
+#define JSK_RVIZ_PLUGIN_CLOSE_ALL_TOOL_H_
+
+#include <rviz/tool.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_tree_model.h>
 
 namespace jsk_rviz_plugin
 {
-  class BoundingBoxArrayDisplay: public rviz::MessageFilterDisplay<jsk_pcl_ros::BoundingBoxArray>
+  class CloseAllTool: public rviz::Tool
   {
-    Q_OBJECT
   public:
-    typedef boost::shared_ptr<rviz::Shape> ShapePtr;
-    typedef boost::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
-    BoundingBoxArrayDisplay();
-    virtual ~BoundingBoxArrayDisplay();
-  protected:
+    CloseAllTool();
+    virtual ~CloseAllTool();
     virtual void onInitialize();
-    virtual void reset();
-    void allocateShapes(int num);
-    void allocateBillboardLines(int num);
-    QColor getColor(size_t index);
-    rviz::ColorProperty* color_property_;
-    rviz::FloatProperty* alpha_property_;
-    rviz::BoolProperty* only_edge_property_;
-    rviz::FloatProperty* line_width_property_;
-    rviz::BoolProperty* auto_color_property_;
-    QColor color_;
-    double alpha_;
-    bool only_edge_;
-    bool auto_color_;
-    double line_width_;
-    std::vector<ShapePtr> shapes_;
-    std::vector<BillboardLinePtr> edges_;
-  private Q_SLOTS:
-    void updateColor();
-    void updateAlpha();
-    void updateOnlyEdge();
-    void updateAutoColor();
-    void updateLineWidth();
+    virtual void activate();
+    virtual void deactivate();
+  protected:
+    virtual void closeProperty(rviz::Property* property);
   private:
-    void processMessage(const jsk_pcl_ros::BoundingBoxArray::ConstPtr& msg);
+    
   };
-
 }
+
 #endif

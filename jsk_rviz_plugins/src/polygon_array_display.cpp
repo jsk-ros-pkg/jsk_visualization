@@ -1,6 +1,7 @@
 #include "polygon_array_display.h"
 #include "rviz/properties/parse_color.h"
 #include <rviz/validate_floats.h>
+#include <jsk_topic_tools/color_utils.h>
 
 namespace jsk_rviz_plugin
 {
@@ -21,14 +22,6 @@ namespace jsk_rviz_plugin
     only_border_ = true;
     alpha_property_->setMin( 0 );
     alpha_property_->setMax( 1 );
-    colors_.push_back(QColor(255.0, 0.0, 0.0, 255.0));
-    colors_.push_back(QColor(0.0, 255.0, 0.0, 255.0));
-    colors_.push_back(QColor(0.0, 0.0, 255.0, 255.0));
-    colors_.push_back(QColor(255.0, 255.0, 0.0, 255.0));
-    colors_.push_back(QColor(255.0, 0.0, 255.0, 255.0));
-    colors_.push_back(QColor(0.0, 255.0, 255.0, 255.0));
-    colors_.push_back(QColor(255.0, 255.0, 255.0, 255.0));
-
   }
   
   PolygonArrayDisplay::~PolygonArrayDisplay()
@@ -170,7 +163,11 @@ namespace jsk_rviz_plugin
         
           Ogre::ColourValue color;
           if (auto_coloring_) {
-            color = rviz::qtToOgre( colors_[i % colors_.size()]);
+            std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(i);
+            color.r = ros_color.r;
+            color.g = ros_color.g;
+            color.b = ros_color.b;
+            color.a = ros_color.a;
           }
           else {
             color = rviz::qtToOgre( color_property_->getColor() );
@@ -197,7 +194,11 @@ namespace jsk_rviz_plugin
       for (size_t i = 0; i < msg->polygons.size(); i++) {
         Ogre::ColourValue color;
         if (auto_coloring_) {
-          color = rviz::qtToOgre( colors_[i % colors_.size()]);
+          std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(i);
+          color.r = ros_color.r;
+          color.g = ros_color.g;
+          color.b = ros_color.b;
+          color.a = ros_color.a;
         }
         else {
           color = rviz::qtToOgre( color_property_->getColor() );
