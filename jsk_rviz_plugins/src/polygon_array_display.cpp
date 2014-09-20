@@ -2,6 +2,7 @@
 #include "rviz/properties/parse_color.h"
 #include <rviz/validate_floats.h>
 #include <jsk_topic_tools/color_utils.h>
+#include <jsk_pcl_ros/geo_util.h>
 
 namespace jsk_rviz_plugin
 {
@@ -16,10 +17,10 @@ namespace jsk_rviz_plugin
     alpha_property_ = new rviz::FloatProperty( "Alpha", 1.0,
                                                "Amount of transparency to apply to the polygon.",
                                                this, SLOT( queueRender() ));
-    // only_border_property_ = new rviz::BoolProperty("only border", true,
-    //                                                "only shows the borders of polygons",
-    //                                                this, SLOT(updateOnlyBorder()));
-    only_border_ = true;
+    only_border_property_ = new rviz::BoolProperty("only border", true,
+                                                   "only shows the borders of polygons",
+                                                   this, SLOT(updateOnlyBorder()));
+    //only_border_ = true;
     alpha_property_->setMin( 0 );
     alpha_property_->setMax( 1 );
   }
@@ -49,7 +50,7 @@ namespace jsk_rviz_plugin
   void PolygonArrayDisplay::onInitialize()
   {
     MFDClass::onInitialize();
-    //updateOnlyBorder();
+    updateOnlyBorder();
     updateAutoColoring();
   }
 
@@ -151,7 +152,8 @@ namespace jsk_rviz_plugin
           //Ogre::ManualObject* manual_object = manual_objects_[i];
           Ogre::Vector3 position;
           Ogre::Quaternion orientation;
-          if( !context_->getFrameManager()->getTransform( polygon.header, position, orientation )) {
+          if( !context_->getFrameManager()->getTransform(
+                polygon.header, position, orientation )) {
             ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
                        polygon.header.frame_id.c_str(), qPrintable( fixed_frame_ ));
           }
@@ -227,24 +229,50 @@ namespace jsk_rviz_plugin
         Ogre::ManualObject* manual_object = manual_objects_[i * 2];
         Ogre::Vector3 position;
         Ogre::Quaternion orientation;
-        if( !context_->getFrameManager()->getTransform( polygon.header, position, orientation )) {
+        if(!context_->getFrameManager()->getTransform(
+             polygon.header, position, orientation)) {
           ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-                     polygon.header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+                     polygon.header.frame_id.c_str(), qPrintable(fixed_frame_));
         }
         scene_node->setPosition( position );
         scene_node->setOrientation( orientation );
         manual_object->clear();
         manual_object->setVisible(true);
-        uint32_t num_points = polygon.polygon.points.size();
-        if( num_points > 0 )
-        {
-          manual_object->estimateVertexCount( num_points );
-          manual_object->begin(materials_[i]->getName(), Ogre::RenderOperation::OT_TRIANGLE_FAN );
-          for( uint32_t i = 0; i < num_points + 1; ++i )
-          {
-            const geometry_msgs::Point32& msg_point = polygon.polygon.points[ i % num_points ];
-            manual_object->position( msg_point.x, msg_point.y, msg_point.z );
+
+        jsk_pcl_ros::Polygon geo_polygon
+          = jsk_pcl_ros::Polygon::fromROSMsg(polygon.polygon);
+        // if (!geo_polygon.isConvex()) {
+        //   ROS_WARN("non convex polygon is not supported");
+        // }
+        std::vector<jsk_pcl_ros::Polygon::Ptr>
+          triangles = geo_polygon.decomposeToTriangles();
+        
+        //uint32_t num_points = polygon.polygon.points.size();
+        uint32_t num_points = 0;
+        for (size_t j = 0; j < triangles.size(); j++) {
+          num_points += triangles[j]->getNumVertices();
+        }
+        if( num_points > 0 ) {
+          manual_object->estimateVertexCount(num_points * 2);
+          manual_object->begin(
+            materials_[i]->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+          for (size_t ii = 0; ii < triangles.size(); ii++) {
+            jsk_pcl_ros::Polygon::Ptr triangle = triangles[ii];
+            size_t num_vertices = triangle->getNumVertices();
+            for (size_t j = 0; j < num_vertices; j++) {
+              Eigen::Vector3f v = triangle->getVertex(j);
+              manual_object->position(v[0], v[1], v[2]);
+            }
+            for (int j = num_vertices - 1; j >= 0; j--) {
+              Eigen::Vector3f v = triangle->getVertex(j);
+              manual_object->position(v[0], v[1], v[2]);
+            }
           }
+          // for( uint32_t i = 0; i < num_points + 1; ++i )
+          // {
+          //   const geometry_msgs::Point32& msg_point = polygon.polygon.points[ i % num_points ];
+          //   manual_object->position( msg_point.x, msg_point.y, msg_point.z );
+          // }
           manual_object->end();
         }
       }
