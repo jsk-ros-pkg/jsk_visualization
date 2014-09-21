@@ -50,7 +50,7 @@ namespace jsk_rviz_plugin
 {
   const double overlay_diagnostic_animation_duration = 5.0;
   OverlayDiagnosticDisplay::OverlayDiagnosticDisplay()
-    : Display(), overlay_(NULL)
+    : Display()
   {
     ros_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "/diagnostics_agg",
@@ -80,6 +80,12 @@ namespace jsk_rviz_plugin
       this, SLOT(updateAlpha()));
     alpha_property_->setMin(0.0);
     alpha_property_->setMax(1.0);
+    stall_duration_property_ = new rviz::FloatProperty(
+      "stall duration", 5.0,
+      "seconds to be regarded as stalled",
+      this, SLOT(updateStallDuration())
+      );
+    stall_duration_property_->setMin(0.0);
   }
 
   OverlayDiagnosticDisplay::~OverlayDiagnosticDisplay()
@@ -87,8 +93,8 @@ namespace jsk_rviz_plugin
     if (overlay_) {
       overlay_->hide();
     }
-    panel_material_->unload();
-    Ogre::MaterialManager::getSingleton().remove(panel_material_->getName());
+    // panel_material_->unload();
+    // Ogre::MaterialManager::getSingleton().remove(panel_material_->getName());
     delete ros_topic_property_;
     delete diagnostics_namespace_property_;
     delete top_property_;
@@ -138,26 +144,32 @@ namespace jsk_rviz_plugin
       if (status.name == diagnostics_namespace_) {
         latest_status_
           = boost::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
+        latest_message_time_ = ros::WallTime::now();
+        break;
       }
     }
-    
   }
 
   void OverlayDiagnosticDisplay::update(float wall_dt, float ros_dt)
   {
     boost::mutex::scoped_lock(mutex_);
-    t_ += wall_dt;
-    
-    updateTextureSize(size_, size_);
-    if (texture_.isNull()) {
-      ROS_WARN("failed to create texture");
+    if (!isEnabled()) {
       return;
     }
-    else {
-      redraw();
-      panel_->setDimensions(texture_->getWidth(), texture_->getHeight());
-      panel_->setPosition(left_, top_);
+    if (!overlay_) {
+      static int count = 0;
+      rviz::UniformStringStream ss;
+      ss << "OverlayDiagnosticDisplayObject" << count++;
+      overlay_.reset(new OverlayObject(ss.str()));
+      overlay_->show();
     }
+    t_ += wall_dt;
+    
+    overlay_->updateTextureSize(size_, size_);
+    redraw();
+    overlay_->setDimensions(overlay_->getTextureWidth(),
+                            overlay_->getTextureHeight());
+    overlay_->setPosition(left_, top_);
     t_ = fmod(t_, overlay_diagnostic_animation_duration);
   }
 
@@ -183,40 +195,14 @@ namespace jsk_rviz_plugin
   {
     
     ROS_DEBUG("onInitialize");
-    static int count = 0;
-    rviz::UniformStringStream ss;
-    ss << "OverlayDiagnosticDisplayObject" << count++;
-    overlay_name_ = ss.str();
-    material_name_ = ss.str() + "Material";
-    texture_name_ = ss.str() + "Texture";
 
-    // allocate texture first
-    if (texture_.isNull()) {
-      ROS_DEBUG("creating texture");
-      Ogre::OverlayManager* mOverlayMgr = Ogre::OverlayManager::getSingletonPtr();
-      overlay_ = mOverlayMgr->create(overlay_name_);
-      //panel_ = static_cast<Ogre::OverlayContainer*> (
-      panel_ = static_cast<Ogre::PanelOverlayElement*> (
-        mOverlayMgr->createOverlayElement("Panel",
-                                          overlay_name_ +  "Panel"));
-      
-      panel_material_
-        = Ogre::MaterialManager::getSingleton().create(
-          material_name_,
-          Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
-      panel_->setMaterialName(panel_material_->getName());
-      panel_->setMetricsMode(Ogre::GMM_PIXELS);
-      updateTextureSize(128, 128);
-      overlay_->add2D(panel_);
-      overlay_->show();
-    }
-    
+
     updateDiagnosticsNamespace();
     updateSize();
     updateAlpha();
     updateLeft();
     updateTop();
-    
+    updateStallDuration();
     updateRosTopic();
   }
   
@@ -234,46 +220,39 @@ namespace jsk_rviz_plugin
                        this);
   }
 
-  void OverlayDiagnosticDisplay::updateTextureSize(int width, int height)
+  bool OverlayDiagnosticDisplay::isStalled()
   {
-    if ((width == 0) || (height == 0)) {
-      ROS_DEBUG("width or height is set to 0");
-      return;
-    }
-    
-    if (texture_.isNull() ||
-        ((width != texture_->getWidth()) ||
-         (height != texture_->getHeight()))) {
-      if (!texture_.isNull()) {
-        Ogre::TextureManager::getSingleton().remove(texture_name_);
-        panel_material_->getTechnique(0)->getPass(0)->removeAllTextureUnitStates();
+    if (latest_status_) {
+      ros::WallDuration message_duration
+        = ros::WallTime::now() - latest_message_time_;
+      if (message_duration.toSec() < stall_duration_) {
+        return false;
       }
-      ROS_DEBUG("texture size: (%d, %d)", width, height);
-      texture_ = Ogre::TextureManager::getSingleton().createManual(
-        texture_name_,        // name
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        Ogre::TEX_TYPE_2D,   // type
-        width, height,   // width & height of the render window 
-        0,                   // number of mipmaps
-        Ogre::PF_A8R8G8B8,   // pixel format chosen to match a format Qt can use
-        Ogre::TU_DEFAULT     // usage
-        );
-      panel_material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-      panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      else {
+        return true;
+      }
+    }
+    else {
+      return true;
     }
   }
-
+  
   std::string OverlayDiagnosticDisplay::statusText()
   {
     if (latest_status_) {
-      if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
-        return "OK";
-      }
-      else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::WARN) {
-        return "WARN";
-      }
-      else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::ERROR) {
-        return "ERROR";
+      if (!isStalled()) {
+        if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
+          return "OK";
+        }
+        else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::WARN) {
+          return "WARN";
+        }
+        else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::ERROR) {
+          return "ERROR";
+        }
+        else {
+          return "UNKNOWN";
+        }
       }
       else {
         return "UNKNOWN";
@@ -294,16 +273,21 @@ namespace jsk_rviz_plugin
     //QColor fg_color = stall_color;
     
     if (latest_status_) {
-      if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
-        return ok_color;
-      }
-      else if (latest_status_->level
-               == diagnostic_msgs::DiagnosticStatus::WARN) {
-        return warn_color;
-      }
-      else if (latest_status_->level
-               == diagnostic_msgs::DiagnosticStatus::ERROR) {
-        return error_color;
+      if (!isStalled()) {
+        if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
+          return ok_color;
+        }
+        else if (latest_status_->level
+                 == diagnostic_msgs::DiagnosticStatus::WARN) {
+          return warn_color;
+        }
+        else if (latest_status_->level
+                 == diagnostic_msgs::DiagnosticStatus::ERROR) {
+          return error_color;
+        }
+        else {
+          return stall_color;
+        }
       }
       else {
         return stall_color;
@@ -340,8 +324,8 @@ namespace jsk_rviz_plugin
     QFontMetrics metrics(font);
     const int text_width = metrics.width(text.c_str());
     const int text_height = metrics.height();
-    if (texture_->getWidth() > text_width) {
-      path.addText((texture_->getWidth() - text_width) / 2.0,
+    if (overlay_->getTextureWidth() > text_width) {
+      path.addText((overlay_->getTextureWidth() - text_width) / 2.0,
                    height,
                    font, text.c_str());
     }
@@ -358,36 +342,36 @@ namespace jsk_rviz_plugin
                                           const std::string& text)
   {
     double status_size = drawAnimatingText(painter, fg_color,
-                                           texture_->getHeight() / 3.0,
+                                           overlay_->getTextureHeight() / 3.0,
                                            20, text);
     double namespace_size = drawAnimatingText(painter, fg_color,
-                                              texture_->getHeight() / 3.0 + status_size,
+                                              overlay_->getTextureHeight() / 3.0 + status_size,
                                               10, diagnostics_namespace_);
+    std::string message;
     if (latest_status_) {
-      drawAnimatingText(painter, fg_color,
-                        texture_->getHeight() / 3.0 + status_size + namespace_size,
-                        10, latest_status_->message);
+      if (!isStalled()) {
+        message = latest_status_->message;
+      }
+      else {
+        message = "stalled";
+      }
     }
+    else {
+      message = "stalled";
+    }
+    drawAnimatingText(painter, fg_color,
+                      overlay_->getTextureHeight() / 3.0
+                      + status_size + namespace_size,
+                      10, message);
   }
   
   void OverlayDiagnosticDisplay::redraw()
   {
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = texture_->getBuffer();
+    ScopedPixelBuffer buffer = overlay_->getBuffer();
     QColor fg_color = foregroundColor();
     QColor transparent(0, 0, 0, 0.0);
     
-    pixelBuffer->lock( Ogre::HardwareBuffer::HBL_NORMAL );
-    const Ogre::PixelBox& pixelBox = pixelBuffer->getCurrentLock();
-    Ogre::uint8* pDest = static_cast<Ogre::uint8*> ( pixelBox.data );
-    memset( pDest, 0, texture_->getWidth() * texture_->getHeight() );
-    QImage Hud( pDest, texture_->getWidth(), texture_->getHeight(),
-                QImage::Format_ARGB32 );
-    for (int i = 0; i < texture_->getWidth(); i++) {
-      for (int j = 0; j < texture_->getHeight(); j++) {
-        Hud.setPixel(i, j, transparent.rgba());
-      }
-    }
-
+    QImage Hud = buffer.getQImage(*overlay_, transparent);
     // draw outer circle
     // line-width - margin - inner-line-width < size
     QPainter painter( &Hud );
@@ -398,8 +382,8 @@ namespace jsk_rviz_plugin
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setPen(QPen(fg_color, line_width, Qt::SolidLine));
     painter.drawEllipse(line_width / 2, line_width / 2,
-                        texture_->getWidth() - line_width,
-                        texture_->getHeight() - line_width);
+                        overlay_->getTextureWidth() - line_width,
+                        overlay_->getTextureHeight() - line_width);
     
     painter.setPen(QPen(fg_color, inner_line_width, Qt::SolidLine));    
     const double start_angle = fmod(t_, overlay_diagnostic_animation_duration) /
@@ -407,13 +391,7 @@ namespace jsk_rviz_plugin
     const double draw_angle = 250;
     const double inner_circle_start
       = line_width + margin + inner_line_width / 2.0;
-    // painter.drawArc(QRectF(inner_circle_start, inner_circle_start,
-    //                        texture_->getWidth() - inner_circle_start * 2.0,
-    //                        texture_->getHeight() - inner_circle_start * 2.0),
-    //                 start_angle * 16, draw_angle * 16);
-    
     drawText(painter, fg_color, statusText());
-    pixelBuffer->unlock();
   }
 
   void OverlayDiagnosticDisplay::fillNamespaceList()
@@ -460,8 +438,11 @@ namespace jsk_rviz_plugin
   {
     left_ = left_property_->getInt();
   }
-    
   
+  void OverlayDiagnosticDisplay::updateStallDuration()
+  {
+    stall_duration_ = stall_duration_property_->getFloat();
+  }
 }
 
 #include <pluginlib/class_list_macros.h>

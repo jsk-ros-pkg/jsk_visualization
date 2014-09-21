@@ -55,9 +55,7 @@
 # include "rviz/render_panel.h"
 #endif
 
-#include <OGRE/OgreOverlayElement.h>
-#include <OGRE/OgreOverlayContainer.h>
-#include <OGRE/OgrePanelOverlayElement.h>
+#include "overlay_utils.h"
 
 namespace Ogre
 {
@@ -159,13 +157,8 @@ private:
 
   uint32_t vis_bit_;
 protected:
-  Ogre::Overlay* overlay_;
-  Ogre::PanelOverlayElement* panel_;
-  Ogre::MaterialPtr panel_material_;
-  std::string material_name_, texture_name_;
-  Ogre::TexturePtr overlay_texture_;
+  OverlayObject::Ptr overlay_;
   void redraw();
-  void updateTextureSize(int width, int height);
   rviz::IntProperty* width_property_;
   rviz::IntProperty* height_property_;
   rviz::IntProperty* left_property_;

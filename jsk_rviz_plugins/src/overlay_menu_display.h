@@ -36,9 +36,6 @@
 #define JSK_RVIZ_PLUGIN_OVERLAY_MENU_DISPLAY_H_
 
 #include <rviz/display.h>
-#include <OGRE/OgreOverlayElement.h>
-#include <OGRE/OgreOverlayContainer.h>
-#include <OGRE/OgrePanelOverlayElement.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreMaterial.h>
@@ -48,6 +45,8 @@
 #include <rviz/properties/ros_topic_property.h>
 
 #include <jsk_rviz_plugins/OverlayMenu.h>
+
+#include "overlay_utils.h"
 
 namespace jsk_rviz_plugin
 {
@@ -67,12 +66,7 @@ namespace jsk_rviz_plugin
     };
     
   protected:
-    Ogre::Overlay* overlay_;
-    Ogre::PanelOverlayElement* panel_;
-    Ogre::MaterialPtr panel_material_;
-    std::string material_name_;
-    std::string texture_name_;
-    Ogre::TexturePtr texture_;
+    OverlayObject::Ptr overlay_;
     ros::Subscriber sub_;
     rviz::RosTopicProperty* update_topic_property_;
     AnimationState animation_state_;
@@ -80,7 +74,7 @@ namespace jsk_rviz_plugin
     jsk_rviz_plugins::OverlayMenu::ConstPtr current_menu_;
     jsk_rviz_plugins::OverlayMenu::ConstPtr next_menu_;
     double animation_t_;
-    
+    virtual void prepareOverlay();
     virtual void openingAnimation();
     virtual std::string getMenuString(
       const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg,
@@ -94,7 +88,6 @@ namespace jsk_rviz_plugin
     virtual bool isNeedToResize();
     virtual bool isNeedToRedraw();
     virtual void redraw();
-    virtual void updateTextureSize(int width, int height);
     virtual void onInitialize();
     virtual void onEnable();
     virtual void onDisable();

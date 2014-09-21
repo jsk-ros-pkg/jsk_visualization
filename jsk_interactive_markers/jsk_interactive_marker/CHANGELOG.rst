@@ -2,6 +2,63 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.10 (2014-09-13)
+-------------------
+* add new executable to control CameraInfo with interactive marker
+* Contributors: Ryohei Ueda
+
+1.0.9 (2014-09-07)
+------------------
+* add ${PROJECT_NAME}_gencfg to all depends
+* Contributors: Kei Okada
+
+1.0.8 (2014-09-04)
+------------------
+* control marker with topic
+* reset hand pose
+* update catkin.cmake for urdf_control_marker
+* root control marker for urdf marker
+* rename config file
+* use jsk_topic_tools::TimeAccumulator instead of jsk_pcl_ros::TimeAccumulator
+* add include for catkin
+* Contributors: Ryohei Ueda, Yusuke Furuta
+
+1.0.7 (2014-08-06)
+------------------
+* add new program: pointcloud_cropper to crop pointcloud with interactive marker
+* add config file for interactive point cloud
+* update launch for pr2 gripper
+* receive handle pose and publish it
+* pick and place sample eus
+* add reset root pose functions
+* add reset marker callback
+* rm empty line
+* revert README.txt
+* move .rviz.default to .rviz when making
+* rename .rviz to .rviz.default
+* use Eigen::Vector3f in footstep_marker because of the change of the api
+  of jsk_pcl_ros
+* depends on ${catkin_EXPORTED_TARGETS} to wait for message generation
+* update footstep_marker to publish snapped pose to the planes
+* support resuming the previous footstep on footstep_marker
+* toggle 6dof marker via menu of footstep_marker
+* toggle visualization of 6dof marker of footstep_marker via ~show_6dof_control parameter
+* publish hand marker pose
+* publish selected marker index
+* snap the goal direction to the planes even with joy stick command
+* do not use deprecated functions to convert tf and kdl instances to avoid
+  compilation warning
+* add 'Cancel Walk' menu to footstep marker
+* Initialize the position of the marker to the frame if ~initial_reference_frame is specified
+* register planDoneCB to the sendGoal function to the planner in footstep_marker
+* asynchronously get the result of the footstep planning in footstep_marker
+* add interactive_point_cloud.h
+* add bounding box
+* change paramater with dynamic reconfigure
+* publish marker pose
+* add interactive point cloud
+* Contributors: Ryohei Ueda, Yusuke Furuta
+
 1.0.6 (2014-07-14)
 ------------------
 * add grasp method

@@ -1,6 +1,6 @@
 <package>
   <name>jsk_interactive_test</name>
-  <version>1.0.6</version>
+  <version>1.0.10</version>
   <description>jsk_interactive_test</description>
 
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
@@ -25,7 +25,7 @@
   <run_depend>rviz</run_depend>
   <run_depend>jsk_interactive</run_depend>
   <run_depend>jsk_interactive_marker</run_depend>
-
+  <run_depend>joy_mouse</run_depend>
   <!-- <test_depend>mk</test_depend> -->
   <!-- <test_depend>rospy</test_depend> -->
   <!-- <test_depend>visualization_msgs</test_depend> -->

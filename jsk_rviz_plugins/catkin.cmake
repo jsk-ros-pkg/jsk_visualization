@@ -7,14 +7,18 @@ project(jsk_rviz_plugins)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros
-  message_generation std_msgs diagnostic_msgs cv_bridge)
+  ${people_msgs}
+  message_generation std_msgs diagnostic_msgs cv_bridge
+  jsk_topic_tools
+  image_geometry)
 
 add_message_files(FILES OverlayText.msg OverlayMenu.msg)
 generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
     DEPENDS rviz
-    CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros cv_bridge
+    CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
+    jsk_pcl_ros cv_bridge ${people_msgs} image_geometry
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
@@ -31,7 +35,7 @@ include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
 include(${QT_USE_FILE})
-add_definitions(-DQT_NO_KEYWORDS)
+add_definitions(-DQT_NO_KEYWORDS -g)
 
 #find_package(wxWidgets REQUIRED)
 #include(${wxWidgets_USE_FILE})
@@ -57,7 +61,11 @@ qt4_wrap_cpp(MOC_FILES
   src/bounding_box_array_display.h
   src/overlay_diagnostic_display.h
   src/target_visualizer_display.h
+  ${people_position_measurement_array_header}
   src/sparse_occupancy_grid_array_display.h
+  src/camera_info_display.h
+  src/close_all_tool.h
+  src/open_all_tool.h
 )
 
 set(SOURCE_FILES
@@ -82,6 +90,12 @@ set(SOURCE_FILES
   src/target_visualizer_display.cpp
   src/overlay_diagnostic_display.cpp
   src/sparse_occupancy_grid_array_display.cpp
+  ${people_position_measurement_array_source}
+  src/overlay_utils.cpp
+  src/facing_visualizer.cpp
+  src/camera_info_display.cpp
+  src/close_all_tool.cpp
+  src/open_all_tool.cpp
   ${MOC_FILES}
 )
 

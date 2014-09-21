@@ -29,7 +29,9 @@
 #include <diagnostic_updater/diagnostic_updater.h>
 #include <diagnostic_updater/publisher.h>
 
-#include <jsk_pcl_ros/pcl_util.h>
+#include <jsk_pcl_ros/Int32Stamped.h>
+
+#include <jsk_topic_tools/time_accumulator.h>
 
 using namespace urdf;
 using namespace std;
@@ -39,7 +41,7 @@ class UrdfModelMarker {
  public:
   //  UrdfModelMarker(string file);
   UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::Pose root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::PoseStamped  root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
   UrdfModelMarker();
 
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
@@ -95,7 +97,10 @@ class UrdfModelMarker {
   void graspPointCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void jointMoveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void resetMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
-  void resetBaseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void resetBaseMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void resetBaseMsgCB( const std_msgs::EmptyConstPtr &msg);
+  void resetBaseCB();
+
   void resetRobotBase();
   void registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   
@@ -112,8 +117,8 @@ class UrdfModelMarker {
   
   /* diagnostics */
   boost::shared_ptr<diagnostic_updater::Updater> diagnostic_updater_;
-  jsk_pcl_ros::TimeAccumulator reset_joint_states_check_time_acc_;
-  jsk_pcl_ros::TimeAccumulator dynamic_tf_check_time_acc_;
+  jsk_topic_tools::TimeAccumulator reset_joint_states_check_time_acc_;
+  jsk_topic_tools::TimeAccumulator dynamic_tf_check_time_acc_;
   /* publisher */
   ros::Publisher pub_;
   ros::Publisher pub_move_;
@@ -121,6 +126,7 @@ class UrdfModelMarker {
   ros::Publisher pub_joint_state_;
   ros::Publisher pub_base_pose_;
   ros::Publisher pub_selected_;
+  ros::Publisher pub_selected_index_;
 
   /* publisher */
   ros::Subscriber sub_reset_joints_;
@@ -163,6 +169,8 @@ class UrdfModelMarker {
   bool use_visible_color_;
   std::string tf_prefix_;
   map<string, double> initial_pose_map_;
+  int index_;
+  ros::Time init_stamp_;
 
   struct graspPoint{
     graspPoint(){

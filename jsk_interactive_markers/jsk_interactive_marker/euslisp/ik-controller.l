@@ -600,6 +600,20 @@
        (send *target-coords* :move-to *old-coords* :world)
        (send self :set-marker-pose-robot (send *target-coords* :worldcoords))
        )
+      ;;reset joint and base
+      ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_JOINT*)
+       (format t "[marker-menu] reset robot joint!!~%")
+       (send self :realmodel2model)
+       (send self :publish-joint-states :real? nil)
+       ;;reset root pose
+       (ros::publish (format nil "~A/~A/reset_root_pose" *im-nodename* *robot-name*)
+		     (instance std_msgs::Empty :init))
+       (case *move-limb*
+	 (:arms
+	  )
+	 (t
+	  (send self :set-origin-to-hand *move-limb*)
+	  )))
       ;;set origin to hand
       ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
        (let ((message "set origin to rhand"))
@@ -919,12 +933,20 @@
   (:set-marker-pose
    (coords &key (marker-name) (frame "/map") (markers) (server *server-nodename*))
    (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
-	 (msg (ros::coords->tf-pose-stamped coords frame)))
+	 (msg (ros::coords->tf-pose-stamped coords frame))
+	 (ps (instance geometry_msgs::PoseStamped :init)))
      (send req :marker_name marker-name)
      (send req :pose msg)
      (send req :markers markers)
      (ros::service-call (format nil "~A/set_pose" server)
 			req)
+
+     ;;publish set pose
+     (send ps :pose msg)
+     (send ps :header :frame_id frame)
+     (ros::publish (format nil "~A/set_pose" *server-nodename*)
+		   msg)
+     
      ))
 
   (:set-marker-pose-robot
@@ -1175,6 +1197,193 @@
    ;;grasp
    )
 
+  (:move-object-callback
+   (msg)
+   (setq hoge msg)
+   ;;grasp
+   (let* ((pose msg)
+	  (cds (ros::tf-pose-stamped->coords msg))
+	  map->marker
+	  pre-pose
+	  )
+     (while t
+       (send pose :header :stamp (ros::time 0.0)) ;cheat!
+       (setq map->marker
+	     (send *tfl* :lookup-transform
+		   *robot-origin* (send pose :header :frame_id) (ros::time 0)))
+       ;;(setq map->marker (send *tfl* :transform-pose "pelvis" pose))
+       (cond
+	(map->marker
+	 (send cds :transform map->marker :world)
+	 (return)
+	 )
+	(t
+	 (ros::ros-info "map -> marker cannot transform yet")
+	 (ros::sleep)
+	 )
+	)
+       )
+
+     (let (avs)
+
+       (ros::ros-info "move-object-callback")
+       ;;
+       ;;(push (send *robot* :angle-vector) avs)
+
+       ;;(setq pre-pose (send (send *target-coords* :copy-worldcoords) :translate (float-vector -100 0 0)))
+       (send *robot* :inverse-kinematics
+	     cds
+	     :move-arm :rarm
+	     :use-torso nil
+	     :rotation-axis t
+	     :debug-view nil)
+       ;;(send *robot* :rarm :move-end-pos #f(-100 0 0))
+       (push (send *robot* :angle-vector) avs)
+
+       (send *robot* :rarm :move-end-pos #f(-100 0 0))
+       (push (send *robot* :angle-vector) avs)
+       ;;(setq avs (reverse avs))
+
+       (send self :publish-joint-trajectory avs (list 3000 1000) :real? t)
+       )
+     (send self :stop-grasp :arm :rarm)
+     )
+   )
+
+  (:get-eus-coords
+   (cds frame-id)
+   (let (origin->frame
+	 )
+	 ;;(pose (instance geometry_msgs::PoseStamped :init)))
+     (while t
+       ;;       (send pose :header :stamp (ros::time 0.0)) ;cheat!
+       (setq origin->frame
+	     (send *tfl* :lookup-transform
+		   *robot-origin* frame-id (ros::time 0)))
+       ;;(setq map->marker (send *tfl* :transform-pose "pelvis" pose))
+       (cond
+	(origin->frame
+	 (send cds :transform origin->frame :world)
+	 (return)
+	 )
+	(t
+	 (ros::ros-info "%s -> %s cannot transform yet" *robot-origin* frame-id)
+	 (ros::sleep)
+	 )
+	)
+       )
+     )
+   cds
+   )
+
+  (:box-movement-callback
+   (msg)
+   (setq hoge msg)
+   ;;grasp
+   (let* ((pose msg)
+	  start-cds
+	  des-cds
+	  (handle-pose (ros::tf-pose->coords (send msg :handle_pose)))
+	  box-cds
+	  )
+     (setq start-cds (send self :get-eus-coords (ros::tf-pose->coords (send msg :box :pose)) (send msg :box :header :frame_id)))
+     (setq des-cds (send self :get-eus-coords (ros::tf-pose->coords (send msg :destination :pose)) (send msg :destination :header :frame_id)))
+
+     (setq start-cds (send start-cds :transform handle-pose))
+     (setq des-cds (send des-cds :transform handle-pose))
+
+     (setq a (send start-cds :copy-worldcoords))
+     (setq b (send des-cds :copy-worldcoords))
+
+     (let (avs)
+       ;;(send self :stop-grasp :arm :rarm)
+       ;;pre grasp
+       (print "pre grasp")
+       (send start-cds :translate #f(-100 0 0))
+       (print start-cds)
+       (send *robot* :inverse-kinematics
+	     start-cds
+	     :move-arm :rarm
+	     :use-torso nil
+	     :rotation-axis t
+	     :debug-view nil)
+       (push (send *robot* :angle-vector) avs)
+       ;;grasp
+       (print "grasp")
+       (send start-cds :translate #f(100 0 0))
+       (print start-cds)
+       (send *robot* :inverse-kinematics
+	     start-cds
+	     :move-arm :rarm
+	     :use-torso nil
+	     :rotation-axis t
+	     :debug-view nil)
+       (push (send *robot* :angle-vector) avs)
+       (setq avs (reverse avs))
+       (send self :publish-joint-trajectory avs (list 3000 1000) :real? t)
+       (unix::sleep 3)
+       (send self :start-grasp :arm :rarm)
+       (unix::sleep 3)
+       )
+
+     (let (avs)
+       ;;raise
+       (print "raise")
+       (send start-cds :translate #f(0 0 100) :world)
+       (print start-cds)
+       (send *robot* :inverse-kinematics
+	     start-cds
+	     :move-arm :rarm
+	     :use-torso nil
+	     :rotation-axis t
+	     :debug-view t)
+       (push (send *robot* :angle-vector) avs)
+
+       (print "pre place")
+       (send des-cds :translate #f(0 0 100) :world)
+       (print des-cds)
+       (send *robot* :inverse-kinematics
+	     des-cds
+	     :move-arm :rarm
+	     :use-torso nil
+	     :rotation-axis t
+	     :debug-view t)
+       (push (send *robot* :angle-vector) avs)
+
+       (print "place")
+       (send des-cds :translate #f(0 0 -100) :world)
+       (print des-cds)
+       (send *robot* :inverse-kinematics
+	     des-cds
+	     :move-arm :rarm
+	     :use-torso nil
+	     :rotation-axis t
+	     :debug-view t)
+       (push (send *robot* :angle-vector) avs)
+       (setq avs (reverse avs))
+       (send self :publish-joint-trajectory avs (list 1000 3000 1000) :real? t)
+       (unix::sleep 3)
+       (send self :stop-grasp :arm :rarm)
+       (unix::sleep 5)
+       )
+
+     (let (avs)
+       ;;pose-place
+       (print "post place")
+       (send des-cds :translate #f(-100 0 0))
+       (send *robot* :inverse-kinematics
+	     des-cds
+	     :move-arm :rarm
+	     :use-torso nil
+	     :rotation-axis t
+	     :debug-view nil)
+       (push (send *robot* :angle-vector) avs)
+       (setq avs (reverse avs))
+       (send self :publish-joint-trajectory avs (list 2000) :real? t)
+       )
+     (objects (list *pr2* start-cds des-cds))
+     )
+   )
 
 
   (:start-grasp
@@ -1216,7 +1425,7 @@
    (defvar *use-fullbody* nil)
    (defvar *use-torso* nil)
    (defvar *translation-axis* t)
-   (defvar *rotation-axis* nil)
+   (defvar *rotation-axis* t)
    (defvar *tmp-rotation-axis* t) ;;turn nil when center sphere was moved
    (defvar *publish-ik* nil)
    (defvar *orgin-key* :rarm)
@@ -1264,6 +1473,9 @@
    (defvar *server-nodename*
      "/jsk_interactive_marker_manipulation")
 
+   (defvar *interactive-pc-nodename* "/interactive_point_cloud")
+   (defvar *bounding-box-nodename* "/bounding_box_marker")
+
    ;;initialize joint-index-list
    ;;it is used to convert joint-name -> index
    ;;(joint-index-init)
@@ -1288,6 +1500,8 @@
 
    (ros::advertise (format nil "~A/marker" *server-nodename*)
 		   visualization_msgs::Marker)
+   (ros::advertise (format nil "~A/set_pose" *server-nodename*)
+		   geometry_msgs::PoseStamped)
    (ros::advertise
     (format nil "~A/origin_marker" *server-nodename*)
     visualization_msgs::Marker)
@@ -1315,6 +1529,10 @@
    (ros::advertise
     (format nil "~A/~A/reset_joint_states" *im-nodename* *robot-name*)
     sensor_msgs::JointState)
+   ;; reset Interactive Marker Root Pose
+   (ros::advertise (format nil "~A/~A/reset_root_pose" *im-nodename* *robot-name*)
+		   std_msgs::Empty)
+
    
    ;;update real-robot joint state
    ;;   (ros::advertise
@@ -1347,6 +1565,15 @@
    (ros::subscribe
     (format nil "~A/grasp_pose" *server-nodename*)
     geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
+
+
+   (ros::subscribe
+    (format nil "~A/marker_pose" *interactive-pc-nodename*)
+    geometry_msgs::PoseStamped #'send self :move-object-callback)
+
+   (ros::subscribe
+    (format nil "~A/box_movement" *interactive-pc-nodename*)
+    jsk_pcl_ros::BoundingBoxMovement #'send self :box-movement-callback)
 
    ;;(switch-end-coords :id 2)
    (setq *real-robot* (copy-object *robot*))

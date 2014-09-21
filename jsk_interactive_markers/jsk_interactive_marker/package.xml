@@ -5,7 +5,7 @@
   <description>
     jsk interactive markers
   </description>
-  <version>1.0.6</version>
+  <version>1.0.10</version>
   <author email="furuta@jsk.t.u-tokyo.ac.jp">furuta</author>
   <maintainer email="furuta@jsk.t.u-tokyo.ac.jp">furuta</maintainer>
   <license>BSD</license>
@@ -20,6 +20,7 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>dynamic_tf_publisher</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>interactive_markers</build_depend>
   <build_depend>urdf</build_depend>
   <build_depend>tf</build_depend>
@@ -40,6 +41,7 @@
   <run_depend>visualization_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>dynamic_tf_publisher</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>interactive_markers</run_depend>
   <run_depend>urdf</run_depend>
   <run_depend>tf</run_depend>
@@ -52,6 +54,8 @@
   <run_depend>roscpp</run_depend>
   <run_depend>roslib</run_depend>
   <run_depend>message_filters</run_depend>
+  <build_depend>jsk_topic_tools</build_depend>
+  <run_depend>jsk_topic_tools</run_depend>
 </package>
 
 
