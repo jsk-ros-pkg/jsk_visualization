@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.11 (2014-09-22)
+-------------------
 * Do not ues deprecated PLUGINLIB_DECLARE_CLASS
 * Draw polygon as 'face' on PolygonArrayDisplay
 * Use jsk_topic_tools::colorCategory20 to colorize automatically

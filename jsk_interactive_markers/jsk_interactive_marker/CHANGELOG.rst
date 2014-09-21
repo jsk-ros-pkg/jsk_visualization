@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.11 (2014-09-22)
+-------------------
 * jsk_interactive_marker does not depend on geometry
 * Contributors: Ryohei Ueda
 
