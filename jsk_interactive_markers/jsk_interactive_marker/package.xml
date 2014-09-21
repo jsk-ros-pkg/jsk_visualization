@@ -29,7 +29,6 @@
   <build_depend>jsk_pcl_ros</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>tf_conversions</build_depend>
-  <build_depend>geometry</build_depend>
   <build_depend>tinyxml</build_depend>
   <build_depend>cmake_modules</build_depend>
   <build_depend>roscpp</build_depend>
@@ -50,7 +49,6 @@
   <run_depend>jsk_pcl_ros</run_depend>
   <run_depend>eigen_conversions</run_depend>
   <run_depend>tf_conversions</run_depend>
-  <run_depend>geometry</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>roslib</run_depend>
   <run_depend>message_filters</run_depend>
