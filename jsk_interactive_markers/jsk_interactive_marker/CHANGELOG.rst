@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.12 (2014-09-23)
+-------------------
 * Generate srv files on catkin
 * Contributors: Ryohei Ueda
 
