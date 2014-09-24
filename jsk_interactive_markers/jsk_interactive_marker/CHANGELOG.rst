@@ -2,6 +2,16 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.12 (2014-09-23)
+-------------------
+* Generate srv files on catkin
+* Contributors: Ryohei Ueda
+
+1.0.11 (2014-09-22)
+-------------------
+* jsk_interactive_marker does not depend on geometry
+* Contributors: Ryohei Ueda
+
 1.0.10 (2014-09-13)
 -------------------
 * add new executable to control CameraInfo with interactive marker
