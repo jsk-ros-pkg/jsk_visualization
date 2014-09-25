@@ -49,6 +49,7 @@ geometry_msgs::Pose createPoseMsg(const tf::Transform &transform)
   pose.orientation.y = rot.getY();
   pose.orientation.z = rot.getZ();
   pose.orientation.w = rot.getW();
+  return pose;
 }
   
 visualization_msgs::InteractiveMarker makeEmptyMarker( const char *frame_id )

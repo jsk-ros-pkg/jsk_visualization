@@ -20,6 +20,7 @@
 #include <jsk_interactive_marker/MoveObject.h>
 
 #include <std_msgs/Int8.h>
+#include <std_msgs/String.h>
 #include <sensor_msgs/JointState.h>
 
 #include "urdf_parser/urdf_parser.h"
@@ -67,6 +68,7 @@ class UrdfModelMarker {
 
   void hideModelMarkerCB( const std_msgs::EmptyConstPtr &msg);
   void showModelMarkerCB( const std_msgs::EmptyConstPtr &msg);
+  void setUrdfCB( const std_msgs::StringConstPtr &msg);
 
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale, const std_msgs::ColorRGBA &color, bool use_color);
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale);
@@ -133,6 +135,7 @@ class UrdfModelMarker {
   ros::Subscriber sub_set_root_pose_;
   ros::Subscriber hide_marker_;
   ros::Subscriber show_marker_;
+  ros::Subscriber sub_set_urdf_;
 
   ros::ServiceServer serv_reset_;
   ros::ServiceServer serv_set_;
