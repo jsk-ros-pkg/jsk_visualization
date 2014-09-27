@@ -2,6 +2,17 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.12 (2014-09-23)
+-------------------
+
+1.0.11 (2014-09-22)
+-------------------
+* Do not ues deprecated PLUGINLIB_DECLARE_CLASS
+* Draw polygon as 'face' on PolygonArrayDisplay
+* Use jsk_topic_tools::colorCategory20 to colorize automatically
+* Add tool plugin to close/open all the displays on rviz
+* Contributors: Ryohei Ueda
+
 1.0.10 (2014-09-13)
 -------------------
 * Fix color of people visualizer by initializing color to sky blue

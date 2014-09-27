@@ -33,7 +33,7 @@
  *********************************************************************/
 
 #include "bounding_box_array_display.h"
-
+#include <jsk_topic_tools/color_utils.h>
 namespace jsk_rviz_plugin
 {  
   BoundingBoxArrayDisplay::BoundingBoxArrayDisplay()
@@ -53,13 +53,6 @@ namespace jsk_rviz_plugin
     auto_color_property_ = new rviz::BoolProperty("auto color", false,
                                                   "change the color of the boxes automatically",
                                                   this, SLOT(updateAutoColor()));
-    colors_.push_back(QColor(255.0, 0.0, 0.0, 255.0));
-    colors_.push_back(QColor(0.0, 255.0, 0.0, 255.0));
-    colors_.push_back(QColor(0.0, 0.0, 255.0, 255.0));
-    colors_.push_back(QColor(255.0, 255.0, 0.0, 255.0));
-    colors_.push_back(QColor(255.0, 0.0, 255.0, 255.0));
-    colors_.push_back(QColor(0.0, 255.0, 255.0, 255.0));
-    colors_.push_back(QColor(255.0, 255.0, 255.0, 255.0));
   }
   
   BoundingBoxArrayDisplay::~BoundingBoxArrayDisplay()
@@ -73,7 +66,9 @@ namespace jsk_rviz_plugin
   QColor BoundingBoxArrayDisplay::getColor(size_t index)
   {
     if (auto_color_) {
-      return colors_[index % colors_.size()];
+      std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(index);
+      return QColor(ros_color.r * 255.0, ros_color.g * 255.0, ros_color.b * 255.0,
+                    ros_color.a * 255.0);
     }
     else {
       return color_;

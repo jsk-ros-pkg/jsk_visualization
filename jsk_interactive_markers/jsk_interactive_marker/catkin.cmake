@@ -24,7 +24,7 @@ add_message_files(
   FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg
 )
 add_service_files(DIRECTORY srv
-  FILES MarkerSetPose.srv SetPose.srv)
+  FILES MarkerSetPose.srv SetPose.srv GetJointState.srv)
 
 generate_dynamic_reconfigure_options(
   cfg/InteractivePointCloud.cfg

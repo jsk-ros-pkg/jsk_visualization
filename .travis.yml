@@ -20,6 +20,7 @@ matrix:
     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false
     - env: ROS_DISTRO=groovy ROSWS=rosws  BUILDER=rosbuild  USE_DEB=true
     - env: ROS_DISTRO=groovy ROSWS=rosws  BUILDER=rosbuild  USE_DEB=false
+    - env: ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin    USE_DEB=true
     - env: ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin    USE_DEB=false
     - env: ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false
 before_script:
