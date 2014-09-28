@@ -1,6 +1,6 @@
-#include <jsk_transformable_interactive_marker/transformable_cylinder.h>
+#include <jsk_interactive_marker/transformable_cylinder.h>
 
-namespace jsk_transformable_interactive_marker{
+namespace jsk_interactive_marker{
   TransformableCylinder::TransformableCylinder( float radius, float z, float r, float g, float b, float a, std::string frame, std::string name, std::string description){
     cylinder_radius_ = radius;
     cylinder_z_ = z;

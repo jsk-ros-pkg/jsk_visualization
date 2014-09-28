@@ -7,11 +7,11 @@
 #include <visualization_msgs/InteractiveMarkerControl.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Point.h>
-#include <jsk_transformable_interactive_marker/GetPose.h>
+#include <jsk_interactive_marker/GetPose.h>
 #include <vector>
 #include <algorithm>
 
-namespace jsk_transformable_interactive_marker {
+namespace jsk_interactive_marker {
   class TransformableObject{
   public:
     TransformableObject();

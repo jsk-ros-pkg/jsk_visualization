@@ -1,6 +1,6 @@
-#include <jsk_transformable_interactive_marker/transformable_interactive_server.h>
+#include <jsk_interactive_marker/transformable_interactive_server.h>
 
-using namespace jsk_transformable_interactive_marker;
+using namespace jsk_interactive_marker;
 
 TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::NodeHandle){
   n_->param("torus_udiv", torus_udiv_, 20);
@@ -121,7 +121,7 @@ void TransformableInteractiveServer::setPose(geometry_msgs::PoseStamped msg){
   server_->applyChanges();
 }
 
-bool TransformableInteractiveServer::getPoseService(jsk_transformable_interactive_marker::GetPose::Request &req,jsk_transformable_interactive_marker::GetPose::Response &res)
+bool TransformableInteractiveServer::getPoseService(jsk_interactive_marker::GetPose::Request &req,jsk_interactive_marker::GetPose::Response &res)
 {
   TransformableObject* tobject;
   if(req.target_name.empty()){

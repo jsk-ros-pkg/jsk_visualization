@@ -4,9 +4,9 @@
 
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
-#include <jsk_transformable_interactive_marker/transformable_object.h>
+#include <jsk_interactive_marker/transformable_object.h>
 
-namespace jsk_transformable_interactive_marker
+namespace jsk_interactive_marker
 {
   class TransformableTorus: public TransformableObject
   {

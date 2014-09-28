@@ -1,8 +1,8 @@
-#include <jsk_transformable_interactive_marker/transformable_torus.h>
+#include <jsk_interactive_marker/transformable_torus.h>
 #include <math.h>
 
 #define PI 3.14159265
-namespace jsk_transformable_interactive_marker{
+namespace jsk_interactive_marker{
 
   TransformableTorus::TransformableTorus( float radius, float small_radius, int u_div, int v_div, float r, float g, float b, float a, std::string frame, std::string name, std::string description){
     torus_radius_ = radius;

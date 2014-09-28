@@ -1,6 +1,6 @@
-#include <jsk_transformable_interactive_marker/transformable_box.h>
+#include <jsk_interactive_marker/transformable_box.h>
 
-namespace jsk_transformable_interactive_marker{
+namespace jsk_interactive_marker{
   TransformableBox::TransformableBox( float length , float r, float g, float b, float a, std::string frame, std::string name, std::string description){
     box_x_ = box_y_ = box_z_ = length;
 

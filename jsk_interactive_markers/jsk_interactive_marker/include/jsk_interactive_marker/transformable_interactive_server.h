@@ -3,9 +3,9 @@
 
 #include <ros/ros.h>
 #include <interactive_markers/interactive_marker_server.h>
-#include <jsk_transformable_interactive_marker/transformable_box.h>
-#include <jsk_transformable_interactive_marker/transformable_cylinder.h>
-#include <jsk_transformable_interactive_marker/transformable_torus.h>
+#include <jsk_interactive_marker/transformable_box.h>
+#include <jsk_interactive_marker/transformable_cylinder.h>
+#include <jsk_interactive_marker/transformable_torus.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <map>
@@ -15,7 +15,7 @@
 
 using namespace std;
 
-namespace jsk_transformable_interactive_marker
+namespace jsk_interactive_marker
 {
   class TransformableInteractiveServer{
   public:
@@ -47,7 +47,7 @@ namespace jsk_transformable_interactive_marker
 
     void updateTransformableObject(TransformableObject* tobject);
 
-    bool getPoseService(jsk_transformable_interactive_marker::GetPose::Request &req,jsk_transformable_interactive_marker::GetPose::Response &res);
+    bool getPoseService(jsk_interactive_marker::GetPose::Request &req,jsk_interactive_marker::GetPose::Response &res);
 
     std::string focus_object_marker_name_;
     ros::NodeHandle* n_;
