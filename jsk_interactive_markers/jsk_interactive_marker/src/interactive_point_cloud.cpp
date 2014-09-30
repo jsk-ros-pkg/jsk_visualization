@@ -30,7 +30,7 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
   //  pnh_.param<bool>("use_bounding_box", use_bounding_box_, "false");
   pnh_.param<bool>("use_bounding_box", use_bounding_box_, "true");
   pnh_.param<std::string>("input_bounding_box", input_bounding_box_, "/bounding_box_marker/selected_box_array");
-  pnh_.param<std::string>("handle_pose", initial_handle_pose_, "//selected_box_array");
+  pnh_.param<std::string>("handle_pose", initial_handle_pose_, "/handle_estimator/output_best");
 
   //publish
   pub_click_point_ = pnh_.advertise<geometry_msgs::PointStamped>("right_click_point", 1);

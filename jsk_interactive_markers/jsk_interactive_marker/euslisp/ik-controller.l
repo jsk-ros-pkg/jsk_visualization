@@ -1573,6 +1573,10 @@
     (format nil "~A/box_movement" *interactive-pc-nodename*)
     jsk_pcl_ros::BoundingBoxMovement #'send self :box-movement-callback)
 
+   (ros::subscribe
+    (format nil "~A/grasp_pose" *interactive-pc-nodename*)
+    geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
+
    ;;(switch-end-coords :id 2)
    (setq *real-robot* (copy-object *robot*))
    (gl::transparent *real-robot* 0.3)
