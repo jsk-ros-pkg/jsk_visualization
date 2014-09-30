@@ -30,14 +30,18 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
   //  pnh_.param<bool>("use_bounding_box", use_bounding_box_, "false");
   pnh_.param<bool>("use_bounding_box", use_bounding_box_, "true");
   pnh_.param<std::string>("input_bounding_box", input_bounding_box_, "/bounding_box_marker/selected_box_array");
+  pnh_.param<std::string>("handle_pose", initial_handle_pose_, "/handle_estimator/output_best");
 
-
+  //publish
   pub_click_point_ = pnh_.advertise<geometry_msgs::PointStamped>("right_click_point", 1);
   pub_left_click_ = pnh_.advertise<geometry_msgs::PointStamped>("left_click_point", 1);
   pub_marker_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("marker_pose", 1);
+  pub_grasp_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("grasp_pose", 1);
   pub_box_movement_ = pnh_.advertise<jsk_pcl_ros::BoundingBoxMovement>("box_movement", 1);
   pub_handle_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("handle_pose", 1);
   pub_handle_pose_array_ = pnh_.advertise<geometry_msgs::PoseArray>("handle_pose_array", 1);
+
+  //subscribe
   sub_handle_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> ("set_handle_pose", 1, boost::bind( &InteractivePointCloud::setHandlePoseCallback, this, _1));
 
   sub_point_cloud_.subscribe(pnh_, input_pointcloud_, 1);
@@ -47,8 +51,9 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
     //point cloud and bounding box
     sync_ = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(10);
     sub_bounding_box_.subscribe(pnh_,input_bounding_box_, 1);
-    sync_->connectInput(sub_point_cloud_, sub_bounding_box_);
-    sync_->registerCallback(boost::bind(&InteractivePointCloud::pointCloudAndBoundingBoxCallback, this, _1, _2));
+    sub_initial_handle_pose_.subscribe(pnh_, initial_handle_pose_, 1);
+    sync_->connectInput(sub_point_cloud_, sub_bounding_box_, sub_initial_handle_pose_);
+    sync_->registerCallback(boost::bind(&InteractivePointCloud::pointCloudAndBoundingBoxCallback, this, _1, _2, _3));
 
   }else{
       sub_point_cloud_.registerCallback(&InteractivePointCloud::pointCloudCallback, this);
@@ -73,13 +78,17 @@ void InteractivePointCloud::pointCloudCallback(const sensor_msgs::PointCloud2Con
   makeMarker(cloud, point_size_ );
 }
 
-void InteractivePointCloud::pointCloudAndBoundingBoxCallback(const sensor_msgs::PointCloud2ConstPtr &cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr &box){
-  makeMarker(cloud, box, point_size_ );
+void InteractivePointCloud::pointCloudAndBoundingBoxCallback(const sensor_msgs::PointCloud2ConstPtr &cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr &box, const geometry_msgs::PoseStampedConstPtr &handle){
+  makeMarker(cloud, box, handle, point_size_ );
 }
+
+
 
 void InteractivePointCloud::setHandlePoseCallback(const geometry_msgs::PoseStampedConstPtr &ps){
   if( ps->header.stamp == current_box_.header.stamp ){
     if(current_box_.boxes.size() > 0){
+      handle_pose_ = *ps;
+      
       tf::Transform tf_ps, tf_box;
       tf_ps.setOrigin(tf::Vector3(ps->pose.position.x, ps->pose.position.y, ps->pose.position.z));
       tf_ps.setRotation(tf::Quaternion( ps->pose.orientation.x, ps->pose.orientation.y, ps->pose.orientation.z, ps->pose.orientation.w));
@@ -154,6 +163,10 @@ void InteractivePointCloud::markerFeedback( const visualization_msgs::Interactiv
   }
 }
 
+void InteractivePointCloud::publishGraspPose(){
+  pub_grasp_pose_.publish(handle_pose_);
+}
+
 void InteractivePointCloud::publishHandPose( geometry_msgs::PoseStamped box_pose){
   tf::Transform tf_marker;
   tf_marker.setOrigin(tf::Vector3(box_pose.pose.position.x, box_pose.pose.position.y, box_pose.pose.position.z));
@@ -179,14 +192,15 @@ void InteractivePointCloud::publishHandPose( geometry_msgs::PoseStamped box_pose
 }
 
 void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud,float size){
-  makeMarker(cloud, jsk_pcl_ros::BoundingBoxArray::ConstPtr(), size);
+  makeMarker(cloud, jsk_pcl_ros::BoundingBoxArray::ConstPtr(), geometry_msgs::PoseStamped::ConstPtr(), size);
 }
-void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr box, float size)
+void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr box, const geometry_msgs::PoseStampedConstPtr handle, float size)
 {
   exist_handle_tf_ = false;
-  
   current_croud_ = *cloud;
   current_box_ = *box;
+
+
   InteractiveMarker int_marker;
   int_marker.name = marker_name_;
 
@@ -209,6 +223,10 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
 
     box_movement_.box = first_box;
     box_movement_.header.frame_id = first_box.header.frame_id;
+
+    if(handle->header.frame_id != ""){
+      setHandlePoseCallback(handle);
+    }
   }
 
 
@@ -257,8 +275,8 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
       if(box && box->boxes.size() > 0){
 	Marker bounding_box_marker;
 	bounding_box_marker.color.r = 0.0;
-	bounding_box_marker.color.g = 1.0;
-	bounding_box_marker.color.b = 0.0;
+	bounding_box_marker.color.g = 0.0;
+	bounding_box_marker.color.b = 1.0;
 	bounding_box_marker.color.a = 1.0;
 	bounding_box_marker.type = visualization_msgs::Marker::LINE_LIST;
 	bounding_box_marker.scale.x = 0.01; //line width
@@ -338,5 +356,7 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
       menu_handler_.apply( marker_server_, marker_name_ );
       marker_server_.applyChanges();
       ROS_INFO("made interactive point cloud");
+      
+      publishGraspPose();
   }
 }

@@ -64,7 +64,7 @@
 
 
 (defmethod im-controller
-  (:call-ik-server
+  (:call-ik-server-old
    (&rest
     args
     &key
@@ -183,8 +183,6 @@
      )
     (t (format log-stream "failed!~%") nil)))
 
-
-  
   (:call-touch-it-server
    (command
     &key
@@ -1575,6 +1573,10 @@
     (format nil "~A/box_movement" *interactive-pc-nodename*)
     jsk_pcl_ros::BoundingBoxMovement #'send self :box-movement-callback)
 
+   (ros::subscribe
+    (format nil "~A/grasp_pose" *interactive-pc-nodename*)
+    geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
+
    ;;(switch-end-coords :id 2)
    (setq *real-robot* (copy-object *robot*))
    (gl::transparent *real-robot* 0.3)
@@ -1677,73 +1679,53 @@
 				   hand)
 			       (send *real-robot* arm :end-coords :copy-worldcoords)))
 			 '(:larm :rarm) move-arms))
-
-
-	   (setq tmp
-		 (send *robot* :inverse-kinematics
-		       target-coords
-		       :move-arm :arms
-		       :use-torso use-torso
-		       :rotation-axis rotation-axis
-		       :stop 100
-		       :debug-view nil)
-		 )
+	   (setq *use-ik-server* nil)
+	   (if *use-ik-server*
+	       (setq ik-server-res
+		     (send *fullbody-ik-client* :ik-server-call
+			   :robot *robot*
+			   :target-limbs '(:larm :rarm)
+			   ;;:move-target *pr2-move-target*
+			   :target-coords target-coords
+			   :stop 50
+			   :rotation-axis rotation-axis
+			   ;;for pr2?
+			   :use-torso use-torso
+			   :group-name ":inverse-kinematics"
+			   :centroid-thre nil
+			   :target-centroid-pos nil
+			   :cog-gain 0
+			   )
+		     )
+	     (setq ik-suc
+		   (send *robot* :inverse-kinematics
+		   target-coords
+		   :move-arm :arms
+		   :use-torso use-torso
+		   :rotation-axis rotation-axis
+		   :stop 100
+		   :debug-view nil))
 	   )
-
-
-	 #|
-
-	 (defvar *pr2-move-target*
-	 (list (make-cascoords
-	 :parent
-	 (send (send (send *real-robot* :larm :end-coords :parent) :parent) :parent)
-	 :coords
-	 (copy-object
-	 (send (send (send (send *real-robot* :larm :end-coords :parent) :parent) :parent)
-	 :worldcoords))
-	 :name :larm-pr2-end-coords)
-	 (make-cascoords
-	 :parent
-	 (send (send (send *real-robot* :rarm :end-coords :parent) :parent) :parent)
-	 :coords
-	 (copy-object
-	 (send (send (send (send *real-robot* :rarm :end-coords :parent) :parent) :parent)
-	 :worldcoords))
-	 :name :rarm-pr2-end-coords)))
-	 (mapcar
-	 #'(lambda (limb move rot)
-	 (setq tmp (send self :call-ik-server
-	 :move-limbs
-	 (case *move-limb*
-	 (:arms '(t t))
-	 (:larm '(t nil))
-	 (:rarm '(nil t)))
-	 ;;:target-limbs limb
-	 ;;			      :target-limbs 
-	 ;;			      (case *move-limb*
-	 ;;				(:arms '(:larm :rarm))
-	 ;;				(t (list *move-limb*)))
-	 :target-limbs '(:larm :rarm)
-	 :real? real?
-	 :move-target *pr2-move-target*
-	 :move-coords (make-coords)
-	 :origin-coords (make-coords)
-	 ;; (make-coords
-	 ;;  :pos move
-	 ;;  :rpy (reverse rot))
-	 :rotate? :x
-	 :revert-if-fail revert-if-fail
-	 :log-stream nil
-	 )))
-	 target-limb move rot)
-	 |#
-	 
 	 (cond
-	  ((vectorp tmp)
+	  ;;((vectorp tmp)
+	  ((if *use-ik-server* (= (send ik-server-res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*) (vectorp ik-suc))
+
+	   ;; (let ((res-joint-name (send ik-server-res :solution :joint_state :name))
+	   ;; 	 (res-joint-position (send ik-server-res :solution :joint_state :position)))
+	   ;;   (dolist (joint (send *robot* :joint-list))
+	   ;;     (dotimes (i (length res-joint-name))
+	   ;; 	 (when (equal (elt res-joint-name i) (send joint :name))
+	   ;; 	   (send joint :joint-angle (rad2deg (elt res-joint-position i)))
+	   ;; 	   ;; (if (subclassp (class joint) linear-joint)
+	   ;; 	   ;;     (send joint :joint-angle (* (elt res-joint-position i) 100.0))
+	   ;; 	   ;;   (send joint :joint-angle (rad2deg (elt res-joint-position i))))
+	   ;; 	   (return)
+	   ;; 	   ))))
 	   (x::window-main-one)
 	   (setq revert-if-fail t)
 	   ;;(send self :publish-touchit-status (format nil "~%IK SUCC / ~A" log-string))
 	   (send self :publish-touchit-status (format nil "~%IK SUCC "))
+	   (print (send *robot* :angle-vector))
 	   (if *publish-ik*
 	       (send self :publish-joint-states :real? nil)))
 	  (t ;(evenp (random 2))
@@ -1751,8 +1733,7 @@
 	   ;;(send self :publish-touchit-status (format nil "~%IK FAIL / ~A" log-string))
 	   (send self :publish-touchit-status (format nil "~%IK FAIL "))
 	   ))
-	 ))
-       )
+	 )))
       ))
    )
 
