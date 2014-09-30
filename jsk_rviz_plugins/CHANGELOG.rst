@@ -2,6 +2,28 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.12 (2014-09-23)
+-------------------
+
+1.0.11 (2014-09-22)
+-------------------
+* Do not ues deprecated PLUGINLIB_DECLARE_CLASS
+* Draw polygon as 'face' on PolygonArrayDisplay
+* Use jsk_topic_tools::colorCategory20 to colorize automatically
+* Add tool plugin to close/open all the displays on rviz
+* Contributors: Ryohei Ueda
+
+1.0.10 (2014-09-13)
+-------------------
+* Fix color of people visualizer by initializing color to sky blue
+* Fix texture color of camera info by filling color value of texture image
+* Fix caching of overlay textures of OverlayMenuDisplay to support
+  changing menus
+* add relay camera info node
+* Add new plugin to visualize sensor_msgs/CameraInfo
+* Ignore first message means CLOSE in OverlayMenuDisplay
+* Contributors: Ryohei Ueda, Yusuke Furuta
+
 1.0.9 (2014-09-07)
 ------------------
 

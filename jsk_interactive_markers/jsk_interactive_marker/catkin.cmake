@@ -24,11 +24,12 @@ add_message_files(
   FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg
 )
 add_service_files(DIRECTORY srv
-  FILES MarkerSetPose.srv SetPose.srv)
+  FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetPose.srv)
 
 generate_dynamic_reconfigure_options(
   cfg/InteractivePointCloud.cfg
   cfg/PointCloudCropper.cfg
+  cfg/CameraInfoPublisher.cfg
   )
 
 add_definitions("-g")
@@ -43,6 +44,10 @@ link_directories(${orocos_kdl_LIBRARY_DIRS})
 add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(interactive_marker_interface ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(interactive_marker_interface ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(camera_info_publisher src/camera_info_publisher.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
+target_link_libraries(camera_info_publisher ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+add_dependencies(camera_info_publisher ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 add_executable(urdf_model_marker src/urdf_model_marker.cpp src/urdf_model_marker_main.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
 target_link_libraries(urdf_model_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
@@ -88,6 +93,18 @@ add_executable(pointcloud_cropper src/pointcloud_cropper.cpp
   src/interactive_marker_helpers.cpp)
 target_link_libraries(pointcloud_cropper ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(pointcloud_cropper ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(transformable_server_sample
+  src/transformable_object.cpp
+  src/transformable_box.cpp
+  src/transformable_cylinder.cpp
+  src/transformable_torus.cpp
+  src/transformable_interactive_server.cpp
+  src/transformable_server_sample.cpp
+)
+
+target_link_libraries(transformable_server_sample ${catkin_LIBRARIES})
+add_dependencies(transformable_server_sample ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 generate_messages(
   DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs jsk_pcl_ros

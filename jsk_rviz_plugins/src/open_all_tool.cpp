@@ -1,4 +1,4 @@
-// -*- mode: c++; -*-
+// -*- mode: c++ -*-
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
@@ -33,55 +33,58 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
-#define JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
+#include <ros/ros.h>
+#include <rviz/tool_manager.h>
+#include <rviz/display_context.h>
+#include <rviz/view_manager.h>
+#include <rviz/display_group.h>
+#include <rviz/display.h>
+#include "open_all_tool.h"
 
-#include <jsk_pcl_ros/BoundingBoxArray.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/bool_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/message_filter_display.h>
-#include <rviz/ogre_helpers/shape.h>
-#include <rviz/ogre_helpers/billboard_line.h>
-#include <OGRE/OgreSceneNode.h>
 
 namespace jsk_rviz_plugin
 {
-  class BoundingBoxArrayDisplay: public rviz::MessageFilterDisplay<jsk_pcl_ros::BoundingBoxArray>
+  OpenAllTool::OpenAllTool()
+    : rviz::Tool()
   {
-    Q_OBJECT
-  public:
-    typedef boost::shared_ptr<rviz::Shape> ShapePtr;
-    typedef boost::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
-    BoundingBoxArrayDisplay();
-    virtual ~BoundingBoxArrayDisplay();
-  protected:
-    virtual void onInitialize();
-    virtual void reset();
-    void allocateShapes(int num);
-    void allocateBillboardLines(int num);
-    QColor getColor(size_t index);
-    rviz::ColorProperty* color_property_;
-    rviz::FloatProperty* alpha_property_;
-    rviz::BoolProperty* only_edge_property_;
-    rviz::FloatProperty* line_width_property_;
-    rviz::BoolProperty* auto_color_property_;
-    QColor color_;
-    double alpha_;
-    bool only_edge_;
-    bool auto_color_;
-    double line_width_;
-    std::vector<ShapePtr> shapes_;
-    std::vector<BillboardLinePtr> edges_;
-  private Q_SLOTS:
-    void updateColor();
-    void updateAlpha();
-    void updateOnlyEdge();
-    void updateAutoColor();
-    void updateLineWidth();
-  private:
-    void processMessage(const jsk_pcl_ros::BoundingBoxArray::ConstPtr& msg);
-  };
+
+  }
+
+  OpenAllTool::~OpenAllTool()
+  {
+  }
+
+  void OpenAllTool::onInitialize()
+  {
+
+  }
+
+  void OpenAllTool::openProperty(
+    rviz::Property* property)
+  {
+    property->expand();
+    if (property->numChildren() > 0) {
+      for (size_t i = 0; i < property->numChildren(); i++) {
+        openProperty(property->childAt(i));
+      }
+      context_->queueRender();
+    }
+  }
+  
+  void OpenAllTool::activate()
+  {
+    rviz::DisplayGroup* display_group = context_->getRootDisplayGroup();
+    openProperty(display_group);
+    rviz::ToolManager* tool_manager = context_->getToolManager();
+    tool_manager->setCurrentTool(tool_manager->getTool(0));
+  }
+
+  void OpenAllTool::deactivate()
+  {
+    
+  }
 
 }
-#endif
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::OpenAllTool, rviz::Tool )

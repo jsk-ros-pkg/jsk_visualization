@@ -1,4 +1,4 @@
-// -*- mode: c++; -*-
+// -*- mode: c++ -*-
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
@@ -32,76 +32,30 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#ifndef JSK_RVIZ_PLUGIN_OVERLAY_MENU_DISPLAY_H_
-#define JSK_RVIZ_PLUGIN_OVERLAY_MENU_DISPLAY_H_
 
-#include <rviz/display.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreColourValue.h>
-#include <OGRE/OgreMaterial.h>
 
-#include <QPainter>
+#ifndef JSK_RVIZ_PLUGIN_OPEN_ALL_TOOL_H_
+#define JSK_RVIZ_PLUGIN_OPEN_ALL_TOOL_H_
 
-#include <rviz/properties/ros_topic_property.h>
-
-#include <jsk_rviz_plugins/OverlayMenu.h>
-
-#include "overlay_utils.h"
+#include <rviz/tool.h>
+#include <rviz/properties/property.h>
+#include <rviz/properties/property_tree_model.h>
 
 namespace jsk_rviz_plugin
 {
-  class OverlayMenuDisplay : public rviz::Display
+  class OpenAllTool: public rviz::Tool
   {
-    Q_OBJECT
   public:
-    OverlayMenuDisplay();
-    virtual ~OverlayMenuDisplay();
-
-    enum AnimationState
-    {
-      CLOSED,
-      OPENED,
-      OPENING,
-      CLOSING,
-    };
-    
-  protected:
-    OverlayObject::Ptr overlay_;
-    ros::Subscriber sub_;
-    rviz::RosTopicProperty* update_topic_property_;
-    AnimationState animation_state_;
-    bool require_update_texture_;
-    jsk_rviz_plugins::OverlayMenu::ConstPtr current_menu_;
-    jsk_rviz_plugins::OverlayMenu::ConstPtr next_menu_;
-    double animation_t_;
-    virtual void prepareOverlay();
-    virtual void openingAnimation();
-    virtual std::string getMenuString(
-      const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg,
-      size_t index);
-    virtual QFont font();
-    virtual QFontMetrics fontMetrics();
-    virtual int drawAreaWidth(
-      const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
-    virtual int drawAreaHeight(
-      const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
-    virtual bool isNeedToResize();
-    virtual bool isNeedToRedraw();
-    virtual void redraw();
+    OpenAllTool();
+    virtual ~OpenAllTool();
     virtual void onInitialize();
-    virtual void onEnable();
-    virtual void onDisable();
-    virtual void update(float wall_dt, float ros_dt);
-    virtual void subscribe();
-    virtual void unsubscribe();
-    virtual void processMessage
-    (const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
-  protected Q_SLOTS:
-    void updateTopic();
+    virtual void activate();
+    virtual void deactivate();
+  protected:
+    virtual void openProperty(rviz::Property* property);
+  private:
     
   };
-
 }
 
 #endif
-

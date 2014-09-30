@@ -9,6 +9,7 @@ project(jsk_rviz_plugins)
 find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros
   ${people_msgs}
   message_generation std_msgs diagnostic_msgs cv_bridge
+  jsk_topic_tools
   image_geometry)
 
 add_message_files(FILES OverlayText.msg OverlayMenu.msg)
@@ -63,6 +64,8 @@ qt4_wrap_cpp(MOC_FILES
   ${people_position_measurement_array_header}
   src/sparse_occupancy_grid_array_display.h
   src/camera_info_display.h
+  src/close_all_tool.h
+  src/open_all_tool.h
 )
 
 set(SOURCE_FILES
@@ -91,6 +94,8 @@ set(SOURCE_FILES
   src/overlay_utils.cpp
   src/facing_visualizer.cpp
   src/camera_info_display.cpp
+  src/close_all_tool.cpp
+  src/open_all_tool.cpp
   ${MOC_FILES}
 )
 
