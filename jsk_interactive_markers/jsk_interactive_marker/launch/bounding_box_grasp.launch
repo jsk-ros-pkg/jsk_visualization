@@ -18,6 +18,7 @@
       -->
       <remap from="~handle_array" to="/handle_estimator/output"/>
       <remap from="~set_handle_pose" to="/handle_estimator/output_selected"/>
+      <param name="handle_pose" value="/handle_estimator/output_best"/>
     </node>
 
     
