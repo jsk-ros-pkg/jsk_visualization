@@ -82,7 +82,7 @@ void boxCallback(const jsk_pcl_ros::BoundingBoxArray::ConstPtr& msg)
     {
       std::stringstream ss;
       ss << "box" << "_" << i;
-      int_marker.description = ss.str();
+      int_marker.name = ss.str();
     }
     visualization_msgs::InteractiveMarkerControl control;
     control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
