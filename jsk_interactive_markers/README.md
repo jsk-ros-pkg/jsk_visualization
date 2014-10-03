@@ -1,4 +1,4 @@
-# How to use interactive_marker_control
+# How to use jsk interactive markers
 ## in robot
 ```
 rosrun roseus roseus `rospack find jsk_interactive`/euslisp/move-joint-interface-robot.l
@@ -7,6 +7,7 @@ or
 ```
 roslaunch jsk_pr2_startup pr2_teleop_robot.launch
 ```
+The latter includes the former and other nodes for teleoperation.
 
 ## in remote PC
 ```
@@ -16,16 +17,16 @@ or
 ```
 roslaunch jsk_pr2_startup pr2_teleop_remote.launch
 ```
+The latter includes the former and other nodes for teleoperation.
 
-
-### To move with joystick
+#### To move with joystick
 ```
 roslaunch jsk_teleop_joy pr2_remote.launch DEV:=/dev/input/js0
 ```
 
-
-
+# System description
 ### Control of model robot
+
 #### Joint Control
 Click robot interactive marker in rviz and move joint.
 #### Hand Control
@@ -37,4 +38,9 @@ When "Move" is selected with mouse or joystick, sensor_msgs/JointState is send t
 move-joint-interface.l controls a real robot.
 
 
+# Node description
+### interactive_marker_interface
+Control hand pose with 6-DOF interactive marker.
 
+### urdf_model_marker
+Make interactive marker from urdf.
