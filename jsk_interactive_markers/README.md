@@ -25,6 +25,7 @@ roslaunch jsk_teleop_joy pr2_remote.launch DEV:=/dev/input/js0
 ```
 
 # System description
+![System configuration diagram](images/system_configuration.png)
 ### Control of model robot
 
 #### Joint Control
