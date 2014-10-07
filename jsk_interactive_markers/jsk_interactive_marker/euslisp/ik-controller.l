@@ -38,6 +38,7 @@
    *fullbody-ik-client*
    *base-target-coords*
    *movingp*
+   *have-leg*
    )
   )
 
@@ -299,6 +300,7 @@
   (:fix-robot-coords
    nil
    (send *robot* :fix-leg-to-coords (make-coords) :both)
+   (send *real-robot* :fix-leg-to-coords (make-coords) :both)
    ;;(send *robot* :transform (send (send (car (send *robot* :links)) :copy-worldcoords) :transformation (make-coords)) :local)
    ;;(send *real-robot* :transform (send (send (car (send *real-robot* :links)) :copy-worldcoords) :transformation (make-coords)) :local)
    )
@@ -1483,6 +1485,7 @@
    (defvar *ik-stop* (not *publish-ik*))
 
    (defvar *robot-name* (ros::get-param "~robot" "PR2"))
+   (defvar *robot-topic-name* (ros::get-param "~robot_topic_name" "robot"))
    (defvar *use-ik-server* (ros::get-param "~use_ik_server" t))
 
    (defvar *rhand-frame* nil)
@@ -1496,6 +1499,7 @@
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
      (defvar *robot-origin* "base_footprint")
+     (setq *have-leg* nil)
      )
     ((equal (string-upcase *robot-name*) "ATLAS")
      (ros::load-ros-manifest "hrpsys_gazebo_atlas")
@@ -1509,7 +1513,7 @@
      (atlas-with-hand)
      (setq *robot* *atlas*)
      (defvar *robot-origin* "pelvis")
-
+     (setq *have-leg* t)
      )
     ((equal (string-upcase *robot-name*) "HRP2")
      (require "package://hrpsys_gazebo_tutorials/euslisp/hrp2jsknt-interface-ex.l")
@@ -1517,6 +1521,7 @@
      (setq *robot* *hrp2*)
      (defvar *robot-origin* "BODY")
      (defvar *robot-offset* (make-coords :pos #f(0 0 -705)))
+     (setq *have-leg* t)
      )
 
     (t
@@ -1525,6 +1530,7 @@
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
      (defvar *robot-origin* "base_footprint")
+     (setq *have-leg* nil)
      )
     )
 
@@ -1735,6 +1741,17 @@
                   (:rarm '(nil t))
                   (:larm '(t nil))
                   (:arms '(t t))))
+
+          (if *have-leg*
+              (progn
+                (setq move-arms (append move-arms '(nil nil)))
+                (setq target-limbs '(:larm :rarm :lleg :rleg))
+                )
+            (setq target-limbs '(:larm :rarm)))
+
+          (print move-arms)
+          (print target-limbs)
+
           (setq rotation-axis (mapcar #'(lambda (move-arm) (if move-arm (if *tmp-rotation-axis* *rotation-axis* nil) t)) move-arms))
           
           ;;ik target
@@ -1745,7 +1762,7 @@
                                        (hand (send origin->hand :transform *target-coords* :world)))
                                   hand)
                               (send *real-robot* arm :end-coords :copy-worldcoords)))
-                        '(:larm :rarm) move-arms))
+                        target-limbs move-arms))
 
           (if *use-ik-server*
               (cond
@@ -1753,7 +1770,7 @@
                 (setq ik-server-res
                       (send *fullbody-ik-client* :ik-server-call
                             :robot *robot*
-                            :target-limbs '(:larm :rarm)
+                            :target-limbs target-limbs
                             ;;:move-target *pr2-move-target*
                             :target-coords target-coords
                             :stop 50
@@ -1771,7 +1788,7 @@
                 (setq ik-server-res
                       (send *fullbody-ik-client* :ik-server-call
                             :robot *robot*
-                            :target-limbs '(:larm :rarm)
+                            :target-limbs target-limbs
                             :target-coords target-coords
                             :stop 50
                             :rotation-axis rotation-axis
