@@ -1435,38 +1435,40 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
 }
 
 void InteractiveMarkerInterface::loadMeshFromYaml(XmlRpc::XmlRpcValue val, std::string name, std::vector<MeshProperty>& mesh){
-  for(int i=0; i< val[name].size(); i++){
-    XmlRpc::XmlRpcValue nval = val[name][i];
-    MeshProperty m;
-    m.link_name = (std::string)nval["link"];
-    m.mesh_file = (std::string)nval["mesh"];
+  if(val.hasMember(name)){
+    for(int i=0; i< val[name].size(); i++){
+      XmlRpc::XmlRpcValue nval = val[name][i];
+      MeshProperty m;
+      m.link_name = (std::string)nval["link"];
+      m.mesh_file = (std::string)nval["mesh"];
 
-    if(nval.hasMember("position")){
-      XmlRpc::XmlRpcValue position = nval["position"];
-      m.position.x = (double)position["x"];
-      m.position.y = (double)position["y"];
-      m.position.z = (double)position["z"];
-    }else{
-      m.position.x = 0.0;
-      m.position.y = 0.0;
-      m.position.z = 0.0;
-    }
+      if(nval.hasMember("position")){
+        XmlRpc::XmlRpcValue position = nval["position"];
+        m.position.x = (double)position["x"];
+        m.position.y = (double)position["y"];
+        m.position.z = (double)position["z"];
+      }else{
+        m.position.x = 0.0;
+        m.position.y = 0.0;
+        m.position.z = 0.0;
+      }
 
-    if(nval.hasMember("orient")){
-      XmlRpc::XmlRpcValue orient = nval["orient"];
-      std::cerr << "load_link: " << orient["x"] << std::endl;
-      m.orientation.x = (double)orient["x"];
-      m.orientation.y = (double)orient["y"];
-      m.orientation.z = (double)orient["z"];
-      m.orientation.w = (double)orient["w"];
-    }else{
-      m.orientation.x = 0.0;
-      m.orientation.y = 0.0;
-      m.orientation.z = 0.0;
-      m.orientation.w = 1.0;
+      if(nval.hasMember("orient")){
+        XmlRpc::XmlRpcValue orient = nval["orient"];
+        std::cerr << "load_link: " << orient["x"] << std::endl;
+        m.orientation.x = (double)orient["x"];
+        m.orientation.y = (double)orient["y"];
+        m.orientation.z = (double)orient["z"];
+        m.orientation.w = (double)orient["w"];
+      }else{
+        m.orientation.x = 0.0;
+        m.orientation.y = 0.0;
+        m.orientation.z = 0.0;
+        m.orientation.w = 1.0;
+      }
+      mesh.push_back(m);
+      std::cerr << "load_link: " << nval["link"] << std::endl;
     }
-    mesh.push_back(m);
-    std::cerr << "load_link: " << nval["link"] << std::endl;
   }
 }
 

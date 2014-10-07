@@ -39,6 +39,7 @@
    *base-target-coords*
    *movingp*
    *have-leg*
+   *frame-id*
    )
   )
 
@@ -619,7 +620,7 @@
        (send self :realmodel2model)
        (send self :publish-joint-states :real? nil)
        ;;reset root pose
-       (ros::publish (format nil "~A/~A/reset_root_pose" *im-nodename* *robot-name*)
+       (ros::publish (format nil "~A/~A/reset_root_pose" *im-nodename* *robot-topic-name*)
 		     (instance std_msgs::Empty :init))
        (case *move-limb*
 	 (:arms
@@ -835,7 +836,7 @@
          hand-coords)
 
      (setq hand-coords (send (send self :get-base-coords) :transformation *target-coords* :local))
-     (setq ps-msg (ros::coords->tf-pose-stamped hand-coords "/map"))
+     (setq ps-msg (ros::coords->tf-pose-stamped hand-coords *frame-id*))
      (ros::publish (format nil "~A/l_gripper/set_pose" *gripper-im-nodename*)
                    ps-msg)
      )
@@ -898,7 +899,7 @@
   (:realmodel2model
    ()
    (let (res)
-     (setq res (ros::service-call (format nil "~A/~A/get_joint_states" *im-nodename* *robot-name*) (instance jsk_interactive_marker::GetJointStateRequest :init)))
+     (setq res (ros::service-call (format nil "~A/~A/get_joint_states" *im-nodename* *robot-topic-name*) (instance jsk_interactive_marker::GetJointStateRequest :init)))
 
      (let* ((res-joint-state (send res :joint_state))
 	    (joint-names (send res-joint-state :name))
@@ -935,14 +936,14 @@
        (setq torso->map
 	     (send *tfl* :lookup-transform
 		   ;;"r_foot" "map" (ros::time 0)))
-		   *robot-origin* "map" (ros::time 0)))
+		   *robot-origin* *frame-id* (ros::time 0)))
        (cond
 	(torso->map
 	 (send coords :transform torso->map)
 	 (return)
 	 )
 	(t
-	 (ros::ros-info "~A -> map cannot transform yet" *robot-origin*)
+	 (ros::ros-info "~A -> ~A cannot transform yet" *robot-origin* *frame-id*)
 	 (unix:sleep 1)
 	 )
 	)
@@ -954,7 +955,7 @@
    )
 
   (:set-marker-pose
-   (coords &key (marker-name) (frame "/map") (markers) (server *server-nodename*))
+   (coords &key (marker-name) (frame *frame-id*) (markers) (server *server-nodename*))
    (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
 	 (msg (ros::coords->tf-pose-stamped coords frame))
 	 (ps (instance geometry_msgs::PoseStamped :init)))
@@ -990,12 +991,12 @@
    (send *tfb* :send-transform
 	 (send (send self :get-base-coords) :transformation
 	       *target-coords* :local)
-	 "/map" "/im_target_coords_arrow")
+	 *frame-id* "/im_target_coords_arrow")
    ;;
    (send *tfb* :send-transform
 	 (send (send self :get-base-coords) :transformation
 	       *origin-coords* :local)
-	 "/map" "/im_origin_coords_arrow")
+	 *frame-id* "/im_origin_coords_arrow")
    )
 
   (:publish-target-arrow-obj
@@ -1085,10 +1086,10 @@
      ;;
      (cond
       (real?
-       (ros::publish (format nil "~A/~A/joint_states_ri_move" *im-nodename* *robot-name*)
+       (ros::publish (format nil "~A/~A/joint_states_ri_move" *im-nodename* *robot-topic-name*)
 		     joint-state-msg))
       (t
-       (ros::publish (format nil "~A/~A/reset_joint_states" *im-nodename* *robot-name*)
+       (ros::publish (format nil "~A/~A/reset_joint_states" *im-nodename* *robot-topic-name*)
 		     joint-state-msg)))
      )
    )
@@ -1130,7 +1131,7 @@
 
      (cond
       (real?
-       (ros::publish (format nil "~A/~A/joint_trajectory_ri_move" *im-nodename* *robot-name*)
+       (ros::publish (format nil "~A/~A/joint_trajectory_ri_move" *im-nodename* *robot-topic-name*)
 		     joint-traj-msg))
       ))
    )
@@ -1140,7 +1141,7 @@
    ()
    (when *base-target-coords*
      (let ((base-msg (ros::coords->tf-pose-stamped *base-target-coords* (send *base-target-coords* :name))))
-       (ros::publish (format nil "~A/~A/base_move" *im-nodename* *robot-name*)
+       (ros::publish (format nil "~A/~A/base_move" *im-nodename* *robot-topic-name*)
 		     base-msg)
        )
      )
@@ -1453,7 +1454,7 @@
    (pose-data &key (arm :arms))
    (let ((hand-msg (instance std_msgs::String :init)))
      (send hand-msg :data (format nil "~A_~A" pose-data arm))
-     (ros::publish (format nil "~A/~A/hand_ri_move" *im-nodename* *robot-name*)
+     (ros::publish (format nil "~A/~A/hand_ri_move" *im-nodename* *robot-topic-name*)
 		   hand-msg)
      )
    )
@@ -1487,6 +1488,7 @@
    (defvar *robot-name* (ros::get-param "~robot" "PR2"))
    (defvar *robot-topic-name* (ros::get-param "~robot_topic_name" "robot"))
    (defvar *use-ik-server* (ros::get-param "~use_ik_server" t))
+   (defvar *frame-id* (ros::get-param "~frame_id" "/map"))
 
    (defvar *rhand-frame* nil)
    (defvar *lhand-frame* nil)
@@ -1582,7 +1584,7 @@
     jsk_interactive_marker::MarkerMenu #'send self :marker-menu-callback2 1)
    (ros::subscribe
     (format nil
-	    "/~A/joint_states_decompressed" *robot-name*)
+	    "/~A/joint_states_decompressed" *robot-topic-name*)
     sensor_msgs::JointState
     #'send self :joint-state-subscriber 1)
 
@@ -1593,35 +1595,35 @@
 
    ;;Update Interactive Marker
    (ros::advertise
-    (format nil "~A/~A/reset_joint_states" *im-nodename* *robot-name*)
+    (format nil "~A/~A/reset_joint_states" *im-nodename* *robot-topic-name*)
     sensor_msgs::JointState)
    ;; reset Interactive Marker Root Pose
-   (ros::advertise (format nil "~A/~A/reset_root_pose" *im-nodename* *robot-name*)
+   (ros::advertise (format nil "~A/~A/reset_root_pose" *im-nodename* *robot-topic-name*)
 		   std_msgs::Empty)
 
    
    ;;update real-robot joint state
    ;;   (ros::advertise
-   ;;    (format nil "~A/~A/send_joint_states" *im-nodename* *robot-name*)
+   ;;    (format nil "~A/~A/send_joint_states" *im-nodename* *robot-topic-name*)
    ;;    sensor_msgs::JointState)
 
    (ros::subscribe
-    (format nil "~A/~A/joint_states" *im-nodename* *robot-name*)
+    (format nil "~A/~A/joint_states" *im-nodename* *robot-topic-name*)
     sensor_msgs::JointState #'send self :joint-state-subscriber2)
 
    (ros::advertise
-    (format nil "~A/~A/joint_states_ri_move" *im-nodename* *robot-name*)
+    (format nil "~A/~A/joint_states_ri_move" *im-nodename* *robot-topic-name*)
     sensor_msgs::JointState)
 
    (ros::advertise
-    (format nil "~A/~A/joint_trajectory_ri_move" *im-nodename* *robot-name*)
+    (format nil "~A/~A/joint_trajectory_ri_move" *im-nodename* *robot-topic-name*)
     trajectory_msgs::JointTrajectory)
 
    (ros::advertise
-    (format nil "~A/~A/hand_ri_move" *im-nodename* *robot-name*)
+    (format nil "~A/~A/hand_ri_move" *im-nodename* *robot-topic-name*)
     std_msgs::String)
 
-   (ros::advertise (format nil "~A/~A/base_move" *im-nodename* *robot-name*)
+   (ros::advertise (format nil "~A/~A/base_move" *im-nodename* *robot-topic-name*)
 		   geometry_msgs::PoseStamped)
 
    (ros::advertise (format nil "~A/l_gripper/set_pose" *gripper-im-nodename*)
@@ -1629,7 +1631,7 @@
 
 
    (ros::subscribe
-    (format nil "~A/~A/base_pose" *im-nodename* *robot-name*)
+    (format nil "~A/~A/base_pose" *im-nodename* *robot-topic-name*)
     geometry_msgs::PoseStamped #'send self :base-target-callback)
 
    (ros::subscribe
