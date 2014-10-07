@@ -10,7 +10,7 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS
   cmake_modules jsk_pcl_ros jsk_footstep_msgs geometry_msgs visualization_msgs
-  dynamic_reconfigure
+  dynamic_reconfigure jsk_rviz_plugins
   interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions
   actionlib roscpp roslib urdf
   pcl_conversions
@@ -24,7 +24,7 @@ add_message_files(
   FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg
 )
 add_service_files(DIRECTORY srv
-  FILES MarkerSetPose.srv SetPose.srv)
+  FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetPose.srv)
 
 generate_dynamic_reconfigure_options(
   cfg/InteractivePointCloud.cfg
@@ -94,13 +94,25 @@ add_executable(pointcloud_cropper src/pointcloud_cropper.cpp
 target_link_libraries(pointcloud_cropper ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(pointcloud_cropper ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
+add_executable(transformable_server_sample
+  src/transformable_object.cpp
+  src/transformable_box.cpp
+  src/transformable_cylinder.cpp
+  src/transformable_torus.cpp
+  src/transformable_interactive_server.cpp
+  src/transformable_server_sample.cpp
+)
+
+target_link_libraries(transformable_server_sample ${catkin_LIBRARIES})
+add_dependencies(transformable_server_sample ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
 generate_messages(
   DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs jsk_pcl_ros
 )
 
 catkin_package(
     DEPENDS TinyXML
-    CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib
+    CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib jsk_rviz_plugins
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )

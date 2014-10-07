@@ -1,0 +1,40 @@
+<launch>
+  <!--
+      <arg name="REMOTE_TF" default="/tf_low_frequency"/>
+  -->
+  <arg name="REMOTE_TF" default="/tf"/>
+  <group>
+    <remap from="/tf" to="$(arg REMOTE_TF)"/>
+    <!--
+	<include file="$(find jsk_pcl_ros)/launch/organized_multi_plane_segmentation.launch">
+	<param name="INPUT" value="/openni/depth_registered/points_throttle"/>
+	<param name="HANDLE_ESTIMATOR" value="true"/>
+	<param name="BASE_FRAME_ID" value="/base_link"/>
+	</include>
+    -->
+    <node pkg="jsk_interactive_marker" type="interactive_point_cloud" name="interactive_point_cloud" output="screen">
+      <!--
+	  <remap from="~handle_pose" to="/pr2_gripper_marker/PR2_gripper/selected"/>
+      -->
+      <remap from="~handle_array" to="/handle_estimator/output"/>
+      <remap from="~set_handle_pose" to="/handle_estimator/output_selected"/>
+      <param name="handle_pose" value="/handle_estimator/output_best"/>
+    </node>
+
+    
+    <group>
+      <remap from="~PR2_gripper/pose_array" to="/handle_estimator/output"/>
+      <remap from="~PR2_gripper/selected_index" to="/handle_estimator/selected_index"/>
+      <include file="$(find jsk_interactive_marker)/launch/pr2_gripper_marker.launch"/>
+    </group>
+
+    <group ns="interactive_point_cloud">
+      <remap from="~PR2_gripper/pose_array" to="/interactive_point_cloud/handle_pose_array"/>
+      <remap from="set_dynamic_tf" to="/set_dynamic_tf"/>
+      <include file="$(find jsk_interactive_marker)/launch/pr2_gripper_marker.launch">
+	<arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" value="false"/>
+      </include>
+    </group>
+  </group>
+
+</launch>

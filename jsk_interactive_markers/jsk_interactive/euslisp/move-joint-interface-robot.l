@@ -45,8 +45,11 @@
 	  (send *robot* hand-method :joint-angle joint-angle)))
       )
     (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    
 
     (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
+    (ros::publish "move_joint_interface/move" (instance std_msgs::Float32 :init :data 5))
+    
 ;;    (model2real :wait t :time 5000)
     )
   )
@@ -87,6 +90,7 @@
     (setq tms (reverse tms))
 
     (send *ri* :angle-vector-sequence avs tms)
+    (ros::publish "move_joint_interface/move" (instance std_msgs::Float32 :init :data 5))
     (send *ri* :wait-interpolation)
     )
   )
@@ -170,6 +174,7 @@
 			jsk_interactive_marker::GetJointState
 			#'get-joint-state-srv)
 
+(ros::advertise "move_joint_interface/move" std_msgs::Float32)
 
 (ros::subscribe (format nil "~A/~A/joint_states_ri_move" server-nodename *robot-name*)
 		sensor_msgs::JointState #'joint-state-callback)

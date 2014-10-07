@@ -67,6 +67,7 @@ namespace jsk_rviz_plugin
       for (size_t i = 0; i < property->numChildren(); i++) {
         openProperty(property->childAt(i));
       }
+      context_->queueRender();
     }
   }
   
