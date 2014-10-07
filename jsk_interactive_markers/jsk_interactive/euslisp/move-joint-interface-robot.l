@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(ros::load-ros-manifest "arm_navigation_msgs")
+;;(ros::load-ros-manifest "arm_navigation_msgs")
 (ros::load-ros-manifest "jsk_interactive")
 (ros::load-ros-manifest "jsk_interactive_marker")
 (ros::roseus "move_joint_interface")
@@ -15,6 +15,13 @@
   (pr2-init)
   (setq *robot* *pr2*)
   )
+ ((equal (string-upcase *robot-name*) "HRP2")
+  (setq *robot-name* "hrp2")
+  (load "package://hrpsys_gazebo_tutorials/euslisp/hrp2jsknt-interface-ex.l")
+  (init)
+  (setq *robot* *hrp2*)
+  )
+
  ((equal (string-upcase *robot-name*) "ATLAS")
   (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
   (setq *robot-name* "atlas")
