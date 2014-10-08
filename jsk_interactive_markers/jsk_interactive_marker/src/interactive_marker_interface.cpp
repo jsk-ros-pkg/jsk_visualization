@@ -908,19 +908,26 @@ void InteractiveMarkerInterface::initHandler(void){
   }
 
   //menu_handler.insert("Touch It", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCH));
+  pnh_.param("touch_it_menu", use_menu, false );
+  if(use_menu){
 
-  interactive_markers::MenuHandler::EntryHandle sub_menu_handle_touch_it;
-  sub_menu_handle_touch_it = menu_handler.insert( "Touch It" );
+    interactive_markers::MenuHandler::EntryHandle sub_menu_handle_touch_it;
+    sub_menu_handle_touch_it = menu_handler.insert( "Touch It" );
 
-  //  menu_handler.insert( sub_menu_handle_touch_it, "Preview", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_PREV));
-  menu_handler.insert( sub_menu_handle_touch_it, "Execute", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_EXEC));
-  menu_handler.insert( sub_menu_handle_touch_it, "Cancel", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_CANCEL));
+    //  menu_handler.insert( sub_menu_handle_touch_it, "Preview", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_PREV));
+    menu_handler.insert( sub_menu_handle_touch_it, "Execute", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_EXEC));
+    menu_handler.insert( sub_menu_handle_touch_it, "Cancel", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCHIT_CANCEL));
+  }
+  pnh_.param("look_hand_menu", use_menu, false );
+  if(use_menu){
 
-  interactive_markers::MenuHandler::EntryHandle sub_menu_handle_look_hand;
-  sub_menu_handle_touch_it = menu_handler.insert( "Look hand" );
 
-  menu_handler.insert( sub_menu_handle_touch_it, "rarm", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::LOOK_RARM));
-  menu_handler.insert( sub_menu_handle_touch_it, "larm", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::LOOK_LARM));
+    interactive_markers::MenuHandler::EntryHandle sub_menu_handle_look_hand;
+    sub_menu_handle_look_hand = menu_handler.insert( "Look hand" );
+
+    menu_handler.insert( sub_menu_handle_look_hand, "rarm", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::LOOK_RARM));
+    menu_handler.insert( sub_menu_handle_look_hand, "larm", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::LOOK_LARM));
+  }
 
   pnh_.param("force_move_menu", use_menu, false );
   if(use_menu){
@@ -1033,11 +1040,11 @@ void InteractiveMarkerInterface::initHandler(void){
     use_torso_menu_ = menu_handler.insert( "Links To Use" );
 
     use_torso_nil_menu_ = menu_handler.insert( use_torso_menu_, "Arm", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
-    menu_handler.setCheckState( use_torso_nil_menu_, interactive_markers::MenuHandler::CHECKED );
+    menu_handler.setCheckState( use_torso_nil_menu_, interactive_markers::MenuHandler::UNCHECKED );
     use_torso_t_menu_ = menu_handler.insert( use_torso_menu_, "Arm and Torso", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
     menu_handler.setCheckState( use_torso_t_menu_, interactive_markers::MenuHandler::UNCHECKED );
     use_fullbody_menu_ = menu_handler.insert( use_torso_menu_, "Fullbody", boost::bind( &InteractiveMarkerInterface::useTorsoCb,this, _1 ));
-    menu_handler.setCheckState( use_fullbody_menu_, interactive_markers::MenuHandler::UNCHECKED );
+    menu_handler.setCheckState( use_fullbody_menu_, interactive_markers::MenuHandler::CHECKED );
 
   }
 
@@ -1435,38 +1442,40 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
 }
 
 void InteractiveMarkerInterface::loadMeshFromYaml(XmlRpc::XmlRpcValue val, std::string name, std::vector<MeshProperty>& mesh){
-  for(int i=0; i< val[name].size(); i++){
-    XmlRpc::XmlRpcValue nval = val[name][i];
-    MeshProperty m;
-    m.link_name = (std::string)nval["link"];
-    m.mesh_file = (std::string)nval["mesh"];
+  if(val.hasMember(name)){
+    for(int i=0; i< val[name].size(); i++){
+      XmlRpc::XmlRpcValue nval = val[name][i];
+      MeshProperty m;
+      m.link_name = (std::string)nval["link"];
+      m.mesh_file = (std::string)nval["mesh"];
 
-    if(nval.hasMember("position")){
-      XmlRpc::XmlRpcValue position = nval["position"];
-      m.position.x = (double)position["x"];
-      m.position.y = (double)position["y"];
-      m.position.z = (double)position["z"];
-    }else{
-      m.position.x = 0.0;
-      m.position.y = 0.0;
-      m.position.z = 0.0;
-    }
+      if(nval.hasMember("position")){
+        XmlRpc::XmlRpcValue position = nval["position"];
+        m.position.x = (double)position["x"];
+        m.position.y = (double)position["y"];
+        m.position.z = (double)position["z"];
+      }else{
+        m.position.x = 0.0;
+        m.position.y = 0.0;
+        m.position.z = 0.0;
+      }
 
-    if(nval.hasMember("orient")){
-      XmlRpc::XmlRpcValue orient = nval["orient"];
-      std::cerr << "load_link: " << orient["x"] << std::endl;
-      m.orientation.x = (double)orient["x"];
-      m.orientation.y = (double)orient["y"];
-      m.orientation.z = (double)orient["z"];
-      m.orientation.w = (double)orient["w"];
-    }else{
-      m.orientation.x = 0.0;
-      m.orientation.y = 0.0;
-      m.orientation.z = 0.0;
-      m.orientation.w = 1.0;
+      if(nval.hasMember("orient")){
+        XmlRpc::XmlRpcValue orient = nval["orient"];
+        std::cerr << "load_link: " << orient["x"] << std::endl;
+        m.orientation.x = (double)orient["x"];
+        m.orientation.y = (double)orient["y"];
+        m.orientation.z = (double)orient["z"];
+        m.orientation.w = (double)orient["w"];
+      }else{
+        m.orientation.x = 0.0;
+        m.orientation.y = 0.0;
+        m.orientation.z = 0.0;
+        m.orientation.w = 1.0;
+      }
+      mesh.push_back(m);
+      std::cerr << "load_link: " << nval["link"] << std::endl;
     }
-    mesh.push_back(m);
-    std::cerr << "load_link: " << nval["link"] << std::endl;
   }
 }
 
