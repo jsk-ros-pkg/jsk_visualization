@@ -40,7 +40,7 @@
 
     <include file="$(find jsk_interactive_marker)/launch/urdf_model_markers.launch">
       <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
-      <arg name="models" value="$(find jsk_interactive_marker)/launch/models/PR2-real.yaml"/>
+      <arg name="models" value="$(find jsk_interactive_marker)/launch/models/robot_description.yaml"/>
     </include>
   </group>
 

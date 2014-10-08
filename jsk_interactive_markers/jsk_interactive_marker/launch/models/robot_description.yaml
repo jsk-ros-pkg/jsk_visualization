@@ -1,4 +1,4 @@
-- name: "PR2"
+- name: "robot"
   frame-id: "/map"
   robot: true
   use_robot_description: true
