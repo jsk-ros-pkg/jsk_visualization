@@ -139,7 +139,9 @@ namespace jsk_rviz_plugin
   {
     MFDClass::reset();
     message_recieved_ = false;
-    visualizer_->setEnable(false);
+    if (visualizer_) {
+      visualizer_->setEnable(false);
+    }
   }
 
   void TargetVisualizerDisplay::updateTargetName()
