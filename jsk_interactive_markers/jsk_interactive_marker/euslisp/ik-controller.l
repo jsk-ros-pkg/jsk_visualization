@@ -1476,7 +1476,7 @@
    (defvar *origin-coords* (instance arrow-object :init)) ;;arrow for origin of object
    (send *origin-coords* :translate #f(500 0 0))
    (defvar *old-coords* (send *target-coords* :copy-worldcoords))
-   (defvar *use-fullbody* nil)
+   (defvar *use-fullbody* t)
    (defvar *use-torso* nil)
    (defvar *translation-axis* t)
    (defvar *rotation-axis* t)
@@ -1522,10 +1522,16 @@
      (hrp2jsknt-init-ex :real nil)
      (setq *robot* *hrp2*)
      (defvar *robot-origin* "BODY")
-     (defvar *robot-offset* (make-coords :pos #f(0 0 -705)))
+     (defvar *robot-offset* (send (send *robot* :body_lk :copy-worldcoords) :transformation (make-coords)))
      (setq *have-leg* t)
      )
-
+    ((equal (string-upcase *robot-name*) "STARO")
+     (load "package://jsk_hrpsys_ros_bridge/euslisp/staro-interface.l")
+     (setq *robot* (instance staro-robot :init))
+     (defvar *robot-origin* "BODY")
+     (defvar *robot-offset* (send (send *robot* :body_lk :copy-worldcoords) :transformation (make-coords)))
+     (setq *have-leg* t)
+     )
     (t
      (ros::ros-error "undefined robot: ~A" *robot-name*)
      (ros::ros-error "use PR2")
