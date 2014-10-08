@@ -1188,7 +1188,8 @@
      (if *robot-offset*
          (send *target-coords* :transform (send *robot-offset* :transformation (make-coords)) :local))
      (send *target-coords* :transform cds)
-     (send *target-coords* :translate (float-vector 30 0 0)) ; move a little bit forward
+     (send *target-coords* :translate (float-vector 10 0 0)) ; move a little bit forward
+     ;;(send *target-coords* :rotate (deg2rad 180) :x :world)
      (setq *tmp-rotation-axis* t)
      (dotimes (i 2)
        (send self :stop-grasp :arm :rarm)
@@ -1209,14 +1210,14 @@
        (unless (send *robot* :inverse-kinematics
                      pre-pose
                      :move-arm :rarm
-                     :use-torso nil
+                     :use-torso t
                      :rotation-axis t
                      :debug-view nil)
          (send pre-pose :rotate (deg2rad -180) :x)
          (if (send *robot* :inverse-kinematics
                    pre-pose
                    :move-arm :rarm
-                   :use-torso nil
+                   :use-torso t
                    :rotation-axis t
                    :debug-view nil)
              (progn
@@ -1231,13 +1232,14 @@
        (unless (send *robot* :inverse-kinematics
                      *target-coords*
                      :move-arm :rarm
-                     :use-torso nil
+                     :use-torso t
                      :rotation-axis t
                      :debug-view nil)
          (setq *movingp* nil)
          (return-from :grasp-pose-callback nil))
        (print 'bbb)
        (push (send *robot* :angle-vector) avs)
+
        (setq avs (reverse avs))
 
        ;;(send self :publish-joint-trajectory avs (list 1000 3000 1000) :real? t)
@@ -1245,6 +1247,24 @@
        )
      (unix:usleep (* 1000 (+ 500 500 500)))
      (send self :start-grasp :arm :rarm)
+     (unix:usleep (* 1000 1000))
+     (let (avs)
+       ;; pick up and place
+       (push (send *robot* :angle-vector) avs)
+       (send *robot* :rarm :move-end-pos #f(0 0 100) :world)
+       ;; (send *target-coords* :locate #f(0 0 100) :world)
+       ;; (send *robot* :inverse-kinematics
+       ;;       *target-coords*
+       ;;       :move-arm :rarm
+       ;;       :use-torso t
+       ;;       :rotation-axis t
+       ;;       :debug-view nil)
+       (push (send *robot* :angle-vector) avs)
+       
+       (send *target-coords* :locate #f(0 0 -100) :world)
+       (send self :publish-joint-trajectory avs (list 1000 1000) :real? t)
+       )
+
 
      (when (boundp '*irtviewer*)
        (send *irtviewer* :draw-objects))
