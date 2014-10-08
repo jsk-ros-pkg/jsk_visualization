@@ -42,7 +42,7 @@ public:
   //! Clear the cloud stored in this object
   void hide(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void handlePoseCallback(const geometry_msgs::PoseStampedConstPtr &ps);
-  void pointCloudAndBoundingBoxCallback(const sensor_msgs::PointCloud2ConstPtr &cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr &box);
+  void pointCloudAndBoundingBoxCallback(const sensor_msgs::PointCloud2ConstPtr &cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr &box, const geometry_msgs::PoseStampedConstPtr &handle);
   void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cloud);
   //  void handlePoseAndBoundingBoxCallback(const geometry_msgs::PoseStampedConstPtr &ps, const jsk_pcl_ros::BoundingBoxArrayConstPtr &box);
   void setHandlePoseCallback(const geometry_msgs::PoseStampedConstPtr &ps);
@@ -55,7 +55,7 @@ private:
   virtual void configCallback (Config &config, uint32_t level);
 
   typedef interactive_markers::MenuHandler MenuHandler;
-  typedef message_filters::sync_policies::ExactTime<sensor_msgs::PointCloud2, jsk_pcl_ros::BoundingBoxArray> SyncPolicy;
+  typedef message_filters::sync_policies::ExactTime<sensor_msgs::PointCloud2, jsk_pcl_ros::BoundingBoxArray, geometry_msgs::PoseStamped> SyncPolicy;
   //typedef message_filters::sync_policies::ExactTime<geometry_msgs::PoseStamped, jsk_pcl_ros::BoundingBoxArray> SyncHandlePose;
 
   typedef message_filters::sync_policies::ExactTime<jsk_pcl_ros::Int32Stamped, geometry_msgs::PoseArray, jsk_pcl_ros::BoundingBoxArray> SyncHandlePose;
@@ -66,7 +66,7 @@ private:
   void pickup( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, float size);
-  void makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr box, float size);
+  void makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr box, const geometry_msgs::PoseStampedConstPtr handle, float size);
 
   void menuPoint( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void move( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
@@ -74,17 +74,20 @@ private:
   void leftClickPoint( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void markerFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+
+  void publishGraspPose();
   void publishHandPose( geometry_msgs::PoseStamped box_pose);
   
 
   std::string marker_name_, topic_;
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
-  ros::Publisher pub_marker_pose_, pub_click_point_, pub_left_click_, pub_handle_pose_, pub_handle_pose_array_, pub_box_movement_;
+  ros::Publisher pub_marker_pose_, pub_click_point_, pub_left_click_, pub_handle_pose_, pub_handle_pose_array_, pub_box_movement_, pub_grasp_pose_;
   ros::Subscriber sub_handle_pose_;
   //ros::Subscriber sub_point_cloud_, sub_bounding_box_;
   message_filters::Subscriber<sensor_msgs::PointCloud2> sub_point_cloud_;
   message_filters::Subscriber<jsk_pcl_ros::BoundingBoxArray> sub_bounding_box_;
+  message_filters::Subscriber<geometry_msgs::PoseStamped> sub_initial_handle_pose_;
   //message_filters::Subscriber<geometry_msgs::PoseStamped> sub_handle_pose_;
   message_filters::Subscriber<jsk_pcl_ros::Int32Stamped> sub_selected_index_;
   message_filters::Subscriber<geometry_msgs::PoseArray> sub_handle_array_;
@@ -100,7 +103,7 @@ private:
   bool use_bounding_box_;
 
   geometry_msgs::PoseStamped marker_pose_;
-  std::string input_pointcloud_, input_bounding_box_;
+  std::string input_pointcloud_, input_bounding_box_, initial_handle_pose_;
 
   sensor_msgs::PointCloud2 current_croud_;
   jsk_pcl_ros::BoundingBoxArray current_box_;

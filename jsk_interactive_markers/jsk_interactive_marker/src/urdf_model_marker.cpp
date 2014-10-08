@@ -454,6 +454,22 @@ void UrdfModelMarker::showModelMarkerCB( const std_msgs::EmptyConstPtr &msg){
 
 }
 
+void UrdfModelMarker::setUrdfCB( const std_msgs::StringConstPtr &msg){
+  server_->clear();
+  model = parseURDF(msg->data);
+  if (!model){
+    std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
+    return;
+  }
+  addChildLinkNames(model->getRoot(), true, true);
+
+  // start JointState
+  sensor_msgs::JointState js;
+  getJointState(model->getRoot(), js);
+  pub_joint_state_.publish( js );
+  return;
+}
+
 
 void UrdfModelMarker::graspPoint_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string link_name){
   switch ( feedback->event_type ){
@@ -1117,10 +1133,12 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   
   hide_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/hide_marker", 1, boost::bind( &UrdfModelMarker::hideModelMarkerCB, this, _1));
   show_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/show_marker", 1, boost::bind( &UrdfModelMarker::showModelMarkerCB, this, _1));
+  sub_set_urdf_ = pnh_.subscribe<std_msgs::String>(model_name_ + "/set_urdf", 1, boost::bind( &UrdfModelMarker::setUrdfCB, this, _1));
 
   show_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/reset_root_pose", 1, boost::bind( &UrdfModelMarker::resetBaseMsgCB, this, _1));
 
   pub_base_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>(model_name_ + "/base_pose", 1);
+
 
 
   /*
