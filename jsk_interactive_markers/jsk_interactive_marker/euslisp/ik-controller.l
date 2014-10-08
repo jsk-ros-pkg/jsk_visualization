@@ -1178,7 +1178,7 @@
 	 (return)
 	 )
 	(t
-	 (ros::ros-info "map -> marker cannot transform yet")
+	 (ros::ros-info "~A -> ~A cannot transform yet" *robot-origin* (send pose :header :frame_id))
 	 (ros::sleep)
 	 )
 	)
@@ -1275,7 +1275,7 @@
 	 (return)
 	 )
 	(t
-	 (ros::ros-info "map -> marker cannot transform yet")
+	 (ros::ros-info "~A -> ~A cannot transform yet" *robot-origin* (send pose :header :frame_id))
 	 (ros::sleep)
 	 )
 	)
@@ -1500,6 +1500,7 @@
      (setq *robot-name* "PR2")
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
+     (defvar *robot-offset* (make-coords))
      (defvar *robot-origin* "base_footprint")
      (setq *have-leg* nil)
      )
@@ -1538,6 +1539,7 @@
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
      (defvar *robot-origin* "base_footprint")
+     (defvar *robot-offset* (make-coords))
      (setq *have-leg* nil)
      )
     )
@@ -1793,12 +1795,12 @@
             (setq target-coords
                   (mapcar #'(lambda (arm move-arm)
                               (if move-arm
-                                  (let* ((origin->hand (send (send *origin-coords* :transformation (send *real-robot* arm :end-coords) :copy-worldcoords))
+                                  (let* ((origin->hand (send (send *origin-coords* :transformation (send *real-robot* arm :end-coords)) :copy-worldcoords))
                                          (hand (send origin->hand :transform *target-coords* :world)))
                                     hand)
                                 (send *real-robot* arm :end-coords :copy-worldcoords)))
-                              target-limbs move-arms)))))
-
+                          target-limbs move-arms))))
+          
           (if *use-ik-server*
               (cond
                ((equal (string-upcase *robot-name*) "PR2")
@@ -1806,7 +1808,6 @@
                       (send *fullbody-ik-client* :ik-server-call
                             :robot *robot*
                             :target-limbs target-limbs
-                            ;;:move-target *pr2-move-target*
                             :target-coords target-coords
                             :stop 50
                             :rotation-axis rotation-axis
@@ -1825,16 +1826,10 @@
                   (setq ik-server-res
                         (send *fullbody-ik-client* :ik-server-call
                               :robot *robot*
-                              ;;:target-limbs target-limbs
                               :target-coords target-coords
                               :stop 50
                               :rotation-axis rotation-axis
                               :move-target move-target
-                              ;;:use-torso use-torso
-                              ;;:group-name ":inverse-kinematics"
-                              ;;:centroid-thre nil
-                              ;;:target-centroid-pos nil
-                              ;;:cog-gain 0
                               )))
                  (*use-torso*
                   (send *robot* :fix-leg-to-coords (make-coords) :both)
@@ -1854,16 +1849,10 @@
                     (setq ik-server-res
                           (send *fullbody-ik-client* :ik-server-call
                                 :robot *robot*
-                                ;;:target-limbs target-limbs
                                 :target-coords tc
                                 :stop 50
                                 :rotation-axis rt
                                 :move-target mt
-                                ;;:use-torso use-torso
-                                ;;:group-name ":inverse-kinematics"
-                                ;;:centroid-thre nil
-                                ;;:target-centroid-pos nil
-                                ;;:cog-gain 0
                                 )))))
                  )
 

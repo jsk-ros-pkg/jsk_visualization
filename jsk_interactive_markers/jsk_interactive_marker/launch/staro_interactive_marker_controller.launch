@@ -59,6 +59,7 @@
 
     <node pkg="roseus" type="roseus" name="ik_controller" args="$(find jsk_interactive_marker)/euslisp/ik-controller-main.l" output="screen">
       <param name="robot" value="$(arg ROBOT)"/>
+      <param name="frame_id" value="BODY"/>
     </node>
 
     <!-- eus-ik-server -->
@@ -70,7 +71,7 @@
   <node if="$(arg LAUNCH_JOINT_INTERFACE)"
         pkg="roseus" type="roseus" name="move_joint_interface_for_im"
 	args="$(find jsk_interactive)/euslisp/move-joint-interface-robot.l">
-    <param name="robot" value="hrp2"/>
+    <param name="robot" value="staro"/>
   </node>
 
 </launch>
