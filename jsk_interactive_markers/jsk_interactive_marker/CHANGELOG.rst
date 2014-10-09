@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.13 (2014-10-10)
+-------------------
 * add tabletop launch file
 * Solve inverse kinematics with use-torso t
 * do not use ik server for pr2

@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.13 (2014-10-10)
+-------------------
 * interactive marker control for hrp2
 * publish move time
 * Contributors: Yusuke Furuta
