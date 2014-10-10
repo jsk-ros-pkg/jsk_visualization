@@ -3,9 +3,284 @@
 #include <iostream>
 #include <stdlib.h>
 #include <ros/package.h>
+#include "urdf_parser/urdf_parser.h"
 
+#include <kdl/frames_io.hpp>
+#include <tf_conversions/tf_kdl.h>
+
+using namespace urdf;
+using namespace std;
 using namespace boost;
 using namespace boost::filesystem;
+
+namespace im_utils {
+  geometry_msgs::Pose UrdfPose2Pose( const urdf::Pose pose){
+    geometry_msgs::Pose p_msg;
+    double x, y, z, w;
+    pose.rotation.getQuaternion(x,y,z,w);
+    p_msg.orientation.x = x;
+    p_msg.orientation.y = y;
+    p_msg.orientation.z = z;
+    p_msg.orientation.w = w;
+  
+    p_msg.position.x = pose.position.x;
+    p_msg.position.y = pose.position.y;
+    p_msg.position.z = pose.position.z;
+
+    return p_msg;
+  }
+
+  visualization_msgs::InteractiveMarkerControl makeCylinderMarkerControl(const geometry_msgs::PoseStamped &stamped, double length,  double radius, const std_msgs::ColorRGBA &color, bool use_color){
+  visualization_msgs::Marker cylinderMarker;
+
+  if (use_color) cylinderMarker.color = color;
+  cylinderMarker.type = visualization_msgs::Marker::CYLINDER;
+  cylinderMarker.scale.x = radius * 2;
+  cylinderMarker.scale.y = radius * 2;
+  cylinderMarker.scale.z = length;
+  cylinderMarker.pose = stamped.pose;
+
+  visualization_msgs::InteractiveMarkerControl control;
+  control.markers.push_back( cylinderMarker );
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+  control.always_visible = true;
+
+  return control;
+}
+
+visualization_msgs::InteractiveMarkerControl makeBoxMarkerControl(const geometry_msgs::PoseStamped &stamped, Vector3 dim, const std_msgs::ColorRGBA &color, bool use_color){
+  visualization_msgs::Marker boxMarker;
+
+  fprintf(stderr, "urdfModelMarker = %f %f %f\n", dim.x, dim.y, dim.z);
+  if (use_color) boxMarker.color = color;
+  boxMarker.type = visualization_msgs::Marker::CUBE;
+  boxMarker.scale.x = dim.x;
+  boxMarker.scale.y = dim.y;
+  boxMarker.scale.z = dim.z;
+  boxMarker.pose = stamped.pose;
+
+  visualization_msgs::InteractiveMarkerControl control;
+  control.markers.push_back( boxMarker );
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+  control.always_visible = true;
+
+  return control;
+}
+
+visualization_msgs::InteractiveMarkerControl makeSphereMarkerControl(const geometry_msgs::PoseStamped &stamped, double rad, const std_msgs::ColorRGBA &color, bool use_color){
+  visualization_msgs::Marker sphereMarker;
+
+  if (use_color) sphereMarker.color = color;
+  sphereMarker.type = visualization_msgs::Marker::SPHERE;
+  sphereMarker.scale.x = rad * 2;
+  sphereMarker.scale.y = rad * 2;
+  sphereMarker.scale.z = rad * 2;
+  sphereMarker.pose = stamped.pose;
+
+  visualization_msgs::InteractiveMarkerControl control;
+  control.markers.push_back( sphereMarker );
+  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+  control.always_visible = true;
+
+  return control;
+}
+
+
+
+  visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale, const std_msgs::ColorRGBA &color, bool use_color){
+    visualization_msgs::Marker meshMarker;
+
+    if (use_color) meshMarker.color = color;
+    meshMarker.mesh_resource = mesh_resource;
+    meshMarker.mesh_use_embedded_materials = !use_color;
+    meshMarker.type = visualization_msgs::Marker::MESH_RESOURCE;
+  
+    meshMarker.scale = scale;
+    meshMarker.pose = stamped.pose;
+    visualization_msgs::InteractiveMarkerControl control;
+    control.markers.push_back( meshMarker );
+    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+    control.always_visible = true;
+  
+    return control;
+  }
+
+  visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale)
+  {
+    std_msgs::ColorRGBA color;
+    color.r = 0;
+    color.g = 0;
+    color.b = 0;
+    color.a = 0;
+    return makeMeshMarkerControl(mesh_resource, stamped, scale, color, false);
+  }
+
+  visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource,
+                                                                     const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale, const std_msgs::ColorRGBA &color)
+  {
+    return makeMeshMarkerControl(mesh_resource, stamped, scale, color, true);
+  }
+
+  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color){
+    if(link->parent_joint){
+      KDL::Frame parent_to_joint_frame;
+      geometry_msgs::Pose parent_to_joint_pose = UrdfPose2Pose(link->parent_joint->parent_to_joint_origin_transform);
+      tf::poseMsgToKDL(parent_to_joint_pose, parent_to_joint_frame);
+      previous_frame =  previous_frame * parent_to_joint_frame;
+    }
+
+    //    KDL::Frame pose_frame, offset_frame;
+    //    tf::poseMsgToKDL(pose, pose_frame);
+    //    tf::poseMsgToKDL(root_offset_, offset_frame);
+    //    pose_frame = pose_frame * offset_frame;
+
+    geometry_msgs::PoseStamped ps;
+    //link_array
+    std::vector<boost ::shared_ptr<Visual> > visual_array;
+    if(link->visual_array.size() != 0){
+      visual_array = link->visual_array;
+    }else if(link->visual.get() != NULL){
+      visual_array.push_back(link->visual);
+    }
+    for(int i=0; i<visual_array.size(); i++){
+      boost::shared_ptr<Visual> link_visual = visual_array[i];
+      if(link_visual.get() != NULL && link_visual->geometry.get() != NULL){
+	visualization_msgs::InteractiveMarkerControl meshControl;
+	if(link_visual->geometry->type == Geometry::MESH){
+	  boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link_visual->geometry);
+	  string model_mesh_ = mesh->filename;
+          model_mesh_ = getRosPathFromModelPath(model_mesh_);
+          
+	  //ps.pose = UrdfPose2Pose(link_visual->origin);
+          KDL::Frame pose_frame, origin_frame;
+
+          tf::poseMsgToKDL(UrdfPose2Pose(link_visual->origin), origin_frame);
+          pose_frame =  previous_frame * origin_frame;
+          geometry_msgs::Pose pose;
+          tf::poseKDLToMsg(pose_frame, pose);
+          ps.pose = pose;
+          //hogehoge
+	  cout << "mesh_file:" << model_mesh_ << endl;
+
+	  geometry_msgs::Vector3 mesh_scale;
+	  mesh_scale.x = mesh->scale.x;
+	  mesh_scale.y = mesh->scale.y;
+	  mesh_scale.z = mesh->scale.z;
+	  if(use_color){
+	    meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale, color);
+	  }else{
+	    meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale);
+	  }
+	}else if(link_visual->geometry->type == Geometry::CYLINDER){
+	  boost::shared_ptr<const Cylinder> cylinder = boost::static_pointer_cast<const Cylinder>(link_visual->geometry);
+	  std::cout << "cylinder " << link->name;
+	  ps.pose = UrdfPose2Pose(link_visual->origin);
+	  double length = cylinder->length;
+	  double radius = cylinder->radius;
+	  std::cout << ", length =  " << length << ", radius " << radius << std::endl;
+	  if(use_color){
+	    meshControl = makeCylinderMarkerControl(ps, length, radius, color, true);
+	  }else{
+	    meshControl = makeCylinderMarkerControl(ps, length, radius, color, true);
+	  }
+	}else if(link_visual->geometry->type == Geometry::BOX){
+	  boost::shared_ptr<const Box> box = boost::static_pointer_cast<const Box>(link_visual->geometry);
+	  std::cout << "box " << link->name;
+	  ps.pose = UrdfPose2Pose(link_visual->origin);
+	  Vector3 dim = box->dim;
+	  std::cout << ", dim =  " << dim.x << ", " << dim.y << ", " << dim.z << std::endl;
+	  if(use_color){
+	    meshControl = makeBoxMarkerControl(ps, dim, color, true);
+	  }else{
+	    meshControl = makeBoxMarkerControl(ps, dim, color, true);
+	  }
+	}else if(link_visual->geometry->type == Geometry::SPHERE){
+	  boost::shared_ptr<const Sphere> sphere = boost::static_pointer_cast<const Sphere>(link_visual->geometry);
+	  ps.pose = UrdfPose2Pose(link_visual->origin);
+	  double rad = sphere->radius;
+	  if(use_color){
+	    meshControl = makeSphereMarkerControl(ps, rad, color, true);
+	  }else{
+	    meshControl = makeSphereMarkerControl(ps, rad, color, true);
+	  }
+	}
+	im.controls.push_back( meshControl );
+
+      }
+    }
+    for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
+      addMeshLinksControl(im, *child, previous_frame, use_color, color);
+    }
+
+  }
+
+  
+  boost::shared_ptr<ModelInterface> getModelInterface(std::string model_file){
+    boost::shared_ptr<ModelInterface> model;
+    model_file = getFilePathFromRosPath(model_file);
+    model_file = getFullPathFromModelPath(model_file);
+    std::string xml_string;
+    std::fstream xml_file(model_file.c_str(), std::fstream::in);
+    while ( xml_file.good() )
+      {
+	std::string line;
+	std::getline( xml_file, line);
+	xml_string += (line + "\n");
+      }
+    xml_file.close();
+
+    std::cout << "model_file:" << model_file << std::endl;
+  
+    model = parseURDF(xml_string);
+    if (!model){
+      std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
+      return model;
+    }
+    return model;
+  }
+
+
+  visualization_msgs::InteractiveMarker makeLinksMarker(boost::shared_ptr<const Link> link, bool use_color, std_msgs::ColorRGBA color)
+  {
+    geometry_msgs::PoseStamped ps;
+    /*
+      double scale_factor = 1.02;
+      string link_frame_name_ =  tf_prefix_ + link->name;
+      string parent_link_frame_name_;
+
+      if(root){
+      parent_link_frame_name_ = frame_id_;
+      //ps.pose = root_pose_;
+      ps.pose = getRootPose(root_pose_);
+      }else{
+      parent_link_frame_name_ = link->parent_joint->parent_link_name;
+      parent_link_frame_name_ = tf_prefix_ + parent_link_frame_name_;
+      ps.pose = UrdfPose2Pose(link->parent_joint->parent_to_joint_origin_transform);
+      }
+      ps.header.frame_id =  parent_link_frame_name_;
+      ps.header.stamp = ros::Time(0);
+
+
+      visualization_msgs::InteractiveMarker int_marker;
+      int_marker.header = ps.header;
+
+      int_marker.name = link_frame_name_;
+      int_marker.scale = 1.0;
+      int_marker.pose = ps.pose;
+    */
+    visualization_msgs::InteractiveMarker int_marker;
+    //int_marker.header = ps.header;
+
+    //int_marker.name = link_frame_name_;
+    int_marker.name = "aa";
+    int_marker.scale = 1.0;
+    //int_marker.pose = ps.pose;
+    KDL::Frame origin_frame;
+    addMeshLinksControl(int_marker, link, origin_frame, use_color, color);
+    return int_marker;
+
+  }
+}
 
 
 visualization_msgs::InteractiveMarker makeFingerControlMarker(const char *name, geometry_msgs::PoseStamped ps){
@@ -32,7 +307,7 @@ visualization_msgs::InteractiveMarker makeFingerControlMarker(const char *name, 
 
 /*
 
-visualization_msgs::InteractiveMarker makeSandiaHandMarker(geometry_msgs::PoseStamped ps){
+  visualization_msgs::InteractiveMarker makeSandiaHandMarker(geometry_msgs::PoseStamped ps){
   visualization_msgs::InteractiveMarker int_marker;
   int_marker.header = ps.header;
   int_marker.pose = ps.pose;
@@ -87,7 +362,7 @@ visualization_msgs::InteractiveMarker makeSandiaHandMarker(geometry_msgs::PoseSt
 
   return int_marker;
 
-}
+  }
 
 */
 
@@ -281,22 +556,22 @@ std::string getFullPathFromModelPath(std::string path){
 std::string getFilePathFromRosPath( std::string rospath){
   std::string path = rospath;
   if (path.find("package://") == 0){
-      path.erase(0, strlen("package://"));
-      size_t pos = path.find("/");
-      if (pos == std::string::npos){
-	std::cout << "Could not parse package:// format" <<std::endl;
-	return "";
-      }
-      std::string package = path.substr(0, pos);
-      path.erase(0, pos);
-      std::string package_path = ros::package::getPath(package);
-      if (package_path.empty())
-	{
-	  std::cout <<  "Package [" + package + "] does not exist" << std::endl;
-	}
- 
-      path = package_path + path;
+    path.erase(0, strlen("package://"));
+    size_t pos = path.find("/");
+    if (pos == std::string::npos){
+      std::cout << "Could not parse package:// format" <<std::endl;
+      return "";
     }
+    std::string package = path.substr(0, pos);
+    path.erase(0, pos);
+    std::string package_path = ros::package::getPath(package);
+    if (package_path.empty())
+      {
+        std::cout <<  "Package [" + package + "] does not exist" << std::endl;
+      }
+ 
+    path = package_path + path;
+  }
   return path;
 }
 

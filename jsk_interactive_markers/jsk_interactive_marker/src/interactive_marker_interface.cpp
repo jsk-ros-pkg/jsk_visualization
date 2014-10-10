@@ -22,6 +22,10 @@
 
 #include <dynamic_tf_publisher/SetDynamicTF.h>
 
+#include <kdl/frames_io.hpp>
+#include <tf_conversions/tf_kdl.h>
+
+
 visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation){
   
   visualization_msgs::InteractiveMarker int_marker;
@@ -1191,6 +1195,22 @@ void InteractiveMarkerInterface::addHandMarker(visualization_msgs::InteractiveMa
 
 
 void InteractiveMarkerInterface::makeCenterSphere(visualization_msgs::InteractiveMarker &mk, double mk_size){
+  bool use_color = true;
+  std_msgs::ColorRGBA  color;
+  color.r = 1.0;
+  color.a = 0.3;
+  boost::shared_ptr<urdf::ModelInterface> model = im_utils::getModelInterface("package://hrpsys_gazebo_tutorials/robot_models/HRP3HAND_R/HRP3HAND_R.urdf");
+  KDL::Frame origin_frame;
+  geometry_msgs::Pose origin_pose;
+  origin_pose.orientation.w = 0.707107;
+  origin_pose.orientation.y = -0.707107;
+  origin_pose.position.x = -0.1245;
+  origin_pose.position.y = -0.0392;
+  origin_pose.position.z = 0.0042;
+  tf::poseMsgToKDL(origin_pose, origin_frame);
+  im_utils::addMeshLinksControl(mk, model->getRoot(), origin_frame, use_color, color);
+  return;
+  
   visualization_msgs::InteractiveMarkerControl sphereControl;
   sphereControl.name = "center_sphere";
   

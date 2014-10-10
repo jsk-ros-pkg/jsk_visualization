@@ -15,6 +15,7 @@
 #include <jsk_interactive_marker/MarkerPose.h>
 
 #include <std_msgs/Int8.h>
+#include "urdf_parser/urdf_parser.h"
 
 class InteractiveMarkerInterface {
  private:
