@@ -180,7 +180,7 @@ namespace im_utils {
           geometry_msgs::Pose pose;
           tf::poseKDLToMsg(pose_frame, pose);
           ps.pose = pose;
-          //hogehoge
+
 	  cout << "mesh_file:" << model_mesh_ << endl;
 
 	  geometry_msgs::Vector3 mesh_scale;

@@ -445,49 +445,43 @@
 	  joint-name joint-angle
 	  buf
 	  )
-      ;;(describe msg)
+
       (dotimes (x (length joint-names))
 	(setq joint-name (elt joint-names x))
-	;;(print joint-name)
+
 	(setq joint-angle (rad2deg (elt joint-angles x)))
 	(setq buf
 	      (intern (string-upcase joint-name) *keyword-package*))
 	(if (find-method *real-robot* buf)
 	    (send *real-robot* buf :joint-angle joint-angle))
-	;; (if (find-method *sandia_hand_left* buf)
-	;;     (send *sandia_hand_left* buf :joint-angle joint-angle))
-	;; (if (find-method *sandia_hand_right* buf)
-	;;     (send *sandia_hand_right* buf :joint-angle joint-angle))
 	)
-      ;;(send *real-robot*
-      ;;:fix-leg-to-coords (make-coords) :both)
       (send self :fix-robot-coords)
+
       (case *orgin-key*
 	(:free nil)
 	(t 
 	 (let ((from-frame *robot-origin*)
-	       (to-frame (if (eq *orgin-key* :rarm) "right_grasp_frame" "left_grasp_frame")))
-	   (let ((trans (send *tfl* :lookup-transform ;pelvis -> grasp_frame
-			      from-frame to-frame (ros::time 0.0))))
-	     (if trans
-		 (progn
-		   (send trans :transform 
-			 (send (make-coords) :transformation ;origin -> pelvis
-			       (send *robot* :copy-worldcoords))
-			 :world)
-		   (send *origin-coords* :move-to trans :world))
-	       (send *origin-coords* :move-to
-		     (send *robot* *orgin-key* :end-coords :worldcoords)
-		     :world)
-	       )))
-	 ;; (send *origin-coords* :move-to
-	 ;; 	    (send *real-robot* *orgin-key*
-	 ;; 		  :end-coords :copy-worldcoords)
-	 ;; 	    :world)
-	 ))
+	       (to-frame (if (eq *orgin-key* :rarm) *rhand-frame* *lhand-frame*))
+               (trans nil))
+           (if to-frame
+               (setq (send *tfl* :lookup-transform ;pelvis -> grasp_frame
+                           from-frame to-frame (ros::time 0.0))))
+           (if trans
+               (progn
+                 (send trans :transform 
+                       (send (make-coords) :transformation ;origin -> pelvis
+                             (send *real-robot* :copy-worldcoords))
+                       :world)
+                 (send *origin-coords* :move-to trans :world))
+             (send *origin-coords* :move-to
+                   (send *real-robot* *orgin-key* :end-coords :worldcoords)
+                   :world)
+             )))
+        ))
+
       
-      (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      )))
+    (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    ))
 
   (:waist-fix
    (&key
@@ -806,12 +800,17 @@
 	  map->marker
 	  )
      (setq cds (send self :get-eus-coords cds (send pose :header :frame_id)))
+     (send *target-coords* :move-to (send (car (send *real-robot* :links)) :copy-worldcoords) :world)
+     (send *target-coords* :transform cds :local)
+     #|
      (send *target-coords* :move-to
-	   (send *robot* :worldcoords) :world)
+           (make-coords) :world)
+     ;;(send *robot* :worldcoords) :world)
      (if *robot-offset*
          (send *target-coords* :transform (send *robot-offset* :transformation (make-coords)) :local))
      (send *target-coords* :transform cds)
-     
+     |#
+
      ;;set *tmp-rotation-axis*
      (cond
       ((equal (send msg :type) jsk_interactive_marker::MarkerPose::*SPHERE_MARKER*)
@@ -1752,7 +1751,7 @@
      (do-until-key
       ;;      (bench
       (do-until-key
-       ;;	(x::window-main-one)
+       (x::window-main-one)
        (ros::spin-once)
        (ros::sleep)
        (if (not *mouse-mode*) (return-from nil nil))
