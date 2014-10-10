@@ -16,8 +16,8 @@
     <param name="use_torso_menu" type="boolean" value="true"/>
     <param name="force_mode_menu" type="boolean" value="false"/>
     <param name="publish_marker_menu" type="boolean" value="true"/>
-    <!--
-        <rosparam command="load" param="mesh_config" file="$(find jsk_interactive_marker)/launch/config/hrp2_hand_config.yaml"/>
-    -->
+
+    <rosparam command="load" param="mesh_config" file="$(find jsk_interactive_marker)/launch/config/hrp2_hand_config.yaml"/>
+
   </node>
 </launch>

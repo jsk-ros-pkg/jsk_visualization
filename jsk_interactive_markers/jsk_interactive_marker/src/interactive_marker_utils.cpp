@@ -52,59 +52,59 @@ namespace im_utils {
 
 
   visualization_msgs::InteractiveMarkerControl makeCylinderMarkerControl(const geometry_msgs::PoseStamped &stamped, double length,  double radius, const std_msgs::ColorRGBA &color, bool use_color){
-  visualization_msgs::Marker cylinderMarker;
+    visualization_msgs::Marker cylinderMarker;
 
-  if (use_color) cylinderMarker.color = color;
-  cylinderMarker.type = visualization_msgs::Marker::CYLINDER;
-  cylinderMarker.scale.x = radius * 2;
-  cylinderMarker.scale.y = radius * 2;
-  cylinderMarker.scale.z = length;
-  cylinderMarker.pose = stamped.pose;
+    if (use_color) cylinderMarker.color = color;
+    cylinderMarker.type = visualization_msgs::Marker::CYLINDER;
+    cylinderMarker.scale.x = radius * 2;
+    cylinderMarker.scale.y = radius * 2;
+    cylinderMarker.scale.z = length;
+    cylinderMarker.pose = stamped.pose;
 
-  visualization_msgs::InteractiveMarkerControl control;
-  control.markers.push_back( cylinderMarker );
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
-  control.always_visible = true;
+    visualization_msgs::InteractiveMarkerControl control;
+    control.markers.push_back( cylinderMarker );
+    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+    control.always_visible = true;
 
-  return control;
-}
+    return control;
+  }
 
-visualization_msgs::InteractiveMarkerControl makeBoxMarkerControl(const geometry_msgs::PoseStamped &stamped, Vector3 dim, const std_msgs::ColorRGBA &color, bool use_color){
-  visualization_msgs::Marker boxMarker;
+  visualization_msgs::InteractiveMarkerControl makeBoxMarkerControl(const geometry_msgs::PoseStamped &stamped, Vector3 dim, const std_msgs::ColorRGBA &color, bool use_color){
+    visualization_msgs::Marker boxMarker;
 
-  fprintf(stderr, "urdfModelMarker = %f %f %f\n", dim.x, dim.y, dim.z);
-  if (use_color) boxMarker.color = color;
-  boxMarker.type = visualization_msgs::Marker::CUBE;
-  boxMarker.scale.x = dim.x;
-  boxMarker.scale.y = dim.y;
-  boxMarker.scale.z = dim.z;
-  boxMarker.pose = stamped.pose;
+    fprintf(stderr, "urdfModelMarker = %f %f %f\n", dim.x, dim.y, dim.z);
+    if (use_color) boxMarker.color = color;
+    boxMarker.type = visualization_msgs::Marker::CUBE;
+    boxMarker.scale.x = dim.x;
+    boxMarker.scale.y = dim.y;
+    boxMarker.scale.z = dim.z;
+    boxMarker.pose = stamped.pose;
 
-  visualization_msgs::InteractiveMarkerControl control;
-  control.markers.push_back( boxMarker );
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
-  control.always_visible = true;
+    visualization_msgs::InteractiveMarkerControl control;
+    control.markers.push_back( boxMarker );
+    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+    control.always_visible = true;
 
-  return control;
-}
+    return control;
+  }
 
-visualization_msgs::InteractiveMarkerControl makeSphereMarkerControl(const geometry_msgs::PoseStamped &stamped, double rad, const std_msgs::ColorRGBA &color, bool use_color){
-  visualization_msgs::Marker sphereMarker;
+  visualization_msgs::InteractiveMarkerControl makeSphereMarkerControl(const geometry_msgs::PoseStamped &stamped, double rad, const std_msgs::ColorRGBA &color, bool use_color){
+    visualization_msgs::Marker sphereMarker;
 
-  if (use_color) sphereMarker.color = color;
-  sphereMarker.type = visualization_msgs::Marker::SPHERE;
-  sphereMarker.scale.x = rad * 2;
-  sphereMarker.scale.y = rad * 2;
-  sphereMarker.scale.z = rad * 2;
-  sphereMarker.pose = stamped.pose;
+    if (use_color) sphereMarker.color = color;
+    sphereMarker.type = visualization_msgs::Marker::SPHERE;
+    sphereMarker.scale.x = rad * 2;
+    sphereMarker.scale.y = rad * 2;
+    sphereMarker.scale.z = rad * 2;
+    sphereMarker.pose = stamped.pose;
 
-  visualization_msgs::InteractiveMarkerControl control;
-  control.markers.push_back( sphereMarker );
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
-  control.always_visible = true;
+    visualization_msgs::InteractiveMarkerControl control;
+    control.markers.push_back( sphereMarker );
+    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+    control.always_visible = true;
 
-  return control;
-}
+    return control;
+  }
 
 
 
@@ -232,10 +232,8 @@ visualization_msgs::InteractiveMarkerControl makeSphereMarkerControl(const geome
     for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
       addMeshLinksControl(im, *child, previous_frame, use_color, color);
     }
-
   }
 
-  
   boost::shared_ptr<ModelInterface> getModelInterface(std::string model_file){
     boost::shared_ptr<ModelInterface> model;
     model_file = getFilePathFromRosPath(model_file);
@@ -260,43 +258,18 @@ visualization_msgs::InteractiveMarkerControl makeSphereMarkerControl(const geome
     return model;
   }
 
-
-  visualization_msgs::InteractiveMarker makeLinksMarker(boost::shared_ptr<const Link> link, bool use_color, std_msgs::ColorRGBA color)
+  //sample program
+  visualization_msgs::InteractiveMarker makeLinksMarker(boost::shared_ptr<const Link> link, bool use_color, std_msgs::ColorRGBA color, geometry_msgs::PoseStamped marker_ps, geometry_msgs::Pose origin_pose)
   {
-    geometry_msgs::PoseStamped ps;
-    /*
-      double scale_factor = 1.02;
-      string link_frame_name_ =  tf_prefix_ + link->name;
-      string parent_link_frame_name_;
-
-      if(root){
-      parent_link_frame_name_ = frame_id_;
-      //ps.pose = root_pose_;
-      ps.pose = getRootPose(root_pose_);
-      }else{
-      parent_link_frame_name_ = link->parent_joint->parent_link_name;
-      parent_link_frame_name_ = tf_prefix_ + parent_link_frame_name_;
-      ps.pose = UrdfPose2Pose(link->parent_joint->parent_to_joint_origin_transform);
-      }
-      ps.header.frame_id =  parent_link_frame_name_;
-      ps.header.stamp = ros::Time(0);
-
-
-      visualization_msgs::InteractiveMarker int_marker;
-      int_marker.header = ps.header;
-
-      int_marker.name = link_frame_name_;
-      int_marker.scale = 1.0;
-      int_marker.pose = ps.pose;
-    */
     visualization_msgs::InteractiveMarker int_marker;
-    //int_marker.header = ps.header;
+    int_marker.header = marker_ps.header;
+    int_marker.pose = marker_ps.pose;
 
-    //int_marker.name = link_frame_name_;
-    int_marker.name = "aa";
+    int_marker.name = "sample";
     int_marker.scale = 1.0;
-    //int_marker.pose = ps.pose;
+
     KDL::Frame origin_frame;
+    tf::poseMsgToKDL(origin_pose, origin_frame);
     addMeshLinksControl(int_marker, link, origin_frame, use_color, color);
     return int_marker;
 
