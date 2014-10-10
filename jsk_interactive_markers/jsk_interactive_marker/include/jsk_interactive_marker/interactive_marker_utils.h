@@ -29,7 +29,10 @@
 using namespace urdf;
 
 namespace im_utils{
+  geometry_msgs::Transform Pose2Transform( const geometry_msgs::Pose pose_msg);
+  geometry_msgs::Pose Transform2Pose( const geometry_msgs::Transform tf_msg);
   geometry_msgs::Pose UrdfPose2Pose( const urdf::Pose pose);
+
   visualization_msgs::InteractiveMarkerControl makeCylinderMarkerControl(const geometry_msgs::PoseStamped &stamped, double length,  double radius, const std_msgs::ColorRGBA &color, bool use_color);
   visualization_msgs::InteractiveMarkerControl makeBoxMarkerControl(const geometry_msgs::PoseStamped &stamped, Vector3 dim, const std_msgs::ColorRGBA &color, bool use_color);
   visualization_msgs::InteractiveMarkerControl makeSphereMarkerControl(const geometry_msgs::PoseStamped &stamped, double rad, const std_msgs::ColorRGBA &color, bool use_color);

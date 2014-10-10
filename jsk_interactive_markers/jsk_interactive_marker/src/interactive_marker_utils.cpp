@@ -14,6 +14,26 @@ using namespace boost;
 using namespace boost::filesystem;
 
 namespace im_utils {
+
+  //transform msgs
+  geometry_msgs::Transform Pose2Transform( const geometry_msgs::Pose pose_msg){
+    geometry_msgs::Transform tf_msg;
+    tf_msg.translation.x = pose_msg.position.x;
+    tf_msg.translation.y = pose_msg.position.y;
+    tf_msg.translation.z = pose_msg.position.z;
+    tf_msg.rotation = pose_msg.orientation;
+    return tf_msg;
+  }
+
+  geometry_msgs::Pose Transform2Pose( const geometry_msgs::Transform tf_msg){
+    geometry_msgs::Pose pose_msg;
+    pose_msg.position.x =  tf_msg.translation.x;
+    pose_msg.position.y = tf_msg.translation.y;
+    pose_msg.position.z = tf_msg.translation.z;
+    pose_msg.orientation = tf_msg.rotation;
+    return pose_msg;
+  }
+
   geometry_msgs::Pose UrdfPose2Pose( const urdf::Pose pose){
     geometry_msgs::Pose p_msg;
     double x, y, z, w;
@@ -29,6 +49,7 @@ namespace im_utils {
 
     return p_msg;
   }
+
 
   visualization_msgs::InteractiveMarkerControl makeCylinderMarkerControl(const geometry_msgs::PoseStamped &stamped, double length,  double radius, const std_msgs::ColorRGBA &color, bool use_color){
   visualization_msgs::Marker cylinderMarker;

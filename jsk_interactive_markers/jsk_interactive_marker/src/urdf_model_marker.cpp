@@ -12,6 +12,7 @@
 
 using namespace urdf;
 using namespace std;
+using namespace im_utils;
 
 void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root){
   visualization_msgs::InteractiveMarkerControl control;
@@ -108,42 +109,6 @@ void UrdfModelMarker::addGraspPointControl(visualization_msgs::InteractiveMarker
   }
 }
 
-
-
-geometry_msgs::Transform UrdfModelMarker::Pose2Transform( const geometry_msgs::Pose pose_msg){
-  geometry_msgs::Transform tf_msg;
-  tf_msg.translation.x = pose_msg.position.x;
-  tf_msg.translation.y = pose_msg.position.y;
-  tf_msg.translation.z = pose_msg.position.z;
-  tf_msg.rotation = pose_msg.orientation;
-  return tf_msg;
-}
-
-geometry_msgs::Pose UrdfModelMarker::Transform2Pose( const geometry_msgs::Transform tf_msg){
-  geometry_msgs::Pose pose_msg;
-  pose_msg.position.x =  tf_msg.translation.x;
-  pose_msg.position.y = tf_msg.translation.y;
-  pose_msg.position.z = tf_msg.translation.z;
-  pose_msg.orientation = tf_msg.rotation;
-  return pose_msg;
-}
-
-
-geometry_msgs::Pose UrdfModelMarker::UrdfPose2Pose( const urdf::Pose pose){
-  geometry_msgs::Pose p_msg;
-  double x, y, z, w;
-  pose.rotation.getQuaternion(x,y,z,w);
-  p_msg.orientation.x = x;
-  p_msg.orientation.y = y;
-  p_msg.orientation.z = z;
-  p_msg.orientation.w = w;
-  
-  p_msg.position.x = pose.position.x;
-  p_msg.position.y = pose.position.y;
-  p_msg.position.z = pose.position.z;
-
-  return p_msg;
-}
 
 void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform){
   jsk_topic_tools::ScopedTimer timer = dynamic_tf_check_time_acc_.scopedTimer();
