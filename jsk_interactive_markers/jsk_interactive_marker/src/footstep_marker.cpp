@@ -99,6 +99,8 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
       ROS_INFO("waiting for transform %s => %s", marker_frame_id_.c_str(),
                initial_reference_frame_.c_str());
     }
+    ROS_INFO("resolved transform %s => %s", marker_frame_id_.c_str(),
+             initial_reference_frame_.c_str());
     tf::StampedTransform transform;
     tf_listener_->lookupTransform(marker_frame_id_, initial_reference_frame_,
                                   ros::Time(0), transform);
@@ -129,15 +131,19 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
       ROS_INFO("waiting for transform {%s, %s} => %s", lfoot_frame_id_.c_str(),
                rfoot_frame_id_.c_str(), marker_frame_id_.c_str());
     }
+    ROS_INFO("resolved transform {%s, %s} => %s", lfoot_frame_id_.c_str(),
+             rfoot_frame_id_.c_str(), marker_frame_id_.c_str());
   }
 
   if (use_footstep_planner_) {
     ROS_INFO("waiting planner server...");
     ac_.waitForServer();
+    ROS_INFO("found planner server...");
   }
   if (use_footstep_controller_) {
     ROS_INFO("waiting controller server...");
     ac_exec_.waitForServer();
+    ROS_INFO("found controller server...");
   }
 }
 
@@ -468,7 +474,7 @@ bool FootstepMarker::projectMarkerToPlane()
     ROS_WARN("it's not valid polygons");
     return false;
   }
-  ROS_ERROR("projecting");
+  //ROS_ERROR("projecting");
   double min_distance = DBL_MAX;
   geometry_msgs::PoseStamped min_pose;
   for (size_t i = 0; i < latest_planes_->polygons.size(); i++) {
@@ -487,17 +493,17 @@ bool FootstepMarker::projectMarkerToPlane()
       min_distance = distance;
     }
   }
-  ROS_INFO_STREAM("min_distance: " << min_distance);
+  ROS_DEBUG_STREAM("min_distance: " << min_distance);
   if (min_distance < 0.3) {     // smaller than 30cm
     marker_pose_.pose = min_pose.pose;
     snapped_pose_pub_.publish(min_pose);
     // server_->setPose("footstep_marker", min_pose.pose);
     // server_->applyChanges();
-    ROS_WARN("projected");
+    //ROS_WARN("projected");
     return true;
   }
   else {
-    ROS_WARN("not projected");
+    //ROS_WARN("not projected");
     return false;
   }
 }
@@ -507,7 +513,8 @@ void FootstepMarker::menuFeedbackCB(const visualization_msgs::InteractiveMarkerF
 }
 
 void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
-  boost::mutex::scoped_lock(plane_mutex_);
+  boost::mutex::scoped_lock lock(plane_mutex_);
+
   marker_pose_.header = feedback->header;
   marker_pose_.pose = feedback->pose;
   marker_frame_id_ = feedback->header.frame_id;
@@ -520,6 +527,7 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
       else {
         // do something magicalc
         skip_plan = !projectMarkerToPlane();
+        
       }
     }
   }
@@ -567,7 +575,7 @@ void FootstepMarker::executeFootstep() {
 }
 
 void FootstepMarker::planIfPossible() {
-  boost::mutex::scoped_lock(plan_run_mutex_);
+  boost::mutex::scoped_lock lock(plan_run_mutex_);
   // check the status of the ac_
   if (!use_footstep_planner_) {
     return;                     // do nothing
@@ -608,7 +616,7 @@ void FootstepMarker::planIfPossible() {
 void FootstepMarker::planDoneCB(const actionlib::SimpleClientGoalState &state, 
                                  const PlanResult::ConstPtr &result)
 {
-  boost::mutex::scoped_lock(plan_run_mutex_);
+  boost::mutex::scoped_lock lock(plan_run_mutex_);
   ROS_INFO("planDoneCB");
   plan_result_ = ac_.getResult();
   footstep_pub_.publish(plan_result_->result);
@@ -652,6 +660,7 @@ void FootstepMarker::moveMarkerCB(const geometry_msgs::PoseStamped::ConstPtr& ms
   // move the marker
   geometry_msgs::PoseStamped transformed_pose;
   tf_listener_->transformPose(marker_frame_id_, *msg, transformed_pose);
+  geometry_msgs::PoseStamped prev_pose = marker_pose_;
   marker_pose_ = transformed_pose;
   bool skip_plan = false;
   if (use_plane_snap_) {
@@ -661,6 +670,9 @@ void FootstepMarker::moveMarkerCB(const geometry_msgs::PoseStamped::ConstPtr& ms
     else {
       // do something magicalc
       skip_plan = !projectMarkerToPlane();
+      if (skip_plan) {
+        marker_pose_ = prev_pose;
+      }
     }
   }
   
@@ -760,7 +772,7 @@ void FootstepMarker::planeCB(
   const jsk_pcl_ros::PolygonArray::ConstPtr& planes,
   const jsk_pcl_ros::ModelCoefficientsArray::ConstPtr& coefficients)
 {
-  boost::mutex::scoped_lock(plane_mutex_);
+  boost::mutex::scoped_lock lock(plane_mutex_);
   if (planes->polygons.size() > 0) {
     latest_planes_ = planes;
     latest_coefficients_ = coefficients;
