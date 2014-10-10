@@ -2,6 +2,37 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.13 (2014-10-10)
+-------------------
+* add tabletop launch file
+* Solve inverse kinematics with use-torso t
+* do not use ik server for pr2
+* add staro interactive marker
+* add staro launch file
+* add parameter to set menu
+* add staro
+* add arm ik and torso ik
+* set frame id
+* check having legs
+* interactive marker control for hrp2
+* add dependency on jsk_rviz_plugins
+* Speed up grasp-pose movement
+* add parameter
+* rename launch file
+* publish first handle pose
+* add callback to grasp object
+* subscribe initial handle pose
+* add bounding box marker name and remove description
+* refactor launch file
+* do not use old ik-server-function
+* move to jsk_interactive_marker and modify spacenav rotate
+  add GetPose.srv
+* Does not set the name of interactive marker for bounding box, because
+  the name is too annoying
+* update urdf model with topic
+* add launch file to make bounding box interactive marker
+* Contributors: Ryohei Ueda, Yuto Inagaki, Eisoku Kuroiwa, Yusuke Furuta
+
 1.0.12 (2014-09-23)
 -------------------
 * Generate srv files on catkin
