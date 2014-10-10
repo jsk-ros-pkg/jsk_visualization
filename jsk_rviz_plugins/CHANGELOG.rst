@@ -2,6 +2,12 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.13 (2014-10-10)
+-------------------
+* Add "overtake properties" property to OverlayTextDisplay
+* Call queueRender after opening/closing properties in Open/CloseAllTool
+* Contributors: Ryohei Ueda
+
 1.0.12 (2014-09-23)
 -------------------
 

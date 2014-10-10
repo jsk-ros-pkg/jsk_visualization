@@ -56,14 +56,79 @@ namespace jsk_rviz_plugin
       ros::message_traits::datatype<jsk_rviz_plugins::OverlayText>(),
       "jsk_rviz_plugins::OverlayText topic to subscribe to.",
       this, SLOT( updateTopic() ));
+    overtake_properties_property_ = new rviz::BoolProperty(
+      "Overtake Properties", false,
+      "overtake properties specified by message such as left, top and font",
+      this, SLOT(updateOvertakeProperties()));
+    top_property_ = new rviz::IntProperty(
+      "top", 0,
+      "top position",
+      this, SLOT(updateTop()));
+    top_property_->setMin(0);
+    left_property_ = new rviz::IntProperty(
+      "left", 0,
+      "left position",
+      this, SLOT(updateLeft()));
+    left_property_->setMin(0);
+    width_property_ = new rviz::IntProperty(
+      "width", 128,
+      "width position",
+      this, SLOT(updateWidth()));
+    width_property_->setMin(0);
+    height_property_ = new rviz::IntProperty(
+      "height", 128,
+      "height position",
+      this, SLOT(updateHeight()));
+    height_property_->setMin(0);
+    text_size_property_ = new rviz::IntProperty(
+      "text size", 12,
+      "text size",
+      this, SLOT(updateTextSize()));
+    text_size_property_->setMin(0);
+    line_width_property_ = new rviz::IntProperty(
+      "line width", 2,
+      "line width",
+      this, SLOT(updateLineWidth()));
+    line_width_property_->setMin(0);
+    fg_color_property_ = new rviz::ColorProperty(
+      "Foreground Color", QColor(25, 255, 240),
+      "Foreground Color",
+      this, SLOT(updateFGColor()));
+    fg_alpha_property_ = new rviz::FloatProperty(
+      "Foreground Alpha", 0.8, "Foreground Alpha",
+      this, SLOT(updateFGAlpha()));
+    fg_alpha_property_->setMin(0.0);
+    fg_alpha_property_->setMax(1.0);
+    bg_color_property_ = new rviz::ColorProperty(
+      "Background Color", QColor(0, 0, 0),
+      "Background Color",
+      this, SLOT(updateBGColor()));
+    bg_alpha_property_ = new rviz::FloatProperty(
+      "Background Alpha", 0.8, "Background Alpha",
+      this, SLOT(updateBGAlpha()));
+    bg_alpha_property_->setMin(0.0);
+    bg_alpha_property_->setMax(1.0);
+    font_property_ = new rviz::StringProperty(
+      "font", "DejaVu Sans Mono",
+      "font", this,
+      SLOT(updateFont()));
   }
-
   
   OverlayTextDisplay::~OverlayTextDisplay()
   {
     onDisable();
     //delete overlay_;
     delete update_topic_property_;
+    delete top_property_;
+    delete left_property_;
+    delete width_property_;
+    delete height_property_;
+    delete text_size_property_;
+    delete fg_color_property_;
+    delete fg_alpha_property_;
+    delete bg_color_property_;
+    delete bg_alpha_property_;
+    delete font_property_;
   }
 
   void OverlayTextDisplay::onEnable()
@@ -106,6 +171,18 @@ namespace jsk_rviz_plugin
   {
     onEnable();
     updateTopic();
+    updateOvertakeProperties();
+    updateTop();
+    updateLeft();
+    updateWidth();
+    updateHeight();
+    updateTextSize();
+    updateFGColor();
+    updateFGAlpha();
+    updateBGColor();
+    updateBGAlpha();
+    updateFont();
+    updateLineWidth();
     require_update_texture_ = true;
   }
   
@@ -171,27 +248,145 @@ namespace jsk_rviz_plugin
         overlay_->show();
       }
     }
-    texture_width_ = msg->width;
-    texture_height_ = msg->height;
-    if (overlay_) {
-      overlay_->setPosition(msg->left, msg->top);
-    }
+    
     // store message for update method
     text_ = msg->text;
-    font_ = msg->font;
-    bg_color_ = QColor(msg->bg_color.r * 255.0,
-                       msg->bg_color.g * 255.0,
-                       msg->bg_color.b * 255.0,
-                       msg->bg_color.a * 255.0);
-    fg_color_ = QColor(msg->fg_color.r * 255.0,
-                       msg->fg_color.g * 255.0,
-                       msg->fg_color.b * 255.0,
-                       msg->fg_color.a * 255.0);
-    text_size_ = msg->text_size;
-    line_width_ = msg->line_width;
+    if (!overtake_properties_) {
+      texture_width_ = msg->width;
+      texture_height_ = msg->height;
+      font_ = msg->font;
+      bg_color_ = QColor(msg->bg_color.r * 255.0,
+                         msg->bg_color.g * 255.0,
+                         msg->bg_color.b * 255.0,
+                         msg->bg_color.a * 255.0);
+      fg_color_ = QColor(msg->fg_color.r * 255.0,
+                         msg->fg_color.g * 255.0,
+                         msg->fg_color.b * 255.0,
+                         msg->fg_color.a * 255.0);
+      text_size_ = msg->text_size;
+      line_width_ = msg->line_width;
+      left_ = msg->left;
+      top_ = msg->top;
+    }
+    if (overlay_) {
+      overlay_->setPosition(left_, top_);
+    }
     require_update_texture_ = true;
   }
+
+  void OverlayTextDisplay::updateOvertakeProperties()
+  {
+    if (!overtake_properties_ && overtake_properties_property_->getBool()) {
+      // read all the parameters from properties
+      updateTop();
+      updateLeft();
+      updateWidth();
+      updateHeight();
+      updateTextSize();
+      updateFGColor();
+      updateFGAlpha();
+      updateBGColor();
+      updateBGAlpha();
+      updateFont();
+      updateLineWidth();
+      require_update_texture_ = true;
+    }
+    overtake_properties_ = overtake_properties_property_->getBool();
+  }
+
+  void OverlayTextDisplay::updateTop()
+  {
+    top_ = top_property_->getInt();
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
   
+  void OverlayTextDisplay::updateLeft()
+  {
+    left_ = left_property_->getInt();
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+  
+  void OverlayTextDisplay::updateWidth()
+  {
+    texture_width_ = width_property_->getInt();
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+  
+  void OverlayTextDisplay::updateHeight()
+  {
+    texture_height_ = height_property_->getInt();
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayTextDisplay::updateTextSize()
+  {
+    text_size_ = text_size_property_->getInt();
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayTextDisplay::updateBGColor()
+  {
+    QColor c = bg_color_property_->getColor();
+    bg_color_.setRed(c.red());
+    bg_color_.setGreen(c.green());
+    bg_color_.setBlue(c.blue());
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayTextDisplay::updateBGAlpha()
+  {
+    bg_color_.setAlpha(bg_alpha_property_->getFloat() * 255.0);
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayTextDisplay::updateFGColor()
+  {
+    QColor c = fg_color_property_->getColor();
+    fg_color_.setRed(c.red());
+    fg_color_.setGreen(c.green());
+    fg_color_.setBlue(c.blue());
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayTextDisplay::updateFGAlpha()
+  {
+    fg_color_.setAlpha(fg_alpha_property_->getFloat() * 255.0);
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayTextDisplay::updateFont()
+  {
+    font_ = font_property_->getStdString();
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayTextDisplay::updateLineWidth()
+  {
+    line_width_ = line_width_property_->getInt();
+    if (overtake_properties_) {
+      require_update_texture_ = true;
+    }
+  }
 }
 
 #include <pluginlib/class_list_macros.h>
