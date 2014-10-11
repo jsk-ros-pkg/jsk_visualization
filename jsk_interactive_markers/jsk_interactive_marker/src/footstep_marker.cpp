@@ -778,7 +778,7 @@ void FootstepMarker::planeCB(
     latest_coefficients_ = coefficients;
   }
   else {
-    ROS_WARN_STREAM(__FUNCTION__ << "the size of the plane is 0, ignore");
+    ROS_DEBUG_STREAM(__FUNCTION__ << " the size of the plane is 0, ignore");
   }
 }
 
