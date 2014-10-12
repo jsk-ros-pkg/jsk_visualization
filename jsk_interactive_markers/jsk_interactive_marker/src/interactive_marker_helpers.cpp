@@ -739,7 +739,12 @@ visualization_msgs::InteractiveMarker makePosedMultiMeshMarker( const char * nam
     }
 
     control.markers.clear();
-    control.interaction_mode = button_only ? (visualization_msgs::InteractiveMarkerControl::BUTTON) : (visualization_msgs::InteractiveMarkerControl::MOVE_PLANE);
+    if (button_only) {
+      control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+    }
+    else {
+      control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_PLANE;
+    }
     control.always_visible = true;
     for(size_t i = 0; i < mesh_poses.size(); i++)
     {
