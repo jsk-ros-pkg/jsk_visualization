@@ -802,14 +802,6 @@
      (setq cds (send self :get-eus-coords cds (send pose :header :frame_id)))
      (send *target-coords* :move-to (send (car (send *real-robot* :links)) :copy-worldcoords) :world)
      (send *target-coords* :transform cds :local)
-     #|
-     (send *target-coords* :move-to
-           (make-coords) :world)
-     ;;(send *robot* :worldcoords) :world)
-     (if *robot-offset*
-         (send *target-coords* :transform (send *robot-offset* :transformation (make-coords)) :local))
-     (send *target-coords* :transform cds)
-     |#
 
      ;;set *tmp-rotation-axis*
      (cond
@@ -930,7 +922,8 @@
   (:get-base-coords
    ()
    (let (coords torso->map)
-     (setq coords (send *robot* :copy-worldcoords))
+     ;;(setq coords (send *real-robot* :copy-worldcoords))
+     (setq coords (send (car (send *real-robot* :links)) :copy-worldcoords))
      (while t
        (setq torso->map
 	     (send *tfl* :lookup-transform
@@ -947,9 +940,10 @@
 	 )
 	)
        )
-     (if *robot-offset*
-         (send coords :transform (send *robot-offset* :transformation (make-coords)) :local)
-       coords)
+     coords
+     ;; (if *robot-offset*
+     ;;     (send coords :transform (send *robot-offset* :transformation (make-coords)) :local)
+     ;;   coords)
      )
    )
 
@@ -1165,28 +1159,10 @@
 	  map->marker
 	  pre-pose
 	  )
-     (while t
-       (send pose :header :stamp (ros::time 0.0)) ;cheat!
-       (setq map->marker
-	     (send *tfl* :lookup-transform
-		   *robot-origin* (send pose :header :frame_id) (ros::time 0)))
-       ;;(setq map->marker (send *tfl* :transform-pose "pelvis" pose))
-       (cond
-	(map->marker
-	 (send cds :transform map->marker :world)
-	 (return)
-	 )
-	(t
-	 (ros::ros-info "~A -> ~A cannot transform yet" *robot-origin* (send pose :header :frame_id))
-	 (ros::sleep)
-	 )
-	)
-       )
-     (send *target-coords* :move-to
-	   (send *robot* :worldcoords) :world)
-     (if *robot-offset*
-         (send *target-coords* :transform (send *robot-offset* :transformation (make-coords)) :local))
-     (send *target-coords* :transform cds)
+     (setq cds (send self :get-eus-coords cds (send pose :header :frame_id)))
+     (send *target-coords* :move-to (send (car (send *real-robot* :links)) :copy-worldcoords) :world)
+     (send *target-coords* :transform cds :local)
+
      (send *target-coords* :translate (float-vector 10 0 0)) ; move a little bit forward
      ;;(send *target-coords* :rotate (deg2rad 180) :x :world)
      (setq *tmp-rotation-axis* t)
@@ -1519,8 +1495,7 @@
      (setq *robot-name* "PR2")
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
-     (defvar *robot-offset* (make-coords))
-     (defvar *robot-origin* "base_footprint")
+;;     (defvar *robot-origin* "base_footprint")
      (setq *have-leg* nil)
      )
     ((equal (string-upcase *robot-name*) "ATLAS")
@@ -1531,25 +1506,27 @@
      (require "package://hrpsys_gazebo_atlas/euslisp/atlas-fullbody-ik.l")
      (require "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser-settings.l")
      (require "package://hrpsys_gazebo_atlas/euslisp/atlas-end-coords.l")
-
      (atlas-with-hand)
      (setq *robot* *atlas*)
-     (defvar *robot-origin* "pelvis")
+;;     (defvar *robot-origin* "pelvis")
      (setq *have-leg* t)
      )
     ((equal (string-upcase *robot-name*) "HRP2")
      (require "package://hrpsys_gazebo_tutorials/euslisp/hrp2jsknt-interface-ex.l")
      (hrp2jsknt-init-ex :real nil)
      (setq *robot* *hrp2*)
-     (defvar *robot-origin* "BODY")
-     (defvar *robot-offset* (send (send *robot* :body_lk :copy-worldcoords) :transformation (make-coords)))
+;;     (defvar *robot-origin* "BODY")
      (setq *have-leg* t)
      )
     ((equal (string-upcase *robot-name*) "STARO")
      (load "package://jsk_hrpsys_ros_bridge/euslisp/staro-interface.l")
      (setq *robot* (instance staro-robot :init))
-     (defvar *robot-origin* "BODY")
-     (defvar *robot-offset* (send (send *robot* :body_lk :copy-worldcoords) :transformation (make-coords)))
+;;     (defvar *robot-origin* "BODY")
+     (setq *have-leg* t)
+     )
+    ((equal (string-upcase *robot-name*) "SAMPLEROBOT")
+     (load "package://hrpsys_ros_bridge_tutorials/euslisp/samplerobot-interface.l")
+     (setq *robot* (instance samplerobot-robot :init))
      (setq *have-leg* t)
      )
     (t
@@ -1557,11 +1534,12 @@
      (ros::ros-error "use PR2")
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
-     (defvar *robot-origin* "base_footprint")
-     (defvar *robot-offset* (make-coords))
+;;     (defvar *robot-origin* "base_footprint")
      (setq *have-leg* nil)
      )
     )
+   (defvar *robot-origin* (send (car (send *robot* :links)) :name))
+
 
    (defvar *im-nodename* "jsk_model_marker_interface")
    (defvar *gripper-im-nodename* "gripper_marker_for_interactive_marker_interface")
