@@ -253,11 +253,9 @@ namespace im_utils {
     xml_file.close();
 
     std::cout << "model_file:" << model_file << std::endl;
-  
     model = parseURDF(xml_string);
     if (!model){
       std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
-      return model;
     }
     return model;
   }
