@@ -1065,25 +1065,43 @@
    (&key
     (real? nil))
    (let ((joint-list
-	  (append (send *robot* :joint-list)
-		  ;;(send *sandia_hand_right* :joint-list)
-		  ;;(send *sandia_hand_left* :joint-list)
-		  ))
-	 (joint-state-msg
-	  (instance sensor_msgs::JointState :init
-		    :header (instance std_msgs::header :init
-				      :stamp (ros::time-now)))))
+          (append (send *robot* :joint-list)
+                  ;;(send *sandia_hand_right* :joint-list)
+                  ;;(send *sandia_hand_left* :joint-list)
+                  ))
+         (joint-state-msg
+          (instance sensor_msgs::JointState :init
+                    :header (instance std_msgs::header :init
+                                      :stamp (ros::time-now))))
+         (set-pose-msg
+          (instance geometry_msgs::PoseStamped :init
+                    :header (instance std_msgs::header :init
+                                      :stamp (ros::time-now)
+                                      :frame_id *robot-origin*)))
+         )
      (send joint-state-msg :position
-	   (mapcar #'(lambda (joint) (send joint :ros-joint-angle)) joint-list))
+           (mapcar #'(lambda (joint) (send joint :ros-joint-angle)) joint-list))
      (send joint-state-msg :name (send-all joint-list :name))
-     ;;
+
+     ;;set set-pose-msg
+     (send set-pose-msg :pose
+           (ros::coords->tf-pose
+            (send (send (car (send *real-robot* :links)) :copy-worldcoords) :transformation
+                  (send (car (send *robot* :links)) :copy-worldcoords)
+                  :local)))
+
      (cond
       (real?
        (ros::publish (format nil "~A/~A/joint_states_ri_move" *im-nodename* *robot-topic-name*)
-		     joint-state-msg))
+                     joint-state-msg)
+
+       )
       (t
        (ros::publish (format nil "~A/~A/reset_joint_states" *im-nodename* *robot-topic-name*)
-		     joint-state-msg)))
+                     joint-state-msg)
+       (ros::publish (format nil "~A/~A/set_pose" *im-nodename* *robot-topic-name*)
+                     set-pose-msg)
+       ))
      )
    )
 
@@ -1602,6 +1620,10 @@
    (ros::advertise
     (format nil "~A/~A/reset_joint_states" *im-nodename* *robot-topic-name*)
     sensor_msgs::JointState)
+   ;; set Interactive Marker Root Pose
+   (ros::advertise (format nil "~A/~A/set_pose" *im-nodename* *robot-topic-name*)
+		   geometry_msgs::PoseStamped)
+
    ;; reset Interactive Marker Root Pose
    (ros::advertise (format nil "~A/~A/reset_root_pose" *im-nodename* *robot-topic-name*)
 		   std_msgs::Empty)
@@ -1727,8 +1749,8 @@
    nil
    (let (ret move rot buf tmp str)
      (do-until-key
-      ;;      (bench
-      (do-until-key
+      (bench
+       (do-until-key
        (x::window-main-one)
        (ros::spin-once)
        (ros::sleep)
@@ -1854,6 +1876,8 @@
                  )
 
                (t
+                (format t "[ik-server]")
+                (bench
                 (setq ik-server-res
                       (send *fullbody-ik-client* :ik-server-call
                             :robot *robot*
@@ -1866,7 +1890,7 @@
                             ;;:centroid-thre nil
                             ;;:target-centroid-pos nil
                             ;;:cog-gain 0
-                            ))))
+                            )))))
             (setq ik-suc
                   (send *robot* :inverse-kinematics
                         target-coords
@@ -1905,6 +1929,7 @@
             ))
           )))
       )))
+   )
    
   ;; )
   ;; export ROS_MASTER_URI=http://10.10.72.112:11311
