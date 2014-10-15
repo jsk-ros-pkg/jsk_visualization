@@ -29,6 +29,7 @@ class InteractiveMarkerInterface {
 
   struct UrdfProperty{
     boost::shared_ptr<urdf::ModelInterface> model;
+    std::string root_link_name;
     geometry_msgs::Pose pose;
     float scale;
     std_msgs::ColorRGBA color;

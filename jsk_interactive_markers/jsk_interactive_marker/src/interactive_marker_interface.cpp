@@ -716,7 +716,6 @@ void InteractiveMarkerInterface::changeMarkerForceMode( std::string mk_name , in
     }*/
   ROS_INFO("add mk");
   /* add mk */
-    
 
 }
 
@@ -1137,8 +1136,13 @@ void InteractiveMarkerInterface::addHandMarker(visualization_msgs::InteractiveMa
       if(up.model){
         KDL::Frame origin_frame;
         tf::poseMsgToKDL(up.pose, origin_frame);
-
-        im_utils::addMeshLinksControl(im, up.model->getRoot(), origin_frame, !up.use_original_color, up.color);
+        
+        boost::shared_ptr<const Link> hand_root_link;
+        hand_root_link = up.model->getLink(up.root_link_name);
+        if(!hand_root_link){
+          hand_root_link = up.model->getRoot();
+        }
+        im_utils::addMeshLinksControl(im, hand_root_link, origin_frame, !up.use_original_color, up.color);
         for(int j=0; j<im.controls.size(); j++){
           if(im.controls[j].interaction_mode == visualization_msgs::InteractiveMarkerControl::BUTTON){
             im.controls[j].interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
@@ -1439,6 +1443,14 @@ void InteractiveMarkerInterface::loadUrdfFromYaml(XmlRpc::XmlRpcValue val, std::
         std::string urdf_file = (std::string)nval["urdf_file"];
         std::cerr << "load urdf file: " << urdf_file << std::endl;
         up.model = im_utils::getModelInterface(urdf_file);
+      }
+
+      if(nval.hasMember("root_link")){
+        std::string root_link_name = (std::string)nval["root_link"];
+        std::cerr << "root link name: " << root_link_name << std::endl;
+        up.root_link_name = root_link_name;
+      }else{
+        up.root_link_name = "";
       }
 
       up.pose.orientation.w = 1.0;

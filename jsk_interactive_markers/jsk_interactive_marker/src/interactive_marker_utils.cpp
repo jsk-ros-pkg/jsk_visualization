@@ -141,9 +141,13 @@ namespace im_utils {
   {
     return makeMeshMarkerControl(mesh_resource, stamped, scale, color, true);
   }
-
+  
   void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color){
-    if(link->parent_joint){
+    addMeshLinksControl(im, link, previous_frame, use_color, color, true);
+  }
+
+  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, bool root){
+    if(!root && link->parent_joint){
       KDL::Frame parent_to_joint_frame;
       geometry_msgs::Pose parent_to_joint_pose = UrdfPose2Pose(link->parent_joint->parent_to_joint_origin_transform);
       tf::poseMsgToKDL(parent_to_joint_pose, parent_to_joint_frame);
@@ -230,7 +234,7 @@ namespace im_utils {
       }
     }
     for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
-      addMeshLinksControl(im, *child, previous_frame, use_color, color);
+      addMeshLinksControl(im, *child, previous_frame, use_color, color, false);
     }
   }
 
