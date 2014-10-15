@@ -1,0 +1,21 @@
+<launch>
+  <node pkg="jsk_interactive_marker" type="interactive_marker_interface" name="jsk_interactive_marker_manipulation" output="screen">
+    <param name="base_frame" type="string" value="/WAIST_LINK0"/>
+    <param name="use_center_sphere" type="boolean" value="true"/>
+    <param name="change_using_ik_menu" type="boolean" value="true"/>
+    <param name="move_menu" type="boolean" value="true"/>
+    <param name="grasp_menu" type="boolean" value="true"/>
+    <param name="use_head_marker" type="boolean" value="false"/>
+    <param name="stop_grasp_menu" type="boolean" value="true"/>
+    <param name="set_origin_menu" type="boolean" value="true"/>
+    <param name="set_origin_to_rhand_menu" type="boolean" value="true"/>
+    <param name="set_origin_to_lhand_menu" type="boolean" value="true"/>
+    <param name="reset_marker_pos_menu" type="boolean" value="true"/>
+    <param name="select_arm_menu" type="boolean" value="true"/>
+    <param name="ik_mode_menu" type="boolean" value="true"/>
+    <param name="use_torso_menu" type="boolean" value="true"/>
+    <param name="force_mode_menu" type="boolean" value="false"/>
+    <param name="publish_marker_menu" type="boolean" value="true"/>
+    <rosparam command="load" param="mesh_config" file="$(find jsk_interactive_marker)/launch/config/samplerobot_hand_config.yaml"/>
+  </node>
+</launch>
