@@ -1,0 +1,18 @@
+r_hand:
+  - urdf_file: "package://hrpsys_ros_bridge_tutorials/models/SampleRobot.urdf"
+    root_link: "RARM_LINK6"
+    pose:
+        position: {x: -0.120, y: 0.0, z: 0.0}
+        orientation: {x: 0.0, y: -0.707107, z: 0.0, w: 0.707107}
+    # (setq trans (send (send *sr* :rarm :end-coords :copy-worldcoords) :transformation (send *sr* :rarm_link6_lk :copy-worldcoords) :local))
+
+l_hand:
+  - urdf_file: "package://hrpsys_ros_bridge_tutorials/models/SampleRobot.urdf"
+    root_link: "LARM_LINK6"
+    pose:
+        position: {x: -0.120, y: 0.0, z: 0.0}
+        orientation: {x: 0.0, y: -0.707107, z: 0.0, w: 0.707107}
+
+
+
+

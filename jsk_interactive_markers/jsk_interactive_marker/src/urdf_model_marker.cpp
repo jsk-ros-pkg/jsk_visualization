@@ -12,6 +12,7 @@
 
 using namespace urdf;
 using namespace std;
+using namespace im_utils;
 
 void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root){
   visualization_msgs::InteractiveMarkerControl control;
@@ -109,42 +110,6 @@ void UrdfModelMarker::addGraspPointControl(visualization_msgs::InteractiveMarker
 }
 
 
-
-geometry_msgs::Transform UrdfModelMarker::Pose2Transform( const geometry_msgs::Pose pose_msg){
-  geometry_msgs::Transform tf_msg;
-  tf_msg.translation.x = pose_msg.position.x;
-  tf_msg.translation.y = pose_msg.position.y;
-  tf_msg.translation.z = pose_msg.position.z;
-  tf_msg.rotation = pose_msg.orientation;
-  return tf_msg;
-}
-
-geometry_msgs::Pose UrdfModelMarker::Transform2Pose( const geometry_msgs::Transform tf_msg){
-  geometry_msgs::Pose pose_msg;
-  pose_msg.position.x =  tf_msg.translation.x;
-  pose_msg.position.y = tf_msg.translation.y;
-  pose_msg.position.z = tf_msg.translation.z;
-  pose_msg.orientation = tf_msg.rotation;
-  return pose_msg;
-}
-
-
-geometry_msgs::Pose UrdfModelMarker::UrdfPose2Pose( const urdf::Pose pose){
-  geometry_msgs::Pose p_msg;
-  double x, y, z, w;
-  pose.rotation.getQuaternion(x,y,z,w);
-  p_msg.orientation.x = x;
-  p_msg.orientation.y = y;
-  p_msg.orientation.z = z;
-  p_msg.orientation.w = w;
-  
-  p_msg.position.x = pose.position.x;
-  p_msg.position.y = pose.position.y;
-  p_msg.position.z = pose.position.z;
-
-  return p_msg;
-}
-
 void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform){
   jsk_topic_tools::ScopedTimer timer = dynamic_tf_check_time_acc_.scopedTimer();
   dynamic_tf_publisher::SetDynamicTF SetTf;
@@ -156,7 +121,7 @@ void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, 
   SetTf.request.cur_tf.child_frame_id = frame_id;
   SetTf.request.cur_tf.transform = transform;
   if (use_dynamic_tf_ || parent_frame_id == frame_id_){
-    std::cout << parent_frame_id << frame_id << std::endl;
+    //std::cout << parent_frame_id << frame_id << std::endl;
     dynamic_tf_publisher_client.call(SetTf);
   }
 }
@@ -249,7 +214,8 @@ void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
 void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg){
   jsk_topic_tools::ScopedTimer timer = reset_joint_states_check_time_acc_.scopedTimer();
   setJointState(model->getRoot(), msg);
-  addChildLinkNames(model->getRoot(), true, false);
+  server_->applyChanges();
+  //addChildLinkNames(model->getRoot(), true, false);
   republishJointState(*msg);
 
   if(mode_ == "visualization"){
@@ -674,6 +640,7 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
     default:
       break;
     }
+    server_->applyChanges();
   }
 
   for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
@@ -749,9 +716,8 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
   link_header.frame_id = linkMarkerMap[link_frame_name_].frame_id;
 
   server_->setPose(link_frame_name_, linkMarkerMap[link_frame_name_].pose, link_header);
-  server_->applyChanges();
+  //server_->applyChanges();
   CallSetDynamicTf(linkMarkerMap[link_frame_name_].frame_id, link_frame_name_, Pose2Transform(linkMarkerMap[link_frame_name_].pose));
-
 }
 
 void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js)
