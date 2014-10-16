@@ -764,6 +764,7 @@
      (when (boundp '*irtviewer*)
        (send *irtviewer* :draw-objects))
      )
+   (send self :set-marker-pose-robot (send *target-coords* :worldcoords))
    (send self :publish-arrow-tf)
    (send self :publish-status)
    )
@@ -983,7 +984,7 @@
 		      :transformation coords :local)
 		args)))
      (send self :set-marker-pose
-	   (send (send self :get-base-coords) :transformation coords :local))
+           (send (send self :get-base-coords) :transformation coords :local))
      ))
 
   (:publish-arrow-tf
