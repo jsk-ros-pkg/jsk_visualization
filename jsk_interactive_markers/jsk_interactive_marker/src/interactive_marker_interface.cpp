@@ -109,7 +109,7 @@ visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofContro
 
 
 void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ) {
-  if(feedback->control_name == "center_sphere"){
+  if(feedback->control_name.find("center_sphere") != std::string::npos){
     proc_feedback(feedback, jsk_interactive_marker::MarkerPose::SPHERE_MARKER);
   }else{
     proc_feedback(feedback, jsk_interactive_marker::MarkerPose::GENERAL);
@@ -1144,6 +1144,7 @@ void InteractiveMarkerInterface::addHandMarker(visualization_msgs::InteractiveMa
         for(int j=0; j<im.controls.size(); j++){
           if(im.controls[j].interaction_mode == visualization_msgs::InteractiveMarkerControl::BUTTON){
             im.controls[j].interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
+            im.controls[j].name = "center_sphere";
           }
         }
       }else{
@@ -1442,6 +1443,11 @@ void InteractiveMarkerInterface::loadUrdfFromYaml(XmlRpc::XmlRpcValue val, std::
         std::string urdf_file = (std::string)nval["urdf_file"];
         std::cerr << "load urdf file: " << urdf_file << std::endl;
         up.model = im_utils::getModelInterface(urdf_file);
+      }else if(nval.hasMember("urdf_param")){
+        std::string urdf_param = (std::string)nval["urdf_param"];
+	std::string urdf_model;
+	nh_.getParam(urdf_param, urdf_model);
+	up.model = parseURDF(urdf_model);
       }
 
       if(nval.hasMember("root_link")){
