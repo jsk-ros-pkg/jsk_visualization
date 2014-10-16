@@ -56,10 +56,14 @@ namespace jsk_rviz_plugin
       ros::message_traits::datatype<jsk_rviz_plugins::OverlayText>(),
       "jsk_rviz_plugins::OverlayText topic to subscribe to.",
       this, SLOT( updateTopic() ));
-    overtake_properties_property_ = new rviz::BoolProperty(
-      "Overtake Properties", false,
-      "overtake properties specified by message such as left, top and font",
-      this, SLOT(updateOvertakeProperties()));
+    overtake_position_properties_property_ = new rviz::BoolProperty(
+      "Overtake Position Properties", false,
+      "overtake position properties specified by message such as left, top and font",
+      this, SLOT(updateOvertakePositionProperties()));
+    overtake_color_properties_property_ = new rviz::BoolProperty(
+      "Overtake Color Properties", false,
+      "overtake color properties specified by message such as left, top and font",
+      this, SLOT(updateOvertakeColorProperties()));
     top_property_ = new rviz::IntProperty(
       "top", 0,
       "top position",
@@ -119,15 +123,18 @@ namespace jsk_rviz_plugin
     onDisable();
     //delete overlay_;
     delete update_topic_property_;
+    delete overtake_color_properties_property_;
+    delete overtake_position_properties_property_;
     delete top_property_;
     delete left_property_;
     delete width_property_;
     delete height_property_;
     delete text_size_property_;
-    delete fg_color_property_;
-    delete fg_alpha_property_;
+    delete line_width_property_;
     delete bg_color_property_;
     delete bg_alpha_property_;
+    delete fg_color_property_;
+    delete fg_alpha_property_;
     delete font_property_;
   }
 
@@ -171,7 +178,8 @@ namespace jsk_rviz_plugin
   {
     onEnable();
     updateTopic();
-    updateOvertakeProperties();
+    updateOvertakePositionProperties();
+    updateOvertakeColorProperties();
     updateTop();
     updateLeft();
     updateWidth();
@@ -251,10 +259,14 @@ namespace jsk_rviz_plugin
     
     // store message for update method
     text_ = msg->text;
-    if (!overtake_properties_) {
+    if (!overtake_position_properties_) {
       texture_width_ = msg->width;
       texture_height_ = msg->height;
-      font_ = msg->font;
+      text_size_ = msg->text_size;
+      left_ = msg->left;
+      top_ = msg->top;
+    }
+    if (!overtake_color_properties_) {
       bg_color_ = QColor(msg->bg_color.r * 255.0,
                          msg->bg_color.g * 255.0,
                          msg->bg_color.b * 255.0,
@@ -263,10 +275,8 @@ namespace jsk_rviz_plugin
                          msg->fg_color.g * 255.0,
                          msg->fg_color.b * 255.0,
                          msg->fg_color.a * 255.0);
-      text_size_ = msg->text_size;
+      font_ = msg->font;
       line_width_ = msg->line_width;
-      left_ = msg->left;
-      top_ = msg->top;
     }
     if (overlay_) {
       overlay_->setPosition(left_, top_);
@@ -274,15 +284,27 @@ namespace jsk_rviz_plugin
     require_update_texture_ = true;
   }
 
-  void OverlayTextDisplay::updateOvertakeProperties()
+  void OverlayTextDisplay::updateOvertakePositionProperties()
   {
-    if (!overtake_properties_ && overtake_properties_property_->getBool()) {
-      // read all the parameters from properties
+    
+    if (!overtake_position_properties_ &&
+        overtake_position_properties_property_->getBool()) {
       updateTop();
       updateLeft();
       updateWidth();
       updateHeight();
       updateTextSize();
+      require_update_texture_ = true;
+    }
+    overtake_position_properties_
+      = overtake_position_properties_property_->getBool();
+  }
+  
+  void OverlayTextDisplay::updateOvertakeColorProperties()
+  {
+    if (!overtake_color_properties_ &&
+        overtake_color_properties_property_->getBool()) {
+      // read all the parameters from properties
       updateFGColor();
       updateFGAlpha();
       updateBGColor();
@@ -291,13 +313,13 @@ namespace jsk_rviz_plugin
       updateLineWidth();
       require_update_texture_ = true;
     }
-    overtake_properties_ = overtake_properties_property_->getBool();
+    overtake_color_properties_ = overtake_color_properties_property_->getBool();
   }
 
   void OverlayTextDisplay::updateTop()
   {
     top_ = top_property_->getInt();
-    if (overtake_properties_) {
+    if (overtake_position_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -305,7 +327,7 @@ namespace jsk_rviz_plugin
   void OverlayTextDisplay::updateLeft()
   {
     left_ = left_property_->getInt();
-    if (overtake_properties_) {
+    if (overtake_position_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -313,7 +335,7 @@ namespace jsk_rviz_plugin
   void OverlayTextDisplay::updateWidth()
   {
     texture_width_ = width_property_->getInt();
-    if (overtake_properties_) {
+    if (overtake_position_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -321,7 +343,7 @@ namespace jsk_rviz_plugin
   void OverlayTextDisplay::updateHeight()
   {
     texture_height_ = height_property_->getInt();
-    if (overtake_properties_) {
+    if (overtake_position_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -329,7 +351,7 @@ namespace jsk_rviz_plugin
   void OverlayTextDisplay::updateTextSize()
   {
     text_size_ = text_size_property_->getInt();
-    if (overtake_properties_) {
+    if (overtake_position_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -340,7 +362,7 @@ namespace jsk_rviz_plugin
     bg_color_.setRed(c.red());
     bg_color_.setGreen(c.green());
     bg_color_.setBlue(c.blue());
-    if (overtake_properties_) {
+    if (overtake_color_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -348,7 +370,7 @@ namespace jsk_rviz_plugin
   void OverlayTextDisplay::updateBGAlpha()
   {
     bg_color_.setAlpha(bg_alpha_property_->getFloat() * 255.0);
-    if (overtake_properties_) {
+    if (overtake_color_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -359,7 +381,7 @@ namespace jsk_rviz_plugin
     fg_color_.setRed(c.red());
     fg_color_.setGreen(c.green());
     fg_color_.setBlue(c.blue());
-    if (overtake_properties_) {
+    if (overtake_color_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -367,7 +389,7 @@ namespace jsk_rviz_plugin
   void OverlayTextDisplay::updateFGAlpha()
   {
     fg_color_.setAlpha(fg_alpha_property_->getFloat() * 255.0);
-    if (overtake_properties_) {
+    if (overtake_color_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -375,7 +397,7 @@ namespace jsk_rviz_plugin
   void OverlayTextDisplay::updateFont()
   {
     font_ = font_property_->getStdString();
-    if (overtake_properties_) {
+    if (overtake_color_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -383,7 +405,7 @@ namespace jsk_rviz_plugin
   void OverlayTextDisplay::updateLineWidth()
   {
     line_width_ = line_width_property_->getInt();
-    if (overtake_properties_) {
+    if (overtake_color_properties_) {
       require_update_texture_ = true;
     }
   }
