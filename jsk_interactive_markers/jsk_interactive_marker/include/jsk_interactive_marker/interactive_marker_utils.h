@@ -40,8 +40,8 @@ namespace im_utils{
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource, const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale);
   visualization_msgs::InteractiveMarkerControl makeMeshMarkerControl(const std::string &mesh_resource,
                                                                      const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale, const std_msgs::ColorRGBA &color);
-  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color);
-  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, bool root);
+  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, double scale);
+  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, double scale, bool root);
 
   boost::shared_ptr<ModelInterface> getModelInterface(std::string model_file);
   visualization_msgs::InteractiveMarker makeLinksMarker(boost::shared_ptr<const Link> link, bool use_color, std_msgs::ColorRGBA color, geometry_msgs::PoseStamped marker_ps, geometry_msgs::Pose origin_pose);

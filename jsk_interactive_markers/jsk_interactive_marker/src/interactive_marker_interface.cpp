@@ -1128,31 +1128,30 @@ void InteractiveMarkerInterface::initHandler(void){
 }
 
 void InteractiveMarkerInterface::addHandMarker(visualization_msgs::InteractiveMarker &im,std::vector < UrdfProperty > urdf_vec){
-  double center_marker_size = 0.2;
-
   if(urdf_vec.size() > 0){
     for(int i=0; i<urdf_vec.size(); i++){
       UrdfProperty up = urdf_vec[i];
       if(up.model){
         KDL::Frame origin_frame;
         tf::poseMsgToKDL(up.pose, origin_frame);
-        
+
         boost::shared_ptr<const Link> hand_root_link;
         hand_root_link = up.model->getLink(up.root_link_name);
         if(!hand_root_link){
           hand_root_link = up.model->getRoot();
         }
-        im_utils::addMeshLinksControl(im, hand_root_link, origin_frame, !up.use_original_color, up.color);
+        im_utils::addMeshLinksControl(im, hand_root_link, origin_frame, !up.use_original_color, up.color, up.scale);
         for(int j=0; j<im.controls.size(); j++){
           if(im.controls[j].interaction_mode == visualization_msgs::InteractiveMarkerControl::BUTTON){
             im.controls[j].interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
           }
         }
       }else{
-        addSphereMarker(im, center_marker_size, up.color);
+        addSphereMarker(im, up.scale, up.color);
       }
     }
   }else{
+    double center_marker_size = 0.2;
     //gray
     std_msgs::ColorRGBA color;
     color.r = color.g = color.b = 0.7;
@@ -1484,6 +1483,11 @@ void InteractiveMarkerInterface::loadUrdfFromYaml(XmlRpc::XmlRpcValue val, std::
         up.color.g = 1.0;
         up.color.b = 0.0;
         up.color.a = 0.7;
+      }
+      if(nval.hasMember("scale")){
+        up.scale = (double)nval["scale"];
+      }else{
+        up.scale = 1.05; //make bigger a bit
       }
       mesh.push_back(up);
     }

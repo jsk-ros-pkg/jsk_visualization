@@ -142,11 +142,11 @@ namespace im_utils {
     return makeMeshMarkerControl(mesh_resource, stamped, scale, color, true);
   }
   
-  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color){
-    addMeshLinksControl(im, link, previous_frame, use_color, color, true);
+  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, double scale){
+    addMeshLinksControl(im, link, previous_frame, use_color, color, scale, true);
   }
 
-  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, bool root){
+  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, double scale, bool root){
     if(!root && link->parent_joint){
       KDL::Frame parent_to_joint_frame;
       geometry_msgs::Pose parent_to_joint_pose = UrdfPose2Pose(link->parent_joint->parent_to_joint_origin_transform);
@@ -188,9 +188,9 @@ namespace im_utils {
 	  cout << "mesh_file:" << model_mesh_ << endl;
 
 	  geometry_msgs::Vector3 mesh_scale;
-	  mesh_scale.x = mesh->scale.x;
-	  mesh_scale.y = mesh->scale.y;
-	  mesh_scale.z = mesh->scale.z;
+	  mesh_scale.x = mesh->scale.x * scale;
+	  mesh_scale.y = mesh->scale.y * scale;
+	  mesh_scale.z = mesh->scale.z * scale;
 	  if(use_color){
 	    meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale, color);
 	  }else{
@@ -234,7 +234,7 @@ namespace im_utils {
       }
     }
     for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
-      addMeshLinksControl(im, *child, previous_frame, use_color, color, false);
+      addMeshLinksControl(im, *child, previous_frame, use_color, color, scale, false);
     }
   }
 
@@ -274,7 +274,7 @@ namespace im_utils {
 
     KDL::Frame origin_frame;
     tf::poseMsgToKDL(origin_pose, origin_frame);
-    addMeshLinksControl(int_marker, link, origin_frame, use_color, color);
+    addMeshLinksControl(int_marker, link, origin_frame, use_color, color, 1.0);
     return int_marker;
 
   }
