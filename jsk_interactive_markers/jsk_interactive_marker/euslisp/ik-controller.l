@@ -8,6 +8,7 @@
 (ros::load-ros-manifest "moveit_msgs")
 (ros::load-ros-manifest "jsk_interactive")
 (ros::load-ros-manifest "jsk_interactive_marker")
+(ros::load-ros-manifest "jsk_rviz_plugins")
 
 (ros::roseus "ik-controller")
 
@@ -40,6 +41,8 @@
    *movingp*
    *have-leg*
    *frame-id*
+   *ik-update-times*
+   *target-update-times*
    )
   )
 
@@ -457,11 +460,11 @@
 	)
       (send self :fix-robot-coords)
 
-      (case *orgin-key*
+      (case *origin-key*
 	(:free nil)
 	(t 
 	 (let ((from-frame *robot-origin*)
-	       (to-frame (if (eq *orgin-key* :rarm) *rhand-frame* *lhand-frame*))
+	       (to-frame (if (eq *origin-key* :rarm) *rhand-frame* *lhand-frame*))
                (trans nil))
            (if to-frame
                (setq (send *tfl* :lookup-transform ;pelvis -> grasp_frame
@@ -474,7 +477,7 @@
                        :world)
                  (send *origin-coords* :move-to trans :world))
              (send *origin-coords* :move-to
-                   (send *real-robot* *orgin-key* :end-coords :worldcoords)
+                   (send *real-robot* *origin-key* :end-coords :worldcoords)
                    :world)
              )))
         ))
@@ -599,7 +602,7 @@
        (format t "[marker-menu] move robot!!~%")
        (send self :publish-joint-states :real? t))
       ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
-       (setq *orgin-key* :free)
+       (setq *origin-key* :free)
        (send self :set-origin)
        ;;(send self :publish-joint-states :real? nil)
        )
@@ -628,8 +631,8 @@
 	 (send self :publish-menu-select message)
 	 (format t "[marker-menu] ~A~%" message)
 	 )
-       ;;(setq *orgin-key* :free)
-       (setq *orgin-key* :rarm)
+       ;;(setq *origin-key* :free)
+       (setq *origin-key* :rarm)
        (send self :set-origin-to-hand :rarm)
        ;;(send self :publish-joint-states :real? nil)
        )
@@ -638,8 +641,8 @@
 	 (send self :publish-menu-select message)
 	 (format t "[marker-menu] ~A~%" message)
 	 )
-       ;;(setq *orgin-key* :free)
-       (setq *orgin-key* :larm)
+       ;;(setq *origin-key* :free)
+       (setq *origin-key* :larm)
        (send self :set-origin-to-hand :larm)
        ;;(send self :publish-joint-states :real? nil)
        )
@@ -678,7 +681,7 @@
 	 (format t "[marker-menu] ~A~%" message)
 	 )
        (setq *move-limb* :rarm)
-       (setq *orgin-key* :rarm)
+       (setq *origin-key* :rarm)
        (send self :set-origin-to-hand :rarm)
        )
       ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_LARM*)
@@ -687,7 +690,7 @@
 	 (format t "[marker-menu] ~A~%" message)
 	 )
        (setq *move-limb* :larm)
-       (setq *orgin-key* :larm)
+       (setq *origin-key* :larm)
        (send self :set-origin-to-hand :larm)
        )
       ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_ARMS*)
@@ -716,6 +719,7 @@
 	 )
        (setq *ik-stop* t)
        (setq *publish-ik* nil)
+       (send self :publish-ik-status (format nil " IK STOP") :status :WARNING)
        )
 
       ;;grasp
@@ -761,6 +765,7 @@
        (send *irtviewer* :draw-objects))
      )
    (send self :publish-arrow-tf)
+   (send self :publish-status)
    )
 
   (:marker-menu-callback2
@@ -789,8 +794,9 @@
 	   (send *robot* :reset-manip-pose))
        (send self :publish-joint-states :real? nil))
       (t (format t "[marker-menu] unknonw(~A)~%" menu))
-      )
-     ))
+      ))
+   (send self :publish-status)
+   )
 
   ;;called when marker is moved
   (:pose-callback
@@ -819,6 +825,7 @@
    ()
    (send self :publish-arrow-tf)
    (send self :publish-hand-marker-pose)
+   (setq *target-update-times* (1+ *target-update-times*))
    )
 
   (:publish-hand-marker-pose
@@ -1060,6 +1067,82 @@
      (ros::publish (format nil "~A/marker" *server-nodename*) marker)
      )
    )
+
+  (:overlay-text-color
+   (status &key (a 0.8))
+   (let ((color (instance std_msgs::ColorRGBA :init)))
+     (case status
+       (:INFO
+        (send color :r (/ 25 255.0))
+        (send color :g (/ 255 255.0))
+        (send color :b (/ 255 255.0))
+        )
+       (:WARNING
+        (send color :r (/ 255 255.0))
+        (send color :g (/ 255 255.0))
+        (send color :b (/ 0 255.0))
+        )
+       (:ERROR
+        (send color :r (/ 255 255.0))
+        (send color :g (/ 0 255.0))
+        (send color :b (/ 0 255.0))
+        )
+       )
+     (send color :a a)
+     color
+     ))
+
+  (:publish-ik-status
+   (text &key (delete nil) (status :INFO) (text_size 20))
+   (let ((text_msg (instance jsk_rviz_plugins::OverlayText :init)))
+     (if delete
+         (send text_msg :action jsk_rviz_plugins::OverlayText::*DELETE*)
+       (send text_msg :action jsk_rviz_plugins::OverlayText::*ADD*)
+       )
+     (send text_msg :width 640)
+     (send text_msg :height 100)
+     (send text_msg :fg_color (send self :overlay-text-color status))
+     (send text_msg :bg_color :a 0.2)
+     (send text_msg :line_width 2)
+     (send text_msg :text_size 64)
+     (send text_msg :font "DejaVu Sans Mono")
+     (send text_msg :text text)
+     (ros::publish (format nil "~A/ik_status" *nodename*) text_msg)
+     ))
+
+
+  (:publish-status
+   (&key (delete nil) (status :INFO) (text_size 20))
+   (let ((text_msg (instance jsk_rviz_plugins::OverlayText :init))
+         text)
+     (setq text (concatenate string
+                             (format nil " ik:            ~A~%" (if *ik-stop* "stop" "running"))
+                             (format nil " move-arm:      ~A~%" *move-limb*)
+                             (format nil " target-coords: ~A~%" *origin-key*)
+                             (format nil " ik-mode:       ~A~%" (if *rotation-axis* "3D" "6D"))
+                             (format nil " move-link:     ~A~%" (cond (*use-torso* "torso")
+                                                                      (*use-fullbody* "fullbody")
+                                                                      (t "arm")
+                                                                      ))
+                             (format nil " ik-update:     ~A~%" *ik-update-times*)
+                             (format nil " target-update: ~A~%" *target-update-times*)
+                             ))
+     (if delete
+         (send text_msg :action jsk_rviz_plugins::OverlayText::*DELETE*)
+       (send text_msg :action jsk_rviz_plugins::OverlayText::*ADD*)
+       )
+     (send text_msg :width 400)
+     (send text_msg :height 240)
+     (send text_msg :top 104)
+     (send text_msg :fg_color (send self :overlay-text-color status))
+     (send text_msg :bg_color :a 0.2)
+     (send text_msg :line_width 2)
+     (send text_msg :text_size 20)
+     (send text_msg :font "DejaVu Sans Mono")
+     (send text_msg :text text)
+     (ros::publish (format nil "~A/status" *nodename*) text_msg)
+     ))
+
 
   (:publish-joint-states
    (&key
@@ -1494,8 +1577,8 @@
    (defvar *translation-axis* t)
    (defvar *rotation-axis* t)
    (defvar *tmp-rotation-axis* t) ;;turn nil when center sphere was moved
-   (defvar *publish-ik* nil)
-   (defvar *orgin-key* :rarm)
+   (defvar *publish-ik* t)
+   (defvar *origin-key* :rarm)
    (defvar *ik-stop* (not *publish-ik*))
 
    (defvar *robot-name* (ros::get-param "~robot" "PR2"))
@@ -1505,6 +1588,9 @@
 
    (defvar *rhand-frame* nil)
    (defvar *lhand-frame* nil)
+   
+   (setq *ik-update-times* 0)
+   (setq *target-update-times* 0)
 
    (defvar *start-loop* t)
    ;;init robot
@@ -1513,7 +1599,6 @@
      (setq *robot-name* "PR2")
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
-;;     (defvar *robot-origin* "base_footprint")
      (setq *have-leg* nil)
      )
     ((equal (string-upcase *robot-name*) "ATLAS")
@@ -1526,20 +1611,17 @@
      (require "package://hrpsys_gazebo_atlas/euslisp/atlas-end-coords.l")
      (atlas-with-hand)
      (setq *robot* *atlas*)
-;;     (defvar *robot-origin* "pelvis")
      (setq *have-leg* t)
      )
     ((equal (string-upcase *robot-name*) "HRP2")
      (require "package://hrpsys_gazebo_tutorials/euslisp/hrp2jsknt-interface-ex.l")
      (hrp2jsknt-init-ex :real nil)
      (setq *robot* *hrp2*)
-;;     (defvar *robot-origin* "BODY")
      (setq *have-leg* t)
      )
     ((equal (string-upcase *robot-name*) "STARO")
      (load "package://jsk_hrpsys_ros_bridge/euslisp/staro-interface.l")
      (setq *robot* (instance staro-robot :init))
-;;     (defvar *robot-origin* "BODY")
      (setq *have-leg* t)
      )
     ((equal (string-upcase *robot-name*) "SAMPLEROBOT")
@@ -1552,7 +1634,6 @@
      (ros::ros-error "use PR2")
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
-;;     (defvar *robot-origin* "base_footprint")
      (setq *have-leg* nil)
      )
     )
@@ -1566,12 +1647,13 @@
 
    (defvar *interactive-pc-nodename* "/interactive_point_cloud")
    (defvar *bounding-box-nodename* "/bounding_box_marker")
+   (defvar *nodename* "ik_controller")
 
    ;;initialize joint-index-list
    ;;it is used to convert joint-name -> index
    ;;(joint-index-init)
    
-   (ros::roseus "ik_controller")
+   (ros::roseus *nodename*)
    (setq *tfb* (instance ros::transform-broadcaster :init))
    (setq *tfl* (instance ros::transform-listener :init))
    (setq *fullbody-ik-client* (instance fullbody-ik-client :init))
@@ -1588,6 +1670,12 @@
 		   sensor_msgs::Joy
 		   #'send self :spacenav-subscriber
 		   1)
+
+   (ros::advertise (format nil "~A/status" *nodename*)
+		   jsk_rviz_plugins::OverlayText)
+   (ros::advertise (format nil "~A/ik_status" *nodename*)
+		   jsk_rviz_plugins::OverlayText)
+
 
    (ros::advertise (format nil "~A/marker" *server-nodename*)
 		   visualization_msgs::Marker)
@@ -1685,7 +1773,7 @@
    (send self :make-centroid-object)
 
    (send self :init-pose)
-   (send self :set-origin-to-hand *orgin-key*)
+   (send self :set-origin-to-hand *origin-key*)
 
    (objects
     (list *robot* *real-robot* *origin-coords* *target-coords*))
@@ -1731,9 +1819,8 @@
    ;;update *real-robot* and joint marker pose
    (send self :realmodel2model)
    (send self :publish-joint-states :real? nil)
-
+   (send self :publish-status)
    (if *start-loop* (send self :demo-pos-controller))
-   
    )
 
   (:demo-mouse-controller
@@ -1753,7 +1840,7 @@
        (do-until-key
        (x::window-main-one)
        (ros::spin-once)
-       (ros::sleep)
+       ;;(ros::sleep)
        (if (not *mouse-mode*) (return-from nil nil))
        )
       (cond
@@ -1918,15 +2005,16 @@
             ;;	   (x::window-main-one)
             (setq revert-if-fail t)
             ;;(send self :publish-touchit-status (format nil "~%IK SUCC / ~A" log-string))
-            (send self :publish-touchit-status (format nil "~%IK SUCC "))
+            (send self :publish-ik-status (format nil " IK SUCCESS"))
             (print (send *robot* :angle-vector))
             (if *publish-ik*
                 (send self :publish-joint-states :real? nil)))
            (t ;(evenp (random 2))
             (setq revert-if-fail t)
-            ;;(send self :publish-touchit-status (format nil "~%IK FAIL / ~A" log-string))
-            (send self :publish-touchit-status (format nil "~%IK FAIL "))
+            (send self :publish-ik-status (format nil " IK FAIL") :status :ERROR)
             ))
+          (setq *ik-update-times* (1+ *ik-update-times*))
+          (send self :publish-status)
           )))
       )))
    )
