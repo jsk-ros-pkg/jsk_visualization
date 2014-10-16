@@ -22,6 +22,10 @@
 
 #include <dynamic_tf_publisher/SetDynamicTF.h>
 
+#include <kdl/frames_io.hpp>
+#include <tf_conversions/tf_kdl.h>
+
+
 visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation){
   
   visualization_msgs::InteractiveMarker int_marker;
@@ -105,7 +109,7 @@ visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofContro
 
 
 void InteractiveMarkerInterface::proc_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ) {
-  if(feedback->control_name == "center_sphere"){
+  if(feedback->control_name.find("center_sphere") != std::string::npos){
     proc_feedback(feedback, jsk_interactive_marker::MarkerPose::SPHERE_MARKER);
   }else{
     proc_feedback(feedback, jsk_interactive_marker::MarkerPose::GENERAL);
@@ -712,7 +716,6 @@ void InteractiveMarkerInterface::changeMarkerForceMode( std::string mk_name , in
     }*/
   ROS_INFO("add mk");
   /* add mk */
-    
 
 }
 
@@ -901,10 +904,10 @@ void InteractiveMarkerInterface::initHandler(void){
     interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
     sub_menu_move_ = menu_handler.insert( "Whether To Use IK" );
     start_ik_menu_ = menu_handler.insert( sub_menu_move_,"Start IK",boost::bind( &InteractiveMarkerInterface::usingIKCb, this, _1));
-    menu_handler.setCheckState( start_ik_menu_, interactive_markers::MenuHandler::UNCHECKED );
+    menu_handler.setCheckState( start_ik_menu_, interactive_markers::MenuHandler::CHECKED );
 
     stop_ik_menu_ = menu_handler.insert( sub_menu_move_,"Stop IK",boost::bind( &InteractiveMarkerInterface::usingIKCb, this, _1));
-    menu_handler.setCheckState( stop_ik_menu_, interactive_markers::MenuHandler::CHECKED );
+    menu_handler.setCheckState( stop_ik_menu_, interactive_markers::MenuHandler::UNCHECKED );
   }
 
   //menu_handler.insert("Touch It", boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::TOUCH));
@@ -1073,31 +1076,6 @@ void InteractiveMarkerInterface::initHandler(void){
   menu_handler2.insert("ForceMode",boost::bind( &InteractiveMarkerInterface::changeForceModeCb2, this, _1));
   menu_handler2.insert("Move",boost::bind( &InteractiveMarkerInterface::pub_marker_menuCb, this, _1, jsk_interactive_marker::MarkerMenu::MOVE));
 
-  /*
-    sub_menu_handle = menu_handler2.insert( "SelectArm" );
-    h_mode_last = menu_handler2.insert( sub_menu_handle, "RightArm", boost::bind( &InteractiveMarkerInterface::modeCb,this, _1 ));
-    if(use_arm==0){
-    menu_handler2.setCheckState( h_mode_last, interactive_markers::MenuHandler::CHECKED );
-    }else{
-    menu_handler2.setCheckState( h_mode_last, interactive_markers::MenuHandler::UNCHECKED );
-    }
-    
-    h_mode_rightarm = h_mode_last;
-    h_mode_last = menu_handler2.insert( sub_menu_handle, "LeftArm", boost::bind( &InteractiveMarkerInterface::modeCb,this, _1 ));
-    if(use_arm==1){
-    menu_handler2.setCheckState( h_mode_last, interactive_markers::MenuHandler::CHECKED );
-    }else{
-    menu_handler2.setCheckState( h_mode_last, interactive_markers::MenuHandler::UNCHECKED );
-    }
-
-    h_mode_last = menu_handler2.insert( sub_menu_handle, "BothArms", boost::bind( &InteractiveMarkerInterface::modeCb,this, _1 ));
-    if(use_arm==2){
-    menu_handler2.setCheckState( h_mode_last, interactive_markers::MenuHandler::CHECKED );
-    }else{
-    menu_handler2.setCheckState( h_mode_last, interactive_markers::MenuHandler::UNCHECKED );
-    }
-  */
-
 
   /* porting from PR2 marker control */
   /* head marker */
@@ -1149,66 +1127,75 @@ void InteractiveMarkerInterface::initHandler(void){
 
 }
 
-void InteractiveMarkerInterface::addHandMarker(visualization_msgs::InteractiveMarkerControl &imc,std::vector < MeshProperty > mesh_vec, double mk_size){
-  if(mesh_vec.size() > 0){
-    for(int i=0; i<mesh_vec.size(); i++){
-      visualization_msgs::Marker handMarker;
-      handMarker.type = visualization_msgs::Marker::MESH_RESOURCE;
-      handMarker.mesh_resource = mesh_vec[i].mesh_file;
-      handMarker.scale.x = 1.0;
-      handMarker.scale.y = 1.0;
-      handMarker.scale.z = 1.0;
+void InteractiveMarkerInterface::addHandMarker(visualization_msgs::InteractiveMarker &im,std::vector < UrdfProperty > urdf_vec){
+  if(urdf_vec.size() > 0){
+    for(int i=0; i<urdf_vec.size(); i++){
+      UrdfProperty up = urdf_vec[i];
+      if(up.model){
+        KDL::Frame origin_frame;
+        tf::poseMsgToKDL(up.pose, origin_frame);
 
-      handMarker.pose.position = mesh_vec[i].position;
-      handMarker.pose.orientation = mesh_vec[i].orientation;
-
-      //color
-      handMarker.color.r = 1.0;
-      handMarker.color.g = 1.0;
-      handMarker.color.b = 0.0;
-      handMarker.color.a = 0.7;
-
-      imc.markers.push_back(handMarker);
+        boost::shared_ptr<const Link> hand_root_link;
+        hand_root_link = up.model->getLink(up.root_link_name);
+        if(!hand_root_link){
+          hand_root_link = up.model->getRoot();
+        }
+        im_utils::addMeshLinksControl(im, hand_root_link, origin_frame, !up.use_original_color, up.color, up.scale);
+        for(int j=0; j<im.controls.size(); j++){
+          if(im.controls[j].interaction_mode == visualization_msgs::InteractiveMarkerControl::BUTTON){
+            im.controls[j].interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
+            im.controls[j].name = "center_sphere";
+          }
+        }
+      }else{
+        addSphereMarker(im, up.scale, up.color);
+      }
     }
   }else{
+    double center_marker_size = 0.2;
+    //gray
+    std_msgs::ColorRGBA color;
+    color.r = color.g = color.b = 0.7;
+    color.a = 0.5;
+    addSphereMarker(im, center_marker_size, color);
+  }
+}
+
+void InteractiveMarkerInterface::addSphereMarker(visualization_msgs::InteractiveMarker &im, double scale, std_msgs::ColorRGBA color){
     visualization_msgs::Marker sphereMarker;
     sphereMarker.type = visualization_msgs::Marker::SPHERE;
-    double marker_scale = mk_size / 2;
-    sphereMarker.scale.x = marker_scale;
-    sphereMarker.scale.y = marker_scale;
-    sphereMarker.scale.z = marker_scale;
 
-    //gray
-    sphereMarker.color.r = 0.7;
-    sphereMarker.color.g = 0.7;
-    sphereMarker.color.b = 0.7;
-    sphereMarker.color.a = 0.5;
+    sphereMarker.scale.x = scale;
+    sphereMarker.scale.y = scale;
+    sphereMarker.scale.z = scale;
 
-    imc.markers.push_back(sphereMarker);
-  }
+    sphereMarker.color = color;
 
+    visualization_msgs::InteractiveMarkerControl sphereControl;
+    sphereControl.name = "center_sphere";
+
+    sphereControl.markers.push_back(sphereMarker);
+    sphereControl.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
+    im.controls.push_back(sphereControl);
 }
 
 
 void InteractiveMarkerInterface::makeCenterSphere(visualization_msgs::InteractiveMarker &mk, double mk_size){
-  visualization_msgs::InteractiveMarkerControl sphereControl;
-  sphereControl.name = "center_sphere";
-  
-  std::vector < MeshProperty > null_mesh;
+  std::vector < UrdfProperty > null_urdf;
   if(control_state_.move_origin_state_ == ControlState::HAND_ORIGIN){
     if(control_state_.move_arm_ == ControlState::RARM){
-      addHandMarker(sphereControl, rhand_mesh_, mk_size);
+      addHandMarker(mk, rhand_urdf_);
     }else if(control_state_.move_arm_ == ControlState::LARM){
-      addHandMarker(sphereControl, lhand_mesh_, mk_size);
+      addHandMarker(mk, lhand_urdf_);
     }else{
-      addHandMarker(sphereControl, null_mesh, mk_size);
+      addHandMarker(mk, null_urdf);
     }
   }else{
-    addHandMarker(sphereControl, null_mesh, mk_size);
+    addHandMarker(mk, null_urdf);
   }
 
-  sphereControl.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
-  mk.controls.push_back(sphereControl);
+  //sphereControl.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
+  //mk.controls.push_back(sphereControl);
 }
 
 //im_mode
@@ -1441,48 +1428,78 @@ InteractiveMarkerInterface::InteractiveMarkerInterface () : nh_(), pnh_("~") {
   changeMarkerMoveMode(marker_name.c_str(),0);
 }
 
-void InteractiveMarkerInterface::loadMeshFromYaml(XmlRpc::XmlRpcValue val, std::string name, std::vector<MeshProperty>& mesh){
+void InteractiveMarkerInterface::loadMeshes(XmlRpc::XmlRpcValue val){
+  loadUrdfFromYaml(val, "r_hand", rhand_urdf_);
+  loadUrdfFromYaml(val, "l_hand", lhand_urdf_);
+}
+
+void InteractiveMarkerInterface::loadUrdfFromYaml(XmlRpc::XmlRpcValue val, std::string name, std::vector<UrdfProperty>& mesh){
   if(val.hasMember(name)){
     for(int i=0; i< val[name].size(); i++){
       XmlRpc::XmlRpcValue nval = val[name][i];
-      MeshProperty m;
-      m.link_name = (std::string)nval["link"];
-      m.mesh_file = (std::string)nval["mesh"];
-
-      if(nval.hasMember("position")){
-        XmlRpc::XmlRpcValue position = nval["position"];
-        m.position.x = (double)position["x"];
-        m.position.y = (double)position["y"];
-        m.position.z = (double)position["z"];
-      }else{
-        m.position.x = 0.0;
-        m.position.y = 0.0;
-        m.position.z = 0.0;
+      UrdfProperty up;
+      //urdf file
+      if(nval.hasMember("urdf_file")){
+        std::string urdf_file = (std::string)nval["urdf_file"];
+        std::cerr << "load urdf file: " << urdf_file << std::endl;
+        up.model = im_utils::getModelInterface(urdf_file);
+      }else if(nval.hasMember("urdf_param")){
+        std::string urdf_param = (std::string)nval["urdf_param"];
+	std::string urdf_model;
+	nh_.getParam(urdf_param, urdf_model);
+	up.model = parseURDF(urdf_model);
       }
 
-      if(nval.hasMember("orient")){
-        XmlRpc::XmlRpcValue orient = nval["orient"];
-        std::cerr << "load_link: " << orient["x"] << std::endl;
-        m.orientation.x = (double)orient["x"];
-        m.orientation.y = (double)orient["y"];
-        m.orientation.z = (double)orient["z"];
-        m.orientation.w = (double)orient["w"];
+      if(nval.hasMember("root_link")){
+        std::string root_link_name = (std::string)nval["root_link"];
+        std::cerr << "root link name: " << root_link_name << std::endl;
+        up.root_link_name = root_link_name;
       }else{
-        m.orientation.x = 0.0;
-        m.orientation.y = 0.0;
-        m.orientation.z = 0.0;
-        m.orientation.w = 1.0;
+        up.root_link_name = "";
       }
-      mesh.push_back(m);
-      std::cerr << "load_link: " << nval["link"] << std::endl;
+
+      up.pose.orientation.w = 1.0;
+      //pose
+      if(nval.hasMember("pose")){
+        XmlRpc::XmlRpcValue pose = nval["pose"];
+        if(pose.hasMember("position")){
+          XmlRpc::XmlRpcValue position = pose["position"];
+          up.pose.position.x = (double)position["x"];
+          up.pose.position.y = (double)position["y"];
+          up.pose.position.z = (double)position["z"];
+        }
+
+        if(pose.hasMember("orientation")){
+          XmlRpc::XmlRpcValue orient = pose["orientation"];
+          up.pose.orientation.x = (double)orient["x"];
+          up.pose.orientation.y = (double)orient["y"];
+          up.pose.orientation.z = (double)orient["z"];
+          up.pose.orientation.w = (double)orient["w"];
+        }
+      }
+
+      if(nval.hasMember("color")){
+        XmlRpc::XmlRpcValue color = nval["color"];
+        up.color.r = (double)color["r"];
+        up.color.g = (double)color["g"];
+        up.color.b = (double)color["b"];
+        up.color.a = (double)color["a"];
+      }else{
+        up.color.r = 1.0;
+        up.color.g = 1.0;
+        up.color.b = 0.0;
+        up.color.a = 0.7;
+      }
+      if(nval.hasMember("scale")){
+        up.scale = (double)nval["scale"];
+      }else{
+        up.scale = 1.05; //make bigger a bit
+      }
+      mesh.push_back(up);
     }
   }
 }
 
-void InteractiveMarkerInterface::loadMeshes(XmlRpc::XmlRpcValue val){
-  loadMeshFromYaml(val, "r_hand", rhand_mesh_);
-  loadMeshFromYaml(val, "l_hand", lhand_mesh_);
-}
 
 bool InteractiveMarkerInterface::markers_set_cb ( jsk_interactive_marker::MarkerSetPose::Request &req,
 						  jsk_interactive_marker::MarkerSetPose::Response &res ) {

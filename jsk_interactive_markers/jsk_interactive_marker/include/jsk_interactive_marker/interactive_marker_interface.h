@@ -15,6 +15,7 @@
 #include <jsk_interactive_marker/MarkerPose.h>
 
 #include <std_msgs/Int8.h>
+#include "urdf_parser/urdf_parser.h"
 
 class InteractiveMarkerInterface {
  private:
@@ -24,6 +25,15 @@ class InteractiveMarkerInterface {
     geometry_msgs::Point position;
     geometry_msgs::Quaternion orientation;
 
+  };
+
+  struct UrdfProperty{
+    boost::shared_ptr<urdf::ModelInterface> model;
+    std::string root_link_name;
+    geometry_msgs::Pose pose;
+    double scale;
+    std_msgs::ColorRGBA color;
+    bool use_original_color;
   };
 
  public:
@@ -106,7 +116,9 @@ class InteractiveMarkerInterface {
 
   void changeMarkerOperationModelMode( std::string mk_name );
 
-  void addHandMarker(visualization_msgs::InteractiveMarkerControl &imc,std::vector < MeshProperty > mesh_vec, double mk_size);
+  //void addHandMarker(visualization_msgs::InteractiveMarkerControl &imc,std::vector < MeshProperty > mesh_vec, double mk_size);
+  void addHandMarker(visualization_msgs::InteractiveMarker &im,std::vector < UrdfProperty > urdf_vec);
+  void addSphereMarker(visualization_msgs::InteractiveMarker &im, double scale, std_msgs::ColorRGBA color);
   void makeCenterSphere(visualization_msgs::InteractiveMarker &mk, double mk_size);
 
   InteractiveMarkerInterface ();
@@ -126,6 +138,7 @@ class InteractiveMarkerInterface {
                   jsk_interactive_marker::SetPose::Response &res );
 
   void loadMeshFromYaml(XmlRpc::XmlRpcValue val, std::string name, std::vector<MeshProperty>& mesh);
+  void loadUrdfFromYaml(XmlRpc::XmlRpcValue val, std::string name, std::vector<UrdfProperty>& mesh);
   void loadMeshes(XmlRpc::XmlRpcValue val);
 
   void makeIMVisible(visualization_msgs::InteractiveMarker &im);
@@ -262,6 +275,7 @@ class InteractiveMarkerInterface {
   std::string head_link_frame_;
   std::string head_mesh_;
   std::vector< MeshProperty > rhand_mesh_, lhand_mesh_;
+  std::vector< UrdfProperty > rhand_urdf_, lhand_urdf_;
 
 };
 
