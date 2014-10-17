@@ -12,6 +12,7 @@ namespace jsk_interactive_marker{
     torus_b_ = b;
     torus_a_ = a;
     marker_.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    type_ = "torus";
 
     frame_id_ = frame;
     name_ = name;

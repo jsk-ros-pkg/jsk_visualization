@@ -21,16 +21,18 @@ namespace jsk_interactive_marker {
     visualization_msgs::InteractiveMarker getInteractiveMarker();
     virtual visualization_msgs::Marker getVisualizationMsgMarker(){};
     void addMarker(visualization_msgs::InteractiveMarker &int_marker, bool always_visible = true, unsigned int interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D);
-    void addControl(visualization_msgs::InteractiveMarker &int_marker, bool fixed = true);
+    void addControl(visualization_msgs::InteractiveMarker &int_marker, bool fixed = false);
 
     visualization_msgs::Marker marker_;
     geometry_msgs::Pose pose_;
     std::string name_;
     std::string frame_id_;
     std::string description_;
+    std::string type_;
 
     void setPose(geometry_msgs::Pose pose){pose_=pose;};
     void addPose(geometry_msgs::Pose msg);
+    std::string getFrameId() { return frame_id_; }
     geometry_msgs::Pose getPose(){return pose_;};
     virtual bool setRadius(std_msgs::Float32 recieve_val){return false;};
     virtual bool setSmallRadius(std_msgs::Float32 recieve_val){return false;};
