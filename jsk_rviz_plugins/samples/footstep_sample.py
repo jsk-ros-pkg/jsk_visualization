@@ -32,6 +32,7 @@ def main():
             footstep.dimensions.x = 0.25
             footstep.dimensions.y = 0.15
             footstep.dimensions.z = 0.01
+            footstep.footstep_group = i / 5
             msg.footsteps.append(footstep)
             xpos = xpos + 0.25
             zpos = zpos + 0.1

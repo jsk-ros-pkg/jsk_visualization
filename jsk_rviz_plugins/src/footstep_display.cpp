@@ -35,6 +35,7 @@
 
 #include "footstep_display.h"
 #include <rviz/validate_floats.h>
+#include <jsk_topic_tools/color_utils.h>
 
 namespace jsk_rviz_plugin
 {
@@ -47,6 +48,10 @@ namespace jsk_rviz_plugin
       "Show Name", true,
       "Show name of each footstep",
       this, SLOT(updateShowName()));
+    use_group_coloring_property_ = new rviz::BoolProperty(
+      "Use Group Coloring", false,
+      "Use footstep_group field to colorize footsteps",
+      this, SLOT(updateUseGroupColoring()));
     width_property_ =  new rviz::FloatProperty(
       "Width", 0.15,
       "width of the footstep, it's not used if the dimensions is specified in Footstep message.",
@@ -69,6 +74,7 @@ namespace jsk_rviz_plugin
     delete height_property_;
     delete depth_property_;
     delete show_name_property_;
+    delete use_group_coloring_property_;
     delete line_;
     // remove all the nodes
     for (size_t i = 0; i < text_nodes_.size(); i++) {
@@ -96,30 +102,19 @@ namespace jsk_rviz_plugin
   
   void FootstepDisplay::updateAlpha()
   {
-    float alpha = alpha_property_->getFloat();
-    for (size_t i = 0; i < shapes_.size(); i++)
-    {
-      ShapePtr shape = shapes_[i];
-      jsk_footstep_msgs::Footstep footstep = latest_footstep_->footsteps[i];
-      if (footstep.leg == jsk_footstep_msgs::Footstep::LEFT)
-      {
-        shape->setColor(0, 1, 0, alpha);
-      }
-      else if (footstep.leg == jsk_footstep_msgs::Footstep::RIGHT)
-      {
-        shape->setColor(1, 0, 0, alpha);
-      }
-      else
-      {
-        shape->setColor(1, 1, 1, alpha);
-      }
-    }
+    alpha_ = alpha_property_->getFloat();
   }
 
   void FootstepDisplay::updateShowName()
   {
     show_name_ = show_name_property_->getBool();
   }
+
+  void FootstepDisplay::updateUseGroupColoring()
+  {
+    use_group_coloring_ = use_group_coloring_property_->getBool();
+  }
+  
   
   void FootstepDisplay::reset()
   {
@@ -156,6 +151,8 @@ namespace jsk_rviz_plugin
     updateWidth();
     updateHeight();
     updateDepth();
+    updateAlpha();
+    updateUseGroupColoring();
   }
 
   void FootstepDisplay::allocateCubes(size_t num) {
@@ -218,8 +215,28 @@ namespace jsk_rviz_plugin
 
   void FootstepDisplay::update(float wall_dt, float ros_dt)
   {
-    for (size_t i = 0; i < texts_.size(); i++) {
+    for (size_t i = 0; i < shapes_.size(); i++) {
+      ShapePtr shape = shapes_[i];
       texts_[i]->setVisible(show_name_); // TODO
+      jsk_footstep_msgs::Footstep footstep = latest_footstep_->footsteps[i];
+            // color
+      if (use_group_coloring_) {
+        std_msgs::ColorRGBA color
+          = jsk_topic_tools::colorCategory20(footstep.footstep_group);
+        shape->setColor(color.r, color.g, color.b, alpha_);
+      }
+      else {
+        if (footstep.leg == jsk_footstep_msgs::Footstep::LEFT) {
+          shape->setColor(0, 1, 0, alpha_);
+        }
+        else if (footstep.leg == jsk_footstep_msgs::Footstep::RIGHT) {
+          shape->setColor(1, 0, 0, alpha_);
+        }
+        else {
+          shape->setColor(1, 1, 1, alpha_);
+        }
+      }
+
     }
   }
   
@@ -295,15 +312,13 @@ namespace jsk_rviz_plugin
         scale[0] = depth_;
         scale[1] = width_;
         scale[2] = height_;
-        
       }
       else {
         scale[0] = footstep.dimensions.x;
         scale[1] = footstep.dimensions.y;
         scale[2] = footstep.dimensions.z;
       }
-      shape->setScale(scale);
-      
+      shape->setScale(scale);      
       // update the size of text
       if (footstep.leg == jsk_footstep_msgs::Footstep::LEFT) {
         text->setCaption("L");
