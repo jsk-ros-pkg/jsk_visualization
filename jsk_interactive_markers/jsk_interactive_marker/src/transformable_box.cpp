@@ -24,6 +24,7 @@ namespace jsk_interactive_marker{
     box_b_ = b;
     box_a_ = a;
     marker_.type = visualization_msgs::Marker::CUBE;
+    type_ = "box";
 
     frame_id_ = frame;
     name_ = name;

@@ -9,6 +9,7 @@ namespace jsk_interactive_marker{
     cylinder_b_ = b;
     cylinder_a_ = a;
     marker_.type = visualization_msgs::Marker::CYLINDER;
+    type_ = "cylinder";
 
     frame_id_ = frame;
     name_ = name;

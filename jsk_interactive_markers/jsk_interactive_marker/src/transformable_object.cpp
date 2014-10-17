@@ -1,4 +1,5 @@
 #include <jsk_interactive_marker/transformable_object.h>
+#include <eigen_conversions/eigen_msg.h>
 
 using namespace jsk_interactive_marker;
 
@@ -86,49 +87,10 @@ void TransformableObject::addPose(geometry_msgs::Pose msg){
   pose_.position.x += msg.position.x;
   pose_.position.y += msg.position.y;
   pose_.position.z += msg.position.z;
-  float tmp_x = pose_.orientation.x, tmp_y = pose_.orientation.y,
-    tmp_z = pose_.orientation.z, tmp_w = pose_.orientation.w;
-
-
-  // pose_.orientation.w =
-  //   tmp_w * msg.orientation.w -
-  //   tmp_x * msg.orientation.x -
-  //   tmp_y * msg.orientation.y -
-  //   tmp_z * msg.orientation.z;
-  // pose_.orientation.x =
-  //   tmp_y * msg.orientation.z -
-  //   tmp_z * msg.orientation.y +
-  //   tmp_y * msg.orientation.x +
-  //   tmp_x * msg.orientation.w;
-  // pose_.orientation.y =
-  //   tmp_z * msg.orientation.x -
-  //   tmp_x * msg.orientation.z +
-  //   tmp_w * msg.orientation.y +
-  //   tmp_y * msg.orientation.w ;
-  // pose_.orientation.z =
-  //   tmp_x * msg.orientation.y -
-  //   tmp_y * msg.orientation.x +
-  //   tmp_w * msg.orientation.z +
-  //   tmp_z * msg.orientation.w;
-
-  pose_.orientation.w =
-    msg.orientation.w * tmp_w -
-    msg.orientation.x * tmp_x -
-    msg.orientation.y * tmp_y -
-    msg.orientation.z * tmp_z;
-  pose_.orientation.x =
-    msg.orientation.y * tmp_z -
-    msg.orientation.z * tmp_y +
-    msg.orientation.y * tmp_x +
-    msg.orientation.x * tmp_w;
-  pose_.orientation.y =
-    msg.orientation.z * tmp_x -
-    msg.orientation.x * tmp_z +
-    msg.orientation.w * tmp_y +
-    msg.orientation.y * tmp_w ;
-  pose_.orientation.z =
-    msg.orientation.x * tmp_y -
-    msg.orientation.y * tmp_x +
-    msg.orientation.w * tmp_z +
-    msg.orientation.z * tmp_w;
+  Eigen::Quaterniond original_q;
+  tf::quaternionMsgToEigen(pose_.orientation, original_q);
+  Eigen::Quaterniond diff_q;
+  tf::quaternionMsgToEigen(msg.orientation, diff_q);
+  Eigen::Quaterniond updated_q = original_q * diff_q;
+  tf::quaternionEigenToMsg(updated_q, pose_.orientation);
 }
