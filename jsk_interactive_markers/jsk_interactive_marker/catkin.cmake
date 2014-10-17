@@ -30,6 +30,7 @@ generate_dynamic_reconfigure_options(
   cfg/InteractivePointCloud.cfg
   cfg/PointCloudCropper.cfg
   cfg/CameraInfoPublisher.cfg
+  cfg/InteractiveSetting.cfg
   )
 
 add_definitions("-g")

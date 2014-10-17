@@ -10,6 +10,7 @@
 #include <jsk_interactive_marker/GetPose.h>
 #include <vector>
 #include <algorithm>
+#include <jsk_interactive_marker/InteractiveSettingConfig.h>
 
 namespace jsk_interactive_marker {
   class TransformableObject{
@@ -21,7 +22,7 @@ namespace jsk_interactive_marker {
     visualization_msgs::InteractiveMarker getInteractiveMarker();
     virtual visualization_msgs::Marker getVisualizationMsgMarker(){};
     void addMarker(visualization_msgs::InteractiveMarker &int_marker, bool always_visible = true, unsigned int interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D);
-    void addControl(visualization_msgs::InteractiveMarker &int_marker, bool fixed = false);
+    void addControl(visualization_msgs::InteractiveMarker &int_marker);
 
     visualization_msgs::Marker marker_;
     geometry_msgs::Pose pose_;
@@ -29,11 +30,13 @@ namespace jsk_interactive_marker {
     std::string frame_id_;
     std::string description_;
     std::string type_;
+    bool display_interactive_manipulator_;
 
     void setPose(geometry_msgs::Pose pose){pose_=pose;};
     void addPose(geometry_msgs::Pose msg);
     std::string getFrameId() { return frame_id_; }
     geometry_msgs::Pose getPose(){return pose_;};
+    void setInteractiveMarkerSetting(InteractiveSettingConfig config);
     virtual bool setRadius(std_msgs::Float32 recieve_val){return false;};
     virtual bool setSmallRadius(std_msgs::Float32 recieve_val){return false;};
     virtual bool setHeight(std_msgs::Float32 recieve_val){return false;};

@@ -14,6 +14,8 @@
 #include <iostream>
 #include <sstream>
 #include <tf/transform_listener.h>
+#include <dynamic_reconfigure/server.h>
+#include <jsk_interactive_marker/InteractiveSettingConfig.h>
 
 using namespace std;
 
@@ -55,9 +57,13 @@ namespace jsk_interactive_marker
     bool getTypeService(jsk_interactive_marker::GetType::Request &req,jsk_interactive_marker::GetType::Response &res);
 
     bool requestMarkerOperateService(jsk_interactive_marker::RequestMarkerOperate::Request &req,jsk_interactive_marker::RequestMarkerOperate::Response &res);
+    virtual void configCallback(InteractiveSettingConfig &config, uint32_t level);
+    void SetInitialInteractiveMarkerConfig( TransformableObject* tobject );
 
     std::string focus_object_marker_name_;
     ros::NodeHandle* n_;
+
+    boost::mutex mutex_;
 
     ros::Subscriber setcolor_sub_;
     ros::Subscriber setpose_sub_;
@@ -73,6 +79,7 @@ namespace jsk_interactive_marker
     ros::ServiceServer get_pose_srv_;
     ros::ServiceServer get_type_srv_;
     ros::ServiceServer request_marker_operate_srv_;
+    boost::shared_ptr <dynamic_reconfigure::Server<InteractiveSettingConfig> > config_srv_;
 
     ros::Subscriber setrad_sub_;
     ros::Publisher focus_text_pub_;
@@ -82,6 +89,7 @@ namespace jsk_interactive_marker
     boost::shared_ptr<tf::TransformListener> tf_listener_;
     int torus_udiv_;
     int torus_vdiv_;
+    bool display_interactive_manipulator_;
   };
 }
 
