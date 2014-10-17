@@ -2,7 +2,8 @@
 
 using namespace jsk_interactive_marker;
 
-TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::NodeHandle){
+TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::NodeHandle("~")){
+  n_->param("display_interactive_manipulator", display_interactive_manipulator_, true);
   n_->param("torus_udiv", torus_udiv_, 20);
   n_->param("torus_vdiv", torus_vdiv_, 20);
   tf_listener_.reset(new tf::TransformListener);
@@ -30,11 +31,12 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   erase_all_marker_srv_ = n_->advertiseService("erase_all_marker", &TransformableInteractiveServer::eraseAllMarkerService, this);
   erase_focus_marker_srv_ = n_->advertiseService("erase_focus_marker", &TransformableInteractiveServer::eraseFocusMarkerService, this);
 
-  server_ = new interactive_markers::InteractiveMarkerServer("simple_marker");
+  config_srv_ = boost::make_shared <dynamic_reconfigure::Server<InteractiveSettingConfig> > (*n_);
+  dynamic_reconfigure::Server<InteractiveSettingConfig>::CallbackType f =
+    boost::bind (&TransformableInteractiveServer::configCallback, this, _1, _2);
+  config_srv_->setCallback (f);
 
-  // insertNewBox(std::string("/map"), std::string("my_marker"), std::string("my_marker"));
-  // insertNewCylinder(std::string("/map"), std::string("my_marker2"), std::string("my_marker2"));
-  // insertNewTorus(std::string("/map"), std::string("my_marker3"), std::string("my_marker3"));
+  server_ = new interactive_markers::InteractiveMarkerServer("simple_marker");
 }
 
 TransformableInteractiveServer::~TransformableInteractiveServer()
@@ -44,6 +46,17 @@ TransformableInteractiveServer::~TransformableInteractiveServer()
   }
   transformable_objects_map_.clear();
 }
+
+void TransformableInteractiveServer::configCallback(InteractiveSettingConfig &config, uint32_t level)
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    for (std::map<string, TransformableObject* >::iterator itpairstri = transformable_objects_map_.begin(); itpairstri != transformable_objects_map_.end(); itpairstri++) {
+      TransformableObject* tobject = itpairstri->second;
+      tobject->setInteractiveMarkerSetting(config);
+      updateTransformableObject(tobject);
+    }
+  }
+
 
 void TransformableInteractiveServer::processFeedback(
                                                      const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
@@ -304,12 +317,20 @@ void TransformableInteractiveServer::insertNewTorus( std::string frame_id, std::
 
 void TransformableInteractiveServer::insertNewObject( TransformableObject* tobject , std::string name )
 {
+  SetInitialInteractiveMarkerConfig(tobject);
   visualization_msgs::InteractiveMarker int_marker = tobject->getInteractiveMarker();
   transformable_objects_map_[name] = tobject;
   server_->insert(int_marker, boost::bind( &TransformableInteractiveServer::processFeedback,this, _1));
   server_->applyChanges();
 
   focus_object_marker_name_ = name;
+}
+
+void TransformableInteractiveServer::SetInitialInteractiveMarkerConfig( TransformableObject* tobject )
+{
+  InteractiveSettingConfig config;
+  config.display_interactive_manipulator = display_interactive_manipulator_;
+  tobject->setInteractiveMarkerSetting(config);
 }
 
 void TransformableInteractiveServer::eraseObject( std::string name )
