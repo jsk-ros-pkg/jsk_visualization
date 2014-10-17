@@ -9,6 +9,12 @@ TransformableObject::TransformableObject(){
   pose_.orientation.y = 0;
   pose_.orientation.z = 0;
   pose_.orientation.w = 1;
+
+  display_interactive_manipulator_ = true;
+}
+
+void TransformableObject::setInteractiveMarkerSetting(InteractiveSettingConfig config){
+  display_interactive_manipulator_ = config.display_interactive_manipulator;
 }
 
 std::vector<visualization_msgs::InteractiveMarkerControl> TransformableObject::makeRotateTransFixControl(){
@@ -62,9 +68,9 @@ void TransformableObject::addMarker(visualization_msgs::InteractiveMarker &int_m
   int_marker.controls.push_back(marker_control);
 };
 
-void TransformableObject::addControl(visualization_msgs::InteractiveMarker &int_marker, bool fixed)
+void TransformableObject::addControl(visualization_msgs::InteractiveMarker &int_marker)
 {
-  if(fixed){
+  if(display_interactive_manipulator_){
     std::vector<visualization_msgs::InteractiveMarkerControl> rotate_controls = makeRotateTransFixControl();
     int_marker.controls.insert(int_marker.controls.end(), rotate_controls.begin(), rotate_controls.end());
   }
