@@ -21,10 +21,10 @@ find_package(TinyXML REQUIRED)
 
 add_message_files(
   DIRECTORY msg
-  FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg
+  FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg TransformableMarkerOperate.msg
 )
 add_service_files(DIRECTORY srv
-  FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetPose.srv GetType.srv InsertMarker.srv EraseMarker.srv)
+  FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetPose.srv GetType.srv RequestMarkerOperate.srv)
 
 generate_dynamic_reconfigure_options(
   cfg/InteractivePointCloud.cfg
@@ -96,9 +96,6 @@ add_dependencies(pointcloud_cropper ${PROJECT_NAME}_generate_messages_cpp ${PROJ
 
 add_executable(transformable_server_sample
   src/transformable_object.cpp
-  src/transformable_box.cpp
-  src/transformable_cylinder.cpp
-  src/transformable_torus.cpp
   src/transformable_interactive_server.cpp
   src/transformable_server_sample.cpp
 )

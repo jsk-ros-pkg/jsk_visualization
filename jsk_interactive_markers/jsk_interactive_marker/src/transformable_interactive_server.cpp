@@ -25,10 +25,7 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   get_pose_srv_ = n_->advertiseService("get_pose", &TransformableInteractiveServer::getPoseService, this);
   get_type_srv_ = n_->advertiseService("get_type", &TransformableInteractiveServer::getTypeService, this);
 
-  insert_marker_srv_ = n_->advertiseService("insert_marker", &TransformableInteractiveServer::insertMarkerService, this);
-  erase_marker_srv_ = n_->advertiseService("erase_marker", &TransformableInteractiveServer::eraseMarkerService, this);
-  erase_all_marker_srv_ = n_->advertiseService("erase_all_marker", &TransformableInteractiveServer::eraseAllMarkerService, this);
-  erase_focus_marker_srv_ = n_->advertiseService("erase_focus_marker", &TransformableInteractiveServer::eraseFocusMarkerService, this);
+  request_marker_operate_srv_ = n_->advertiseService("request_marker_operate", &TransformableInteractiveServer::requestMarkerOperateService, this);
 
   server_ = new interactive_markers::InteractiveMarkerServer("simple_marker");
 
@@ -198,34 +195,33 @@ bool TransformableInteractiveServer::getTypeService(jsk_interactive_marker::GetT
   return true;
 }
 
-bool TransformableInteractiveServer::insertMarkerService(jsk_interactive_marker::InsertMarker::Request &req,jsk_interactive_marker::InsertMarker::Response &res)
+bool TransformableInteractiveServer::requestMarkerOperateService(jsk_interactive_marker::RequestMarkerOperate::Request &req,jsk_interactive_marker::RequestMarkerOperate::Response &res)
 {
-  if (req.type.compare(std::string("box")) == 0) {
-    insertNewBox(req.frame_id, req.name, req.description);
-  } else if (req.type.compare(std::string("cylinder")) == 0) {
-    insertNewCylinder(req.frame_id, req.name, req.description);
-  } else if (req.type.compare(std::string("torus")) == 0) {
-    insertNewTorus(req.frame_id, req.name, req.description);
-  }
-  return true;
-}
-
-bool TransformableInteractiveServer::eraseMarkerService(jsk_interactive_marker::EraseMarker::Request &req,jsk_interactive_marker::EraseMarker::Response &res)
-{
-  eraseObject(req.name);
-  return true;
-}
-
-bool TransformableInteractiveServer::eraseAllMarkerService(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res)
-{
-  eraseAllObject();
-  return true;
-}
-
-bool TransformableInteractiveServer::eraseFocusMarkerService(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res)
-{
-  eraseFocusObject();
-  return true;
+  switch(req.operate.action){
+  case TransformableMarkerOperate::INSERT:
+    if (req.operate.type == TransformableMarkerOperate::BOX) {
+      insertNewBox(req.operate.frame_id, req.operate.name, req.operate.description);
+    } else if (req.operate.type == TransformableMarkerOperate::CYLINDER) {
+      insertNewCylinder(req.operate.frame_id, req.operate.name, req.operate.description);
+    } else if (req.operate.type == TransformableMarkerOperate::TORUS) {
+      insertNewTorus(req.operate.frame_id, req.operate.name, req.operate.description);
+    }
+    return true;
+    break;
+  case TransformableMarkerOperate::ERASE:
+    eraseObject(req.operate.name);
+    return true;
+    break;
+  case TransformableMarkerOperate::ERASEALL:
+    eraseAllObject();
+    return true;
+    break;
+  case TransformableMarkerOperate::ERASEFOCUS:
+    eraseFocusObject();
+    return true;
+    break;
+  };
+  return false;
 }
 
 void TransformableInteractiveServer::addPose(geometry_msgs::Pose msg){
