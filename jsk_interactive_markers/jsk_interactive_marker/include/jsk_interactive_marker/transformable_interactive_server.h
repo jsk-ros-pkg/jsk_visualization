@@ -3,11 +3,8 @@
 
 #include <ros/ros.h>
 #include <interactive_markers/interactive_marker_server.h>
-#include <jsk_interactive_marker/transformable_box.h>
-#include <jsk_interactive_marker/transformable_cylinder.h>
-#include <jsk_interactive_marker/transformable_torus.h>
-#include <jsk_interactive_marker/InsertMarker.h>
-#include <jsk_interactive_marker/EraseMarker.h>
+#include <jsk_interactive_marker/transformable_object.h>
+#include <jsk_interactive_marker/RequestMarkerOperate.h>
 #include <jsk_interactive_marker/GetType.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/Empty.h>
@@ -59,10 +56,7 @@ namespace jsk_interactive_marker
     bool getPoseService(jsk_interactive_marker::GetPose::Request &req,jsk_interactive_marker::GetPose::Response &res);
     bool getTypeService(jsk_interactive_marker::GetType::Request &req,jsk_interactive_marker::GetType::Response &res);
 
-    bool insertMarkerService(jsk_interactive_marker::InsertMarker::Request &req,jsk_interactive_marker::InsertMarker::Response &res);
-    bool eraseMarkerService(jsk_interactive_marker::EraseMarker::Request &req,jsk_interactive_marker::EraseMarker::Response &res);
-    bool eraseAllMarkerService(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res);
-    bool eraseFocusMarkerService(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res);
+    bool requestMarkerOperateService(jsk_interactive_marker::RequestMarkerOperate::Request &req,jsk_interactive_marker::RequestMarkerOperate::Response &res);
     virtual void configCallback(InteractiveSettingConfig &config, uint32_t level);
     void SetInitialInteractiveMarkerConfig( TransformableObject* tobject );
 
@@ -84,10 +78,7 @@ namespace jsk_interactive_marker
 
     ros::ServiceServer get_pose_srv_;
     ros::ServiceServer get_type_srv_;
-    ros::ServiceServer insert_marker_srv_;
-    ros::ServiceServer erase_marker_srv_;
-    ros::ServiceServer erase_all_marker_srv_;
-    ros::ServiceServer erase_focus_marker_srv_;
+    ros::ServiceServer request_marker_operate_srv_;
     boost::shared_ptr <dynamic_reconfigure::Server<InteractiveSettingConfig> > config_srv_;
 
     ros::Subscriber setrad_sub_;
