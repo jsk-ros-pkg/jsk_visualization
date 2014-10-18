@@ -71,6 +71,7 @@ namespace jsk_rviz_plugin
     rviz::FloatProperty* height_property_;
     rviz::FloatProperty* depth_property_;
     rviz::BoolProperty* show_name_property_;
+    rviz::BoolProperty* use_group_coloring_property_;
     jsk_footstep_msgs::FootstepArray::ConstPtr latest_footstep_;
     typedef boost::shared_ptr<rviz::Shape> ShapePtr;
     std::vector<ShapePtr> shapes_;
@@ -78,7 +79,9 @@ namespace jsk_rviz_plugin
     std::vector<Ogre::SceneNode*> text_nodes_;
     rviz::BillboardLine* line_;
     double width_, height_, depth_;
+    double alpha_;
     bool show_name_;
+    bool use_group_coloring_;
     //Ogre::SceneNode* scene_node_;
   private Q_SLOTS:
     void updateAlpha();
@@ -86,6 +89,7 @@ namespace jsk_rviz_plugin
     void updateHeight();
     void updateDepth();
     void updateShowName();
+    void updateUseGroupColoring();
   };
 }
 
