@@ -5,7 +5,7 @@
 
 #include <rviz/panel.h>
 #include <QtGui>
-#include <jsk_interactive_marker/RequestMarkerOperate.h>
+#include <jsk_rviz_plugins/RequestMarkerOperate.h>
 
 class QLineEdit;
 class QLabel;
@@ -29,7 +29,7 @@ Q_OBJECT
 
       protected Q_SLOTS:
 
-      void callRequestMarkerOperateService(jsk_interactive_marker::RequestMarkerOperate srv);
+      void callRequestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate srv);
       void insertBoxService();
       void insertCylinderService();
       void insertTorusService();

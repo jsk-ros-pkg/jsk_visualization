@@ -6,19 +6,20 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_rviz_plugins)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros jsk_interactive_marker
+find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_pcl_ros
   ${people_msgs}
   message_generation std_msgs diagnostic_msgs cv_bridge
   jsk_topic_tools
   image_geometry)
 
-add_message_files(FILES OverlayText.msg OverlayMenu.msg)
-generate_messages(DEPENDENCIES std_msgs jsk_interactive_marker)
+add_message_files(FILES OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg)
+add_service_files(FILES RequestMarkerOperate.srv)
+generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
     DEPENDS rviz
     CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
-    jsk_pcl_ros cv_bridge ${people_msgs} image_geometry jsk_interactive_marker
+    jsk_pcl_ros cv_bridge ${people_msgs} image_geometry
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )

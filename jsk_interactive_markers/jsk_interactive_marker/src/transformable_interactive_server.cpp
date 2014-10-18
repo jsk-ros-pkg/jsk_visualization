@@ -208,28 +208,28 @@ bool TransformableInteractiveServer::getTypeService(jsk_interactive_marker::GetT
   return true;
 }
 
-bool TransformableInteractiveServer::requestMarkerOperateService(jsk_interactive_marker::RequestMarkerOperate::Request &req,jsk_interactive_marker::RequestMarkerOperate::Response &res)
+bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate::Request &req,jsk_rviz_plugins::RequestMarkerOperate::Response &res)
 {
   switch(req.operate.action){
-  case TransformableMarkerOperate::INSERT:
-    if (req.operate.type == TransformableMarkerOperate::BOX) {
+  case jsk_rviz_plugins::TransformableMarkerOperate::INSERT:
+    if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::BOX) {
       insertNewBox(req.operate.frame_id, req.operate.name, req.operate.description);
-    } else if (req.operate.type == TransformableMarkerOperate::CYLINDER) {
+    } else if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER) {
       insertNewCylinder(req.operate.frame_id, req.operate.name, req.operate.description);
-    } else if (req.operate.type == TransformableMarkerOperate::TORUS) {
+    } else if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
       insertNewTorus(req.operate.frame_id, req.operate.name, req.operate.description);
     }
     return true;
     break;
-  case TransformableMarkerOperate::ERASE:
+  case jsk_rviz_plugins::TransformableMarkerOperate::ERASE:
     eraseObject(req.operate.name);
     return true;
     break;
-  case TransformableMarkerOperate::ERASEALL:
+  case jsk_rviz_plugins::TransformableMarkerOperate::ERASEALL:
     eraseAllObject();
     return true;
     break;
-  case TransformableMarkerOperate::ERASEFOCUS:
+  case jsk_rviz_plugins::TransformableMarkerOperate::ERASEFOCUS:
     eraseFocusObject();
     return true;
     break;

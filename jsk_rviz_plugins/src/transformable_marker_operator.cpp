@@ -91,9 +91,9 @@ namespace jsk_rviz_plugin
   }
 
   void TransformableMarkerOperatorAction::insertBoxService(){
-    jsk_interactive_marker::RequestMarkerOperate operator_srv;
-    operator_srv.request.operate.type = jsk_interactive_marker::TransformableMarkerOperate::BOX;
-    operator_srv.request.operate.action = jsk_interactive_marker::TransformableMarkerOperate::INSERT;
+    jsk_rviz_plugins::RequestMarkerOperate operator_srv;
+    operator_srv.request.operate.type = jsk_rviz_plugins::TransformableMarkerOperate::BOX;
+    operator_srv.request.operate.action = jsk_rviz_plugins::TransformableMarkerOperate::INSERT;
     operator_srv.request.operate.name = name_editor_->text().toStdString();
     operator_srv.request.operate.description = description_editor_->text().toStdString();
     operator_srv.request.operate.frame_id = frame_editor_->text().toStdString();
@@ -101,9 +101,9 @@ namespace jsk_rviz_plugin
   };
 
   void TransformableMarkerOperatorAction::insertCylinderService(){
-    jsk_interactive_marker::RequestMarkerOperate operator_srv;
-    operator_srv.request.operate.type = jsk_interactive_marker::TransformableMarkerOperate::CYLINDER;
-    operator_srv.request.operate.action = jsk_interactive_marker::TransformableMarkerOperate::INSERT;
+    jsk_rviz_plugins::RequestMarkerOperate operator_srv;
+    operator_srv.request.operate.type = jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER;
+    operator_srv.request.operate.action = jsk_rviz_plugins::TransformableMarkerOperate::INSERT;
     operator_srv.request.operate.name = name_editor_->text().toStdString();
     operator_srv.request.operate.description = description_editor_->text().toStdString();
     operator_srv.request.operate.frame_id = frame_editor_->text().toStdString();
@@ -111,9 +111,9 @@ namespace jsk_rviz_plugin
   };
 
   void TransformableMarkerOperatorAction::insertTorusService(){
-    jsk_interactive_marker::RequestMarkerOperate operator_srv;
-    operator_srv.request.operate.type = jsk_interactive_marker::TransformableMarkerOperate::TORUS;
-    operator_srv.request.operate.action = jsk_interactive_marker::TransformableMarkerOperate::INSERT;
+    jsk_rviz_plugins::RequestMarkerOperate operator_srv;
+    operator_srv.request.operate.type = jsk_rviz_plugins::TransformableMarkerOperate::TORUS;
+    operator_srv.request.operate.action = jsk_rviz_plugins::TransformableMarkerOperate::INSERT;
     operator_srv.request.operate.name = name_editor_->text().toStdString();
     operator_srv.request.operate.description = description_editor_->text().toStdString();
     operator_srv.request.operate.frame_id = frame_editor_->text().toStdString();
@@ -121,26 +121,26 @@ namespace jsk_rviz_plugin
   };
 
   void TransformableMarkerOperatorAction::eraseWithIdService(){
-    jsk_interactive_marker::RequestMarkerOperate operator_srv;
-    operator_srv.request.operate.action = jsk_interactive_marker::TransformableMarkerOperate::ERASE;
+    jsk_rviz_plugins::RequestMarkerOperate operator_srv;
+    operator_srv.request.operate.action = jsk_rviz_plugins::TransformableMarkerOperate::ERASE;
     operator_srv.request.operate.name = id_editor_->text().toStdString();
     callRequestMarkerOperateService(operator_srv);
   };
 
   void TransformableMarkerOperatorAction::eraseAllService(){
-    jsk_interactive_marker::RequestMarkerOperate operator_srv;
-    operator_srv.request.operate.action = jsk_interactive_marker::TransformableMarkerOperate::ERASEALL;
+    jsk_rviz_plugins::RequestMarkerOperate operator_srv;
+    operator_srv.request.operate.action = jsk_rviz_plugins::TransformableMarkerOperate::ERASEALL;
     callRequestMarkerOperateService(operator_srv);
   };
 
   void TransformableMarkerOperatorAction::eraseFocusService(){
-    jsk_interactive_marker::RequestMarkerOperate operator_srv;
-    operator_srv.request.operate.action = jsk_interactive_marker::TransformableMarkerOperate::ERASEFOCUS;
+    jsk_rviz_plugins::RequestMarkerOperate operator_srv;
+    operator_srv.request.operate.action = jsk_rviz_plugins::TransformableMarkerOperate::ERASEFOCUS;
     callRequestMarkerOperateService(operator_srv);
   };
 
-  void TransformableMarkerOperatorAction::callRequestMarkerOperateService(jsk_interactive_marker::RequestMarkerOperate srv){
-    ros::ServiceClient client = nh_.serviceClient<jsk_interactive_marker::RequestMarkerOperate>("request_marker_operate", true);
+  void TransformableMarkerOperatorAction::callRequestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate srv){
+    ros::ServiceClient client = nh_.serviceClient<jsk_rviz_plugins::RequestMarkerOperate>("request_marker_operate", true);
     if(client.call(srv))
       {
         ROS_INFO("Call Success");
