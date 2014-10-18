@@ -62,9 +62,8 @@ namespace jsk_rviz_plugin
     int texture_width_;
     int texture_height_;
     
-    // std_msgs::ColorRGBA bg_color_;
-    // std_msgs::ColorRGBA fg_color_;
-    bool overtake_properties_;
+    bool overtake_color_properties_;
+    bool overtake_position_properties_;
     QColor bg_color_;
     QColor fg_color_;
     int text_size_;
@@ -85,7 +84,8 @@ namespace jsk_rviz_plugin
 
     bool require_update_texture_;
     rviz::RosTopicProperty* update_topic_property_;
-    rviz::BoolProperty* overtake_properties_property_;
+    rviz::BoolProperty* overtake_position_properties_property_;
+    rviz::BoolProperty* overtake_color_properties_property_;
     rviz::IntProperty* top_property_;
     rviz::IntProperty* left_property_;
     rviz::IntProperty* width_property_;
@@ -99,7 +99,8 @@ namespace jsk_rviz_plugin
     rviz::StringProperty* font_property_;
   protected Q_SLOTS:
     void updateTopic();
-    void updateOvertakeProperties();
+    void updateOvertakePositionProperties();
+    void updateOvertakeColorProperties();
     void updateTop();
     void updateLeft();
     void updateWidth();
