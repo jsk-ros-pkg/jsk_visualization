@@ -59,7 +59,7 @@ namespace jsk_interactive_marker
     bool setDimensionsService(jsk_interactive_marker::SetMarkerDimensions::Request &req,jsk_interactive_marker::SetMarkerDimensions::Response &res);
     bool getDimensionsService(jsk_interactive_marker::GetMarkerDimensions::Request &req,jsk_interactive_marker::GetMarkerDimensions::Response &res);
 
-    bool requestMarkerOperateService(jsk_interactive_marker::RequestMarkerOperate::Request &req,jsk_interactive_marker::RequestMarkerOperate::Response &res);
+    bool requestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate::Request &req,jsk_rviz_plugins::RequestMarkerOperate::Response &res);
     virtual void configCallback(InteractiveSettingConfig &config, uint32_t level);
     void SetInitialInteractiveMarkerConfig( TransformableObject* tobject );
 

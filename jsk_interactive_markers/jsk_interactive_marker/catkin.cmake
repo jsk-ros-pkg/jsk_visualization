@@ -21,10 +21,10 @@ find_package(TinyXML REQUIRED)
 
 add_message_files(
   DIRECTORY msg
-  FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg TransformableMarkerOperate.msg
+  FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg
 )
 add_service_files(DIRECTORY srv
-  FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetPose.srv GetType.srv RequestMarkerOperate.srv SetMarkerDimensions.srv GetMarkerDimensions.srv)
+  FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetPose.srv GetType.srv SetMarkerDimensions.srv GetMarkerDimensions.srv)
 
 generate_dynamic_reconfigure_options(
   cfg/InteractivePointCloud.cfg

@@ -225,11 +225,11 @@ bool TransformableInteractiveServer::setDimensionsService(jsk_interactive_marker
     tobject = transformable_objects_map_[req.target_name];
   }
   if (tobject) {
-    if (tobject->getType() == TransformableMarkerOperate::BOX) {
+    if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::BOX) {
       tobject->setXYZ(req.x, req.y, req.z);
-    } else if (tobject->getType() == TransformableMarkerOperate::CYLINDER) {
+    } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER) {
       tobject->setRZ(req.radius, req.z);
-    } else if (tobject->getType() == TransformableMarkerOperate::TORUS) {
+    } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
       tobject->setRSR(req.radius, req.small_radius);
     }
   }
@@ -247,39 +247,39 @@ bool TransformableInteractiveServer::getDimensionsService(jsk_interactive_marker
     tobject = transformable_objects_map_[req.target_name];
   }
   if (tobject) {
-    if (tobject->getType() == TransformableMarkerOperate::BOX) {
+    if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::BOX) {
       tobject->getXYZ(res.x, res.y, res.z);
-    } else if (tobject->getType() == TransformableMarkerOperate::CYLINDER) {
+    } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER) {
       tobject->getRZ(res.radius, res.z);
-    } else if (tobject->getType() == TransformableMarkerOperate::TORUS) {
+    } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
       tobject->getRSR(res.radius, res.small_radius);
     }
   }
   return true;
 }
 
-bool TransformableInteractiveServer::requestMarkerOperateService(jsk_interactive_marker::RequestMarkerOperate::Request &req,jsk_interactive_marker::RequestMarkerOperate::Response &res)
+bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate::Request &req,jsk_rviz_plugins::RequestMarkerOperate::Response &res)
 {
   switch(req.operate.action){
-  case TransformableMarkerOperate::INSERT:
-    if (req.operate.type == TransformableMarkerOperate::BOX) {
+  case jsk_rviz_plugins::TransformableMarkerOperate::INSERT:
+    if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::BOX) {
       insertNewBox(req.operate.frame_id, req.operate.name, req.operate.description);
-    } else if (req.operate.type == TransformableMarkerOperate::CYLINDER) {
+    } else if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER) {
       insertNewCylinder(req.operate.frame_id, req.operate.name, req.operate.description);
-    } else if (req.operate.type == TransformableMarkerOperate::TORUS) {
+    } else if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
       insertNewTorus(req.operate.frame_id, req.operate.name, req.operate.description);
     }
     return true;
     break;
-  case TransformableMarkerOperate::ERASE:
+  case jsk_rviz_plugins::TransformableMarkerOperate::ERASE:
     eraseObject(req.operate.name);
     return true;
     break;
-  case TransformableMarkerOperate::ERASEALL:
+  case jsk_rviz_plugins::TransformableMarkerOperate::ERASEALL:
     eraseAllObject();
     return true;
     break;
-  case TransformableMarkerOperate::ERASEFOCUS:
+  case jsk_rviz_plugins::TransformableMarkerOperate::ERASEFOCUS:
     eraseFocusObject();
     return true;
     break;

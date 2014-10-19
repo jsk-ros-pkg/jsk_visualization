@@ -8,7 +8,7 @@
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Point.h>
 #include <jsk_interactive_marker/GetPose.h>
-#include <jsk_interactive_marker/RequestMarkerOperate.h>
+#include <jsk_rviz_plugins/RequestMarkerOperate.h>
 #include <vector>
 #include <algorithm>
 #include <jsk_interactive_marker/InteractiveSettingConfig.h>
