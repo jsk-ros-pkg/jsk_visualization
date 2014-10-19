@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <interactive_markers/interactive_marker_server.h>
 #include <jsk_interactive_marker/transformable_object.h>
-#include <jsk_interactive_marker/RequestMarkerOperate.h>
+#include <jsk_rviz_plugins/RequestMarkerOperate.h>
 #include <jsk_interactive_marker/GetType.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/Empty.h>
@@ -56,7 +56,7 @@ namespace jsk_interactive_marker
     bool getPoseService(jsk_interactive_marker::GetPose::Request &req,jsk_interactive_marker::GetPose::Response &res);
     bool getTypeService(jsk_interactive_marker::GetType::Request &req,jsk_interactive_marker::GetType::Response &res);
 
-    bool requestMarkerOperateService(jsk_interactive_marker::RequestMarkerOperate::Request &req,jsk_interactive_marker::RequestMarkerOperate::Response &res);
+    bool requestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate::Request &req,jsk_rviz_plugins::RequestMarkerOperate::Response &res);
     virtual void configCallback(InteractiveSettingConfig &config, uint32_t level);
     void SetInitialInteractiveMarkerConfig( TransformableObject* tobject );
 
