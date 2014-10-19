@@ -45,6 +45,15 @@ namespace jsk_interactive_marker {
     virtual bool setY(std_msgs::Float32 recieve_val){return false;};
     virtual bool setZ(std_msgs::Float32 recieve_val){return false;};
     virtual void setRGBA(float r , float g, float b, float a){};
+    virtual void setXYZ(float x , float y, float z){};
+    virtual void getXYZ(float &x, float &y, float&z){};
+    virtual void setRSR(float r , float sr){};
+    virtual void getRSR(float &r , float &sr){};
+    virtual void setRZ(float r , float z){};
+    virtual void getRZ(float &r , float &z){};
+
+    int getType() { return type_; };
+    void setType(int type) { type_ = type; return; };
 
     virtual float getInteractiveMarkerScale(){};
   };
@@ -62,6 +71,7 @@ namespace jsk_interactive_marker
     visualization_msgs::Marker getVisualizationMsgMarker();
     void setXYZ( float x , float y, float z){box_x_=x;box_y_=y;box_z_=z;};
     void setRGBA( float r , float g, float b, float a){box_r_=r;box_g_=g;box_b_=b;box_a_=a;};
+    void getXYZ(float &x, float &y, float&z){x=box_x_;y=box_y_;z=box_z_;};
 
     bool setX(std_msgs::Float32 x){box_x_=x.data;return true;};
     bool setY(std_msgs::Float32 y){box_y_=y.data;return true;};
@@ -88,6 +98,8 @@ namespace jsk_interactive_marker
 
     visualization_msgs::Marker getVisualizationMsgMarker();
     void setRGBA( float r , float g, float b, float a){torus_r_=r;torus_g_=g;torus_b_=b;torus_a_=a;};
+    void setRSR( float r , float sr){torus_radius_=r; torus_small_radius_=sr;};
+    void getRSR(float &r , float &sr){r=torus_radius_; sr=torus_small_radius_;};
 
     bool setRadius(std_msgs::Float32 r){torus_radius_=r.data;return true;};
     bool setSmallRadius(std_msgs::Float32 sr){torus_small_radius_=sr.data;return true;};
@@ -117,6 +129,8 @@ namespace jsk_interactive_marker
 
     visualization_msgs::Marker getVisualizationMsgMarker();
     void setRGBA( float r , float g, float b, float a){cylinder_r_=r;cylinder_g_=g;cylinder_b_=b;cylinder_a_=a;};
+    void setRZ( float r , float z){cylinder_radius_=r; cylinder_z_=z;};
+    void getRZ(float &r , float &z){r=cylinder_radius_; z=cylinder_z_;};
 
     bool setRadius(std_msgs::Float32 r){cylinder_radius_=r.data;return true;};
     bool setZ(std_msgs::Float32 z){cylinder_z_=z.data;return true;};
