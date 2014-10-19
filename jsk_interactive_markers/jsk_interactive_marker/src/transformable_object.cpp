@@ -113,7 +113,7 @@ namespace jsk_interactive_marker{
     cylinder_b_ = b;
     cylinder_a_ = a;
     marker_.type = visualization_msgs::Marker::CYLINDER;
-    type_ = "cylinder";
+    type_ = jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER;
 
     frame_id_ = frame;
     name_ = name;
@@ -142,7 +142,7 @@ namespace jsk_interactive_marker{
     torus_b_ = b;
     torus_a_ = a;
     marker_.type = visualization_msgs::Marker::TRIANGLE_LIST;
-    type_ = "torus";
+    type_ = jsk_rviz_plugins::TransformableMarkerOperate::TORUS;
 
     frame_id_ = frame;
     name_ = name;
@@ -235,7 +235,7 @@ namespace jsk_interactive_marker{
     box_b_ = b;
     box_a_ = a;
     marker_.type = visualization_msgs::Marker::CUBE;
-    type_ = "box";
+    type_ = jsk_rviz_plugins::TransformableMarkerOperate::BOX;
 
     frame_id_ = frame;
     name_ = name;
