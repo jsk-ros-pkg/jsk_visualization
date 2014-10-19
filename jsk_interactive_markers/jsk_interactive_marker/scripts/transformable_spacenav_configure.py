@@ -84,6 +84,7 @@ def publishModeText(message):
 
 if __name__ == "__main__":
     rospy.init_node("transformable_spacenav_configure")
+    ns = rospy.get_param('~transformable_interactive_server_nodename', '')
 
     x_max = rospy.get_param("~x_max")
     y_max = rospy.get_param("~y_max")
@@ -95,7 +96,7 @@ if __name__ == "__main__":
     separate_mode = rospy.get_param("~separate_mode")
     display_separate_mode = rospy.get_param("~display_separate_mode")
 
-    set_pose_pub = rospy.Publisher("add_pose", Pose)
+    set_pose_pub = rospy.Publisher(ns+"/add_pose", Pose)
     send_text_pub = rospy.Publisher("separate_mode_text", OverlayText)
 
     s = rospy.Subscriber("input_joy", Joy, callback)

@@ -28,12 +28,17 @@
   (staro-init)
   (setq *robot* *staro*)
   )
-
  ((equal (string-upcase *robot-name*) "ATLAS")
   (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
   (setq *robot-name* "atlas")
   (atlas-init-ex :view nil :set-reset-pose nil)
   (setq *robot* *atlas*)
+  )
+ ((equal (string-upcase *robot-name*) "SAMPLEROBOT")
+  (load "package://hrpsys_ros_bridge_tutorials/euslisp/samplerobot-interface.l")
+  (setq *robot-name* "samplerobot")
+  (samplerobot-init)
+  (setq *robot* *sr*)
   )
  )
 

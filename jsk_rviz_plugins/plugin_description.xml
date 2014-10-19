@@ -167,4 +167,11 @@
     </description>
   </class>
 
+  <class name="jsk_rviz_plugin/TransformableMarkerOperatorAction"
+         type="jsk_rviz_plugin::TransformableMarkerOperatorAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to TransformableOperator action
+    </description>
+  </class>
 </library>

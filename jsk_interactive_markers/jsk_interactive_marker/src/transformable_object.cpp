@@ -1,4 +1,8 @@
 #include <jsk_interactive_marker/transformable_object.h>
+#include <eigen_conversions/eigen_msg.h>
+#include <math.h>
+
+#define PI 3.14159265
 
 using namespace jsk_interactive_marker;
 
@@ -8,6 +12,12 @@ TransformableObject::TransformableObject(){
   pose_.orientation.y = 0;
   pose_.orientation.z = 0;
   pose_.orientation.w = 1;
+
+  display_interactive_manipulator_ = true;
+}
+
+void TransformableObject::setInteractiveMarkerSetting(InteractiveSettingConfig config){
+  display_interactive_manipulator_ = config.display_interactive_manipulator;
 }
 
 std::vector<visualization_msgs::InteractiveMarkerControl> TransformableObject::makeRotateTransFixControl(){
@@ -61,9 +71,9 @@ void TransformableObject::addMarker(visualization_msgs::InteractiveMarker &int_m
   int_marker.controls.push_back(marker_control);
 };
 
-void TransformableObject::addControl(visualization_msgs::InteractiveMarker &int_marker, bool fixed)
+void TransformableObject::addControl(visualization_msgs::InteractiveMarker &int_marker)
 {
-  if(fixed){
+  if(display_interactive_manipulator_){
     std::vector<visualization_msgs::InteractiveMarkerControl> rotate_controls = makeRotateTransFixControl();
     int_marker.controls.insert(int_marker.controls.end(), rotate_controls.begin(), rotate_controls.end());
   }
@@ -86,49 +96,160 @@ void TransformableObject::addPose(geometry_msgs::Pose msg){
   pose_.position.x += msg.position.x;
   pose_.position.y += msg.position.y;
   pose_.position.z += msg.position.z;
-  float tmp_x = pose_.orientation.x, tmp_y = pose_.orientation.y,
-    tmp_z = pose_.orientation.z, tmp_w = pose_.orientation.w;
+  Eigen::Quaterniond original_q;
+  tf::quaternionMsgToEigen(pose_.orientation, original_q);
+  Eigen::Quaterniond diff_q;
+  tf::quaternionMsgToEigen(msg.orientation, diff_q);
+  Eigen::Quaterniond updated_q = original_q * diff_q;
+  tf::quaternionEigenToMsg(updated_q, pose_.orientation);
+}
 
+namespace jsk_interactive_marker{
+  TransformableCylinder::TransformableCylinder( float radius, float z, float r, float g, float b, float a, std::string frame, std::string name, std::string description){
+    cylinder_radius_ = radius;
+    cylinder_z_ = z;
+    cylinder_r_ = r;
+    cylinder_g_ = g;
+    cylinder_b_ = b;
+    cylinder_a_ = a;
+    marker_.type = visualization_msgs::Marker::CYLINDER;
+    type_ = jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER;
 
-  // pose_.orientation.w =
-  //   tmp_w * msg.orientation.w -
-  //   tmp_x * msg.orientation.x -
-  //   tmp_y * msg.orientation.y -
-  //   tmp_z * msg.orientation.z;
-  // pose_.orientation.x =
-  //   tmp_y * msg.orientation.z -
-  //   tmp_z * msg.orientation.y +
-  //   tmp_y * msg.orientation.x +
-  //   tmp_x * msg.orientation.w;
-  // pose_.orientation.y =
-  //   tmp_z * msg.orientation.x -
-  //   tmp_x * msg.orientation.z +
-  //   tmp_w * msg.orientation.y +
-  //   tmp_y * msg.orientation.w ;
-  // pose_.orientation.z =
-  //   tmp_x * msg.orientation.y -
-  //   tmp_y * msg.orientation.x +
-  //   tmp_w * msg.orientation.z +
-  //   tmp_z * msg.orientation.w;
+    frame_id_ = frame;
+    name_ = name;
+    description_ = description;
+  }
 
-  pose_.orientation.w =
-    msg.orientation.w * tmp_w -
-    msg.orientation.x * tmp_x -
-    msg.orientation.y * tmp_y -
-    msg.orientation.z * tmp_z;
-  pose_.orientation.x =
-    msg.orientation.y * tmp_z -
-    msg.orientation.z * tmp_y +
-    msg.orientation.y * tmp_x +
-    msg.orientation.x * tmp_w;
-  pose_.orientation.y =
-    msg.orientation.z * tmp_x -
-    msg.orientation.x * tmp_z +
-    msg.orientation.w * tmp_y +
-    msg.orientation.y * tmp_w ;
-  pose_.orientation.z =
-    msg.orientation.x * tmp_y -
-    msg.orientation.y * tmp_x +
-    msg.orientation.w * tmp_z +
-    msg.orientation.z * tmp_w;
+  visualization_msgs::Marker TransformableCylinder::getVisualizationMsgMarker(){
+    marker_.scale.x = cylinder_radius_;
+    marker_.scale.y = cylinder_radius_;
+    marker_.scale.z = cylinder_z_;
+    marker_.color.r = cylinder_r_;
+    marker_.color.g = cylinder_g_;
+    marker_.color.b = cylinder_b_;
+    marker_.color.a = cylinder_a_;
+    return marker_;
+  }
+}
+
+namespace jsk_interactive_marker{
+
+  TransformableTorus::TransformableTorus( float radius, float small_radius, int u_div, int v_div, float r, float g, float b, float a, std::string frame, std::string name, std::string description){
+    torus_radius_ = radius;
+    torus_small_radius_ = small_radius;
+    torus_r_ = r;
+    torus_g_ = g;
+    torus_b_ = b;
+    torus_a_ = a;
+    marker_.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    type_ = jsk_rviz_plugins::TransformableMarkerOperate::TORUS;
+
+    frame_id_ = frame;
+    name_ = name;
+    description_ = description;
+
+    u_division_num_ = u_div;
+    v_division_num_ = v_div;
+  }
+
+  std::vector<geometry_msgs::Point > TransformableTorus::calcurateTriangleMesh(){
+    std::vector<geometry_msgs::Point> triangle_mesh;
+    float center_x = 0;
+    float center_y = 0;
+    float u_division_num = u_division_num_;
+    float v_division_num = v_division_num_;
+    std::vector<std::vector<geometry_msgs::Point> > points_array;
+    for (int i = 0; i < u_division_num; i ++){
+      std::vector<geometry_msgs::Point> points;
+      float target_circle_x = torus_radius_ * cos( ( i / u_division_num) * 2 * PI) ;
+      float target_circle_y = torus_radius_ * sin( ( i / u_division_num) * 2 * PI) ;
+      for (int j = 0; j < v_division_num; j++){
+        geometry_msgs::Point new_point;
+        new_point.x = target_circle_x + torus_small_radius_ * cos ( (j / v_division_num) * 2 * PI) * cos( ( i / u_division_num) * 2 * PI);
+        new_point.y = target_circle_y + torus_small_radius_ * cos ( (j / v_division_num) * 2 * PI) * sin( ( i / u_division_num) * 2 * PI);
+        new_point.z = torus_small_radius_ * sin ( (j / v_division_num) * 2 * PI);
+        points.push_back(new_point);
+      }
+      points_array.push_back(points);
+    }
+
+    //create mesh list;
+    for(int i = 0; i < u_division_num; i++){
+      std::vector<geometry_msgs::Point> target_points = points_array[i];
+      float prev_index = i - 1, next_index = i + 1;
+      if(prev_index < 0)
+        prev_index = u_division_num - 1;
+      if(next_index > u_division_num - 1)
+        next_index = 0;
+      std::vector<geometry_msgs::Point> prev_points = points_array[prev_index];
+      std::vector<geometry_msgs::Point> next_points = points_array[next_index];
+      for(int j = 0; j < v_division_num; j++){
+        float next_point_index = j + 1;
+        if( next_point_index > v_division_num - 1)
+          next_point_index = 0;
+        //first pushes
+        triangle_mesh.push_back(target_points[j]);
+        triangle_mesh.push_back(next_points[j]);
+        triangle_mesh.push_back(target_points[next_point_index]);
+        //second pushes
+        triangle_mesh.push_back(target_points[j]);
+        triangle_mesh.push_back(target_points[next_point_index]);
+        triangle_mesh.push_back(prev_points[next_point_index]);
+      }
+    }
+
+    return triangle_mesh;
+  }
+
+  visualization_msgs::Marker TransformableTorus::getVisualizationMsgMarker(){
+    marker_.points = calcurateTriangleMesh();
+    marker_.color.r = torus_r_;
+    marker_.color.g = torus_g_;
+    marker_.color.b = torus_b_;
+    marker_.color.a = torus_a_;
+    return marker_;
+  }
+}
+
+namespace jsk_interactive_marker{
+  TransformableBox::TransformableBox( float length , float r, float g, float b, float a, std::string frame, std::string name, std::string description){
+    box_x_ = box_y_ = box_z_ = length;
+
+    box_r_ = r;
+    box_g_ = g;
+    box_b_ = b;
+    box_a_ = a;
+    marker_.type = visualization_msgs::Marker::CUBE;
+
+    frame_id_ = frame;
+    name_ = name;
+    description_ = description;
+  }
+
+  TransformableBox::TransformableBox( float x, float y, float z , float r, float g, float b, float a, std::string frame, std::string name, std::string description){
+    box_x_ = x;
+    box_y_ = y;
+    box_z_ = z;
+    box_r_ = r;
+    box_g_ = g;
+    box_b_ = b;
+    box_a_ = a;
+    marker_.type = visualization_msgs::Marker::CUBE;
+    type_ = jsk_rviz_plugins::TransformableMarkerOperate::BOX;
+
+    frame_id_ = frame;
+    name_ = name;
+    description_ = description;
+  }
+
+  visualization_msgs::Marker TransformableBox::getVisualizationMsgMarker(){
+    marker_.scale.x = box_x_;
+    marker_.scale.y = box_y_;
+    marker_.scale.z = box_z_;
+    marker_.color.r = box_r_;
+    marker_.color.g = box_g_;
+    marker_.color.b = box_b_;
+    marker_.color.a = box_a_;
+    return marker_;
+  }
 }

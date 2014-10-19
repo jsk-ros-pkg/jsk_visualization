@@ -1,57 +1,11 @@
 r_hand:
-  - link: "/r_gripper_palm_link"
-    mesh: "package://pr2_description/meshes/gripper_v0/gripper_palm.dae"
-    position: {x: -0.18, y: 0.0, z: 0.0}
- 
-  - link: "/r_gripper_l_finger_tip_link"
-    mesh: "package://pr2_description/meshes/gripper_v0/l_finger_tip.dae"
-    #    position: {x: 0.168, y: 0.016, z: 0.0}
-    position: {x: -0.012, y: 0.016, z: 0.0}
-
-  - link: "/r_gripper_l_finger_link"
-    mesh: "package://pr2_description/meshes/gripper_v0/l_finger.dae"
-    #position: {x: 0.077, y: 0.01, z: 0.0}
-    position: {x: -0.103, y: 0.01, z: 0.0}
-   
-
-  - link: "/r_gripper_r_finger_tip_link"
-    mesh: "package://pr2_description/meshes/gripper_v0/l_finger_tip.dae"
-    #position: {x: 0.168, y: -0.016, z: 0.0}
-    position: {x: -0.012, y: -0.016, z: 0.0}
-    orient: {x: 1.0, y: 0.0, z: 0.0, w: 0.0}
-
-  - link: "/r_gripper_r_finger_link"
-    mesh: "package://pr2_description/meshes/gripper_v0/l_finger.dae"
-    #position: {x: 0.077, y: -0.01, z: 0.0}
-    position: {x: -0.103, y: -0.01, z: 0.0}
-    orient: {x: 1.0, y: 0.0, z: 0.0, w: 0.0}
-
+  - urdf_param: "/robot_description"
+    root_link: "r_gripper_palm_link"
+    pose:
+        position: {x: -0.18, y: 0.0, z: 0.0}
 
 l_hand:
-  - link: "/l_gripper_palm_link"
-    mesh: "package://pr2_description/meshes/gripper_v0/gripper_palm.dae"
-    position: {x: -0.18, y: 0.0, z: 0.0}
-  
-  - link: "/l_gripper_l_finger_tip_link"
-    mesh: "package://pr2_description/meshes/gripper_v0/l_finger_tip.dae"
-    #    position: {x: 0.168, y: 0.016, z: 0.0}
-    position: {x: -0.012, y: 0.016, z: 0.0}
-
-  - link: "/l_gripper_l_finger_link"
-    mesh: "package://pr2_description/meshes/gripper_v0/l_finger.dae"
-    #    position: {x: 0.077, y: 0.01, z: 0.0}
-    position: {x: -0.103, y: 0.01, z: 0.0}
-
-  - link: "/l_gripper_r_finger_tip_link"
-    mesh: "package://pr2_description/meshes/gripper_v0/l_finger_tip.dae"
-    #    position: {x: 0.168, y: -0.016, z: 0.0}
-    position: {x: -0.012, y: -0.016, z: 0.0}
-    orient: {x: 1.0, y: 0.0, z: 0.0, w: 0.0}
-
-  - link: "/l_gripper_r_finger_link"
-    mesh: "package://pr2_description/meshes/gripper_v0/l_finger.dae"
-    #    position: {x: 0.077, y: -0.01, z: 0.0}
-    position: {x: -0.103, y: -0.01, z: 0.0}
-    orient: {x: 1.0, y: 0.0, z: 0.0, w: 0.0}
-
-
+  - urdf_param: "/robot_description"
+    root_link: "l_gripper_palm_link"
+    pose:
+        position: {x: -0.18, y: 0.0, z: 0.0}
