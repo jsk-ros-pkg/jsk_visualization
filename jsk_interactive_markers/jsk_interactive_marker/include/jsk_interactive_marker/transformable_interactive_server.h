@@ -4,7 +4,6 @@
 #include <ros/ros.h>
 #include <interactive_markers/interactive_marker_server.h>
 #include <jsk_interactive_marker/transformable_object.h>
-#include <jsk_interactive_marker/RequestMarkerOperate.h>
 #include <jsk_interactive_marker/GetType.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/Empty.h>

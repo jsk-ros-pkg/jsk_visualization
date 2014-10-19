@@ -200,11 +200,16 @@ bool TransformableInteractiveServer::getPoseService(jsk_interactive_marker::GetP
 
 bool TransformableInteractiveServer::getTypeService(jsk_interactive_marker::GetType::Request &req,jsk_interactive_marker::GetType::Response &res)
 {
-  if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return true; }
   TransformableObject* tobject;
-  tobject = transformable_objects_map_[focus_object_marker_name_];
-  res.type = tobject->type_;
-
+  if(req.target_name.compare(std::string("")) == 0){
+    if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return true; }
+    tobject = transformable_objects_map_[focus_object_marker_name_];
+    res.type = tobject->type_;
+  }else{
+    if (transformable_objects_map_.find(req.target_name) == transformable_objects_map_.end()) { return true; }
+    tobject = transformable_objects_map_[req.target_name];
+    res.type = tobject->type_;
+  }
   return true;
 }
 

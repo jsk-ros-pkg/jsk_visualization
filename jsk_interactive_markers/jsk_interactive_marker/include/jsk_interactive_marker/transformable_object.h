@@ -8,6 +8,7 @@
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Point.h>
 #include <jsk_interactive_marker/GetPose.h>
+#include <jsk_interactive_marker/RequestMarkerOperate.h>
 #include <vector>
 #include <algorithm>
 #include <jsk_interactive_marker/InteractiveSettingConfig.h>
@@ -29,7 +30,7 @@ namespace jsk_interactive_marker {
     std::string name_;
     std::string frame_id_;
     std::string description_;
-    std::string type_;
+    int type_;
     bool display_interactive_manipulator_;
 
     void setPose(geometry_msgs::Pose pose){pose_=pose;};
