@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QTabWidget>
 #include <QLabel>
 #include <QTimer>
 #include <QColor>
@@ -37,49 +38,64 @@ namespace jsk_rviz_plugin
   {
     layout = new QVBoxLayout;
 
+    QVBoxLayout* layout1 = new QVBoxLayout;
+    QVBoxLayout* layout2 = new QVBoxLayout;
+
+    QTabWidget* tabs = new QTabWidget();
+
+    QWidget* tab_1 = new QWidget();
+    QWidget* tab_2 = new QWidget();
+
     //Button to send cancel topic
     insert_box_button_ = new QPushButton("Insert New Box Marker");
-    layout->addWidget( insert_box_button_ );
+    layout1->addWidget( insert_box_button_ );
 
     insert_cylinder_button_ = new QPushButton("Insert New Cylinder Marker");
-    layout->addWidget( insert_cylinder_button_ );
+    layout1->addWidget( insert_cylinder_button_ );
 
     insert_torus_button_ = new QPushButton("Insert New Torus Marker");
-    layout->addWidget( insert_torus_button_ );
+    layout1->addWidget( insert_torus_button_ );
 
     QHBoxLayout* name_layout = new QHBoxLayout;
     name_layout->addWidget( new QLabel( "Name:" ));
     name_editor_ = new QLineEdit;
     name_layout->addWidget( name_editor_ );
-    layout->addLayout( name_layout );
+    layout1->addLayout( name_layout );
 
     QHBoxLayout* description_layout = new QHBoxLayout;
     description_layout->addWidget( new QLabel( "Description:" ));
     description_editor_ = new QLineEdit;
     description_layout->addWidget( description_editor_ );
-    layout->addLayout( description_layout );
+    layout1->addLayout( description_layout );
 
     QHBoxLayout* frame_layout = new QHBoxLayout;
     frame_layout->addWidget( new QLabel( "Frame:" ));
     frame_editor_ = new QLineEdit;
     frame_layout->addWidget( frame_editor_ );
-    layout->addLayout( frame_layout );
+    layout1->addLayout( frame_layout );
 
     erase_with_id_button_ = new QPushButton("Erase with id");
-    layout->addWidget( erase_with_id_button_ );
+    layout2->addWidget( erase_with_id_button_ );
 
     QHBoxLayout* id_layout = new QHBoxLayout;
     id_layout->addWidget( new QLabel( "Id:" ));
     id_editor_ = new QLineEdit;
     id_layout->addWidget( id_editor_ );
-    layout->addLayout( id_layout );
+    layout2->addLayout( id_layout );
 
     erase_all_button_ = new QPushButton("Erase all");
-    layout->addWidget( erase_all_button_ );
+    layout2->addWidget( erase_all_button_ );
 
     erase_focus_button_ = new QPushButton("Erase focus");
-    layout->addWidget( erase_focus_button_ );
+    layout2->addWidget( erase_focus_button_ );
 
+    tab_1->setLayout( layout1 );
+    tab_2->setLayout( layout2 );
+
+    tabs->addTab(tab_1, QString("Insert"));
+    tabs->addTab(tab_2, QString("Erase"));
+
+    layout->addWidget( tabs );
     setLayout( layout );
 
     connect( insert_box_button_, SIGNAL( clicked() ), this, SLOT( insertBoxService ()));
