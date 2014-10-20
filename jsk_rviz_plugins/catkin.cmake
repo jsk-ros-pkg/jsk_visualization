@@ -12,7 +12,8 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   jsk_topic_tools
   image_geometry)
 
-add_message_files(FILES OverlayText.msg OverlayMenu.msg)
+add_message_files(FILES OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg)
+add_service_files(FILES RequestMarkerOperate.srv)
 generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
@@ -66,6 +67,7 @@ qt4_wrap_cpp(MOC_FILES
   src/camera_info_display.h
   src/close_all_tool.h
   src/open_all_tool.h
+  src/transformable_marker_operator.h
 )
 
 set(SOURCE_FILES
@@ -96,6 +98,7 @@ set(SOURCE_FILES
   src/camera_info_display.cpp
   src/close_all_tool.cpp
   src/open_all_tool.cpp
+  src/transformable_marker_operator.cpp
   ${MOC_FILES}
 )
 
