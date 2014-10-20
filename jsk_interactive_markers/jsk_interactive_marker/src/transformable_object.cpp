@@ -100,7 +100,7 @@ void TransformableObject::addPose(geometry_msgs::Pose msg){
   tf::quaternionMsgToEigen(pose_.orientation, original_q);
   Eigen::Quaterniond diff_q;
   tf::quaternionMsgToEigen(msg.orientation, diff_q);
-  Eigen::Quaterniond updated_q = original_q * diff_q;
+  Eigen::Quaterniond updated_q = diff_q * original_q;
   tf::quaternionEigenToMsg(updated_q, pose_.orientation);
 }
 
