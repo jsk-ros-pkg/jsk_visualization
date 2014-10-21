@@ -171,6 +171,10 @@ namespace jsk_rviz_plugin
         max_width = w;
       }
     }
+    int w = fm.width(msg->title.c_str());
+    if (max_width < w) {
+      max_width = w;
+    }
     return max_width + menu_padding_x * 2;
   }
 
