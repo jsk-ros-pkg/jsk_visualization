@@ -9,7 +9,7 @@
   <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="true" />
   <arg name="LAUNCH_ALL_IN_REMOTE" default="true"/>
 
-  <arg name="ROBOT" default="hrp2" />
+  <arg name="ROBOT" default="hrp2jsknts" />
 
   <!-- joint marker -->
   <group if="$(arg USE_INTERACTIVE_JOINT)">
@@ -71,7 +71,7 @@
   <group if="$(arg LAUNCH_ALL_IN_REMOTE)">
     <node pkg="roseus" type="roseus" name="move_joint_interface_for_im"
           args="$(find jsk_interactive)/euslisp/move-joint-interface-robot.l">
-      <param name="robot" value="hrp2"/>
+      <param name="robot" value="$(arg ROBOT)"/>
     </node>
     <node pkg="topic_tools" type="throttle" name="joint_states_throttle"
           args="messages /joint_states 1.0 /robot/joint_states_decompressed"/>
