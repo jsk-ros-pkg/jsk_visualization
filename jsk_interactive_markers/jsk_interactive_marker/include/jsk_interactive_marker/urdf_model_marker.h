@@ -42,7 +42,7 @@ class UrdfModelMarker {
  public:
   //  UrdfModelMarker(string file);
   UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::PoseStamped  root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::PoseStamped  root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, vector<string> fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
   UrdfModelMarker();
 
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
@@ -101,6 +101,7 @@ class UrdfModelMarker {
   void resetBaseCB();
 
   void resetRobotBase();
+  void resetRootForVisualization();
   void registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   
   void setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg );
@@ -159,12 +160,13 @@ class UrdfModelMarker {
   std::string model_file_;
   geometry_msgs::Pose root_pose_;
   geometry_msgs::Pose root_offset_;
+  geometry_msgs::Pose fixed_link_offset_; //used when fixel_link_ is used
   double scale_factor_;
   bool robot_mode_;
   bool registration_;
   bool use_dynamic_tf_;
   string mode_;
-  string fixed_link_;
+  vector<string> fixed_link_;
   bool use_robot_description_;
   bool use_visible_color_;
   std::string tf_prefix_;
