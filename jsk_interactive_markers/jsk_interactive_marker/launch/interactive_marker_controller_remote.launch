@@ -58,6 +58,7 @@
       <param name="robot" value="$(arg ROBOT)"/>
       <param name="use_ik_server" value="false"/>
       <param name="frame_id" value="map"/>
+      <param name="one_click_grasp" value="true"/>
     </node>
 
     <!-- eus-ik-server -->

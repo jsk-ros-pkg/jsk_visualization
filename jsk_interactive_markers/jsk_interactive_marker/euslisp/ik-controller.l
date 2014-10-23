@@ -1586,6 +1586,7 @@
    (defvar *robot-topic-name* (ros::get-param "~robot_topic_name" "robot"))
    (setq *use-ik-server* (ros::get-param "~use_ik_server" t))
    (setq *frame-id* (ros::get-param "~frame_id" "map"))
+   (setq *one-click-grasp* (ros::get-param "~one_click_grasp" nil))
 
    (defvar *rhand-frame* nil)
    (defvar *lhand-frame* nil)
@@ -1763,9 +1764,11 @@
     (format nil "~A/box_movement" *interactive-pc-nodename*)
     jsk_pcl_ros::BoundingBoxMovement #'send self :box-movement-callback)
 
-   (ros::subscribe
-    (format nil "~A/grasp_pose" *interactive-pc-nodename*)
-    geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
+   (if *one-click-grasp*
+       (ros::subscribe
+        (format nil "~A/grasp_pose" *interactive-pc-nodename*)
+        geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
+     )
 
    ;;(switch-end-coords :id 2)
    (setq *real-robot* (copy-object *robot*))
