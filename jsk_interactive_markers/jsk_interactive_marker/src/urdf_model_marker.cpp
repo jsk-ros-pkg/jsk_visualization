@@ -464,7 +464,10 @@ void UrdfModelMarker::showModelMarkerCB( const std_msgs::EmptyConstPtr &msg){
 }
 
 void UrdfModelMarker::setUrdfCB( const std_msgs::StringConstPtr &msg){
+  //clear
   server_->clear();
+  linkMarkerMap.clear();
+
   model = parseURDF(msg->data);
   if (!model){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
@@ -875,7 +878,6 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 
   //initialize linkProperty
   if(init){
-    linkMarkerMap.clear();
     CallSetDynamicTf(parent_link_frame_name_, link_frame_name_, Pose2Transform(ps.pose));
     linkProperty lp;
     lp.pose = ps.pose;
