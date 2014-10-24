@@ -190,7 +190,6 @@ void UrdfModelMarker::republishJointState( sensor_msgs::JointState js){
 void UrdfModelMarker::setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg ){
   setRootPose(*msg);
 }
-
 void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
   try{
     init_stamp_ = ps.header.stamp;
@@ -334,7 +333,7 @@ void UrdfModelMarker::resetRobotBase(){
 
 void UrdfModelMarker::resetRootForVisualization(){
   try{
-    if(mode_ == "visualization"){
+    if(fixed_link_.size() > 0 && (mode_ == "visualization" || mode_ == "robot")){
       string marker_name =  tf_prefix_ + model->getRoot()->name;
       tf::StampedTransform st_offset;
 
