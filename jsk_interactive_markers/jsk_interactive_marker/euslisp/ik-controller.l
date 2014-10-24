@@ -1615,10 +1615,16 @@
      (setq *robot* *atlas*)
      (setq *have-leg* t)
      )
-    ((equal (string-upcase *robot-name*) "HRP2")
-     (require "package://hrpsys_gazebo_tutorials/euslisp/hrp2jsknt-interface-ex.l")
-     (hrp2jsknt-init-ex :real nil)
-     (setq *robot* *hrp2*)
+    ((equal (string-upcase *robot-name*) "HRP2JSKNT")
+     (setq *robot-name* "hrp2jsknt")
+     (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknt-interface.l")
+     (setq *robot* (instance hrp2jsknt-robot :init))
+     (setq *have-leg* t)
+     )
+    ((equal (string-upcase *robot-name*) "HRP2JSKNTS")
+     (setq *robot-name* "hrp2jsknts")
+     (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
+     (setq *robot* (instance hrp2jsknts-robot :init))
      (setq *have-leg* t)
      )
     ((equal (string-upcase *robot-name*) "STARO")
@@ -1873,7 +1879,7 @@
           (setq rotation-axis (mapcar #'(lambda (move-arm) (if move-arm (if *tmp-rotation-axis* *rotation-axis* nil) t)) move-arms))
           
           (cond
-           ((equal (string-upcase *robot-name*) "HRP2")
+           ((or (equal (string-upcase *robot-name*) "HRP2JSKNT") (equal (string-upcase *robot-name*) "HRP2JSKNTS"))
 
             (mapcar
              #'(lambda (k)
@@ -1930,7 +1936,7 @@
                             )
                       )
                 )
-               ((equal (string-upcase *robot-name*) "HRP2")
+               ((or (equal (string-upcase *robot-name*) "HRP2JSKNT") (equal (string-upcase *robot-name*) "HRP2JSKNTS"))
                 (cond
                  (*use-fullbody*
                   (setq ik-server-res
