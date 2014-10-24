@@ -9,6 +9,7 @@
 
 using namespace urdf;
 using namespace std;
+using namespace im_utils;
 
 class UrdfModelSettings {
 private:

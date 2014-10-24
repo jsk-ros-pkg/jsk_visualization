@@ -213,7 +213,7 @@ class UrdfModelMarker {
   map<string, linkProperty> linkMarkerMap;
 };
 
-geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);
-double getXmlValue( XmlRpc::XmlRpcValue val );
+//geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);
+//double getXmlValue( XmlRpc::XmlRpcValue val );
 
 #endif

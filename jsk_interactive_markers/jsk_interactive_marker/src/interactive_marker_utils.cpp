@@ -12,6 +12,7 @@ using namespace urdf;
 using namespace std;
 using namespace boost;
 using namespace boost::filesystem;
+//using namespace im_utils;
 
 namespace im_utils {
 
@@ -276,326 +277,338 @@ namespace im_utils {
     return int_marker;
 
   }
-}
 
 
-visualization_msgs::InteractiveMarker makeFingerControlMarker(const char *name, geometry_msgs::PoseStamped ps){
-  visualization_msgs::InteractiveMarker int_marker;
-  int_marker.name = name;
-  int_marker.header = ps.header;
-  int_marker.pose = ps.pose;
-  int_marker.scale = 0.5;
 
-  visualization_msgs::InteractiveMarkerControl control;
+  visualization_msgs::InteractiveMarker makeFingerControlMarker(const char *name, geometry_msgs::PoseStamped ps){
+    visualization_msgs::InteractiveMarker int_marker;
+    int_marker.name = name;
+    int_marker.header = ps.header;
+    int_marker.pose = ps.pose;
+    int_marker.scale = 0.5;
 
-  //control.orientation_mode = visualization_msgs::InteractiveMarkerControl::VIEW_FACING;
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  control.orientation.w = 1;
-  control.orientation.x = 0;
-  control.orientation.y = 0;
-  control.orientation.z = 1;
+    visualization_msgs::InteractiveMarkerControl control;
 
-  int_marker.controls.push_back(control);
+    //control.orientation_mode = visualization_msgs::InteractiveMarkerControl::VIEW_FACING;
+    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+    control.orientation.w = 1;
+    control.orientation.x = 0;
+    control.orientation.y = 0;
+    control.orientation.z = 1;
 
-  return int_marker;
+    int_marker.controls.push_back(control);
 
-}
-
-/*
-
-  visualization_msgs::InteractiveMarker makeSandiaHandMarker(geometry_msgs::PoseStamped ps){
-  visualization_msgs::InteractiveMarker int_marker;
-  int_marker.header = ps.header;
-  int_marker.pose = ps.pose;
-
-  visualization_msgs::InteractiveMarkerControl control;
-
-  control.markers.push_back(makeSandiaFinger0Marker("/right_f0_0"));
-  int_marker.controls.push_back(control);
-
-  control.markers.clear();
-  control.markers.push_back(makeSandiaFinger1Marker("/right_f0_1"));
-  int_marker.controls.push_back(control);
-
-  control.markers.clear();
-  control.markers.push_back(makeSandiaFinger2Marker("/right_f0_2"));
-  int_marker.controls.push_back(control);
-
-  control.markers.clear();
-  control.markers.push_back(makeSandiaFinger0Marker("/right_f1_0"));
-  int_marker.controls.push_back(control);
-
-  control.markers.clear();
-  control.markers.push_back(makeSandiaFinger1Marker("/right_f1_1"));
-  int_marker.controls.push_back(control);
-
-  control.markers.clear();
-  control.markers.push_back(makeSandiaFinger2Marker("/right_f1_2"));
-  int_marker.controls.push_back(control);
-
-  control.markers.clear();
-  control.markers.push_back(makeSandiaFinger0Marker("/right_f2_0"));
-  int_marker.controls.push_back(control);
-
-  control.markers.clear();
-  control.markers.push_back(makeSandiaFinger1Marker("/right_f2_1"));
-  int_marker.controls.push_back(control);
-
-  control.markers.clear();
-  control.markers.push_back(makeSandiaFinger2Marker("/right_f2_2"));
-  int_marker.controls.push_back(control);
-
-  control.markers.push_back(makeSandiaFinger0Marker("/right_f3_0"));
-  int_marker.controls.push_back(control);
-
-  control.markers.clear();
-  control.markers.push_back(makeSandiaFinger1Marker("/right_f3_1"));
-  int_marker.controls.push_back(control);
-
-  control.markers.clear();
-  control.markers.push_back(makeSandiaFinger2Marker("/right_f3_2"));
-  int_marker.controls.push_back(control);
-
-  return int_marker;
+    return int_marker;
 
   }
 
-*/
+  /*
+
+    visualization_msgs::InteractiveMarker makeSandiaHandMarker(geometry_msgs::PoseStamped ps){
+    visualization_msgs::InteractiveMarker int_marker;
+    int_marker.header = ps.header;
+    int_marker.pose = ps.pose;
+
+    visualization_msgs::InteractiveMarkerControl control;
+
+    control.markers.push_back(makeSandiaFinger0Marker("/right_f0_0"));
+    int_marker.controls.push_back(control);
+
+    control.markers.clear();
+    control.markers.push_back(makeSandiaFinger1Marker("/right_f0_1"));
+    int_marker.controls.push_back(control);
+
+    control.markers.clear();
+    control.markers.push_back(makeSandiaFinger2Marker("/right_f0_2"));
+    int_marker.controls.push_back(control);
+
+    control.markers.clear();
+    control.markers.push_back(makeSandiaFinger0Marker("/right_f1_0"));
+    int_marker.controls.push_back(control);
+
+    control.markers.clear();
+    control.markers.push_back(makeSandiaFinger1Marker("/right_f1_1"));
+    int_marker.controls.push_back(control);
+
+    control.markers.clear();
+    control.markers.push_back(makeSandiaFinger2Marker("/right_f1_2"));
+    int_marker.controls.push_back(control);
+
+    control.markers.clear();
+    control.markers.push_back(makeSandiaFinger0Marker("/right_f2_0"));
+    int_marker.controls.push_back(control);
+
+    control.markers.clear();
+    control.markers.push_back(makeSandiaFinger1Marker("/right_f2_1"));
+    int_marker.controls.push_back(control);
+
+    control.markers.clear();
+    control.markers.push_back(makeSandiaFinger2Marker("/right_f2_2"));
+    int_marker.controls.push_back(control);
+
+    control.markers.push_back(makeSandiaFinger0Marker("/right_f3_0"));
+    int_marker.controls.push_back(control);
+
+    control.markers.clear();
+    control.markers.push_back(makeSandiaFinger1Marker("/right_f3_1"));
+    int_marker.controls.push_back(control);
+
+    control.markers.clear();
+    control.markers.push_back(makeSandiaFinger2Marker("/right_f3_2"));
+    int_marker.controls.push_back(control);
+
+    return int_marker;
+
+    }
+
+  */
 
 
-visualization_msgs::InteractiveMarker makeSandiaHandInteractiveMarker(geometry_msgs::PoseStamped ps, std::string hand, int finger, int link){
-  visualization_msgs::InteractiveMarker int_marker;
-  int_marker.header = ps.header;
-  int_marker.pose = ps.pose;
+  visualization_msgs::InteractiveMarker makeSandiaHandInteractiveMarker(geometry_msgs::PoseStamped ps, std::string hand, int finger, int link){
+    visualization_msgs::InteractiveMarker int_marker;
+    int_marker.header = ps.header;
+    int_marker.pose = ps.pose;
   
 
-  visualization_msgs::InteractiveMarkerControl control;
-  std::stringstream ss;
-  //std::string frame = "/" + hand + "_" + finger + "_" + link;
-  ss << hand << "_f" << finger << "_" << link;
+    visualization_msgs::InteractiveMarkerControl control;
+    std::stringstream ss;
+    //std::string frame = "/" + hand + "_" + finger + "_" + link;
+    ss << hand << "_f" << finger << "_" << link;
   
-  int_marker.name = ss.str() + "Marker";
-  int_marker.header.frame_id = ss.str();
-  //  std::string frame_id = "odom";
-  std::string frame_id = "utorso";
-  int_marker.header.frame_id = frame_id;
-  std::cout << ss.str() << std::endl;
+    int_marker.name = ss.str() + "Marker";
+    int_marker.header.frame_id = ss.str();
+    //  std::string frame_id = "odom";
+    std::string frame_id = "utorso";
+    int_marker.header.frame_id = frame_id;
+    std::cout << ss.str() << std::endl;
 
-  //frame_id = ss.str();
-  switch(link){
-  case 0:
-    control.markers.push_back(makeSandiaFinger0Marker(frame_id));
-    break;
-  case 1:
-    control.markers.push_back(makeSandiaFinger1Marker(frame_id));
-    break;
-  case 2:
-    control.markers.push_back(makeSandiaFinger2Marker(frame_id));
-    break;
-  default:
-    break;
+    //frame_id = ss.str();
+    switch(link){
+    case 0:
+      control.markers.push_back(makeSandiaFinger0Marker(frame_id));
+      break;
+    case 1:
+      control.markers.push_back(makeSandiaFinger1Marker(frame_id));
+      break;
+    case 2:
+      control.markers.push_back(makeSandiaFinger2Marker(frame_id));
+      break;
+    default:
+      break;
+    }
+    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+    int_marker.controls.push_back(control);
+
+    return int_marker;
   }
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
-  int_marker.controls.push_back(control);
-
-  return int_marker;
-}
 
 
 
-visualization_msgs::Marker makeSandiaFinger0Marker(std::string frame_id){
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = frame_id;
-  //marker.header.frame_id = "odom";
-  marker.type = visualization_msgs::Marker::CYLINDER;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position.x = 0;
-  marker.pose.position.y = 0;
-  marker.pose.position.z = 0.003;
-  marker.pose.orientation.x = 0.0;
-  marker.pose.orientation.y = 0.0;
-  marker.pose.orientation.z = 0.0;
-  marker.pose.orientation.w = 1.0;
-  marker.scale.x = 0.03;
-  marker.scale.y = 0.03;
-  marker.scale.z = 0.023;
-  marker.color.a = 1.0;
-  marker.color.r = 0.0;
-  marker.color.g = 1.0;
-  marker.color.b = 0.0;
+  visualization_msgs::Marker makeSandiaFinger0Marker(std::string frame_id){
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = frame_id;
+    //marker.header.frame_id = "odom";
+    marker.type = visualization_msgs::Marker::CYLINDER;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = 0;
+    marker.pose.position.y = 0;
+    marker.pose.position.z = 0.003;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.03;
+    marker.scale.y = 0.03;
+    marker.scale.z = 0.023;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
 
-  return marker;
-}
-
-visualization_msgs::Marker makeSandiaFinger1Marker(std::string frame_id){
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = frame_id;
-  marker.type = visualization_msgs::Marker::CYLINDER;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position.x = 0.024;
-  marker.pose.position.y = 0;
-  marker.pose.position.z = 0;
-  marker.pose.orientation.x = 0.0;
-  marker.pose.orientation.y = 1.0;
-  marker.pose.orientation.z = 0.0;
-  marker.pose.orientation.w = 1.0;
-  marker.scale.x = 0.02;
-  marker.scale.y = 0.02;
-  marker.scale.z = 0.067;
-  marker.color.a = 1.0;
-  marker.color.r = 0.0;
-  marker.color.g = 1.0;
-  marker.color.b = 0.0;
-
-  return marker;
-}
-
-visualization_msgs::Marker makeSandiaFinger2Marker(std::string frame_id){
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = frame_id;
-  marker.type = visualization_msgs::Marker::CYLINDER;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position.x = 0.024;
-  marker.pose.position.y = 0;
-  marker.pose.position.z = 0;
-  marker.pose.orientation.x = 0.0;
-  marker.pose.orientation.y = 1.0;
-  marker.pose.orientation.z = 0.0;
-  marker.pose.orientation.w = 1.0;
-  marker.scale.x = 0.018;
-  marker.scale.y = 0.018;
-  marker.scale.z = 0.057;
-  marker.color.a = 1.0;
-  marker.color.r = 0.0;
-  marker.color.g = 1.0;
-  marker.color.b = 0.0;
-
-  return marker;
-}
-
-std::string getRosPathFromModelPath(std::string path){
-  return getRosPathFromFullPath(getFullPathFromModelPath(path));
-}
-
-std::string getRosPathFromFullPath(std::string path){
-  std::string ros_package_path = "";
-  FILE* fp;
-  char buf[1000000];
-
-  //set $ROS_PACKAGE_PATH
-  if ((fp = popen("echo $ROS_PACKAGE_PATH", "r")) == NULL) {
-    std::cout << "popen error" << std::endl;
+    return marker;
   }
-  while (fgets(buf, sizeof(buf), fp) != NULL) {
-    ros_package_path += buf;
+
+  visualization_msgs::Marker makeSandiaFinger1Marker(std::string frame_id){
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = frame_id;
+    marker.type = visualization_msgs::Marker::CYLINDER;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = 0.024;
+    marker.pose.position.y = 0;
+    marker.pose.position.z = 0;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 1.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.02;
+    marker.scale.y = 0.02;
+    marker.scale.z = 0.067;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+
+    return marker;
   }
-  pclose(fp);
+
+  visualization_msgs::Marker makeSandiaFinger2Marker(std::string frame_id){
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = frame_id;
+    marker.type = visualization_msgs::Marker::CYLINDER;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = 0.024;
+    marker.pose.position.y = 0;
+    marker.pose.position.z = 0;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 1.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.018;
+    marker.scale.y = 0.018;
+    marker.scale.z = 0.057;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+
+    return marker;
+  }
+
+  std::string getRosPathFromModelPath(std::string path){
+    return getRosPathFromFullPath(getFullPathFromModelPath(path));
+  }
+
+  std::string getRosPathFromFullPath(std::string path){
+    std::string ros_package_path = "";
+    FILE* fp;
+    char buf[1000000];
+
+    //set $ROS_PACKAGE_PATH
+    if ((fp = popen("echo $ROS_PACKAGE_PATH", "r")) == NULL) {
+      std::cout << "popen error" << std::endl;
+    }
+    while (fgets(buf, sizeof(buf), fp) != NULL) {
+      ros_package_path += buf;
+    }
+    pclose(fp);
   
-  ros::package::V_string all_package;
-  ros::package::getAll(all_package);
+    ros::package::V_string all_package;
+    ros::package::getAll(all_package);
 
-  if( path.find("file://", 0) == 0 ){
-    path.erase(0,7);
-    size_t current = 0, found;
-    while((found = path.find_first_of("/", current)) != std::string::npos){
-      std::string search_path = std::string(path, current, found - current);
-      current = found + 1;
-      std::string package_path;
-      if( ros::package::getPath(search_path) != ""){
-	return "package://" + search_path + path.erase(0, current-1);
+    if( path.find("file://", 0) == 0 ){
+
+      size_t current = 0, found;
+      while((found = path.find_first_of("/", current)) != std::string::npos){
+	std::string search_path = std::string(path, current, found - current);
+	current = found + 1;
+	std::string package_path;
+	if( ros::package::getPath(search_path) != ""){
+	  path.erase(0,7);
+	  return "package://" + search_path + path.erase(0, current-1);
+	}
       }
     }
+
+    return path;
   }
 
-  return path;
-}
-
-std::string getFullPathFromModelPath(std::string path){
-  std::string gazebo_model_path="";
+  std::string getFullPathFromModelPath(std::string path){
+    std::string gazebo_model_path="";
   
-  FILE* fp;
-  char buf[1000000];
+    FILE* fp;
+    char buf[1000000];
 
-  //set $GAZEBO_MODEL_PATH
-  if ((fp = popen("echo $GAZEBO_MODEL_PATH", "r")) == NULL) {
-    std::cout << "popen error" << std::endl;
-  }
-  while (fgets(buf, sizeof(buf), fp) != NULL) {
-    gazebo_model_path += buf;
-  }
-  pclose(fp);
-  if( path.find("model://", 0) == 0 ){
-    path.erase(0,8);
-    //    ??
-    //path.erase(0,9);
-    size_t current = 0, found;
-    while((found = gazebo_model_path.find_first_of(":", current)) != std::string::npos){
-      std::string search_path = std::string(gazebo_model_path, current, found - current);
-      current = found + 1;
-      recursive_directory_iterator iter = recursive_directory_iterator(search_path);
-      recursive_directory_iterator end = recursive_directory_iterator();
-      for (; iter != end; ++iter) {
-	if (is_regular_file(*iter)) {
-	  int locate = iter->path().string().find( path, 0 );
-	  if( locate != std::string::npos){
-	    //for example file:///hoge/fuga.dae
-	    return "file://" + iter->path().string();
+    //set $GAZEBO_MODEL_PATH
+    if ((fp = popen("echo $GAZEBO_MODEL_PATH", "r")) == NULL) {
+      std::cout << "popen error" << std::endl;
+    }
+    while (fgets(buf, sizeof(buf), fp) != NULL) {
+      gazebo_model_path += buf;
+    }
+    pclose(fp);
+    if( path.find("model://", 0) == 0 ){
+      path.erase(0,8);
+      //    ??
+      //path.erase(0,9);
+      size_t current = 0, found;
+      while((found = gazebo_model_path.find_first_of(":", current)) != std::string::npos){
+	std::string search_path = std::string(gazebo_model_path, current, found - current);
+	current = found + 1;
+	recursive_directory_iterator iter = recursive_directory_iterator(search_path);
+	recursive_directory_iterator end = recursive_directory_iterator();
+	for (; iter != end; ++iter) {
+	  if (is_regular_file(*iter)) {
+	    int locate = iter->path().string().find( path, 0 );
+	    if( locate != std::string::npos){
+	      //for example file:///hoge/fuga.dae
+	      return "file://" + iter->path().string();
+	    }
 	  }
 	}
       }
     }
+    return path;
   }
-  return path;
-}
 
-//convert package:// path to full path
-std::string getFilePathFromRosPath( std::string rospath){
-  std::string path = rospath;
-  if (path.find("package://") == 0){
-    path.erase(0, strlen("package://"));
-    size_t pos = path.find("/");
-    if (pos == std::string::npos){
-      std::cout << "Could not parse package:// format" <<std::endl;
-      return "";
-    }
-    std::string package = path.substr(0, pos);
-    path.erase(0, pos);
-    std::string package_path = ros::package::getPath(package);
-    if (package_path.empty())
-      {
-        std::cout <<  "Package [" + package + "] does not exist" << std::endl;
+  //convert package:// path to full path
+  std::string getFilePathFromRosPath( std::string rospath){
+    std::string path = rospath;
+    if (path.find("package://") == 0){
+      path.erase(0, strlen("package://"));
+      size_t pos = path.find("/");
+      if (pos == std::string::npos){
+	std::cout << "Could not parse package:// format" <<std::endl;
+	return "";
       }
+      std::string package = path.substr(0, pos);
+      path.erase(0, pos);
+      std::string package_path = ros::package::getPath(package);
+      if (package_path.empty())
+	{
+	  std::cout <<  "Package [" + package + "] does not exist" << std::endl;
+	}
  
-    path = package_path + path;
+      path = package_path + path;
+    }
+    return path;
   }
-  return path;
-}
 
-geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val){
-  geometry_msgs::Pose p;
-  XmlRpc::XmlRpcValue pos = val["position"];
-  p.position.x = getXmlValue(pos["x"]);
-  p.position.y = getXmlValue(pos["y"]);
-  p.position.z = getXmlValue(pos["z"]);
+  geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val){
+    geometry_msgs::Pose p;
+    if(val.hasMember("position")){
+      XmlRpc::XmlRpcValue pos = val["position"];
+      p.position.x = getXmlValue(pos["x"]);
+      p.position.y = getXmlValue(pos["y"]);
+      p.position.z = getXmlValue(pos["z"]);
+    }else{
+      p.position.x = p.position.y = p.position.z = 0.0;
+    }
 
-  XmlRpc::XmlRpcValue ori = val["orientation"];
-  p.orientation.x = getXmlValue(ori["x"]);
-  p.orientation.y = getXmlValue(ori["y"]);
-  p.orientation.z = getXmlValue(ori["z"]);
-  p.orientation.w = getXmlValue(ori["w"]);
+    if(val.hasMember("orientation")){
+      XmlRpc::XmlRpcValue ori = val["orientation"];
+      p.orientation.x = getXmlValue(ori["x"]);
+      p.orientation.y = getXmlValue(ori["y"]);
+      p.orientation.z = getXmlValue(ori["z"]);
+      p.orientation.w = getXmlValue(ori["w"]);
+    }else{
+      p.orientation.x = p.orientation.y = p.orientation.z = 0.0;
+      p.orientation.w = 1.0;
+    }
 
-  return p;
-}
-
-double getXmlValue( XmlRpc::XmlRpcValue val ){
-  switch(val.getType()){
-  case XmlRpc::XmlRpcValue::TypeInt:
-    return (double)((int)val);
-  case XmlRpc::XmlRpcValue::TypeDouble:
-    return (double)val;
-  default:
-    return 0;
+    return p;
   }
+
+  double getXmlValue( XmlRpc::XmlRpcValue val ){
+    switch(val.getType()){
+    case XmlRpc::XmlRpcValue::TypeInt:
+      return (double)((int)val);
+    case XmlRpc::XmlRpcValue::TypeDouble:
+      return (double)val;
+    default:
+      return 0;
+    }
+  }
+
 }
 
 
