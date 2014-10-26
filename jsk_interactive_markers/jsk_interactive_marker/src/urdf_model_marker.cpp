@@ -190,7 +190,6 @@ void UrdfModelMarker::republishJointState( sensor_msgs::JointState js){
 void UrdfModelMarker::setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg ){
   setRootPose(*msg);
 }
-
 void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
   try{
     init_stamp_ = ps.header.stamp;
@@ -203,6 +202,7 @@ void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
     CallSetDynamicTf(frame_id_, root_frame, Pose2Transform(pose));
     root_pose_ = pose;
     publishMarkerPose( pose, ps.header, root_frame);
+    
   }
   catch (tf::TransformException ex){
     ROS_ERROR("%s",ex.what());
@@ -211,44 +211,16 @@ void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
 }
 
 
+
+
 void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg){
   jsk_topic_tools::ScopedTimer timer = reset_joint_states_check_time_acc_.scopedTimer();
   setJointState(model->getRoot(), msg);
-  server_->applyChanges();
+
   //addChildLinkNames(model->getRoot(), true, false);
   republishJointState(*msg);
-
-  if(mode_ == "visualization"){
-    //fix fixed_link of Marker on fixed_link of Robot
-    string marker_name =  tf_prefix_ + model->getRoot()->name;
-
-    tf::StampedTransform stf_robot;
-    tfl_.lookupTransform(fixed_link_, model->getRoot()->name,
-			 ros::Time(0), stf_robot);
-
-    tf::StampedTransform stf_marker;
-    tfl_.lookupTransform(marker_name, tf_prefix_ + fixed_link_,
-			 ros::Time(0), stf_marker);
-    
-    KDL::Frame robotFrame;
-    KDL::Frame markerFrame;
-    KDL::Frame robotMarkerFrame;
-    tf::transformTFToKDL(stf_robot, robotFrame);
-    tf::transformTFToKDL(stf_marker, markerFrame);
-    
-    robotMarkerFrame = robotFrame * markerFrame;
-
-    //TODO set Link
-    geometry_msgs::Pose pose;
-    pose.position.y = 1;
-    pose.orientation.w = 1;
-
-
-    server_->setPose(marker_name, pose);
-    linkMarkerMap[marker_name].pose = pose;
-    CallSetDynamicTf(frame_id_, marker_name, Pose2Transform(pose));
-    addChildLinkNames(model->getRoot(), true, false);
-  }
+  resetRootForVisualization();
+  server_->applyChanges();
 }
 
 
@@ -359,6 +331,77 @@ void UrdfModelMarker::resetRobotBase(){
   }
 }
 
+void UrdfModelMarker::resetRootForVisualization(){
+  try{
+    if(fixed_link_.size() > 0 && (mode_ == "visualization" || mode_ == "robot")){
+      string marker_name =  tf_prefix_ + model->getRoot()->name;
+      tf::StampedTransform st_offset;
+
+      bool first_offset = true;
+      for(int i=0; i<fixed_link_.size(); i++){
+	std::string link = fixed_link_[i];
+	if(!link.empty()){
+	  std::cout << tf_prefix_ + model->getRoot()->name << tf_prefix_ + link << std::endl;
+	  tf::StampedTransform st_link_offset;
+	  tfl_.lookupTransform(tf_prefix_ + model->getRoot()->name, tf_prefix_ + link,
+			       ros::Time(0), st_link_offset);
+
+	  if(first_offset){
+	    st_offset.setRotation(st_link_offset.getRotation());
+	    st_offset.setOrigin(st_link_offset.getOrigin());
+	    first_offset = false;
+	  }else{
+	    st_offset.setRotation(st_link_offset.getRotation().slerp(st_offset.getRotation(), (i * 1.0)/(i + 1)));
+	    st_offset.setOrigin(st_link_offset.getOrigin().lerp(st_offset.getOrigin(), (i* 1.0)/(i+1)));
+	  }
+	}
+      }
+
+      //multiply fixed_link_offset_
+      tf::StampedTransform st_fixed_link_offset;
+      geometry_msgs::TransformStamped ts_fixed_link_offset;
+      ts_fixed_link_offset.transform.translation.x = fixed_link_offset_.position.x;
+      ts_fixed_link_offset.transform.translation.y = fixed_link_offset_.position.y;
+      ts_fixed_link_offset.transform.translation.z = fixed_link_offset_.position.z;
+      ts_fixed_link_offset.transform.rotation = fixed_link_offset_.orientation;
+
+      tf::transformStampedMsgToTF(ts_fixed_link_offset, st_fixed_link_offset);
+
+      tf::Transform transform;
+      transform = st_offset * st_fixed_link_offset;
+
+      //convert to root_offset_
+      geometry_msgs::Transform tf_msg;
+      tf::transformTFToMsg(transform, tf_msg);
+
+      root_offset_.position.x = tf_msg.translation.x;
+      root_offset_.position.y = tf_msg.translation.y;
+      root_offset_.position.z = tf_msg.translation.z;
+      root_offset_.orientation = tf_msg.rotation;
+
+      //reset root_pose_
+      geometry_msgs::PoseStamped ps;
+      ps.header.stamp = ros::Time::now();
+      ps.header.frame_id = frame_id_;
+      ps.pose.orientation.w = 1.0;
+      //setRootPose(ps);
+      root_pose_ = ps.pose;
+
+      geometry_msgs::Pose pose = getRootPose(ps.pose);
+
+      string root_frame = tf_prefix_ + model->getRoot()->name;
+      linkMarkerMap[frame_id_].pose = pose;
+      CallSetDynamicTf(frame_id_, root_frame, Pose2Transform(pose));
+
+      addChildLinkNames(model->getRoot(), true, false);
+    }
+  }catch(tf::TransformException ex){
+    ROS_ERROR("%s",ex.what());
+  }
+}
+
+
+
 
 void UrdfModelMarker::registrationCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   
@@ -421,7 +464,10 @@ void UrdfModelMarker::showModelMarkerCB( const std_msgs::EmptyConstPtr &msg){
 }
 
 void UrdfModelMarker::setUrdfCB( const std_msgs::StringConstPtr &msg){
+  //clear
   server_->clear();
+  linkMarkerMap.clear();
+
   model = parseURDF(msg->data);
   if (!model){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
@@ -1044,7 +1090,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 UrdfModelMarker::UrdfModelMarker ()
 {}
 
-UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::PoseStamped root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, string fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index,  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string frame_id, geometry_msgs::PoseStamped root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, vector<string> fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index,  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
   diagnostic_updater_.reset(new diagnostic_updater::Updater);
   diagnostic_updater_->setHardwareID(ros::this_node::getName());
   diagnostic_updater_->add("Modeling Stats", boost::bind(&UrdfModelMarker::updateDiagnostic, this, _1));
@@ -1074,6 +1120,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   model_file_ = model_file;
   frame_id_ = frame_id;
   root_offset_ = root_offset;
+  fixed_link_offset_ = root_offset;
   root_pose_ = root_pose.pose;
   init_stamp_ = root_pose.header.stamp;
   scale_factor_ = scale_factor;
@@ -1226,6 +1273,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   getJointState(model->getRoot(), js);
   pub_joint_state_.publish( js );
 
+  resetRootForVisualization();
   return;
 
 }

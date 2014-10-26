@@ -46,24 +46,21 @@ namespace im_utils{
   boost::shared_ptr<ModelInterface> getModelInterface(std::string model_file);
   visualization_msgs::InteractiveMarker makeLinksMarker(boost::shared_ptr<const Link> link, bool use_color, std_msgs::ColorRGBA color, geometry_msgs::PoseStamped marker_ps, geometry_msgs::Pose origin_pose);
 
+  visualization_msgs::InteractiveMarker makeFingerControlMarker(const char *name, geometry_msgs::PoseStamped ps);
+  visualization_msgs::InteractiveMarker makeSandiaHandMarker(geometry_msgs::PoseStamped ps);
+
+  visualization_msgs::Marker makeSandiaFinger0Marker(std::string frame_id);
+  visualization_msgs::Marker makeSandiaFinger1Marker(std::string frame_id);
+  visualization_msgs::Marker makeSandiaFinger2Marker(std::string frame_id);
+
+  visualization_msgs::InteractiveMarker makeSandiaHandInteractiveMarker(geometry_msgs::PoseStamped ps, std::string hand, int finger, int link);
+
+  std::string getRosPathFromModelPath(std::string path);
+  std::string getRosPathFromFullPath(std::string path);
+  std::string getFullPathFromModelPath(std::string path);
+  std::string getFilePathFromRosPath( std::string rospath);
+
+  geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);
+  double getXmlValue( XmlRpc::XmlRpcValue val );
 }
-
-
-visualization_msgs::InteractiveMarker makeFingerControlMarker(const char *name, geometry_msgs::PoseStamped ps);
-visualization_msgs::InteractiveMarker makeSandiaHandMarker(geometry_msgs::PoseStamped ps);
-
-visualization_msgs::Marker makeSandiaFinger0Marker(std::string frame_id);
-visualization_msgs::Marker makeSandiaFinger1Marker(std::string frame_id);
-visualization_msgs::Marker makeSandiaFinger2Marker(std::string frame_id);
-
-visualization_msgs::InteractiveMarker makeSandiaHandInteractiveMarker(geometry_msgs::PoseStamped ps, std::string hand, int finger, int link);
-
-std::string getRosPathFromModelPath(std::string path);
-std::string getRosPathFromFullPath(std::string path);
-std::string getFullPathFromModelPath(std::string path);
-std::string getFilePathFromRosPath( std::string rospath);
-
-geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);
-double getXmlValue( XmlRpc::XmlRpcValue val );
-
 #endif

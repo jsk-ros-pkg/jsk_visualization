@@ -66,6 +66,7 @@
     <node pkg="roseus" type="roseus" name="grasp_ik_controller"
           args="$(find jsk_interactive_marker)/euslisp/ik-controller-main.l">
       <remap from="/robot/joint_state_decompressed" to="/joint_states"/>
+      <param name="one_click_grasp" value="true"/>
     </node>
   </group>
 </group>
