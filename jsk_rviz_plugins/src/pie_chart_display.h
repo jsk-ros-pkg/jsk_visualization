@@ -89,9 +89,7 @@ namespace jsk_rviz_plugin
     uint16_t texture_size_;
     QColor fg_color_;
     QColor bg_color_;
-    QColor text_color_;
     QColor max_color_;
-    double text_alpha_;
     int text_size_;
     bool show_caption_;
     bool auto_color_change_;
@@ -111,8 +109,6 @@ namespace jsk_rviz_plugin
     void updateTop();
     void updateLeft();
     void updateBGColor();
-    void updateTextColor();
-    void updateTextAlpha();
     void updateTextSize();
     void updateFGColor();
     void updateFGAlpha();

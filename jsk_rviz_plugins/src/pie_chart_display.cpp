@@ -84,15 +84,6 @@ namespace jsk_rviz_plugin
       = new rviz::FloatProperty("backround alpha", 0.0,
                                 "alpha belnding value for background",
                                 this, SLOT(updateBGAlpha()));
-    text_color_property_
-      = new rviz::ColorProperty("text color",
-                                QColor(25, 255, 240),
-                                "text color",
-                                this, SLOT(updateTextColor()));
-    text_alpha_property_
-      = new rviz::FloatProperty("text alpha", 1.0,
-                                "alpha belnding value for text",
-                                this, SLOT(updateTextAlpha()));
     text_size_property_
       = new rviz::IntProperty("text size", 14,
                               "text size",
@@ -130,11 +121,9 @@ namespace jsk_rviz_plugin
     delete update_topic_property_;
     delete fg_color_property_;
     delete bg_color_property_;
-    delete text_color_property_;
     delete fg_alpha_property_;
     delete fg_alpha2_property_;
     delete bg_alpha_property_;
-    delete text_alpha_property_;
     delete top_property_;
     delete left_property_;
     delete size_property_;
@@ -161,8 +150,6 @@ namespace jsk_rviz_plugin
     updateBGAlpha();
     updateMinValue();
     updateMaxValue();
-    updateTextColor();
-    updateTextAlpha();
     updateTextSize();
     updateShowCaption();
     updateAutoColorChange();
@@ -204,11 +191,9 @@ namespace jsk_rviz_plugin
     
     QColor fg_color2(fg_color);
     QColor bg_color(bg_color_);
-    QColor text_color(text_color_);
     fg_color.setAlpha(fg_alpha_);
     fg_color2.setAlpha(fg_alpha2_);
     bg_color.setAlpha(bg_alpha_);
-    text_color.setAlpha(text_alpha_);
     int width = overlay_->getTextureWidth();
     int height = overlay_->getTextureHeight();
     {
@@ -249,7 +234,7 @@ namespace jsk_rviz_plugin
       font.setPointSize(text_size_);
       font.setBold(true);
       painter.setFont(font);
-      painter.setPen(QPen(text_color, value_line_width, Qt::SolidLine));
+      painter.setPen(QPen(fg_color, value_line_width, Qt::SolidLine));
       std::ostringstream s;
       s << std::fixed << std::setprecision(2) << val;
       painter.drawText(0, 0, width, height - caption_offset_,
@@ -349,16 +334,6 @@ namespace jsk_rviz_plugin
     max_value_ = max_value_property_->getFloat();
   }
   
-  void PieChartDisplay::updateTextColor()
-  {
-    text_color_ = text_color_property_->getColor();
-  }
-
-  void PieChartDisplay::updateTextAlpha()
-  {
-    text_alpha_ = text_alpha_property_->getFloat() * 255;
-  }
-
   void PieChartDisplay::updateTextSize()
   {
     boost::mutex::scoped_lock lock(mutex_);
