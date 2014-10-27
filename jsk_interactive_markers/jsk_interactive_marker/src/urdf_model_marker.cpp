@@ -605,44 +605,44 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link, sensor_m
     case Joint::REVOLUTE:
     case Joint::CONTINUOUS:
       {
-      linkProperty *link_property = &linkMarkerMap[link_frame_name_];
-      tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
-      tf::poseMsgToKDL (link_property->pose, presentFrame);
-      rot = initialFrame.M.Inverse() * presentFrame.M;
-      jointAngle = rot.GetRotAngle(rotVec);
-      jointVec = KDL::Vector(link_property->joint_axis.x,
-			     link_property->joint_axis.y,
-			     link_property->joint_axis.z);
-      if( KDL::dot(rotVec,jointVec) < 0){
-	jointAngle = - jointAngle;
-      }
-      if(link_property->joint_angle > M_PI/2 && jointAngle < -M_PI/2){
-	link_property->rotation_count += 1;
-      }else if(link_property->joint_angle < -M_PI/2 && jointAngle > M_PI/2){
-	link_property->rotation_count -= 1;
-      }
-      link_property->joint_angle = jointAngle;
-      jointAngleAllRange = jointAngle + link_property->rotation_count * M_PI * 2;
-
-      if(parent_joint->type == Joint::REVOLUTE && parent_joint->limits != NULL){
-	bool changeMarkerAngle = false;
-	if(jointAngleAllRange < parent_joint->limits->lower){
-	  jointAngleAllRange = parent_joint->limits->lower + 0.001;
-	  changeMarkerAngle = true;
+	linkProperty *link_property = &linkMarkerMap[link_frame_name_];
+	tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
+	tf::poseMsgToKDL (link_property->pose, presentFrame);
+	rot = initialFrame.M.Inverse() * presentFrame.M;
+	jointAngle = rot.GetRotAngle(rotVec);
+	jointVec = KDL::Vector(link_property->joint_axis.x,
+			       link_property->joint_axis.y,
+			       link_property->joint_axis.z);
+	if( KDL::dot(rotVec,jointVec) < 0){
+	  jointAngle = - jointAngle;
 	}
-	if(jointAngleAllRange > parent_joint->limits->upper){
-	  jointAngleAllRange = parent_joint->limits->upper - 0.001;
-	  changeMarkerAngle = true;
+	if(link_property->joint_angle > M_PI/2 && jointAngle < -M_PI/2){
+	  link_property->rotation_count += 1;
+	}else if(link_property->joint_angle < -M_PI/2 && jointAngle > M_PI/2){
+	  link_property->rotation_count -= 1;
+	}
+	link_property->joint_angle = jointAngle;
+	jointAngleAllRange = jointAngle + link_property->rotation_count * M_PI * 2;
+
+	if(parent_joint->type == Joint::REVOLUTE && parent_joint->limits != NULL){
+	  bool changeMarkerAngle = false;
+	  if(jointAngleAllRange < parent_joint->limits->lower){
+	    jointAngleAllRange = parent_joint->limits->lower + 0.001;
+	    changeMarkerAngle = true;
+	  }
+	  if(jointAngleAllRange > parent_joint->limits->upper){
+	    jointAngleAllRange = parent_joint->limits->upper - 0.001;
+	    changeMarkerAngle = true;
+	  }
+
+	  if(changeMarkerAngle){
+	    setJointAngle(link, jointAngleAllRange);
+	  }
 	}
 
-	if(changeMarkerAngle){
-	  setJointAngle(link, jointAngleAllRange);
-	}
-      }
-
-      js.position.push_back(jointAngleAllRange);
-      js.name.push_back(parent_joint->name);
-      break;
+	js.position.push_back(jointAngleAllRange);
+	js.name.push_back(parent_joint->name);
+	break;
       }
     case Joint::PRISMATIC:
       {
@@ -714,9 +714,9 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
   int rotation_count = 0;
   
   switch(parent_joint->type){
-    case Joint::REVOLUTE:
-    case Joint::CONTINUOUS:
-      {
+  case Joint::REVOLUTE:
+  case Joint::CONTINUOUS:
+    {
       if(joint_angle > M_PI){
 	rotation_count = (int)((joint_angle + M_PI) / (M_PI * 2));
 	joint_angle -= rotation_count * M_PI * 2;
@@ -738,9 +738,9 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
       tf::poseKDLToMsg(presentFrame, link_property->pose);
 
       break;
-      }
-    case Joint::PRISMATIC:
-      {
+    }
+  case Joint::PRISMATIC:
+    {
       linkProperty *link_property = &linkMarkerMap[link_frame_name_];
       link_property->joint_angle = joint_angle;
       link_property->rotation_count = rotation_count;
@@ -753,7 +753,7 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
       presentFrame.p = joint_angle * jointVec + initialFrame.p;
       tf::poseKDLToMsg(presentFrame, link_property->pose);
       break;
-      }
+    }
   default:
     break;
   }
@@ -967,9 +967,9 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 	if(link_visual->geometry->type == Geometry::MESH){
 	  boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link_visual->geometry);
 	  string model_mesh_ = mesh->filename;
-	  //model_mesh_ = getModelFilePath(model_mesh_);
 	  if(linkMarkerMap[link_frame_name_].mesh_file == ""){
 	    model_mesh_ = getRosPathFromModelPath(model_mesh_);
+	    std::cout  << model_mesh_ << std::endl;
 	    linkMarkerMap[link_frame_name_].mesh_file = model_mesh_;
 	  }else{
 	    model_mesh_ = linkMarkerMap[link_frame_name_].mesh_file;
@@ -1229,25 +1229,31 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
 
   // get the entire file
   std::string xml_string;
-  
+
   if(use_robot_description_){
     nh_.getParam(model_file_, xml_string);
 
   }else{
+    std::cout << "loading model_file: " << model_file_ << std::endl;
     model_file_ = getFilePathFromRosPath(model_file_);
     model_file_ = getFullPathFromModelPath(model_file_);
-    std::fstream xml_file(model_file_.c_str(), std::fstream::in);
-    while ( xml_file.good() )
-      {
-	std::string line;
-	std::getline( xml_file, line);
-	xml_string += (line + "\n");
-      }
-    xml_file.close();
-
-    std::cout << "model_file:" << model_file_ << std::endl;
+    try{
+      std::fstream xml_file(model_file_.c_str(), std::fstream::in);
+      while ( xml_file.good() )
+	{
+	  std::string line;
+	  std::getline( xml_file, line);
+	  xml_string += (line + "\n");
+	}
+      xml_file.close();
+      std::cout << "finish loading model_file: " << model_file_ << std::endl;
+    }catch(...){
+      ROS_ERROR("model or mesh not found: %s", model_file_.c_str());
+      ROS_ERROR("Please check GAZEBO_MODEL_PATH");
+    }
   }
   model = parseURDF(xml_string);
+
   if (!model){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
     return;
@@ -1256,17 +1262,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   if( mode_ == "robot"){
     resetRobotBase();
   }
-
-
   addChildLinkNames(model->getRoot(), true, true);
-
-  // wait for joint\statelistner
-
-  if ( pub_joint_state_.getNumSubscribers() == 0 ) {
-    ROS_WARN_STREAM("urdf_model_marker wait for joint_state_subscriber .... ");
-    ros::Duration(1.0).sleep();
-  }
-  ROS_WARN_STREAM("urdf_model_marker publish joint_state_subscriber, done");
 
   // start JointState
   sensor_msgs::JointState js;
@@ -1274,13 +1270,13 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_file, string f
   pub_joint_state_.publish( js );
 
   resetRootForVisualization();
-  return;
 
+  return;
 }
 
 
 void UrdfModelMarker::updateDiagnostic(
-						diagnostic_updater::DiagnosticStatusWrapper &stat)
+				       diagnostic_updater::DiagnosticStatusWrapper &stat)
 {
   boost::mutex::scoped_lock(mutex_);
   stat.summary(diagnostic_msgs::DiagnosticStatus::OK, "UrdfModelMarker running");
