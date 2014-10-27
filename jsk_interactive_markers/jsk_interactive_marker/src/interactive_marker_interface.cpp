@@ -25,6 +25,7 @@
 #include <kdl/frames_io.hpp>
 #include <tf_conversions/tf_kdl.h>
 
+using namespace im_utils;
 
 visualization_msgs::InteractiveMarker InteractiveMarkerInterface::make6DofControlMarker( std::string name, geometry_msgs::PoseStamped &stamped, float scale, bool fixed_position, bool fixed_rotation){
   
