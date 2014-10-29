@@ -27,6 +27,7 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   get_type_srv_ = n_->advertiseService("get_type", &TransformableInteractiveServer::getTypeService, this);
   set_dimensions_srv =  n_->advertiseService("set_dimensions", &TransformableInteractiveServer::setDimensionsService, this);
   get_dimensions_srv =  n_->advertiseService("get_dimensions", &TransformableInteractiveServer::getDimensionsService, this);
+  marker_dimensions_pub_ = n_->advertise<jsk_interactive_marker::MarkerDimensions>("marker_dimensions", 1);
   request_marker_operate_srv_ = n_->advertiseService("request_marker_operate", &TransformableInteractiveServer::requestMarkerOperateService, this);
 
   config_srv_ = boost::make_shared <dynamic_reconfigure::Server<InteractiveSettingConfig> > (*n_);
@@ -113,6 +114,7 @@ void TransformableInteractiveServer::setRadius(std_msgs::Float32 msg)
   TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
   if(tobject->setRadius(msg)){
     updateTransformableObject(tobject);
+    publishMarkerDimensions();
   }
 }
 
@@ -122,6 +124,7 @@ void TransformableInteractiveServer::setSmallRadius(std_msgs::Float32 msg)
   TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
   if(tobject->setSmallRadius(msg)){
     updateTransformableObject(tobject);
+    publishMarkerDimensions();
   }
 }
 
@@ -131,6 +134,7 @@ void TransformableInteractiveServer::setX(std_msgs::Float32 msg)
   TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
   if(tobject->setX(msg)){
     updateTransformableObject(tobject);
+    publishMarkerDimensions();
   }
 }
 
@@ -140,6 +144,7 @@ void TransformableInteractiveServer::setY(std_msgs::Float32 msg)
   TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
   if(tobject->setY(msg)){
     updateTransformableObject(tobject);
+    publishMarkerDimensions();
   }
 }
 
@@ -149,6 +154,7 @@ void TransformableInteractiveServer::setZ(std_msgs::Float32 msg)
   TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
   if(tobject->setZ(msg)){
     updateTransformableObject(tobject);
+    publishMarkerDimensions();
   }
 }
 
@@ -226,12 +232,13 @@ bool TransformableInteractiveServer::setDimensionsService(jsk_interactive_marker
   }
   if (tobject) {
     if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::BOX) {
-      tobject->setXYZ(req.x, req.y, req.z);
+      tobject->setXYZ(req.dimensions.x, req.dimensions.y, req.dimensions.z);
     } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER) {
-      tobject->setRZ(req.radius, req.z);
+      tobject->setRZ(req.dimensions.radius, req.dimensions.z);
     } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
-      tobject->setRSR(req.radius, req.small_radius);
+      tobject->setRSR(req.dimensions.radius, req.dimensions.small_radius);
     }
+    publishMarkerDimensions();
   }
   return true;
 }
@@ -248,15 +255,36 @@ bool TransformableInteractiveServer::getDimensionsService(jsk_interactive_marker
   }
   if (tobject) {
     if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::BOX) {
-      tobject->getXYZ(res.x, res.y, res.z);
+      tobject->getXYZ(res.dimensions.x, res.dimensions.y, res.dimensions.z);
     } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER) {
-      tobject->getRZ(res.radius, res.z);
+      tobject->getRZ(res.dimensions.radius, res.dimensions.z);
     } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
-      tobject->getRSR(res.radius, res.small_radius);
+      tobject->getRSR(res.dimensions.radius, res.dimensions.small_radius);
     }
   }
   return true;
 }
+
+void TransformableInteractiveServer::publishMarkerDimensions()
+{
+  TransformableObject* tobject;
+  if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return; }
+  tobject = transformable_objects_map_[focus_object_marker_name_];
+  if (tobject) {
+    jsk_interactive_marker::MarkerDimensions marker_dimensions;
+    if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::BOX) {
+      tobject->getXYZ(marker_dimensions.x, marker_dimensions.y, marker_dimensions.z);
+    } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER) {
+      tobject->getRZ(marker_dimensions.radius, marker_dimensions.z);
+    } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
+      tobject->getRSR(marker_dimensions.radius, marker_dimensions.small_radius);
+    }
+    marker_dimensions.type = tobject->type_;
+    marker_dimensions_pub_.publish(marker_dimensions);
+  }
+}
+  
+
 
 bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate::Request &req,jsk_rviz_plugins::RequestMarkerOperate::Response &res)
 {

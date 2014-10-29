@@ -21,7 +21,7 @@ find_package(TinyXML REQUIRED)
 
 add_message_files(
   DIRECTORY msg
-  FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg
+  FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg MarkerDimensions.msg
 )
 add_service_files(DIRECTORY srv
   FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetPose.srv GetType.srv SetMarkerDimensions.srv GetMarkerDimensions.srv)
