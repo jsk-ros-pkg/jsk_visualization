@@ -18,6 +18,7 @@
 #include <jsk_interactive_marker/MarkerMenu.h>
 #include <jsk_interactive_marker/MarkerPose.h>
 #include <jsk_interactive_marker/MoveObject.h>
+#include <jsk_interactive_marker/MoveModel.h>
 
 #include <std_msgs/Int8.h>
 #include <std_msgs/String.h>
@@ -42,7 +43,7 @@ class UrdfModelMarker {
  public:
   //  UrdfModelMarker(string file);
   UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_file, string frame_id, geometry_msgs::PoseStamped  root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, vector<string> fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string model_name, string model_description, string model_file, string frame_id, geometry_msgs::PoseStamped  root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, vector<string> fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
   UrdfModelMarker();
 
   void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
@@ -62,6 +63,7 @@ class UrdfModelMarker {
 
   void graspPoint_feedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string link_name);
   void moveCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void setPoseCB();
   void setPoseCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void hideMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void hideAllMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
@@ -79,8 +81,11 @@ class UrdfModelMarker {
   visualization_msgs::InteractiveMarkerControl makeCylinderMarkerControl(const geometry_msgs::PoseStamped &stamped, double length, double radius, const std_msgs::ColorRGBA &color, bool use_color);
   visualization_msgs::InteractiveMarkerControl makeBoxMarkerControl(const geometry_msgs::PoseStamped &stamped, Vector3 dim, const std_msgs::ColorRGBA &color, bool use_color);
   visualization_msgs::InteractiveMarkerControl makeSphereMarkerControl(const geometry_msgs::PoseStamped &stamped, double rad, const std_msgs::ColorRGBA &color, bool use_color);
+  //joint state methods
+  void publishJointState();
+  void getJointState();
+  void getJointState(boost::shared_ptr<const Link> link);
 
-  void getJointState(boost::shared_ptr<const Link> link, sensor_msgs::JointState &js);
   void setJointState(boost::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js);
   void setJointAngle(boost::shared_ptr<const Link> link, double joint_angle);
   geometry_msgs::Pose getRootPose(geometry_msgs::Pose pose);
@@ -123,6 +128,7 @@ class UrdfModelMarker {
   ros::Publisher pub_;
   ros::Publisher pub_move_;
   ros::Publisher pub_move_object_;
+  ros::Publisher pub_move_model_;
   ros::Publisher pub_joint_state_;
   ros::Publisher pub_base_pose_;
   ros::Publisher pub_selected_;
@@ -147,7 +153,6 @@ class UrdfModelMarker {
 
   ros::ServiceClient dynamic_tf_publisher_client;
 
-  std::string marker_name;
   std::string server_name;
   std::string base_frame;
   std::string move_base_frame;
@@ -156,9 +161,11 @@ class UrdfModelMarker {
 
   boost::shared_ptr<ModelInterface> model;
   std::string model_name_;
+  std::string model_description_;
   std::string frame_id_;
   std::string model_file_;
   geometry_msgs::Pose root_pose_;
+  geometry_msgs::Pose root_pose_origin_;
   geometry_msgs::Pose root_offset_;
   geometry_msgs::Pose fixed_link_offset_; //used when fixel_link_ is used
   double scale_factor_;
@@ -173,6 +180,10 @@ class UrdfModelMarker {
   map<string, double> initial_pose_map_;
   int index_;
   ros::Time init_stamp_;
+
+  //joint states
+  sensor_msgs::JointState joint_state_;
+  sensor_msgs::JointState joint_state_origin_;
 
   struct graspPoint{
     graspPoint(){
@@ -212,8 +223,5 @@ class UrdfModelMarker {
 
   map<string, linkProperty> linkMarkerMap;
 };
-
-//geometry_msgs::Pose getPose( XmlRpc::XmlRpcValue val);
-//double getXmlValue( XmlRpc::XmlRpcValue val );
 
 #endif
