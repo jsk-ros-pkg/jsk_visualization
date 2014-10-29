@@ -92,6 +92,11 @@ visualization_msgs::InteractiveMarker TransformableObject::getInteractiveMarker(
   return int_marker;
 };
 
+void TransformableObject::setPose(geometry_msgs::Pose pose){
+  pose_=pose;
+  publishTF();
+}
+
 void TransformableObject::addPose(geometry_msgs::Pose msg){
   pose_.position.x += msg.position.x;
   pose_.position.y += msg.position.y;
@@ -102,6 +107,13 @@ void TransformableObject::addPose(geometry_msgs::Pose msg){
   tf::quaternionMsgToEigen(msg.orientation, diff_q);
   Eigen::Quaterniond updated_q = diff_q * original_q;
   tf::quaternionEigenToMsg(updated_q, pose_.orientation);
+  publishTF();
+}
+
+void TransformableObject::publishTF(){
+  tf::Transform transform;
+  tf::poseMsgToTF(pose_, transform);
+  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), frame_id_, name_));
 }
 
 namespace jsk_interactive_marker{

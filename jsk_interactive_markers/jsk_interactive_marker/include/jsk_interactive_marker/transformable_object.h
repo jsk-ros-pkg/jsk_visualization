@@ -6,6 +6,8 @@
 #include <visualization_msgs/InteractiveMarker.h>
 #include <visualization_msgs/InteractiveMarkerControl.h>
 #include <std_msgs/Float32.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
 #include <geometry_msgs/Point.h>
 #include <jsk_interactive_marker/GetPose.h>
 #include <jsk_rviz_plugins/RequestMarkerOperate.h>
@@ -20,6 +22,7 @@ namespace jsk_interactive_marker {
 
     std::vector<visualization_msgs::InteractiveMarkerControl> makeRotateTransFixControl();
 
+    tf::TransformBroadcaster br;
     visualization_msgs::InteractiveMarker getInteractiveMarker();
     virtual visualization_msgs::Marker getVisualizationMsgMarker(){};
     void addMarker(visualization_msgs::InteractiveMarker &int_marker, bool always_visible = true, unsigned int interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D);
@@ -33,8 +36,9 @@ namespace jsk_interactive_marker {
     int type_;
     bool display_interactive_manipulator_;
 
-    void setPose(geometry_msgs::Pose pose){pose_=pose;};
+    void setPose(geometry_msgs::Pose pose);
     void addPose(geometry_msgs::Pose msg);
+    void publishTF();
     std::string getFrameId() { return frame_id_; }
     geometry_msgs::Pose getPose(){return pose_;};
     void setInteractiveMarkerSetting(InteractiveSettingConfig config);
