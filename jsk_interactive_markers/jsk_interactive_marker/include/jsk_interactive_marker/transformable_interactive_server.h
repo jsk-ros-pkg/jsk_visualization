@@ -7,6 +7,7 @@
 #include <jsk_interactive_marker/GetType.h>
 #include <jsk_interactive_marker/GetMarkerDimensions.h>
 #include <jsk_interactive_marker/SetMarkerDimensions.h>
+#include <jsk_interactive_marker/MarkerDimensions.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -58,6 +59,7 @@ namespace jsk_interactive_marker
     bool getTypeService(jsk_interactive_marker::GetType::Request &req,jsk_interactive_marker::GetType::Response &res);
     bool setDimensionsService(jsk_interactive_marker::SetMarkerDimensions::Request &req,jsk_interactive_marker::SetMarkerDimensions::Response &res);
     bool getDimensionsService(jsk_interactive_marker::GetMarkerDimensions::Request &req,jsk_interactive_marker::GetMarkerDimensions::Response &res);
+    void publishMarkerDimensions();
 
     bool requestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate::Request &req,jsk_rviz_plugins::RequestMarkerOperate::Response &res);
     virtual void configCallback(InteractiveSettingConfig &config, uint32_t level);
@@ -83,6 +85,7 @@ namespace jsk_interactive_marker
     ros::ServiceServer get_type_srv_;
     ros::ServiceServer set_dimensions_srv;
     ros::ServiceServer get_dimensions_srv;
+    ros::Publisher marker_dimensions_pub_;
     ros::ServiceServer request_marker_operate_srv_;
 
     boost::shared_ptr <dynamic_reconfigure::Server<InteractiveSettingConfig> > config_srv_;
