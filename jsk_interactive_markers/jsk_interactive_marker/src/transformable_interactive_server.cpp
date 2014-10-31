@@ -17,6 +17,7 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   set_z_sub_ = n_->subscribe("set_z", 1, &TransformableInteractiveServer::setZ, this);
 
   addpose_sub_ = n_->subscribe("add_pose", 1, &TransformableInteractiveServer::addPose, this);
+  addpose_relative_sub_ = n_->subscribe("add_pose_relative", 1, &TransformableInteractiveServer::addPoseRelative, this);
 
   setrad_sub_ = n_->subscribe("set_radius", 1, &TransformableInteractiveServer::setRadius, this);
 
@@ -318,7 +319,14 @@ bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugin
 void TransformableInteractiveServer::addPose(geometry_msgs::Pose msg){
   if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return; }
   TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
-  tobject->addPose(msg);
+  tobject->addPose(msg,false);
+  updateTransformableObject(tobject);
+}
+
+void TransformableInteractiveServer::addPoseRelative(geometry_msgs::Pose msg){
+  if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return; }
+  TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
+  tobject->addPose(msg,true);
   updateTransformableObject(tobject);
 }
 
