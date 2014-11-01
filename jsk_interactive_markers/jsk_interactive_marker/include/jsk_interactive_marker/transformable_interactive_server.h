@@ -37,6 +37,7 @@ namespace jsk_interactive_marker
 
     void setPose(geometry_msgs::PoseStamped msg);
     void addPose(geometry_msgs::Pose msg);
+    void addPoseRelative(geometry_msgs::Pose msg);
 
     void setColor(std_msgs::ColorRGBA msg);
 
@@ -73,6 +74,7 @@ namespace jsk_interactive_marker
     ros::Subscriber setcolor_sub_;
     ros::Subscriber setpose_sub_;
     ros::Subscriber addpose_sub_;
+    ros::Subscriber addpose_relative_sub_;
 
     ros::Subscriber set_r_sub_;
     ros::Subscriber set_sm_r_sub_;
