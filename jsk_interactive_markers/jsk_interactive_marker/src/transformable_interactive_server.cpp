@@ -36,6 +36,8 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
     boost::bind (&TransformableInteractiveServer::configCallback, this, _1, _2);
   config_srv_->setCallback (f);
 
+  tf_timer = n_->createTimer(ros::Duration(0.05), &TransformableInteractiveServer::tfTimerCallback, this);
+
   server_ = new interactive_markers::InteractiveMarkerServer("simple_marker");
 }
 
@@ -439,6 +441,13 @@ void TransformableInteractiveServer::eraseAllObject()
 void TransformableInteractiveServer::eraseFocusObject()
 {
   eraseObject(focus_object_marker_name_);
+}
+
+void TransformableInteractiveServer::tfTimerCallback(const ros::TimerEvent&)
+{
+  if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return; }
+  TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
+  tobject->publishTF();
 }
 
 void TransformableInteractiveServer::run(){
