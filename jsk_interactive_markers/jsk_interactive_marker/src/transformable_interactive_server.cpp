@@ -240,6 +240,7 @@ bool TransformableInteractiveServer::setDimensionsService(jsk_interactive_marker
       tobject->setRSR(req.dimensions.radius, req.dimensions.small_radius);
     }
     publishMarkerDimensions();
+    updateTransformableObject(tobject);
   }
   return true;
 }
