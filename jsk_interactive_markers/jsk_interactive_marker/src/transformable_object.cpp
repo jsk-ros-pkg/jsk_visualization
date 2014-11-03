@@ -94,7 +94,6 @@ visualization_msgs::InteractiveMarker TransformableObject::getInteractiveMarker(
 
 void TransformableObject::setPose(geometry_msgs::Pose pose){
   pose_=pose;
-  publishTF();
 }
 
 void TransformableObject::addPose(geometry_msgs::Pose msg, bool relative){
@@ -117,7 +116,6 @@ void TransformableObject::addPose(geometry_msgs::Pose msg, bool relative){
   pose_.position.y += original_p[1];
   pose_.position.z += original_p[2];
   tf::quaternionEigenToMsg(updated_q, pose_.orientation);
-  publishTF();
 }
 
 void TransformableObject::publishTF(){
