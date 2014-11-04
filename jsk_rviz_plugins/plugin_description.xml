@@ -174,4 +174,12 @@
       A panel widget to TransformableOperator action
     </description>
   </class>
+
+  <class name="jsk_rviz_plugin/RobotCommandInterfaceAction"
+         type="jsk_rviz_plugin::RobotCommandInterfaceAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to RobotCommandInterfaceAction action
+    </description>
+  </class>
 </library>
