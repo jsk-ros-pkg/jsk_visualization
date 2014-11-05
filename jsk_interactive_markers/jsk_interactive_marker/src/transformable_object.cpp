@@ -94,20 +94,28 @@ visualization_msgs::InteractiveMarker TransformableObject::getInteractiveMarker(
 
 void TransformableObject::setPose(geometry_msgs::Pose pose){
   pose_=pose;
-  publishTF();
 }
 
-void TransformableObject::addPose(geometry_msgs::Pose msg){
-  pose_.position.x += msg.position.x;
-  pose_.position.y += msg.position.y;
-  pose_.position.z += msg.position.z;
+void TransformableObject::addPose(geometry_msgs::Pose msg, bool relative){
+  Eigen::Vector3d original_p(msg.position.x, msg.position.y, msg.position.z);
+
   Eigen::Quaterniond original_q;
   tf::quaternionMsgToEigen(pose_.orientation, original_q);
   Eigen::Quaterniond diff_q;
   tf::quaternionMsgToEigen(msg.orientation, diff_q);
-  Eigen::Quaterniond updated_q = diff_q * original_q;
+  Eigen::Quaterniond updated_q;
+  if(relative) {
+     original_p = Eigen::Affine3d(original_q) * original_p;
+  }
+  if(relative) {
+    updated_q = original_q * diff_q;
+  } else {
+    updated_q = diff_q * original_q;
+  }
+  pose_.position.x += original_p[0];
+  pose_.position.y += original_p[1];
+  pose_.position.z += original_p[2];
   tf::quaternionEigenToMsg(updated_q, pose_.orientation);
-  publishTF();
 }
 
 void TransformableObject::publishTF(){

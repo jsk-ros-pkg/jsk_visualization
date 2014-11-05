@@ -17,6 +17,7 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   set_z_sub_ = n_->subscribe("set_z", 1, &TransformableInteractiveServer::setZ, this);
 
   addpose_sub_ = n_->subscribe("add_pose", 1, &TransformableInteractiveServer::addPose, this);
+  addpose_relative_sub_ = n_->subscribe("add_pose_relative", 1, &TransformableInteractiveServer::addPoseRelative, this);
 
   setrad_sub_ = n_->subscribe("set_radius", 1, &TransformableInteractiveServer::setRadius, this);
 
@@ -34,6 +35,8 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   dynamic_reconfigure::Server<InteractiveSettingConfig>::CallbackType f =
     boost::bind (&TransformableInteractiveServer::configCallback, this, _1, _2);
   config_srv_->setCallback (f);
+
+  tf_timer = n_->createTimer(ros::Duration(0.05), &TransformableInteractiveServer::tfTimerCallback, this);
 
   server_ = new interactive_markers::InteractiveMarkerServer("simple_marker");
 }
@@ -239,6 +242,7 @@ bool TransformableInteractiveServer::setDimensionsService(jsk_interactive_marker
       tobject->setRSR(req.dimensions.radius, req.dimensions.small_radius);
     }
     publishMarkerDimensions();
+    updateTransformableObject(tobject);
   }
   return true;
 }
@@ -318,7 +322,14 @@ bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugin
 void TransformableInteractiveServer::addPose(geometry_msgs::Pose msg){
   if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return; }
   TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
-  tobject->addPose(msg);
+  tobject->addPose(msg,false);
+  updateTransformableObject(tobject);
+}
+
+void TransformableInteractiveServer::addPoseRelative(geometry_msgs::Pose msg){
+  if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return; }
+  TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
+  tobject->addPose(msg,true);
   updateTransformableObject(tobject);
 }
 
@@ -430,6 +441,13 @@ void TransformableInteractiveServer::eraseAllObject()
 void TransformableInteractiveServer::eraseFocusObject()
 {
   eraseObject(focus_object_marker_name_);
+}
+
+void TransformableInteractiveServer::tfTimerCallback(const ros::TimerEvent&)
+{
+  if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return; }
+  TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
+  tobject->publishTF();
 }
 
 void TransformableInteractiveServer::run(){

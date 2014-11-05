@@ -37,7 +37,7 @@ namespace jsk_interactive_marker {
     bool display_interactive_manipulator_;
 
     void setPose(geometry_msgs::Pose pose);
-    void addPose(geometry_msgs::Pose msg);
+    void addPose(geometry_msgs::Pose msg, bool relative=false);
     void publishTF();
     std::string getFrameId() { return frame_id_; }
     geometry_msgs::Pose getPose(){return pose_;};
