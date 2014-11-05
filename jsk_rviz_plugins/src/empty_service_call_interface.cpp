@@ -1,12 +1,8 @@
-#include <stdio.h>
-
 #include "rviz/config.h"
 #include "empty_service_call_interface.h"
-#include "ros/time.h"
 #include <ros/package.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QMetaObject>
 #include <QSignalMapper>
 
 using namespace rviz;
