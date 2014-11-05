@@ -1586,6 +1586,7 @@
    (defvar *robot-topic-name* (ros::get-param "~robot_topic_name" "robot"))
    (setq *use-ik-server* (ros::get-param "~use_ik_server" t))
    (setq *frame-id* (ros::get-param "~frame_id" "map"))
+   (setq *one-click-grasp* (ros::get-param "~one_click_grasp" nil))
 
    (defvar *rhand-frame* nil)
    (defvar *lhand-frame* nil)
@@ -1614,11 +1615,25 @@
      (setq *robot* *atlas*)
      (setq *have-leg* t)
      )
-    ((equal (string-upcase *robot-name*) "HRP2")
-     (require "package://hrpsys_gazebo_tutorials/euslisp/hrp2jsknt-interface-ex.l")
-     (hrp2jsknt-init-ex :real nil)
-     (setq *robot* *hrp2*)
+    ((equal (string-upcase *robot-name*) "HRP2JSKNT")
+     (setq *robot-name* "hrp2jsknt")
+     (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknt-interface.l")
+     (setq *robot* (instance hrp2jsknt-robot :init))
      (setq *have-leg* t)
+     )
+    ((equal (string-upcase *robot-name*) "HRP2JSKNTS")
+     (setq *robot-name* "hrp2jsknts")
+     (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
+     (setq *robot* (instance hrp2jsknts-robot :init))
+     (setq *have-leg* t)
+     )
+    ((equal (string-upcase *robot-name*) "HRP2W")
+     (require "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2w-interface.l")
+     (hrp2w-init)
+     (setq *robot* *hrp2w*)
+     (defvar *robot-origin* "BODY")
+     (defvar *robot-offset* (send (send *robot* :body_lk :copy-worldcoords) :transformation (make-coords)))
+     (setq *have-leg* nil)
      )
     ((equal (string-upcase *robot-name*) "STARO")
      (load "package://jsk_hrpsys_ros_bridge/euslisp/staro-interface.l")
@@ -1763,9 +1778,11 @@
     (format nil "~A/box_movement" *interactive-pc-nodename*)
     jsk_pcl_ros::BoundingBoxMovement #'send self :box-movement-callback)
 
-   (ros::subscribe
-    (format nil "~A/grasp_pose" *interactive-pc-nodename*)
-    geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
+   (if *one-click-grasp*
+       (ros::subscribe
+        (format nil "~A/grasp_pose" *interactive-pc-nodename*)
+        geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
+     )
 
    ;;(switch-end-coords :id 2)
    (setq *real-robot* (copy-object *robot*))
@@ -1802,8 +1819,9 @@
 	       :name
 	       (send-all (send *robot* :joint-list) :name)))
 
-   (send *robot* :rleg :knee-p :min-angle 10)
-   (send *robot* :lleg :knee-p :min-angle 10)
+   (when *have-leg*
+     (send *robot* :rleg :knee-p :min-angle 10)
+     (send *robot* :lleg :knee-p :min-angle 10))
 
 					;(send self :demo-mouse-controller)
    (send *robot* :angle-vector
@@ -1870,7 +1888,7 @@
           (setq rotation-axis (mapcar #'(lambda (move-arm) (if move-arm (if *tmp-rotation-axis* *rotation-axis* nil) t)) move-arms))
           
           (cond
-           ((equal (string-upcase *robot-name*) "HRP2")
+           ((or (equal (string-upcase *robot-name*) "HRP2JSKNT") (equal (string-upcase *robot-name*) "HRP2JSKNTS"))
 
             (mapcar
              #'(lambda (k)
@@ -1927,7 +1945,7 @@
                             )
                       )
                 )
-               ((equal (string-upcase *robot-name*) "HRP2")
+               ((or (equal (string-upcase *robot-name*) "HRP2JSKNT") (equal (string-upcase *robot-name*) "HRP2JSKNTS"))
                 (cond
                  (*use-fullbody*
                   (setq ik-server-res

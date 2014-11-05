@@ -92,16 +92,36 @@ visualization_msgs::InteractiveMarker TransformableObject::getInteractiveMarker(
   return int_marker;
 };
 
-void TransformableObject::addPose(geometry_msgs::Pose msg){
-  pose_.position.x += msg.position.x;
-  pose_.position.y += msg.position.y;
-  pose_.position.z += msg.position.z;
+void TransformableObject::setPose(geometry_msgs::Pose pose){
+  pose_=pose;
+}
+
+void TransformableObject::addPose(geometry_msgs::Pose msg, bool relative){
+  Eigen::Vector3d original_p(msg.position.x, msg.position.y, msg.position.z);
+
   Eigen::Quaterniond original_q;
   tf::quaternionMsgToEigen(pose_.orientation, original_q);
   Eigen::Quaterniond diff_q;
   tf::quaternionMsgToEigen(msg.orientation, diff_q);
-  Eigen::Quaterniond updated_q = original_q * diff_q;
+  Eigen::Quaterniond updated_q;
+  if(relative) {
+     original_p = Eigen::Affine3d(original_q) * original_p;
+  }
+  if(relative) {
+    updated_q = original_q * diff_q;
+  } else {
+    updated_q = diff_q * original_q;
+  }
+  pose_.position.x += original_p[0];
+  pose_.position.y += original_p[1];
+  pose_.position.z += original_p[2];
   tf::quaternionEigenToMsg(updated_q, pose_.orientation);
+}
+
+void TransformableObject::publishTF(){
+  tf::Transform transform;
+  tf::poseMsgToTF(pose_, transform);
+  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), frame_id_, name_));
 }
 
 namespace jsk_interactive_marker{
@@ -113,7 +133,7 @@ namespace jsk_interactive_marker{
     cylinder_b_ = b;
     cylinder_a_ = a;
     marker_.type = visualization_msgs::Marker::CYLINDER;
-    type_ = "cylinder";
+    type_ = jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER;
 
     frame_id_ = frame;
     name_ = name;
@@ -142,7 +162,7 @@ namespace jsk_interactive_marker{
     torus_b_ = b;
     torus_a_ = a;
     marker_.type = visualization_msgs::Marker::TRIANGLE_LIST;
-    type_ = "torus";
+    type_ = jsk_rviz_plugins::TransformableMarkerOperate::TORUS;
 
     frame_id_ = frame;
     name_ = name;
@@ -235,7 +255,7 @@ namespace jsk_interactive_marker{
     box_b_ = b;
     box_a_ = a;
     marker_.type = visualization_msgs::Marker::CUBE;
-    type_ = "box";
+    type_ = jsk_rviz_plugins::TransformableMarkerOperate::BOX;
 
     frame_id_ = frame;
     name_ = name;

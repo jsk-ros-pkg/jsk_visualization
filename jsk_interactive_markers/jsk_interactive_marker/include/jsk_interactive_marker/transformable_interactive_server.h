@@ -4,8 +4,10 @@
 #include <ros/ros.h>
 #include <interactive_markers/interactive_marker_server.h>
 #include <jsk_interactive_marker/transformable_object.h>
-#include <jsk_interactive_marker/RequestMarkerOperate.h>
 #include <jsk_interactive_marker/GetType.h>
+#include <jsk_interactive_marker/GetMarkerDimensions.h>
+#include <jsk_interactive_marker/SetMarkerDimensions.h>
+#include <jsk_interactive_marker/MarkerDimensions.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -35,6 +37,7 @@ namespace jsk_interactive_marker
 
     void setPose(geometry_msgs::PoseStamped msg);
     void addPose(geometry_msgs::Pose msg);
+    void addPoseRelative(geometry_msgs::Pose msg);
 
     void setColor(std_msgs::ColorRGBA msg);
 
@@ -55,10 +58,15 @@ namespace jsk_interactive_marker
 
     bool getPoseService(jsk_interactive_marker::GetPose::Request &req,jsk_interactive_marker::GetPose::Response &res);
     bool getTypeService(jsk_interactive_marker::GetType::Request &req,jsk_interactive_marker::GetType::Response &res);
+    bool setDimensionsService(jsk_interactive_marker::SetMarkerDimensions::Request &req,jsk_interactive_marker::SetMarkerDimensions::Response &res);
+    bool getDimensionsService(jsk_interactive_marker::GetMarkerDimensions::Request &req,jsk_interactive_marker::GetMarkerDimensions::Response &res);
+    void publishMarkerDimensions();
 
-    bool requestMarkerOperateService(jsk_interactive_marker::RequestMarkerOperate::Request &req,jsk_interactive_marker::RequestMarkerOperate::Response &res);
+    bool requestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate::Request &req,jsk_rviz_plugins::RequestMarkerOperate::Response &res);
     virtual void configCallback(InteractiveSettingConfig &config, uint32_t level);
     void SetInitialInteractiveMarkerConfig( TransformableObject* tobject );
+
+    void tfTimerCallback(const ros::TimerEvent&);
 
     std::string focus_object_marker_name_;
     ros::NodeHandle* n_;
@@ -68,6 +76,7 @@ namespace jsk_interactive_marker
     ros::Subscriber setcolor_sub_;
     ros::Subscriber setpose_sub_;
     ros::Subscriber addpose_sub_;
+    ros::Subscriber addpose_relative_sub_;
 
     ros::Subscriber set_r_sub_;
     ros::Subscriber set_sm_r_sub_;
@@ -78,7 +87,11 @@ namespace jsk_interactive_marker
 
     ros::ServiceServer get_pose_srv_;
     ros::ServiceServer get_type_srv_;
+    ros::ServiceServer set_dimensions_srv;
+    ros::ServiceServer get_dimensions_srv;
+    ros::Publisher marker_dimensions_pub_;
     ros::ServiceServer request_marker_operate_srv_;
+
     boost::shared_ptr <dynamic_reconfigure::Server<InteractiveSettingConfig> > config_srv_;
 
     ros::Subscriber setrad_sub_;
@@ -90,6 +103,8 @@ namespace jsk_interactive_marker
     int torus_udiv_;
     int torus_vdiv_;
     bool display_interactive_manipulator_;
+
+    ros::Timer tf_timer;
   };
 }
 

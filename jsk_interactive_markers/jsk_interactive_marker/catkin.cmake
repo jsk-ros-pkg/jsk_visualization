@@ -21,10 +21,10 @@ find_package(TinyXML REQUIRED)
 
 add_message_files(
   DIRECTORY msg
-  FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg TransformableMarkerOperate.msg
+  FILES MarkerMenu.msg MarkerPose.msg MoveObject.msg MarkerDimensions.msg
 )
 add_service_files(DIRECTORY srv
-  FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetPose.srv GetType.srv RequestMarkerOperate.srv)
+  FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetPose.srv GetType.srv SetMarkerDimensions.srv GetMarkerDimensions.srv)
 
 generate_dynamic_reconfigure_options(
   cfg/InteractivePointCloud.cfg
@@ -54,7 +54,7 @@ add_executable(urdf_model_marker src/urdf_model_marker.cpp src/urdf_model_marker
 target_link_libraries(urdf_model_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(urdf_model_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
-add_executable(urdf_control_marker src/urdf_control_marker.cpp)
+add_executable(urdf_control_marker src/urdf_control_marker.cpp src/interactive_marker_utils.cpp)
 target_link_libraries(urdf_control_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_dependencies(urdf_control_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 

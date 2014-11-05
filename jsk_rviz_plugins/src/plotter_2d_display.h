@@ -58,6 +58,9 @@ namespace jsk_rviz_plugin
     Plotter2DDisplay();
     virtual ~Plotter2DDisplay();
   protected:
+    ////////////////////////////////////////////////////////
+    // methods
+    ////////////////////////////////////////////////////////
     virtual void update(float wall_dt, float ros_dt);
     virtual void subscribe();
     virtual void unsubscribe();
@@ -66,7 +69,12 @@ namespace jsk_rviz_plugin
     virtual void initializeBuffer();
     virtual void onInitialize();
     virtual void processMessage(const std_msgs::Float32::ConstPtr& msg);
+    virtual void drawPlot();
+    ////////////////////////////////////////////////////////
+    // properties
+    ////////////////////////////////////////////////////////
     rviz::RosTopicProperty* update_topic_property_;
+    rviz::BoolProperty* show_value_property_;
     rviz::ColorProperty* fg_color_property_;
     rviz::ColorProperty* bg_color_property_;
     rviz::FloatProperty* fg_alpha_property_;
@@ -97,11 +105,11 @@ namespace jsk_rviz_plugin
     bool auto_scale_;
     bool show_border_;
     bool auto_color_change_;
+    bool show_value_;
     bool show_caption_;
     bool draw_required_;
     float last_time_;
     float update_interval_;
-    virtual void drawPlot();
     
     int buffer_length_;
     std::vector<double> buffer_;
@@ -114,10 +122,16 @@ namespace jsk_rviz_plugin
     int caption_offset_;
     double min_value_;
     double max_value_;
+    
+    ////////////////////////////////////////////////////////
+    // ROS variables
+    ////////////////////////////////////////////////////////
     boost::mutex mutex_;
     ros::Subscriber sub_;
+                        
   protected Q_SLOTS:
     void updateTopic();
+    void updateShowValue();
     void updateBufferSize();
     void updateBGColor();
     void updateFGColor();

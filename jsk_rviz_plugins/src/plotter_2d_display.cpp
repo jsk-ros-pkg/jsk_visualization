@@ -48,7 +48,11 @@ namespace jsk_rviz_plugin
       "Topic", "",
       ros::message_traits::datatype<std_msgs::Float32>(),
       "std_msgs::Float32 topic to subscribe to.",
-      this, SLOT( updateTopic() ));
+      this, SLOT(updateTopic()));
+    show_value_property_ = new rviz::BoolProperty(
+      "Show Value", true,
+      "Show value on plotter",
+      this, SLOT(updateShowValue()));
     buffer_length_property_ = new rviz::IntProperty(
       "Buffer length", 100,
       ros::message_traits::datatype<std_msgs::Float32>(),
@@ -71,29 +75,36 @@ namespace jsk_rviz_plugin
                                           "top of the plotter window",
                                           this, SLOT(updateTop()));
     top_property_->setMin(0);
-    auto_scale_property_ = new rviz::BoolProperty("auto scale", true,
-                                                  "enable auto scale",
-                                                  this, SLOT(updateAutoScale()));
-    max_value_property_ = new rviz::FloatProperty("max value", 1.0,
-                                                  "max value, used only if auto scale is disabled",
-                                                  this, SLOT(updateMaxValue()));
-    min_value_property_ = new rviz::FloatProperty("min value", -1.0,
-                                                  "min value, used only if auto scale is disabled",
-                                                  this, SLOT(updateMinValue()));
-    fg_color_property_ = new rviz::ColorProperty("foreground color", QColor(25, 255, 240),
-                                                 "color to draw line",
-                                                 this, SLOT(updateFGColor()));
-    fg_alpha_property_ = new rviz::FloatProperty("foreground alpha", 0.7,
-                                                 "alpha belnding value for foreground",
-                                                 this, SLOT(updateFGAlpha()));
+    auto_scale_property_ = new rviz::BoolProperty(
+      "auto scale", true,
+      "enable auto scale",
+      this, SLOT(updateAutoScale()));
+    max_value_property_ = new rviz::FloatProperty(
+      "max value", 1.0,
+      "max value, used only if auto scale is disabled",
+      this, SLOT(updateMaxValue()));
+    min_value_property_ = new rviz::FloatProperty(
+      "min value", -1.0,
+      "min value, used only if auto scale is disabled",
+      this, SLOT(updateMinValue()));
+    fg_color_property_ = new rviz::ColorProperty(
+      "foreground color", QColor(25, 255, 240),
+      "color to draw line",
+      this, SLOT(updateFGColor()));
+    fg_alpha_property_ = new rviz::FloatProperty(
+      "foreground alpha", 0.7,
+      "alpha belnding value for foreground",
+      this, SLOT(updateFGAlpha()));
     fg_alpha_property_->setMin(0);
     fg_alpha_property_->setMax(1.0);
-    bg_color_property_ = new rviz::ColorProperty("background color", QColor(0, 0, 0),
-                                                 "background color",
-                                                 this, SLOT(updateBGColor()));
-    bg_alpha_property_ = new rviz::FloatProperty("backround alpha", 0.0,
-                                                 "alpha belnding value for background",
-                                                 this, SLOT(updateBGAlpha()));
+    bg_color_property_ = new rviz::ColorProperty(
+      "background color", QColor(0, 0, 0),
+      "background color",
+      this, SLOT(updateBGColor()));
+    bg_alpha_property_ = new rviz::FloatProperty(
+      "backround alpha", 0.0,
+      "alpha belnding value for background",
+      this, SLOT(updateBGAlpha()));
     bg_alpha_property_->setMin(0);
     bg_alpha_property_->setMax(1.0);
     line_width_property_ = new rviz::IntProperty("linewidth", 1,
@@ -101,20 +112,23 @@ namespace jsk_rviz_plugin
                                                  this, SLOT(updateLineWidth()));
     line_width_property_->setMin(1);
     line_width_property_->setMax(1000);
-    show_border_property_ = new rviz::BoolProperty("border", true,
-                                                   "show border or not",
-                                                   this, SLOT(updateShowBorder()));
+    show_border_property_ = new rviz::BoolProperty(
+      "border", true,
+      "show border or not",
+      this, SLOT(updateShowBorder()));
     text_size_property_ = new rviz::IntProperty("text size", 12,
                                                 "text size of the caption",
                                                 this, SLOT(updateTextSize()));
     text_size_property_->setMin(1);
     text_size_property_->setMax(1000);
-    show_caption_property_ = new rviz::BoolProperty("caption", true,
-                                                    "show caption or not",
-                                                    this, SLOT(updateShowCaption()));
-    update_interval_property_ = new rviz::FloatProperty("update interval", 0.04,
-                                                        "update interval of the plotter",
-                                                        this, SLOT(updateUpdateInterval()));
+    show_caption_property_ = new rviz::BoolProperty(
+      "caption", true,
+      "show caption or not",
+      this, SLOT(updateShowCaption()));
+    update_interval_property_ = new rviz::FloatProperty(
+      "update interval", 0.04,
+      "update interval of the plotter",
+      this, SLOT(updateUpdateInterval()));
     update_interval_property_->setMin(0.0);
     update_interval_property_->setMax(100);
     auto_color_change_property_
@@ -123,10 +137,11 @@ namespace jsk_rviz_plugin
                                "change the color automatically",
                                this, SLOT(updateAutoColorChange()));
     max_color_property_
-      = new rviz::ColorProperty("max color",
-                                QColor(255, 0, 0),
-                                "only used if auto color change is set to True.",
-                                this, SLOT(updateMaxColor()));
+      = new rviz::ColorProperty(
+        "max color",
+        QColor(255, 0, 0),
+        "only used if auto color change is set to True.",
+        this, SLOT(updateMaxColor()));
   }
 
   Plotter2DDisplay::~Plotter2DDisplay()
@@ -172,6 +187,7 @@ namespace jsk_rviz_plugin
     ss << "Plotter2DDisplayObject" << count++;
     overlay_.reset(new OverlayObject(ss.str()));
     onEnable();
+    updateShowValue();
     updateWidth();
     updateHeight();
     updateLeft();
@@ -269,7 +285,17 @@ namespace jsk_rviz_plugin
         painter.drawText(0, h, w, caption_offset_,
                          Qt::AlignCenter | Qt::AlignVCenter,
                          getName());
-
+      }
+      if (show_value_) {
+        QFont font = painter.font();
+        font.setPointSize(w / 4);
+        font.setBold(true);
+        painter.setFont(font);
+        std::ostringstream ss;
+        ss << std::fixed << std::setprecision(2) << buffer_[buffer_.size() - 1];
+        painter.drawText(0, 0, w, h,
+                         Qt::AlignCenter | Qt::AlignVCenter,
+                         ss.str().c_str());
       }
       
       // done
@@ -414,6 +440,11 @@ namespace jsk_rviz_plugin
     subscribe();
   }
 
+  void Plotter2DDisplay::updateShowValue()
+  {
+    show_value_ = show_value_property_->getBool();
+  }
+  
   void Plotter2DDisplay::updateShowBorder()
   {
     show_border_ = show_border_property_->getBool();
@@ -478,7 +509,7 @@ namespace jsk_rviz_plugin
     updateMinValue();
     updateMaxValue();
   }
-  
+
 }
 
 #include <pluginlib/class_list_macros.h>

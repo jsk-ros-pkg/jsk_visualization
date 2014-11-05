@@ -133,6 +133,9 @@ namespace jsk_rviz_plugin
         ROS_DEBUG("need to resize because the length of menu is different");
         return true;
       }
+      else if (current_menu_->title != next_menu_->title) {
+        return true;
+      }
       else {
         // check all the menu is same or not
         for (size_t i = 0; i < current_menu_->menus.size(); i++) {
@@ -171,6 +174,11 @@ namespace jsk_rviz_plugin
         max_width = w;
       }
     }
+    int w = fm.width(msg->title.c_str());
+    
+    if (max_width < w) {
+      max_width = w;
+    }
     return max_width + menu_padding_x * 2;
   }
 
@@ -194,20 +202,7 @@ namespace jsk_rviz_plugin
       ROS_DEBUG("request is close and state is closed, we ignore it completely");
       return;
     }
-    // if (!overlay_) {
-    //   static int count = 0;
-    //   rviz::UniformStringStream ss;
-    //   ss << "OverlayMenuDisplayObject" << count++;
-    //   overlay_.reset(new OverlayObject(ss.str()));
-    //   overlay_->show();
-    // }
-    
-    // if (isNeedToResize()) {
-    //   overlay_->updateTextureSize(drawAreaWidth(next_menu_), drawAreaHeight(next_menu_));
-    // }
-    // else {
-    //   ROS_DEBUG("no need to update texture size");
-    // }
+
     if (next_menu_->action == jsk_rviz_plugins::OverlayMenu::ACTION_CLOSE) {
       // need to close...
       if (animation_state_ == CLOSED) {
@@ -338,8 +333,10 @@ namespace jsk_rviz_plugin
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     int window_width = context_->getViewManager()->getRenderPanel()->width();
     int window_height = context_->getViewManager()->getRenderPanel()->height();
-    overlay_->setPosition((window_width - overlay_->getTextureWidth()) / 2.0,
-                          (window_height - overlay_->getTextureHeight()) / 2.0);
+    double window_left = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
+    double window_top = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
+    overlay_->setPosition(window_left, window_top);
+                          
     current_menu_ = next_menu_;
   }
   
@@ -395,8 +392,9 @@ namespace jsk_rviz_plugin
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     int window_width = context_->getViewManager()->getRenderPanel()->width();
     int window_height = context_->getViewManager()->getRenderPanel()->height();
-    overlay_->setPosition((window_width - overlay_->getTextureWidth()) / 2.0,
-                          (window_height - overlay_->getTextureHeight()) / 2.0);
+    double window_left = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
+    double window_top = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
+    overlay_->setPosition(window_left, window_top);
   }
   
   void OverlayMenuDisplay::updateTopic()
