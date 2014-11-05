@@ -8,39 +8,64 @@
 #include "ui_robot_command_interface.h"
 
 using namespace rviz;
-
 namespace jsk_rviz_plugin
 {
-
   RobotCommandInterfaceAction::RobotCommandInterfaceAction( QWidget* parent )
     : rviz::Panel( parent )
   {
     ui_ = new Ui::RobotCommandInterface();
     ui_->setupUi(this);
+
+    ros::NodeHandle nh("~");
+    std::string reset_pose_button_icon_name,
+      reset_manip_pose_button_icon_name,
+      init_pose_button_icon_name,
+      hand_reset_pose_button_icon_name,
+      hand_hook_pose_button_icon_name,
+      hand_grasp_pose_button_icon_name,
+      hrpsys_start_abc_button_icon_name,
+      hrpsys_start_st_button_icon_name,
+      hrpsys_start_imp_button_icon_name,
+      hrpsys_stop_abc_button_icon_name,
+      hrpsys_stop_st_button_icon_name,
+      hrpsys_stop_imp_button_icon_name;
+    nh.param<std::string>("/reset_pose_icon", reset_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/reset-pose.jpg"));
+    nh.param<std::string>("/reset_manip_pose_icon", reset_manip_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/reset-manip-pose.jpg"));
+    nh.param<std::string>("/init_pose_icon", init_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/init-pose.jpg"));
+    nh.param<std::string>("/hand_reset_pose_icon", hand_reset_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/hand-reset-pose.jpg"));
+    nh.param<std::string>("/hand_hook_pose_icon", hand_hook_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/hand-hook-pose.jpg"));
+    nh.param<std::string>("/hand_grasp_pose_icon", hand_grasp_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/hand-grasp-pose.jpg"));
+    nh.param<std::string>("/start_abc_icon", hrpsys_start_abc_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-abc.png"));
+    nh.param<std::string>("/start_st_icon", hrpsys_start_st_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-st.png"));
+    nh.param<std::string>("/start_imp_icon", hrpsys_start_imp_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-imp.png"));
+    nh.param<std::string>("/stop_abc_icon", hrpsys_stop_abc_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-abc.png"));
+    nh.param<std::string>("/stop_st_icon", hrpsys_stop_st_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-st.png"));
+    nh.param<std::string>("/stop_imp_icon", hrpsys_stop_imp_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-imp.png"));
+
     ui_->reset_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->reset_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/reset-pose.jpg")).c_str()))));
+    ui_->reset_pose_button->setIcon(QIcon(QPixmap(QString(reset_pose_button_icon_name.c_str()))));
     ui_->reset_manip_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->reset_manip_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/reset-manip-pose.jpg")).c_str()))));
+    ui_->reset_manip_pose_button->setIcon(QIcon(QPixmap(QString(reset_manip_pose_button_icon_name.c_str()))));
     ui_->init_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->init_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/init-pose.jpg")).c_str()))));
+    ui_->init_pose_button->setIcon(QIcon(QPixmap(QString(init_pose_button_icon_name.c_str()))));
     ui_->hand_reset_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hand_reset_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/hand-reset-pose.jpg")).c_str()))));
+    ui_->hand_reset_pose_button->setIcon(QIcon(QPixmap(QString(hand_reset_pose_button_icon_name.c_str()))));
     ui_->hand_hook_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hand_hook_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/hand-hook-pose.jpg")).c_str()))));
+    ui_->hand_hook_pose_button->setIcon(QIcon(QPixmap(QString(hand_hook_pose_button_icon_name.c_str()))));
     ui_->hand_grasp_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hand_grasp_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/hand-grasp-pose.jpg")).c_str()))));
+    ui_->hand_grasp_pose_button->setIcon(QIcon(QPixmap(QString(hand_grasp_pose_button_icon_name.c_str()))));
     ui_->hrpsys_start_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_start_abc_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-abc.png")).c_str()))));
+    ui_->hrpsys_start_abc_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_abc_button_icon_name.c_str()))));
     ui_->hrpsys_start_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_start_st_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-st.png")).c_str()))));
+    ui_->hrpsys_start_st_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_st_button_icon_name.c_str()))));
     ui_->hrpsys_start_imp_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_start_imp_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-imp.png")).c_str()))));
+    ui_->hrpsys_start_imp_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_imp_button_icon_name.c_str()))));
     ui_->hrpsys_stop_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_abc_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-abc.png")).c_str()))));
+    ui_->hrpsys_stop_abc_button->setIcon(QIcon(QPixmap(QString(hrpsys_stop_abc_button_icon_name.c_str()))));
     ui_->hrpsys_stop_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_st_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-st.png")).c_str()))));
+    ui_->hrpsys_stop_st_button->setIcon(QIcon(QPixmap(QString(hrpsys_stop_st_button_icon_name.c_str()))));
     ui_->hrpsys_stop_imp_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_imp_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-imp.png")).c_str()))));
+    ui_->hrpsys_stop_imp_button->setIcon(QIcon(QPixmap(QString(hrpsys_stop_imp_button_icon_name.c_str()))));
 
     connect( ui_->reset_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestResetPose()));
     connect( ui_->reset_manip_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestManipPose()));
@@ -141,7 +166,6 @@ namespace jsk_rviz_plugin
   {
     rviz::Panel::load( config );
   }
-
 }
 
 #include <pluginlib/class_list_macros.h>

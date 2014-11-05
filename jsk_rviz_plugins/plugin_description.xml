@@ -182,4 +182,11 @@
       A panel widget to RobotCommandInterfaceAction action
     </description>
   </class>
+  <class name="jsk_rviz_plugin/EmptyServiceCallInterfaceAction"
+         type="jsk_rviz_plugin::EmptyServiceCallInterfaceAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to EmptyServiceCallInterfaceAction action
+    </description>
+  </class>
 </library>
