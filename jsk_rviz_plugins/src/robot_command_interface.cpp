@@ -100,17 +100,17 @@ namespace jsk_rviz_plugin
   };
 
   void RobotCommandInterfaceAction::callRequestResetGripperPose(){
-    std::string command("(progn (send *robot* :hand :arms :reset-pose) (send *ri* :hand-angle-vector (apply #\"concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
+    std::string command("(progn (send *robot* :hand :arms :reset-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
     callRequestEusCommand(command);
   };
 
   void RobotCommandInterfaceAction::callRequestHookGrippePose(){
-    std::string command("(progn (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #\"concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
+    std::string command("(progn (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
     callRequestEusCommand(command);
   };
 
   void RobotCommandInterfaceAction::callRequestGraspGrippePose(){
-    std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\"concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
+    std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
     callRequestEusCommand(command);
   };
 
