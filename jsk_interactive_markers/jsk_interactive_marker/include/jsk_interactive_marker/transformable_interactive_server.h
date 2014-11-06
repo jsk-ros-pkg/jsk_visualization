@@ -4,8 +4,6 @@
 #include <ros/ros.h>
 #include <interactive_markers/interactive_marker_server.h>
 #include <jsk_interactive_marker/transformable_object.h>
-#include <jsk_interactive_marker/GetType.h>
-#include <jsk_interactive_marker/MarkerDimensions.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -24,6 +22,9 @@
 #include <jsk_interactive_marker/SetTransformableMarkerFocus.h>
 #include <jsk_interactive_marker/GetMarkerDimensions.h>
 #include <jsk_interactive_marker/SetMarkerDimensions.h>
+#include <jsk_interactive_marker/GetType.h>
+#include <jsk_interactive_marker/GetTransformableMarkerExistence.h>
+#include <jsk_interactive_marker/MarkerDimensions.h>
 
 using namespace std;
 
@@ -69,6 +70,7 @@ namespace jsk_interactive_marker
     bool getFocusService(jsk_interactive_marker::GetTransformableMarkerFocus::Request &req,jsk_interactive_marker::GetTransformableMarkerFocus::Response &res);
     bool setFocusService(jsk_interactive_marker::SetTransformableMarkerFocus::Request &req,jsk_interactive_marker::SetTransformableMarkerFocus::Response &res);
     bool getTypeService(jsk_interactive_marker::GetType::Request &req,jsk_interactive_marker::GetType::Response &res);
+    bool getExistenceService(jsk_interactive_marker::GetTransformableMarkerExistence::Request &req,jsk_interactive_marker::GetTransformableMarkerExistence::Response &res);
     bool setDimensionsService(jsk_interactive_marker::SetMarkerDimensions::Request &req,jsk_interactive_marker::SetMarkerDimensions::Response &res);
     bool getDimensionsService(jsk_interactive_marker::GetMarkerDimensions::Request &req,jsk_interactive_marker::GetMarkerDimensions::Response &res);
     void publishMarkerDimensions();
@@ -104,6 +106,7 @@ namespace jsk_interactive_marker
     ros::ServiceServer get_focus_srv_;
     ros::ServiceServer set_focus_srv_;
     ros::ServiceServer get_type_srv_;
+    ros::ServiceServer get_exist_srv_;
     ros::ServiceServer set_dimensions_srv;
     ros::ServiceServer get_dimensions_srv;
     ros::Publisher marker_dimensions_pub_;

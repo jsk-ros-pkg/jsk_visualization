@@ -31,6 +31,7 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   get_focus_srv_ = n_->advertiseService("get_focus", &TransformableInteractiveServer::getFocusService, this);
   set_focus_srv_ = n_->advertiseService("set_focus", &TransformableInteractiveServer::setFocusService, this);
   get_type_srv_ = n_->advertiseService("get_type", &TransformableInteractiveServer::getTypeService, this);
+  get_exist_srv_ = n_->advertiseService("get_existence", &TransformableInteractiveServer::getExistenceService, this);
   set_dimensions_srv =  n_->advertiseService("set_dimensions", &TransformableInteractiveServer::setDimensionsService, this);
   get_dimensions_srv =  n_->advertiseService("get_dimensions", &TransformableInteractiveServer::getDimensionsService, this);
   marker_dimensions_pub_ = n_->advertise<jsk_interactive_marker::MarkerDimensions>("marker_dimensions", 1);
@@ -257,6 +258,16 @@ bool TransformableInteractiveServer::getTypeService(jsk_interactive_marker::GetT
   return true;
 }
 
+bool TransformableInteractiveServer::getExistenceService(jsk_interactive_marker::GetTransformableMarkerExistence::Request &req,jsk_interactive_marker::GetTransformableMarkerExistence::Response &res)
+{
+  if (transformable_objects_map_.find(req.target_name) == transformable_objects_map_.end()) {
+    res.existence = false;
+  } else {
+    res.existence = true;
+  }
+  return true;
+}
+
 bool TransformableInteractiveServer::setDimensionsService(jsk_interactive_marker::SetMarkerDimensions::Request &req,jsk_interactive_marker::SetMarkerDimensions::Response &res)
 {
   TransformableObject* tobject;
@@ -345,6 +356,36 @@ bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugin
     break;
   case jsk_rviz_plugins::TransformableMarkerOperate::ERASEFOCUS:
     eraseFocusObject();
+    return true;
+    break;
+  case jsk_rviz_plugins::TransformableMarkerOperate::COPY:
+    if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return true; }
+    TransformableObject *tobject = transformable_objects_map_[focus_object_marker_name_], *new_tobject;
+    if (tobject->type_ == jsk_rviz_plugins::TransformableMarkerOperate::BOX) {
+      float x, y, z;
+      tobject->getXYZ(x, y, z);
+      insertNewBox(tobject->frame_id_, req.operate.name, req.operate.description);
+      new_tobject = transformable_objects_map_[req.operate.name];
+      new_tobject->setXYZ(x, y, z);
+      new_tobject->setPose(tobject->getPose());
+    } else if (tobject->type_ == jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER) {
+      float r, z;
+      tobject->getRZ(r, z);
+      insertNewCylinder(tobject->frame_id_, req.operate.name, req.operate.description);
+      new_tobject = transformable_objects_map_[req.operate.name];
+      new_tobject->setRZ(r, z);
+      new_tobject->setPose(tobject->getPose());
+    } else if (tobject->type_ == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
+      float r, sr;
+      tobject->getRSR(r, sr);
+      insertNewTorus(tobject->frame_id_, req.operate.name, req.operate.description);
+      new_tobject = transformable_objects_map_[req.operate.name];
+      new_tobject->setRSR(r, sr);
+      new_tobject->setPose(tobject->getPose());
+    }
+    float r, g, b, a;
+    tobject->getRGBA(r, g, b, a);
+    new_tobject->setRGBA(r, g, b, a);
     return true;
     break;
   };
