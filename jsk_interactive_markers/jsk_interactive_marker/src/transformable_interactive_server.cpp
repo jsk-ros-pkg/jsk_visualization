@@ -26,6 +26,10 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
 
   get_pose_srv_ = n_->advertiseService("get_pose", &TransformableInteractiveServer::getPoseService, this);
   set_pose_srv_ = n_->advertiseService("set_pose", &TransformableInteractiveServer::setPoseService, this);
+  get_color_srv_ = n_->advertiseService("get_color", &TransformableInteractiveServer::getColorService, this);
+  set_color_srv_ = n_->advertiseService("set_color", &TransformableInteractiveServer::setColorService, this);
+  get_focus_srv_ = n_->advertiseService("get_focus", &TransformableInteractiveServer::getFocusService, this);
+  set_focus_srv_ = n_->advertiseService("set_focus", &TransformableInteractiveServer::setFocusService, this);
   get_type_srv_ = n_->advertiseService("get_type", &TransformableInteractiveServer::getTypeService, this);
   set_dimensions_srv =  n_->advertiseService("set_dimensions", &TransformableInteractiveServer::setDimensionsService, this);
   get_dimensions_srv =  n_->advertiseService("get_dimensions", &TransformableInteractiveServer::getDimensionsService, this);
@@ -195,6 +199,49 @@ bool TransformableInteractiveServer::setPoseService(jsk_interactive_marker::SetT
   return true;
 }
 
+bool TransformableInteractiveServer::getColorService(jsk_interactive_marker::GetTransformableMarkerColor::Request &req,jsk_interactive_marker::GetTransformableMarkerColor::Response &res)
+{
+  TransformableObject* tobject;
+  if(req.target_name.compare(std::string("")) == 0){
+    if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return true; }
+    tobject = transformable_objects_map_[focus_object_marker_name_];
+  }else{
+    if (transformable_objects_map_.find(req.target_name) == transformable_objects_map_.end()) { return true; }
+    tobject = transformable_objects_map_[req.target_name];
+  }
+  tobject->getRGBA(res.color.r, res.color.g, res.color.b, res.color.a);
+  return true;
+}
+
+bool TransformableInteractiveServer::setColorService(jsk_interactive_marker::SetTransformableMarkerColor::Request &req,jsk_interactive_marker::SetTransformableMarkerColor::Response &res)
+{
+  TransformableObject* tobject;
+  if(req.target_name.compare(std::string("")) == 0){
+    if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return true; }
+    tobject = transformable_objects_map_[focus_object_marker_name_];
+  }else{
+    if (transformable_objects_map_.find(req.target_name) == transformable_objects_map_.end()) { return true; }
+    tobject = transformable_objects_map_[req.target_name];
+  }
+  tobject->setRGBA(req.color.r, req.color.g, req.color.b, req.color.a);
+  updateTransformableObject(tobject);
+  return true;
+}
+
+bool TransformableInteractiveServer::getFocusService(jsk_interactive_marker::GetTransformableMarkerFocus::Request &req,jsk_interactive_marker::GetTransformableMarkerFocus::Response &res)
+{
+  res.target_name = focus_object_marker_name_;
+  return true;
+}
+
+bool TransformableInteractiveServer::setFocusService(jsk_interactive_marker::SetTransformableMarkerFocus::Request &req,jsk_interactive_marker::SetTransformableMarkerFocus::Response &res)
+{
+  focus_object_marker_name_ = req.target_name;
+  focusTextPublish();
+  focusPosePublish();
+  return true;
+}
+
 bool TransformableInteractiveServer::getTypeService(jsk_interactive_marker::GetType::Request &req,jsk_interactive_marker::GetType::Response &res)
 {
   TransformableObject* tobject;
@@ -275,8 +322,6 @@ void TransformableInteractiveServer::publishMarkerDimensions()
   }
 }
   
-
-
 bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate::Request &req,jsk_rviz_plugins::RequestMarkerOperate::Response &res)
 {
   switch(req.operate.action){
@@ -396,6 +441,8 @@ void TransformableInteractiveServer::insertNewObject( TransformableObject* tobje
   server_->applyChanges();
 
   focus_object_marker_name_ = name;
+  focusTextPublish();
+  focusPosePublish();
 }
 
 void TransformableInteractiveServer::SetInitialInteractiveMarkerConfig( TransformableObject* tobject )

@@ -5,8 +5,6 @@
 #include <interactive_markers/interactive_marker_server.h>
 #include <jsk_interactive_marker/transformable_object.h>
 #include <jsk_interactive_marker/GetType.h>
-#include <jsk_interactive_marker/GetMarkerDimensions.h>
-#include <jsk_interactive_marker/SetMarkerDimensions.h>
 #include <jsk_interactive_marker/MarkerDimensions.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/Empty.h>
@@ -20,6 +18,12 @@
 #include <jsk_interactive_marker/InteractiveSettingConfig.h>
 #include <jsk_interactive_marker/GetTransformableMarkerPose.h>
 #include <jsk_interactive_marker/SetTransformableMarkerPose.h>
+#include <jsk_interactive_marker/GetTransformableMarkerColor.h>
+#include <jsk_interactive_marker/SetTransformableMarkerColor.h>
+#include <jsk_interactive_marker/GetTransformableMarkerFocus.h>
+#include <jsk_interactive_marker/SetTransformableMarkerFocus.h>
+#include <jsk_interactive_marker/GetMarkerDimensions.h>
+#include <jsk_interactive_marker/SetMarkerDimensions.h>
 
 using namespace std;
 
@@ -60,6 +64,10 @@ namespace jsk_interactive_marker
 
     bool getPoseService(jsk_interactive_marker::GetTransformableMarkerPose::Request &req,jsk_interactive_marker::GetTransformableMarkerPose::Response &res);
     bool setPoseService(jsk_interactive_marker::SetTransformableMarkerPose::Request &req,jsk_interactive_marker::SetTransformableMarkerPose::Response &res);
+    bool getColorService(jsk_interactive_marker::GetTransformableMarkerColor::Request &req,jsk_interactive_marker::GetTransformableMarkerColor::Response &res);
+    bool setColorService(jsk_interactive_marker::SetTransformableMarkerColor::Request &req,jsk_interactive_marker::SetTransformableMarkerColor::Response &res);
+    bool getFocusService(jsk_interactive_marker::GetTransformableMarkerFocus::Request &req,jsk_interactive_marker::GetTransformableMarkerFocus::Response &res);
+    bool setFocusService(jsk_interactive_marker::SetTransformableMarkerFocus::Request &req,jsk_interactive_marker::SetTransformableMarkerFocus::Response &res);
     bool getTypeService(jsk_interactive_marker::GetType::Request &req,jsk_interactive_marker::GetType::Response &res);
     bool setDimensionsService(jsk_interactive_marker::SetMarkerDimensions::Request &req,jsk_interactive_marker::SetMarkerDimensions::Response &res);
     bool getDimensionsService(jsk_interactive_marker::GetMarkerDimensions::Request &req,jsk_interactive_marker::GetMarkerDimensions::Response &res);
@@ -91,6 +99,10 @@ namespace jsk_interactive_marker
 
     ros::ServiceServer get_pose_srv_;
     ros::ServiceServer set_pose_srv_;
+    ros::ServiceServer get_color_srv_;
+    ros::ServiceServer set_color_srv_;
+    ros::ServiceServer get_focus_srv_;
+    ros::ServiceServer set_focus_srv_;
     ros::ServiceServer get_type_srv_;
     ros::ServiceServer set_dimensions_srv;
     ros::ServiceServer get_dimensions_srv;
