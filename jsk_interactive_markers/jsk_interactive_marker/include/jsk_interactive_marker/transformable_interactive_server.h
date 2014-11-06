@@ -18,6 +18,8 @@
 #include <tf/transform_listener.h>
 #include <dynamic_reconfigure/server.h>
 #include <jsk_interactive_marker/InteractiveSettingConfig.h>
+#include <jsk_interactive_marker/GetTransformableMarkerPose.h>
+#include <jsk_interactive_marker/SetTransformableMarkerPose.h>
 
 using namespace std;
 
@@ -56,7 +58,8 @@ namespace jsk_interactive_marker
 
     void updateTransformableObject(TransformableObject* tobject);
 
-    bool getPoseService(jsk_interactive_marker::GetPose::Request &req,jsk_interactive_marker::GetPose::Response &res);
+    bool getPoseService(jsk_interactive_marker::GetTransformableMarkerPose::Request &req,jsk_interactive_marker::GetTransformableMarkerPose::Response &res);
+    bool setPoseService(jsk_interactive_marker::SetTransformableMarkerPose::Request &req,jsk_interactive_marker::SetTransformableMarkerPose::Response &res);
     bool getTypeService(jsk_interactive_marker::GetType::Request &req,jsk_interactive_marker::GetType::Response &res);
     bool setDimensionsService(jsk_interactive_marker::SetMarkerDimensions::Request &req,jsk_interactive_marker::SetMarkerDimensions::Response &res);
     bool getDimensionsService(jsk_interactive_marker::GetMarkerDimensions::Request &req,jsk_interactive_marker::GetMarkerDimensions::Response &res);
@@ -67,6 +70,7 @@ namespace jsk_interactive_marker
     void SetInitialInteractiveMarkerConfig( TransformableObject* tobject );
 
     void tfTimerCallback(const ros::TimerEvent&);
+    bool setPoseWithTfTransformation(TransformableObject* tobject, geometry_msgs::PoseStamped pose_stamped);
 
     std::string focus_object_marker_name_;
     ros::NodeHandle* n_;
@@ -86,6 +90,7 @@ namespace jsk_interactive_marker
     ros::Subscriber set_z_sub_;
 
     ros::ServiceServer get_pose_srv_;
+    ros::ServiceServer set_pose_srv_;
     ros::ServiceServer get_type_srv_;
     ros::ServiceServer set_dimensions_srv;
     ros::ServiceServer get_dimensions_srv;

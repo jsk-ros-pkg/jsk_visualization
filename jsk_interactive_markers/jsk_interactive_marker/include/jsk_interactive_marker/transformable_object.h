@@ -9,7 +9,6 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/Point.h>
-#include <jsk_interactive_marker/GetPose.h>
 #include <jsk_rviz_plugins/RequestMarkerOperate.h>
 #include <vector>
 #include <algorithm>
