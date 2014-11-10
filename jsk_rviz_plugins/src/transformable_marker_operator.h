@@ -2,32 +2,25 @@
 #define TRANSFORMABLE_MARKER_OPERATOR_H
 
 #include <ros/ros.h>
-
 #include <rviz/panel.h>
 #include <QtGui>
 #include <jsk_rviz_plugins/RequestMarkerOperate.h>
 
 class QLineEdit;
-class QLabel;
 class QPushButton;
-//class QSignalMapper;
-class PropertyTreeWidget;
-
 
 namespace jsk_rviz_plugin
 {
   class TransformableMarkerOperatorAction: public rviz::Panel
     {
-      // This class uses Qt slots and is a subclass of QObject, so it needs
-      // the Q_OBJECT macro.
-Q_OBJECT
-  public:
+      Q_OBJECT
+      public:
       TransformableMarkerOperatorAction( QWidget* parent = 0 );
 
       virtual void load( const rviz::Config& config );
       virtual void save( rviz::Config config ) const;
 
-      protected Q_SLOTS:
+    protected Q_SLOTS:
 
       void callRequestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate srv);
       void insertBoxService();
@@ -53,11 +46,8 @@ Q_OBJECT
       QLineEdit* frame_editor_;
       QLineEdit* id_editor_;
 
-      // The ROS node handle.
       ros::NodeHandle nh_;
-
     };
-
 }
 
-#endif // TELEOP_PANEL_H
+#endif

@@ -74,6 +74,7 @@ qt4_wrap_cpp(MOC_FILES
   src/open_all_tool.h
   src/transformable_marker_operator.h
   src/robot_command_interface.h
+  src/empty_service_call_interface.h
 )
 
 set(SOURCE_FILES
@@ -106,10 +107,11 @@ set(SOURCE_FILES
   src/open_all_tool.cpp
   src/transformable_marker_operator.cpp
   src/robot_command_interface.cpp
+  src/empty_service_call_interface.cpp
   ${MOC_FILES}
 )
 
-add_library(jsk_rviz_plugins ${SOURCE_FILES}  ${UIC_FILES})
+add_library(jsk_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(jsk_rviz_plugins jsk_hark_msgs_gencpp ${PROJECT_NAME}_gencpp)
 
