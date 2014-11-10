@@ -15,6 +15,7 @@ namespace jsk_rviz_plugin
   {
     ui_ = new Ui::RobotCommandInterface();
     ui_->setupUi(this);
+    ui_->verticalLayout->setAlignment(Qt::AlignLeft);
 
     ros::NodeHandle nh("~");
     std::string reset_pose_button_icon_name,
