@@ -53,7 +53,7 @@ namespace jsk_rviz_plugin
       icon_path_prefix = ros::package::getPath(icon_package_name) + std::string("/icons/");
 
     XmlRpc::XmlRpcValue buttons_list;
-    nh.getParam("/rviz_service_call/buttons", buttons_list);
+    nh.getParam("rviz_service_call/buttons", buttons_list);
     for (int32_t i = 0; i < buttons_list.size(); ++i)
       {
         ServiceCallButtonInfo new_button;
