@@ -1032,11 +1032,9 @@ void InteractiveMarkerInterface::initHandler(void){
     sub_menu_handle_ik = menu_handler.insert( "IK mode" );
 
     rotation_t_menu_ = menu_handler.insert( sub_menu_handle_ik, "6D (Position + Rotation)", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
-    menu_handler.setCheckState( rotation_t_menu_ , interactive_markers::MenuHandler::UNCHECKED );
-    //h_mode_ikmode = h_mode_last3;
+    menu_handler.setCheckState( rotation_t_menu_ , interactive_markers::MenuHandler::CHECKED );
     rotation_nil_menu_ = menu_handler.insert( sub_menu_handle_ik, "3D (Position)", boost::bind( &InteractiveMarkerInterface::ikmodeCb,this, _1 ));
-    menu_handler.setCheckState( rotation_t_menu_, interactive_markers::MenuHandler::CHECKED );
-    //h_mode_last3 = h_mode_ikmode;
+    menu_handler.setCheckState( rotation_nil_menu_, interactive_markers::MenuHandler::UNCHECKED );
   }
 
   pnh_.param("use_torso_menu", use_menu, false );
