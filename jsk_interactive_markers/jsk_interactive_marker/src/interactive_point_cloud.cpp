@@ -197,9 +197,12 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
 void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr box, const geometry_msgs::PoseStampedConstPtr handle, float size)
 {
   exist_handle_tf_ = false;
-  current_croud_ = *cloud;
-  current_box_ = *box;
-
+  if(cloud){
+    current_croud_ = *cloud;
+  }
+  if(box){
+    current_box_ = *box;
+  }
 
   InteractiveMarker int_marker;
   int_marker.name = marker_name_;
