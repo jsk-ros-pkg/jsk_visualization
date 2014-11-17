@@ -6,8 +6,10 @@
 #include <visualization_msgs/InteractiveMarker.h>
 #include <visualization_msgs/InteractiveMarkerControl.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/ColorRGBA.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
 #include <geometry_msgs/Point.h>
-#include <jsk_interactive_marker/GetPose.h>
 #include <jsk_rviz_plugins/RequestMarkerOperate.h>
 #include <vector>
 #include <algorithm>
@@ -20,6 +22,7 @@ namespace jsk_interactive_marker {
 
     std::vector<visualization_msgs::InteractiveMarkerControl> makeRotateTransFixControl();
 
+    tf::TransformBroadcaster br;
     visualization_msgs::InteractiveMarker getInteractiveMarker();
     virtual visualization_msgs::Marker getVisualizationMsgMarker(){};
     void addMarker(visualization_msgs::InteractiveMarker &int_marker, bool always_visible = true, unsigned int interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D);
@@ -33,8 +36,9 @@ namespace jsk_interactive_marker {
     int type_;
     bool display_interactive_manipulator_;
 
-    void setPose(geometry_msgs::Pose pose){pose_=pose;};
-    void addPose(geometry_msgs::Pose msg);
+    void setPose(geometry_msgs::Pose pose);
+    void addPose(geometry_msgs::Pose msg, bool relative=false);
+    void publishTF();
     std::string getFrameId() { return frame_id_; }
     geometry_msgs::Pose getPose(){return pose_;};
     void setInteractiveMarkerSetting(InteractiveSettingConfig config);
@@ -45,6 +49,7 @@ namespace jsk_interactive_marker {
     virtual bool setY(std_msgs::Float32 recieve_val){return false;};
     virtual bool setZ(std_msgs::Float32 recieve_val){return false;};
     virtual void setRGBA(float r , float g, float b, float a){};
+    virtual void getRGBA(float &r , float &g, float &b, float &a){};
     virtual void setXYZ(float x , float y, float z){};
     virtual void getXYZ(float &x, float &y, float&z){};
     virtual void setRSR(float r , float sr){};
@@ -69,8 +74,9 @@ namespace jsk_interactive_marker
     TransformableBox( float x, float y, float z, float r, float g, float b, float a, std::string frame, std::string name, std::string description);
 
     visualization_msgs::Marker getVisualizationMsgMarker();
-    void setXYZ( float x , float y, float z){box_x_=x;box_y_=y;box_z_=z;};
     void setRGBA( float r , float g, float b, float a){box_r_=r;box_g_=g;box_b_=b;box_a_=a;};
+    void getRGBA(float &r , float &g, float &b, float &a){r=box_r_;g=box_g_;b=box_b_;a=box_a_;}
+    void setXYZ( float x , float y, float z){box_x_=x;box_y_=y;box_z_=z;};
     void getXYZ(float &x, float &y, float&z){x=box_x_;y=box_y_;z=box_z_;};
 
     bool setX(std_msgs::Float32 x){box_x_=x.data;return true;};
@@ -98,6 +104,7 @@ namespace jsk_interactive_marker
 
     visualization_msgs::Marker getVisualizationMsgMarker();
     void setRGBA( float r , float g, float b, float a){torus_r_=r;torus_g_=g;torus_b_=b;torus_a_=a;};
+    void getRGBA(float &r , float &g, float &b, float &a){r=torus_r_;g=torus_g_;b=torus_b_;a=torus_a_;}
     void setRSR( float r , float sr){torus_radius_=r; torus_small_radius_=sr;};
     void getRSR(float &r , float &sr){r=torus_radius_; sr=torus_small_radius_;};
 
@@ -129,6 +136,7 @@ namespace jsk_interactive_marker
 
     visualization_msgs::Marker getVisualizationMsgMarker();
     void setRGBA( float r , float g, float b, float a){cylinder_r_=r;cylinder_g_=g;cylinder_b_=b;cylinder_a_=a;};
+    void getRGBA(float &r , float &g, float &b, float &a){r=cylinder_r_;g=cylinder_g_;b=cylinder_b_;a=cylinder_a_;}
     void setRZ( float r , float z){cylinder_radius_=r; cylinder_z_=z;};
     void getRZ(float &r , float &z){r=cylinder_radius_; z=cylinder_z_;};
 

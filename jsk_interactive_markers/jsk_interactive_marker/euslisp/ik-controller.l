@@ -1627,6 +1627,14 @@
      (setq *robot* (instance hrp2jsknts-robot :init))
      (setq *have-leg* t)
      )
+    ((equal (string-upcase *robot-name*) "HRP2W")
+     (require "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2w-interface.l")
+     (hrp2w-init)
+     (setq *robot* *hrp2w*)
+     (defvar *robot-origin* "BODY")
+     (defvar *robot-offset* (send (send *robot* :body_lk :copy-worldcoords) :transformation (make-coords)))
+     (setq *have-leg* nil)
+     )
     ((equal (string-upcase *robot-name*) "STARO")
      (load "package://jsk_hrpsys_ros_bridge/euslisp/staro-interface.l")
      (setq *robot* (instance staro-robot :init))
@@ -1811,8 +1819,9 @@
 	       :name
 	       (send-all (send *robot* :joint-list) :name)))
 
-   (send *robot* :rleg :knee-p :min-angle 10)
-   (send *robot* :lleg :knee-p :min-angle 10)
+   (when *have-leg*
+     (send *robot* :rleg :knee-p :min-angle 10)
+     (send *robot* :lleg :knee-p :min-angle 10))
 
 					;(send self :demo-mouse-controller)
    (send *robot* :angle-vector
