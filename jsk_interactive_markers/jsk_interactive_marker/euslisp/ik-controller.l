@@ -1120,7 +1120,7 @@
                              (format nil " ik:            ~A~%" (if *ik-stop* "stop" "running"))
                              (format nil " move-arm:      ~A~%" *move-limb*)
                              (format nil " target-coords: ~A~%" *origin-key*)
-                             (format nil " ik-mode:       ~A~%" (if *rotation-axis* "3D" "6D"))
+                             (format nil " ik-mode:       ~A~%" (if *rotation-axis* "6D" "3D"))
                              (format nil " move-link:     ~A~%" (cond (*use-torso* "torso")
                                                                       (*use-fullbody* "fullbody")
                                                                       (t "arm")
