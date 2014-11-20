@@ -15,6 +15,7 @@
     <remap from="/delete_tf" to="/dynamic_tf_publisher_remote/delete_tf"/>
     <remap from="/dissoc_tf" to="/dynamic_tf_publisher_remote/dissoc_tf"/>
     <remap from="/assoc_tf" to="/dynamic_tf_publisher_remote/assoc_tf"/>
+    <remap from="/publish_tf" to="/dynamic_tf_publisher_remote/publish_tf"/>
 
     <node pkg="rviz" type="rviz" name="rviz_for_interactive_marker" args="-d $(find jsk_interactive_marker)/launch/atlas_joint_marker.rviz" respawn="true">
       <remap from="/robot_description" to="$(arg ROBOT_DESCRIPTION_REMOTE)"/>
@@ -51,6 +52,7 @@
     <remap from="/dissoc_tf" to="/dynamic_tf_publisher_remote/dissoc_tf"/>
     <remap from="/delete_tf" to="/dynamic_tf_publisher_remote/delete_tf"/>
     <remap from="/assoc_tf" to="/dynamic_tf_publisher_remote/assoc_tf"/>
+    <remap from="/publish_tf" to="/dynamic_tf_publisher_remote/publish_tf"/>
 
     <include file="$(find jsk_interactive_marker)/launch/pr2_interactive_marker.launch" />
 
