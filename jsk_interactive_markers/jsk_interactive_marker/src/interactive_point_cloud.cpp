@@ -248,8 +248,8 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
 
       InteractiveMarkerControl control;
       control.always_visible = true;
-      //control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
-      control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
+      control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+      //control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
       control.orientation_mode = visualization_msgs::InteractiveMarkerControl::INHERIT;
 
       int_marker.header.stamp = ros::Time::now();
