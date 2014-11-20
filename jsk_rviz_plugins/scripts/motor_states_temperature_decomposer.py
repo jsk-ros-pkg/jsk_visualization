@@ -10,7 +10,7 @@ from urdf_parser_py.urdf import URDF
 
 
 g_publishers = []
-g_effort_publishers = []
+g_effort_publishers = {}
 g_text_publisher = None
 safe_color = (52, 152, 219)     # ~50
 warning_color = (230, 126, 34)               # 50~
@@ -21,12 +21,11 @@ def allocatePublishers(num):
         for i in range(len(g_publishers), num):
             pub = rospy.Publisher('temperature_%02d' % (i), Float32)
             g_publishers.append(pub)
-def allocateEffortPublishers(num):
+def allocateEffortPublishers(names):
     global g_effort_publishers
-    if num > len(g_effort_publishers):
-        for i in range(len(g_publishers), num):
-            pub = rospy.Publisher('effort_%02d' % (i), Float32)
-            g_effort_publishers.append(pub)
+    for name in names:
+        if not g_effort_publishers.has_key(name):
+            g_effort_publishers[name] = rospy.Publisher('effort_%s' % (name), Float32)
         
 def motorStatesCallback(msg):
     global g_publishers, g_text_publisher
@@ -61,8 +60,8 @@ def jointStatesCallback(msg):
     global g_effort_publishers, robot_model
     values = msg.effort
     names = msg.name
-    allocateEffortPublishers(len(values))
-    for val, pub, name in zip(values, g_effort_publishers, names):
+    allocateEffortPublishers(names)
+    for val, name in zip(values, names):
         # lookup effort limit
         candidate_joints = [j for j in robot_model.joints if j.name == name]
         if candidate_joints:
@@ -70,7 +69,7 @@ def jointStatesCallback(msg):
             if limit == 0:
                 rospy.logwarn("%s effort limit is 0" % (name))
             else:
-                pub.publish(Float32(abs(val/limit)))
+                g_effort_publishers[name].publish(Float32(abs(val/limit)))
 
 if __name__ == "__main__":
     rospy.init_node("motor_state_temperature_decomposer")

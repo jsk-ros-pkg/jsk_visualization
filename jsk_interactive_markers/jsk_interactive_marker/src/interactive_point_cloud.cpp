@@ -197,9 +197,12 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
 void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr box, const geometry_msgs::PoseStampedConstPtr handle, float size)
 {
   exist_handle_tf_ = false;
-  current_croud_ = *cloud;
-  current_box_ = *box;
-
+  if(cloud){
+    current_croud_ = *cloud;
+  }
+  if(box){
+    current_box_ = *box;
+  }
 
   InteractiveMarker int_marker;
   int_marker.name = marker_name_;
@@ -245,8 +248,8 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
 
       InteractiveMarkerControl control;
       control.always_visible = true;
-      //control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
-      control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
+      control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+      //control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D;
       control.orientation_mode = visualization_msgs::InteractiveMarkerControl::INHERIT;
 
       int_marker.header.stamp = ros::Time::now();
