@@ -1443,17 +1443,6 @@
 	       (+ (* (/ (- angle-goal angle-origin) interpolation-num) j) angle-origin))
 
 	 (push (send (send  grasp-handle :copy-worldcoords) :rotate pi :z) grasp-handle-list)
-	 ;; (send *robot* :rarm
-	 ;;       :inverse-kinematics (send (send grasp-handle :copy-worldcoords) :rotate pi :z)
-	 ;;       :use-base 0.01 ;;parameter
-	 ;;       :use-torso t
-	 ;;       :base-range (list :min #f(-10000 -10000 -10000) :max #f(10000 10000 10000))
-	 ;;       :debug-view nil)
-
-	 ;; (unix:usleep (* 100 1000))
-	 ;; (when (boundp '*irtviewer*)
-	 ;;   (send *irtviewer* :draw-objects))
-	 ;; )
 	 )
        (setq grasp-handle-list (reverse grasp-handle-list))
        (send self :move-model-ik grasp-handle-list)
@@ -1503,99 +1492,109 @@
 	       :base-range (list :min #f(-10000 -10000 -10000) :max #f(10000 10000 10000))
 	       :debug-view nil
 	       ))
+   (dotimes (i 2)
+     (let (first-handle
+	   handle-vec
+	   (offset-length 500)
+	   initial-vec
+	   initial-rot
+	   initial-coords)
 
-   ;; (dolist (grasp-handle grasp-handle-list)
-   ;;   (send* *robot* :rarm
-   ;; 	    :inverse-kinematics grasp-handle
-   ;; 	    :use-base nil ;;parameter
-   ;; 	    ik-args)
-   ;;   )
-   (let (first-handle
-	 handle-vec
-	 (offset-length 500)
-	 initial-vec
-	 initial-rot
-	 initial-coords)
-     (setq first-handle (send (car grasp-handle-list) :copy-worldcoords))
-     (setq handle-vec (normalize-vector (send first-handle :rotate-vector #f(1 0 0))))
-     ;;(setq offset-length 500) ;;500mm
-     ;;(setq initial-coords (make-coords))
-     (setq initial-vec (v- (send first-handle :worldpos) (scale offset-length handle-vec)))
-     (setq initial-vec (float-vector (elt initial-vec 0) (elt initial-vec 1) 0))
-     (setq initial-rot (atan2 (elt handle-vec 1) (elt handle-vec 0)))
-     ;;(send initial-coords :rot (rotate-matrix (unit-matrix 3) initial-rot :z))
-     (setq initial-coords (make-coords :pos initial-vec
-				       :rot (rotate-matrix (unit-matrix 3) initial-rot :z)))
-     (send *robot* :move-to initial-coords :world)
-     )
+       ;; move *robot* in front of grasp object
+       ;; initial position for ik
+       (setq first-handle (send (car grasp-handle-list) :copy-worldcoords))
+       (setq handle-vec (normalize-vector (send first-handle :rotate-vector #f(1 0 0))))
 
-     ;;(send *robot* :move-to ( (car grasp-handle-list) :locate)
+       (setq initial-vec (v- (send first-handle :worldpos) (scale offset-length handle-vec)))
+       (setq initial-vec (float-vector (elt initial-vec 0) (elt initial-vec 1) 0))
+       (setq initial-rot (atan2 (elt handle-vec 1) (elt handle-vec 0)))
 
+       (setq initial-coords (make-coords :pos initial-vec
+					 :rot (rotate-matrix (unit-matrix 3) initial-rot :z)))
+       (send *robot* :move-to initial-coords :world)
+       )
 
+     (setq test-ik-index (list 0 5 10 5 0))
+     (dolist (i test-ik-index)
+       (send* *robot* :rarm
+	      :inverse-kinematics (elt grasp-handle-list i)
+	      :use-base 0.1 ;;parameter
+	      ik-args)
+       (when (boundp '*irtviewer*)
+	 (send *irtviewer* :draw-objects))
 
-   (setq test-ik-index (list 0 5 10 5 0))
-   (dolist (i test-ik-index)
-     (send* *robot* :rarm
-	    :inverse-kinematics (elt grasp-handle-list i)
-	    :use-base 0.1 ;;parameter
-	    ik-args)
-     )
+       )
 
-   (dolist (i test-ik-index)
-     (send* *robot* :rarm
-	    :inverse-kinematics (elt grasp-handle-list i)
-	    :use-base 0.01 ;;parameter
-	    ik-args)
-     )
+     (dolist (i test-ik-index)
+       (send* *robot* :rarm
+	      :inverse-kinematics (elt grasp-handle-list i)
+	      :use-base 0.01 ;;parameter
+	      ik-args)
+       (when (boundp '*irtviewer*)
+	 (send *irtviewer* :draw-objects))
 
-   (dolist (i test-ik-index)
-     (send* *robot* :rarm
-	    :inverse-kinematics (elt grasp-handle-list i)
-	    :use-base 0.001 ;;parameter
-	    ik-args)
-     )
-   
-   ;;move-to
-   ;;(setq *frame-id* "/map")
-   
-   (unless (boundp '*ri*)
-     (setq *ri* (instance pr2-interface :init)))
-   
-   ;;tuck arm
-   (pr2-tuckarm-pose)
-   ;;move to
-   (send *ri* :move-to (send *robot* :worldcoords) :frame-id *frame-id*)
-   (send *robot* :move-to (send self :pose-stamped->coords (ros::coords->tf-pose-stamped (make-coords) *robot-origin*)) :world)
+       )
 
+     (dolist (i test-ik-index)
+       (send* *robot* :rarm
+	      :inverse-kinematics (elt grasp-handle-list i)
+	      :use-base 0.001 ;;parameter
+	      ik-args)
+       (when (boundp '*irtviewer*)
+	 (send *irtviewer* :draw-objects))
+       )
+     
+     ;;move-to
+     ;;(setq *frame-id* "/map")
 
-   ;;ik
+     (unless (boundp '*ri*)
+       (setq *ri* (instance pr2-interface :init)))
+
+     ;;tuck arm
+     (pr2-tuckarm-pose)
+     ;;move to
+     (send *ri* :move-to (send *robot* :worldcoords) :frame-id *frame-id*)
+     (send *robot* :move-to (send self :pose-stamped->coords (ros::coords->tf-pose-stamped (make-coords) *robot-origin*)) :world)
+
+     ;;ik
+     (send *robot* :head :look-at (send (car grasp-handle-list) :worldpos))
+     (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+     (send *ri* :wait-interpolation)
+
+     (unix::sleep 5)
+     ;;get nearest bounding box and modify grasp-handle-list
+     (let ((req (instance jsk_pcl_ros::NearestBoundingBoxRequest :init))
+	   req-pose-stamped
+	   res
+	   nearest-grasp-coords)
+
+       (setq req-pose-stamped (ros::coords->tf-pose-stamped (car grasp-handle-list) *frame-id*))
+       (send req :header (send req-pose-stamped :header))
+       (send req :pose (send req-pose-stamped :pose))
+       (send req :max_distance 0.300)
+
+       (setq res (ros::service-call "get_nearest_bounding_box" req))
+       (print-ros-msg res)
+       (cond
+	((equal (send res :box :header :frame_id) "")
+	 (return)
+	 )
+	(t
+	 (print "get nearest bounding box")
+	 (setq nearest-grasp-coords
+	       (send self :pose-stamped->coords (instance geometry_msgs::PoseStamped :init :header (send res :box :header) :pose (send res :box :pose))))
+	 (setq offset-vector (v- (send nearest-grasp-coords :worldpos) (send (car grasp-handle-list) :worldpos)))
+	 (setf (elt offset-vector 2) 0) ;;ignore z offset
+	 (print offset-vector)
+	 (dolist (grasp-handle grasp-handle-list)
+	   (send grasp-handle :translate offset-vector :world))
+	 )
+	)))
+
+   ;;reset pose
    (send *robot* :reset-pose)
-   (send *robot* :head :look-at (send (car grasp-handle-list) :worldpos))
    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
    (send *ri* :wait-interpolation)
-
-   ;;nearest bounding box
-   (let ((req (instance jsk_pcl_ros::NearestBoundingBoxRequest :init))
-	 req-pose-stamped
-	 res
-	 nearest-grasp-coords)
-
-     (setq req-pose-stamped (ros::coords->tf-pose-stamped (car grasp-handle-list) *frame-id*))
-     (send req :header (send req-pose-stamped :header))
-     (send req :pose (send req-pose-stamped :pose))
-     (send req :max_distance 0.300)
-
-     (setq res (ros::service-call "get_nearest_bounding_box" req))
-     (unless (equal (send res :box :header :frame_id) "")
-
-       (setq nearest-grasp-coords
-	     (send self :pose-stamped->coords (instance geometry_msgs::PoseStamped :init :header (send res :box :header) :pose (send res :box :pose))))
-       (offset-vector (v- (send nearest-grasp-coords :worldpos) (send (car grasp-handle-list) :worldpos)))
-       (setf (elt offset-vector 2) 0) ;;ignore z offset
-       (dolist (grasp-handle grasp-handle-list)
-	 (send grasp-handle :translate offset-vector :world))
-       )
-     )
 
    (setq avs nil)
    (dolist (grasp-handle grasp-handle-list)
@@ -1609,7 +1608,7 @@
        )
      )
    (setq avs (reverse avs))
-   
+
    (when avs
      (send *ri* :stop-grasp :rarm :wait t)
      (send *robot* :angle-vector (elt avs 0))
@@ -1629,8 +1628,6 @@
      (send *irtviewer* :draw-objects))
    
    )
-
-
 
 
   (:move-object-callback
