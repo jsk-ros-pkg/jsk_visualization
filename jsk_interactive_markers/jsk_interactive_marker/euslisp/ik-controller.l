@@ -600,7 +600,10 @@
      (cond
       ((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
        (format t "[marker-menu] move robot!!~%")
-       (send self :publish-joint-states :real? t))
+       ;;test
+       (send self :publish-joint-trajectory (list (send *robot* :angle-vector)) 5000 :moveit t)
+       )
+       ;;(send self :publish-joint-states :real? t))
       ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
        (setq *origin-key* :free)
        (send self :set-origin)
@@ -1191,10 +1194,11 @@
 
   (:publish-joint-trajectory
    (avs &optional (tms (list 3000)) &key
-	(real? nil))
+	(real? nil)
+	(moveit nil))
    (let (joint-list
 	 (joint-traj-msg
-	  (instance trajectory_msgs::JointTrajectory :init
+	  (instance jsk_interactive_marker::JointTrajectoryWithType :init
 		    :header (instance std_msgs::header :init
 				      :stamp (ros::time-now))))
 	 (now-av (send *robot* :angle-vector))
@@ -1202,14 +1206,19 @@
 	 (time-total 0)
 	 )
 
+     ;;set time list
      (if (atom tms) (setq tms (make-list (length avs) :initial-element tms)))
      (if (< (length tms) (length avs))
 	 (setq tms (append tms (make-list (- (length avs) (length tms)) :initial-element (car (last tms))))))
 
      (dotimes (i (length avs))
-       (let ((jtp (instance trajectory_msgs::JointTrajectoryPoint :init))
+       (let ((jtp (instance jsk_interactive_marker::JointTrajectoryPointWithType :init))
 	     time
 	     )
+	 (if moveit
+	     (send jtp :type jsk_interactive_marker::JointTrajectoryPointWithType::*COLLISION_AVOIDANCE*)
+	   (send jtp :type jsk_interactive_marker::JointTrajectoryPointWithType::*JOINT_INTERPOLATION*))
+	 (send jtp :wait t)
 	 (send *robot* :angle-vector (elt avs i))
 	 (setq joint-list (send *robot* :joint-list))
 	 (send jtp :positions (mapcar #'(lambda (joint) (send joint :ros-joint-angle)) joint-list))
@@ -1226,10 +1235,11 @@
 
      (cond
       (real?
-       (ros::publish (format nil "~A/~A/joint_trajectory_ri_move" *im-nodename* *robot-topic-name*)
+       (ros::publish (format nil "~A/~A/joint_trajectory_with_type_ri_move" *im-nodename* *robot-topic-name*)
 		     joint-traj-msg))
       ))
    )
+
 
 
   (:publish-base-target

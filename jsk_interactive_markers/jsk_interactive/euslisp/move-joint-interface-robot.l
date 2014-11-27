@@ -13,7 +13,10 @@
 (cond
  ((equal (string-upcase *robot-name*) "PR2")
   (setq *robot-name* "PR2")
+  ;;use moveit
+  (load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
   (pr2-init)
+  (send *ri* :set-moveit-environment (instance moveit-environment :init))
   (setq *robot* *pr2*)
   )
  ((equal (string-upcase *robot-name*) "HRP2JSKNT")
@@ -126,6 +129,85 @@
     )
   )
 
+(defun apply-joint-angles
+  (joint-names joint-angles)
+  (dotimes (x (length joint-names))
+    (let (joint-name joint-angle)
+      (setq joint-name (elt joint-names x))
+      (let ((hand-method (intern (string-upcase joint-name) *keyword-package*)))
+	(when (find-method *robot* hand-method)
+	  (if (subclassp (class (send *robot* hand-method)) rotational-joint)
+	      (setq joint-angle (rad2deg (elt joint-angles x)))
+	    (setq joint-angle (* 1000.0 (elt joint-angles x)))
+	    )
+	  (send *robot* hand-method :joint-angle joint-angle)))
+      )
+    )
+  )
+
+
+(defun joint-trajectory-with-type-callback
+  (msg)
+  (let ((joint-names (send msg :joint_names))
+	(joint-trajectory-points (send msg :points))
+	joint-angles
+	avs tms
+	(sentinel-type -1)
+	)
+
+    (setq sentinel-point (instance JointTrajectoryPointWithType :init :type sentinel-type))
+
+    ;;(dolist (joint-trajectory-point joint-trajectory-points)
+    (dotimes (i (length joint-trajectory-points))
+      (let ((joint-trajectory-point (elt joint-trajectory-points i))
+	    (joint-angles (send joint-trajectory-point :positions))
+	    next-joint-trajectory-point
+	    )
+	(case (send joint-trajectory-point :type)
+	  (sentinel-type
+	   (return)
+	   )
+	  (jsk_interactive_marker::JointTrajectoryWithType::*JOINT_INTERPOLATION*
+	   (apply-joint-angles joint-names joint-angles)
+	   (push (send *robot* :angle-vector) avs)
+	   (let ((time-from-start (send (send joint-trajectory-point :time_from_start) :to-sec))
+		 (time-prev 0))
+	     (push (* 1000 (- time-from-start time-prev)) tms)
+	     (setq time-prev time-from-start)
+	     )
+	   (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+
+	   ;; send joint state trajectory
+	   (setq next-joint-trajectory-point (elt joint-trajectory-points (+ i 1)))
+	   (unless ((equal (send next-joint-trajectory-point :type)) jsk_interactive_marker::JointTrajectoryWithType::*JOINT_INTERPOLATION*)
+	     (setq avs (reverse avs))
+	     (setq tms (reverse tms))
+
+	     (send *ri* :angle-vector-sequence avs tms)
+	     (ros::publish "move_joint_interface/move" (instance std_msgs::Float32 :init :data 5))
+	     (send *ri* :wait-interpolation)
+	     )
+	   )
+	  (jsk_interactive_marker::JointTrajectoryWithType::*COLLISION_AVOIDANCE*
+	   ;;;;;;;;;;;;;;;;
+	   ;;   moveit   ;;
+	   ;;;;;;;;;;;;;;;;
+	   (apply-joint-angles joint-names joint-angles)
+	   ;; move only head
+	   (send *ri* :angle-vector (send *robot* :angle-vector) (* (send (send joint-trajectory-point :time_from_start) :to-sec) 1000) :head-controller)
+	   (send *ri* :angle-vector-motion-plan
+		 (send *robot* :angle-vector)
+		 :move-arm :both :use-torso t)
+	   (send *ri* :wait-interpolation)
+	   (send *robot* :angle-vector (send *ri* :state-potentio-vector))
+	   )
+	  )
+	)
+      )
+    )
+  )
+
+
 (defun hand-callback
   (msg)
   (let ((hand-msg (send msg :data))
@@ -212,6 +294,9 @@
 
 (ros::subscribe (format nil "~A/~A/joint_trajectory_ri_move" server-nodename *robot-topic-name*)
 		trajectory_msgs::JointTrajectory #'joint-trajectory-callback)
+
+(ros::subscribe (format nil "~A/~A/joint_trajectory_with_type_ri_move" server-nodename *robot-topic-name*)
+		jsk_interactive_marker::JointTrajectoryWithType #'joint-trajectory-with-type-callback)
 
 (ros::subscribe (format nil "~A/~A/hand_ri_move" server-nodename *robot-topic-name*)
 		std_msgs::String #'hand-callback)
