@@ -22,6 +22,7 @@
 
 #include <std_msgs/Int8.h>
 #include <std_msgs/String.h>
+#include <std_srvs/Empty.h>
 #include <sensor_msgs/JointState.h>
 
 #include "urdf_parser/urdf_parser.h"
@@ -94,7 +95,8 @@ class UrdfModelMarker {
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init);
   void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index);
 
-  void CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform);
+  void callSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform);
+  void callPublishTf();
 
   int main(string file);
 
@@ -111,7 +113,7 @@ class UrdfModelMarker {
   
   void setRootPoseCB( const geometry_msgs::PoseStampedConstPtr &msg );
   void setRootPose( geometry_msgs::PoseStamped ps);
-  void resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg);
+  void resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg, bool update_root);
   void updateDiagnostic(diagnostic_updater::DiagnosticStatusWrapper &stat);
 
 
@@ -124,6 +126,7 @@ class UrdfModelMarker {
   boost::shared_ptr<diagnostic_updater::Updater> diagnostic_updater_;
   jsk_topic_tools::TimeAccumulator reset_joint_states_check_time_acc_;
   jsk_topic_tools::TimeAccumulator dynamic_tf_check_time_acc_;
+
   /* publisher */
   ros::Publisher pub_;
   ros::Publisher pub_move_;
@@ -134,8 +137,9 @@ class UrdfModelMarker {
   ros::Publisher pub_selected_;
   ros::Publisher pub_selected_index_;
 
-  /* publisher */
+  /* subscriber */
   ros::Subscriber sub_reset_joints_;
+  ros::Subscriber sub_reset_joints_and_root_;
   ros::Subscriber sub_set_root_pose_;
   ros::Subscriber hide_marker_;
   ros::Subscriber show_marker_;
@@ -152,6 +156,7 @@ class UrdfModelMarker {
   tf::TransformBroadcaster tfb_;
 
   ros::ServiceClient dynamic_tf_publisher_client;
+  ros::ServiceClient dynamic_tf_publisher_publish_tf_client;
 
   std::string server_name;
   std::string base_frame;

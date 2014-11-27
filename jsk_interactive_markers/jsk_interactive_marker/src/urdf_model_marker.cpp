@@ -110,7 +110,7 @@ void UrdfModelMarker::addGraspPointControl(visualization_msgs::InteractiveMarker
 }
 
 
-void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform){
+void UrdfModelMarker::callSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform){
   jsk_topic_tools::ScopedTimer timer = dynamic_tf_check_time_acc_.scopedTimer();
   dynamic_tf_publisher::SetDynamicTF SetTf;
   //SetTf.request.freq = 10;
@@ -123,6 +123,13 @@ void UrdfModelMarker::CallSetDynamicTf(string parent_frame_id, string frame_id, 
   if (use_dynamic_tf_ || parent_frame_id == frame_id_){
     //std::cout << parent_frame_id << frame_id << std::endl;
     dynamic_tf_publisher_client.call(SetTf);
+  }
+}
+
+void UrdfModelMarker::callPublishTf(){
+  if(use_dynamic_tf_){
+    std_srvs::Empty req;
+    dynamic_tf_publisher_publish_tf_client.call(req);
   }
 }
 
@@ -196,7 +203,7 @@ void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
 
     string root_frame = tf_prefix_ + model->getRoot()->name;
     linkMarkerMap[frame_id_].pose = pose;
-    CallSetDynamicTf(frame_id_, root_frame, Pose2Transform(pose));
+    callSetDynamicTf(frame_id_, root_frame, Pose2Transform(pose));
     root_pose_ = pose;
     publishMarkerPose( pose, ps.header, root_frame);
     
@@ -210,12 +217,17 @@ void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
 
 
 
-void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg){
+void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg, bool update_root){
   jsk_topic_tools::ScopedTimer timer = reset_joint_states_check_time_acc_.scopedTimer();
   setJointState(model->getRoot(), msg);
-
-  //addChildLinkNames(model->getRoot(), true, false);
   republishJointState(*msg);
+
+  //update root correctly
+  //this may take long time
+  if(update_root){
+    callPublishTf();
+    ros::spinOnce();
+  }
   resetRootForVisualization();
   server_->applyChanges();
 }
@@ -231,7 +243,7 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
       root_pose_ = feedback->pose;
       publishBasePose(feedback);
     }
-    CallSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(feedback->pose));
+    callSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(feedback->pose));
     publishMarkerPose(feedback);
     publishJointState(feedback);
     break;
@@ -388,7 +400,7 @@ void UrdfModelMarker::resetRootForVisualization(){
 
       string root_frame = tf_prefix_ + model->getRoot()->name;
       linkMarkerMap[frame_id_].pose = pose;
-      CallSetDynamicTf(frame_id_, root_frame, Pose2Transform(pose));
+      callSetDynamicTf(frame_id_, root_frame, Pose2Transform(pose));
 
       addChildLinkNames(model->getRoot(), true, false);
     }
@@ -789,7 +801,7 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
 
   server_->setPose(link_frame_name_, linkMarkerMap[link_frame_name_].pose, link_header);
   //server_->applyChanges();
-  CallSetDynamicTf(linkMarkerMap[link_frame_name_].frame_id, link_frame_name_, Pose2Transform(linkMarkerMap[link_frame_name_].pose));
+  callSetDynamicTf(linkMarkerMap[link_frame_name_].frame_id, link_frame_name_, Pose2Transform(linkMarkerMap[link_frame_name_].pose));
 }
 
 void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js)
@@ -905,7 +917,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 
   //initialize linkProperty
   if(init){
-    CallSetDynamicTf(parent_link_frame_name_, link_frame_name_, Pose2Transform(ps.pose));
+    callSetDynamicTf(parent_link_frame_name_, link_frame_name_, Pose2Transform(ps.pose));
     linkProperty lp;
     lp.pose = ps.pose;
     lp.origin = ps.pose;
@@ -1135,6 +1147,8 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
   if (use_dynamic_tf_) {
     ros::service::waitForService("set_dynamic_tf", -1);
     dynamic_tf_publisher_client = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf", true);
+    ros::service::waitForService("publish_tf", -1);
+    dynamic_tf_publisher_publish_tf_client = nh_.serviceClient<std_srvs::Empty>("publish_tf", true);
   }
   std::cerr << "use_dynamic_tf_ is " << use_dynamic_tf_ << std::endl;
 
@@ -1174,7 +1188,8 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
   pub_joint_state_ =  pnh_.advertise<sensor_msgs::JointState> (model_name_ + "/joint_states", 1);
   
   sub_set_root_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> (model_name_ + "/set_pose", 1, boost::bind( &UrdfModelMarker::setRootPoseCB, this, _1));
-  sub_reset_joints_ = pnh_.subscribe<sensor_msgs::JointState> (model_name_ + "/reset_joint_states", 1, boost::bind( &UrdfModelMarker::resetJointStatesCB, this, _1));
+  sub_reset_joints_ = pnh_.subscribe<sensor_msgs::JointState> (model_name_ + "/reset_joint_states", 1, boost::bind( &UrdfModelMarker::resetJointStatesCB, this, _1, false));
+  sub_reset_joints_and_root_ = pnh_.subscribe<sensor_msgs::JointState> (model_name_ + "/reset_joint_states_and_root", 1, boost::bind( &UrdfModelMarker::resetJointStatesCB, this, _1, true));
   
   hide_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/hide_marker", 1, boost::bind( &UrdfModelMarker::hideModelMarkerCB, this, _1));
   show_marker_ = pnh_.subscribe<std_msgs::Empty> (model_name_ + "/show_marker", 1, boost::bind( &UrdfModelMarker::showModelMarkerCB, this, _1));
