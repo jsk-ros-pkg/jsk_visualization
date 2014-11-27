@@ -1,12 +1,8 @@
-#include <stdio.h>
-
 #include "rviz/config.h"
 #include "empty_service_call_interface.h"
-#include "ros/time.h"
 #include <ros/package.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QMetaObject>
 #include <QSignalMapper>
 
 using namespace rviz;
@@ -57,7 +53,7 @@ namespace jsk_rviz_plugin
       icon_path_prefix = ros::package::getPath(icon_package_name) + std::string("/icons/");
 
     XmlRpc::XmlRpcValue buttons_list;
-    nh.getParam("/rviz_service_call/buttons", buttons_list);
+    nh.getParam("rviz_service_call/buttons", buttons_list);
     for (int32_t i = 0; i < buttons_list.size(); ++i)
       {
         ServiceCallButtonInfo new_button;

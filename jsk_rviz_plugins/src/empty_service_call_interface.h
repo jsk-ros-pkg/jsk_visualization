@@ -5,7 +5,6 @@
 #include <rviz/panel.h>
 #include <std_srvs/Empty.h>
 #include <QtGui>
-#include <QToolButton>
 
 namespace jsk_rviz_plugin
 {

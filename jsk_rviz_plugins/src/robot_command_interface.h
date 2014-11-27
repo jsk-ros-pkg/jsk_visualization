@@ -35,6 +35,7 @@ namespace jsk_rviz_plugin
     void callRequestStartABC();
     void callRequestStartST();
     void callRequestStartIMP();
+    void callRequestStartIMPforDrill();
 
     void callRequestStopABC();
     void callRequestStopST();

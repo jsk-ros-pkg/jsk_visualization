@@ -1,38 +1,15 @@
-#include <stdio.h>
-
-#include <QPainter>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QTabWidget>
 #include <QLabel>
-#include <QTimer>
-#include <QColor>
-#include <QFont>
-
-#include "rviz/properties/property_tree_widget.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/visualization_manager.h"
-
-#include "rviz/config.h"
-#include "rviz/properties/property_tree_model.h"
-#include "rviz/properties/status_list.h"
-#include "rviz/properties/property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/properties/color_property.h"
-
-#include <std_msgs/Empty.h>
-#include <sensor_msgs/PointCloud2.h>
 
 #include "transformable_marker_operator.h"
-#include "ros/time.h"
 
 using namespace rviz;
-
 namespace jsk_rviz_plugin
 {
-
   TransformableMarkerOperatorAction::TransformableMarkerOperatorAction( QWidget* parent )
     : rviz::Panel( parent )
   {
@@ -171,12 +148,10 @@ namespace jsk_rviz_plugin
     rviz::Panel::save( config );
   }
 
-  // Load all configuration data for this panel from the given Config object.
   void TransformableMarkerOperatorAction::load( const rviz::Config& config )
   {
     rviz::Panel::load( config );
   }
-
 }
 
 #include <pluginlib/class_list_macros.h>

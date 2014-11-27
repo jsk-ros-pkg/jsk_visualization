@@ -15,6 +15,7 @@ namespace jsk_rviz_plugin
   {
     ui_ = new Ui::RobotCommandInterface();
     ui_->setupUi(this);
+    ui_->verticalLayout->setAlignment(Qt::AlignLeft);
 
     ros::NodeHandle nh("~");
     std::string reset_pose_button_icon_name,
@@ -26,6 +27,7 @@ namespace jsk_rviz_plugin
       hrpsys_start_abc_button_icon_name,
       hrpsys_start_st_button_icon_name,
       hrpsys_start_imp_button_icon_name,
+      hrpsys_start_imp_for_drill_button_icon_name,
       hrpsys_stop_abc_button_icon_name,
       hrpsys_stop_st_button_icon_name,
       hrpsys_stop_imp_button_icon_name;
@@ -38,6 +40,7 @@ namespace jsk_rviz_plugin
     nh.param<std::string>("/start_abc_icon", hrpsys_start_abc_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-abc.png"));
     nh.param<std::string>("/start_st_icon", hrpsys_start_st_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-st.png"));
     nh.param<std::string>("/start_imp_icon", hrpsys_start_imp_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-imp.png"));
+    nh.param<std::string>("/start_imp_for_drill_icon", hrpsys_start_imp_for_drill_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-imp-for-drill.png"));
     nh.param<std::string>("/stop_abc_icon", hrpsys_stop_abc_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-abc.png"));
     nh.param<std::string>("/stop_st_icon", hrpsys_stop_st_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-st.png"));
     nh.param<std::string>("/stop_imp_icon", hrpsys_stop_imp_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-imp.png"));
@@ -60,6 +63,8 @@ namespace jsk_rviz_plugin
     ui_->hrpsys_start_st_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_st_button_icon_name.c_str()))));
     ui_->hrpsys_start_imp_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hrpsys_start_imp_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_imp_button_icon_name.c_str()))));
+    ui_->hrpsys_start_imp_for_drill_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->hrpsys_start_imp_for_drill_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_imp_for_drill_button_icon_name.c_str()))));
     ui_->hrpsys_stop_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hrpsys_stop_abc_button->setIcon(QIcon(QPixmap(QString(hrpsys_stop_abc_button_icon_name.c_str()))));
     ui_->hrpsys_stop_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -78,6 +83,7 @@ namespace jsk_rviz_plugin
     connect( ui_->hrpsys_start_abc_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartABC()));
     connect( ui_->hrpsys_start_st_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartST()));
     connect( ui_->hrpsys_start_imp_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartIMP()));
+    connect( ui_->hrpsys_start_imp_for_drill_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartIMPforDrill()));
 
     connect( ui_->hrpsys_stop_abc_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopABC ()));
     connect( ui_->hrpsys_stop_st_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopST()));
@@ -100,17 +106,17 @@ namespace jsk_rviz_plugin
   };
 
   void RobotCommandInterfaceAction::callRequestResetGripperPose(){
-    std::string command("(progn (send *robot* :hand :arms :reset-pose) (send *ri* :hand-angle-vector (apply #\"concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
+    std::string command("(progn (send *robot* :hand :arms :reset-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
     callRequestEusCommand(command);
   };
 
   void RobotCommandInterfaceAction::callRequestHookGrippePose(){
-    std::string command("(progn (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #\"concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
+    std::string command("(progn (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
     callRequestEusCommand(command);
   };
 
   void RobotCommandInterfaceAction::callRequestGraspGrippePose(){
-    std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\"concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
+    std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
     callRequestEusCommand(command);
   };
 
@@ -125,7 +131,12 @@ namespace jsk_rviz_plugin
   };
 
   void RobotCommandInterfaceAction::callRequestStartIMP(){
-    std::string command("(send *ri* :start-impedance :arms)");
+    std::string command("(send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)");
+    callRequestEusCommand(command);
+  };
+
+  void RobotCommandInterfaceAction::callRequestStartIMPforDrill(){
+    std::string command("(send *ri* :start-impedance :rarm :force-gain #f(1 0 0) :moment-gain #f(0 0 0) :k-p 600 :d-p 60)");
     callRequestEusCommand(command);
   };
 
