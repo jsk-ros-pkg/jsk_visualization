@@ -35,6 +35,7 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
   //publish
   pub_click_point_ = pnh_.advertise<geometry_msgs::PointStamped>("right_click_point", 1);
   pub_left_click_ = pnh_.advertise<geometry_msgs::PointStamped>("left_click_point", 1);
+  pub_left_click_relative_ = pnh_.advertise<geometry_msgs::PointStamped>("left_click_point_relative", 1);
   pub_marker_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("marker_pose", 1);
   pub_grasp_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("grasp_pose", 1);
   pub_box_movement_ = pnh_.advertise<jsk_pcl_ros::BoundingBoxMovement>("box_movement", 1);
@@ -146,6 +147,14 @@ void InteractivePointCloud::leftClickPoint( const visualization_msgs::Interactiv
   click_point.header = feedback->header;
   click_point.header.stamp = ros::Time::now();
   pub_left_click_.publish(click_point);
+  tf::Transform transform;
+  tf::poseMsgToTF(feedback->pose, transform);
+  tf::Vector3 vector_absolute(feedback->mouse_point.x, feedback->mouse_point.y, feedback->mouse_point.z); 
+  tf::Vector3 vector_relative=transform.inverse() * vector_absolute;
+  click_point.point.x=vector_relative.getX();
+  click_point.point.y=vector_relative.getY();   
+  click_point.point.z=vector_relative.getZ();
+  pub_left_click_relative_.publish(click_point);
 }
 
 void InteractivePointCloud::hide( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
