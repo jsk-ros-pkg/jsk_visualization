@@ -602,7 +602,7 @@
       ((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
        (format t "[marker-menu] move robot!!~%")
        ;;test
-       (send self :publish-joint-trajectory (list (send *robot* :angle-vector)) 5000 :moveit t)
+       (send self :publish-joint-trajectory (list (send *robot* :angle-vector)) 5000 :moveit t :real? t)
        )
        ;;(send self :publish-joint-states :real? t))
       ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
@@ -2082,6 +2082,10 @@
    (ros::advertise
     (format nil "~A/~A/joint_trajectory_ri_move" *im-nodename* *robot-topic-name*)
     trajectory_msgs::JointTrajectory)
+
+   (ros::advertise
+    (format nil "~A/~A/joint_trajectory_with_type_ri_move" *im-nodename* *robot-topic-name*)
+    jsk_interactive_marker::JointTrajectoryWithType)
 
    (ros::advertise
     (format nil "~A/~A/hand_ri_move" *im-nodename* *robot-topic-name*)
