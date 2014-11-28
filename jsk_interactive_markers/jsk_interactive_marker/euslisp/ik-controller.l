@@ -16,6 +16,7 @@
 (require "models/arrow-object.l")
 (require "package://roseus/euslisp/actionlib.l")
 (require "package://pr2eus/pr2-interface.l")
+(require "package://baxtereus/baxter-interface.l")
 (require "package://jsk_ik_server/euslisp/fullbody-ik-client.l")
 
 ;;;;;;;; setup ;;;;;;;;;;;
@@ -68,7 +69,7 @@
 (defvar *touchit-target-rarm-fullbody* 5)
 
 (defvar *touch-it-server-detected* nil)
-
+(defvar *one-click-grasp-arm* :larm)
 
 (defmethod im-controller
   (:call-ik-server-old
@@ -1270,11 +1271,11 @@
      ;;(send *target-coords* :rotate (deg2rad 180) :x :world)
      (setq *tmp-rotation-axis* t)
      (dotimes (i 2)
-       (send self :stop-grasp :arm :rarm)
+       (send self :stop-grasp :arm *one-click-grasp-arm*)
        (unix:sleep 1))
      (let (avs)
-       (send *robot* :rarm :move-end-pos (float-vector -100 0 0))
-       (send *robot* :rarm :move-end-pos (float-vector -50 0 0))
+       (send *robot* *one-click-grasp-arm* :move-end-pos (float-vector -100 0 0))
+       (send *robot* *one-click-grasp-arm* :move-end-pos (float-vector -50 0 0))
        (push (send *robot* :angle-vector) avs)
 
        (setq pre-pose (send (send *target-coords* :copy-worldcoords) :translate (float-vector -100 0 0)))
@@ -1287,17 +1288,17 @@
          )
        (unless (send *robot* :inverse-kinematics
                      pre-pose
-                     :move-arm :rarm
-                     :use-torso t
+                     :move-target (send *robot* *one-click-grasp-arm* :end-coords)
+		     :use-torso t
                      :rotation-axis t
-                     :debug-view nil)
+                     :debug-view t)
          (send pre-pose :rotate (deg2rad -180) :x)
          (if (send *robot* :inverse-kinematics
                    pre-pose
-                   :move-arm :rarm
+		   :move-target (send *robot* *one-click-grasp-arm* :end-coords)   
                    :use-torso t
                    :rotation-axis t
-                   :debug-view nil)
+                   :debug-view t)
              (progn
                (send *target-coords* :rotate (deg2rad -180) :x)
                )
@@ -1309,10 +1310,10 @@
 
        (unless (send *robot* :inverse-kinematics
                      *target-coords*
-                     :move-arm :rarm
+                     :move-target (send *robot* *one-click-grasp-arm* :end-coords) 
                      :use-torso t
                      :rotation-axis t
-                     :debug-view nil)
+                     :debug-view t)
          (setq *movingp* nil)
          (return-from :grasp-pose-callback nil))
        (print 'bbb)
@@ -1324,12 +1325,12 @@
        (send self :publish-joint-trajectory avs (list 500 500 500) :real? t)
        )
      (unix:usleep (* 1000 (+ 500 500 500)))
-     (send self :start-grasp :arm :rarm)
+     (send self :start-grasp :arm *one-click-grasp-arm*)
      (unix:usleep (* 1000 1000))
      (let (avs)
        ;; pick up and place
        (push (send *robot* :angle-vector) avs)
-       (send *robot* :rarm :move-end-pos #f(0 0 100) :world)
+       (send *robot* *one-click-grasp-arm* :move-end-pos #f(0 0 100) :world)
        ;; (send *target-coords* :locate #f(0 0 100) :world)
        ;; (send *robot* :inverse-kinematics
        ;;       *target-coords*
@@ -1685,20 +1686,20 @@
        ;;(setq pre-pose (send (send *target-coords* :copy-worldcoords) :translate (float-vector -100 0 0)))
        (send *robot* :inverse-kinematics
 	     cds
-	     :move-arm :rarm
-	     :use-torso nil
+	     :move-target (send *robot* *one-click-grasp-arm* :end-coords)         
+             :use-torso nil
 	     :rotation-axis t
-	     :debug-view nil)
+	     :debug-view t)
        ;;(send *robot* :rarm :move-end-pos #f(-100 0 0))
        (push (send *robot* :angle-vector) avs)
 
-       (send *robot* :rarm :move-end-pos #f(-100 0 0))
+       (send *robot* *one-click-grasp-arm* :move-end-pos #f(-100 0 0))
        (push (send *robot* :angle-vector) avs)
        ;;(setq avs (reverse avs))
 
        (send self :publish-joint-trajectory avs (list 3000 1000) :real? t)
        )
-     (send self :stop-grasp :arm :rarm)
+     (send self :stop-grasp :arm *one-click-grasp-arm*)
      )
    )
 
@@ -1776,10 +1777,10 @@
        (print start-cds)
        (send *robot* :inverse-kinematics
 	     start-cds
-	     :move-arm :rarm
+	     :move-target (send *robot* :rarm :end-coords)
 	     :use-torso nil
 	     :rotation-axis t
-	     :debug-view nil)
+	     :debug-view t)
        (push (send *robot* :angle-vector) avs)
        ;;grasp
        (print "grasp")
@@ -1787,10 +1788,10 @@
        (print start-cds)
        (send *robot* :inverse-kinematics
 	     start-cds
-	     :move-arm :rarm
+	     :move-target (send *robot* :rarm :end-coords)
 	     :use-torso nil
 	     :rotation-axis t
-	     :debug-view nil)
+	     :debug-view t)
        (push (send *robot* :angle-vector) avs)
        (setq avs (reverse avs))
        (send self :publish-joint-trajectory avs (list 3000 1000) :real? t)
@@ -1806,7 +1807,7 @@
        (print start-cds)
        (send *robot* :inverse-kinematics
 	     start-cds
-	     :move-arm :rarm
+	     :move-target (send *robot* :rarm :end-coords)
 	     :use-torso nil
 	     :rotation-axis t
 	     :debug-view t)
@@ -1817,7 +1818,7 @@
        (print des-cds)
        (send *robot* :inverse-kinematics
 	     des-cds
-	     :move-arm :rarm
+	     :move-target (send *robot* :rarm :end-coords)
 	     :use-torso nil
 	     :rotation-axis t
 	     :debug-view t)
@@ -1828,7 +1829,7 @@
        (print des-cds)
        (send *robot* :inverse-kinematics
 	     des-cds
-	     :move-arm :rarm
+	     :move-target (send *robot* :rarm :end-coords)
 	     :use-torso nil
 	     :rotation-axis t
 	     :debug-view t)
@@ -1846,10 +1847,10 @@
        (send des-cds :translate #f(-100 0 0))
        (send *robot* :inverse-kinematics
 	     des-cds
-	     :move-arm :rarm
+	     :move-target (send *robot* :rarm :end-coords)
 	     :use-torso nil
 	     :rotation-axis t
-	     :debug-view nil)
+	     :debug-view t)
        (push (send *robot* :angle-vector) avs)
        (setq avs (reverse avs))
        (send self :publish-joint-trajectory avs (list 2000) :real? t)
@@ -1900,6 +1901,9 @@
    (defvar *translation-axis* t)
    (defvar *rotation-axis* t)
    (defvar *tmp-rotation-axis* t) ;;turn nil when center sphere was moved
+   ;;baxter
+   ;;(defvar *publish-ik* t)
+   (defvar *publish-ik* nil)
    (defvar *origin-key* :rarm)
 
    (defvar *robot-name* (ros::get-param "~robot" "PR2"))
@@ -1907,6 +1911,7 @@
    (setq *use-ik-server* (ros::get-param "~use_ik_server" t))
    (setq *frame-id* (ros::get-param "~frame_id" "map"))
    (setq *one-click-grasp* (ros::get-param "~one_click_grasp" nil))
+   (setq *one-click-grasp-arm* (intern (string-upcase (ros::get-param "~one_click_grasp_arm" "rarm")) *keyword-package*))
 
    (setq *publish-ik* (ros::get-param "~start_ik" t))
    (defvar *ik-stop* (not *publish-ik*))
@@ -1924,6 +1929,12 @@
      (setq *robot-name* "PR2")
      (setq *PR2* (pr2))
      (setq *robot* *PR2*)
+     (setq *have-leg* nil)
+     )
+    ((equal (string-upcase *robot-name*) "BAXTER")
+     (setq *robot-name* "BAXTER")
+     (setq *baxter* (baxter))
+     (setq *robot* *baxter*)
      (setq *have-leg* nil)
      )
     ((equal (string-upcase *robot-name*) "ATLAS")
@@ -2182,7 +2193,7 @@
    nil
    (let (ret move rot buf tmp str)
      (do-until-key
-      (bench
+      ;;(bench
        (do-until-key
 	(x::window-main-one)
 	(ros::spin-once)
@@ -2363,7 +2374,7 @@
 	   (send self :publish-status)
 	   )))
        )))
-   )
+   
 
   ;; )
   ;; export ROS_MASTER_URI=http://10.10.72.112:11311
