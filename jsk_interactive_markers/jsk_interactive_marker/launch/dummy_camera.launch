@@ -10,5 +10,5 @@
 
   <node pkg="tf" type="static_transform_publisher"
 	name="$(arg dummy_camera_name)_tf"
-	args="$(arg tf_pose) $(arg origin_tf) $(arg dummy_camera_name) 30"/>
+	args="$(arg tf_pose) $(arg origin_tf) $(arg dummy_camera_name) 100"/>
 </launch>
