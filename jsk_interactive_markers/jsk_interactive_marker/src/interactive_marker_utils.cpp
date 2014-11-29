@@ -479,6 +479,7 @@ namespace im_utils {
   }
 
   std::string getRosPathFromFullPath(std::string path){
+    std::cout << path << std::endl;
     std::string ros_package_path = "";
     FILE* fp;
     char buf[1000000];
@@ -491,22 +492,40 @@ namespace im_utils {
       ros_package_path += buf;
     }
     pclose(fp);
-  
-    ros::package::V_string all_package;
-    ros::package::getAll(all_package);
 
     if( path.find("file://", 0) == 0 ){
+      path.erase(0,7);
 
+      //trim ros_package_path
       size_t current = 0, found;
+      while((found = ros_package_path.find_first_of(":", current)) != std::string::npos){
+	std::string search_path = std::string(ros_package_path, current, found - current);
+	current = found + 1;
+	if(path.find(search_path, 0) == 0){
+	  path.erase(0, strlen(search_path.c_str()));
+	  break;
+	}
+      }
+
+      std::string tmp[] = {"", "jsk-ros-pkg", "jsk_model_tools"};
+      std::set<std::string> package_blackset(tmp, tmp + sizeof(tmp) / sizeof(tmp[0]));
+
+      current = 0;
       while((found = path.find_first_of("/", current)) != std::string::npos){
 	std::string search_path = std::string(path, current, found - current);
 	current = found + 1;
 	std::string package_path;
-	if( ros::package::getPath(search_path) != ""){
-	  path.erase(0,7);
+
+	// check brackset
+	if(package_blackset.find(search_path) != package_blackset.end()){
+	  continue;
+	}
+
+	if( search_path != "" && ros::package::getPath(search_path) != ""){
 	  return "package://" + search_path + path.erase(0, current-1);
 	}
       }
+      path = "file://" + path;
     }
 
     return path;
@@ -530,20 +549,24 @@ namespace im_utils {
       path.erase(0,8);
       //    ??
       //path.erase(0,9);
+
       size_t current = 0, found;
       while((found = gazebo_model_path.find_first_of(":", current)) != std::string::npos){
-	std::string search_path = std::string(gazebo_model_path, current, found - current);
-	current = found + 1;
-	recursive_directory_iterator iter = recursive_directory_iterator(search_path);
-	recursive_directory_iterator end = recursive_directory_iterator();
-	for (; iter != end; ++iter) {
-	  if (is_regular_file(*iter)) {
-	    int locate = iter->path().string().find( path, 0 );
-	    if( locate != std::string::npos){
-	      //for example file:///hoge/fuga.dae
-	      return "file://" + iter->path().string();
+	try{
+	  std::string search_path = std::string(gazebo_model_path, current, found - current);
+	  current = found + 1;
+	  recursive_directory_iterator iter = recursive_directory_iterator(search_path);
+	  recursive_directory_iterator end = recursive_directory_iterator();
+	  for (; iter != end; ++iter) {
+	    if (is_regular_file(*iter)) {
+	      int locate = iter->path().string().find( path, 0 );
+	      if( locate != std::string::npos){
+		//for example file:///hoge/fuga.dae
+		return "file://" + iter->path().string();
+	      }
 	    }
 	  }
+	}catch(...){
 	}
       }
     }
