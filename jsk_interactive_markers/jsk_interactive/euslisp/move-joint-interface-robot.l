@@ -65,9 +65,8 @@
 (defun joint-state-callback
   (msg)
   (let ((joint-names (send msg :name))
-       (joint-angles (send msg :position))
-       joint-name joint-angle
-       )
+	(joint-angles (send msg :position))
+	joint-name joint-angle)
     (dotimes (x (length joint-names))
       (setq joint-name (elt joint-names x))
       (let ((hand-method (intern (string-upcase joint-name) *keyword-package*)))
@@ -83,8 +82,6 @@
 
     (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
     (ros::publish "move_joint_interface/move" (instance std_msgs::Float32 :init :data 5))
-    
-;;    (model2real :wait t :time 5000)
     )
   )
 
@@ -96,7 +93,7 @@
 	joint-angles
 	joint-name joint-angle
 	avs tms
-       )
+	)
 
     (dolist (joint-trajectory-point joint-trajectory-points)
       (setq joint-angles (send joint-trajectory-point :positions))
@@ -153,20 +150,21 @@
 	joint-angles
 	avs tms
 	(sentinel-type -1)
+	sentinel-point
 	)
-
+    ;;add sentinel
     (setq sentinel-point (instance jsk_interactive_marker::JointTrajectoryPointWithType :init :type sentinel-type))
+    (setq joint-trajectory-points (append joint-trajectory-points (list sentinel-point)))
 
-    ;;(dolist (joint-trajectory-point joint-trajectory-points)
     (dotimes (i (length joint-trajectory-points))
       (let* ((joint-trajectory-point (elt joint-trajectory-points i))
-	    (joint-angles (send joint-trajectory-point :positions))
-	    next-joint-trajectory-point
-	    )
+	     (joint-angles (send joint-trajectory-point :positions))
+	     next-joint-trajectory-point
+	     )
 	(cond
 	 ((equal (send joint-trajectory-point :type) sentinel-type)
-	   (return)
-	   )
+	  (return-from joint-trajectory-with-type-callback)
+	  )
 	 ((equal (send joint-trajectory-point :type) jsk_interactive_marker::JointTrajectoryPointWithType::*JOINT_INTERPOLATION*)
 	  (apply-joint-angles joint-names joint-angles)
 	  (push (send *robot* :angle-vector) avs)
@@ -175,21 +173,23 @@
 	    (push (* 1000 (- time-from-start time-prev)) tms)
 	    (setq time-prev time-from-start)
 	    )
+
 	  (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
 	  ;; send joint state trajectory
+
 	  (setq next-joint-trajectory-point (elt joint-trajectory-points (+ i 1)))
-	  (unless ((equal (send next-joint-trajectory-point :type)) jsk_interactive_marker::JointTrajectoryPointWithType::*JOINT_INTERPOLATION*)
+	  (unless (equal (send next-joint-trajectory-point :type) jsk_interactive_marker::JointTrajectoryPointWithType::*JOINT_INTERPOLATION*)
 	    (setq avs (reverse avs))
 	    (setq tms (reverse tms))
 
 	    (send *ri* :angle-vector-sequence avs tms)
-	    (ros::publish "move_joint_interface/move" (instance std_msgs::Float32 :init :data 5))
+	    (setq avs nil)
+	    (ros::publish "move_joint_interface/move" (instance std_msgs::Float32 :init :data (/ (reduce #'+ tms) 1000.0)))
 	    (send *ri* :wait-interpolation)
 	    )
 	  )
 	 ((equal (send joint-trajectory-point :type) jsk_interactive_marker::JointTrajectoryPointWithType::*COLLISION_AVOIDANCE*)
-
 	  ;;;;;;;;;;;;;;;;
 	  ;;   moveit   ;;
 	  ;;;;;;;;;;;;;;;;
@@ -198,9 +198,22 @@
 	  (send *ri* :angle-vector (send *robot* :angle-vector) (* (send (send joint-trajectory-point :time_from_start) :to-sec) 1000) :head-controller)
 	  (send *ri* :angle-vector-motion-plan
 		(send *robot* :angle-vector)
-		:move-arm :both :use-torso t)
+		:move-arm :rarm :use-torso t)
+	  (send *ri* :wait-interpolation)
+
+	  (send *ri* :angle-vector-motion-plan
+		(send *robot* :angle-vector)
+		:move-arm :larm :use-torso t)
 	  (send *ri* :wait-interpolation)
 	  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+	  )
+	 ;;stop grasp
+	 ((equal (send joint-trajectory-point :type) jsk_interactive_marker::JointTrajectoryPointWithType::*CLOSE_HAND*)
+	  (send* *ri* :start-grasp (read-from-string (send joint-trajectory-point :args)))
+	  )
+	 ;;start grasp
+	 ((equal (send joint-trajectory-point :type) jsk_interactive_marker::JointTrajectoryPointWithType::*OPEN_HAND*)
+	  (send* *ri* :stop-grasp (read-from-string (send joint-trajectory-point :args)))
 	  )
 	 )
 	)
@@ -263,7 +276,7 @@
 	(joint-state-msg
 	 (instance sensor_msgs::JointState :init
 		   :header (instance std_msgs::header :init
-				    :stamp (ros::time-now))))
+				     :stamp (ros::time-now))))
 	(joint-angles (send *robot* :angle-vector)))
     (send joint-state-msg :position
 	  (mapcar #'(lambda (joint)
