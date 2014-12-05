@@ -14,7 +14,6 @@
 (require "models/arrow-object.l")
 (require "package://roseus/euslisp/actionlib.l")
 (require "package://pr2eus/pr2-interface.l")
-(require "package://baxtereus/baxter-interface.l")
 (require "package://jsk_ik_server/euslisp/fullbody-ik-client.l")
 
 ;;;;;;;; setup ;;;;;;;;;;;
@@ -1625,6 +1624,7 @@
      (setq *have-leg* nil)
      )
     ((equal (string-upcase *robot-name*) "BAXTER")
+     (require "package://baxtereus/baxter-interface.l")
      (setq *robot-name* "BAXTER")
      (setq *baxter* (baxter))
      (setq *robot* *baxter*)

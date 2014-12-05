@@ -205,6 +205,7 @@ void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
     linkMarkerMap[frame_id_].pose = pose;
     callSetDynamicTf(frame_id_, root_frame, Pose2Transform(pose));
     root_pose_ = pose;
+    addChildLinkNames(model->getRoot(), true, false);
     publishMarkerPose( pose, ps.header, root_frame);
     
   }
