@@ -4,6 +4,7 @@
 #include <interactive_markers/menu_handler.h>
 
 #include <jsk_interactive_marker/interactive_marker_utils.h>
+#include <std_msgs/Bool.h>
 
 #include <tf/transform_broadcaster.h>
 #include <tf/tf.h>
@@ -17,13 +18,14 @@ public:
   void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void makeControlMarker( bool fixed );
   void set_pose_cb( const geometry_msgs::PoseStampedConstPtr &msg );
+  void show_marker_cb ( const std_msgs::BoolConstPtr &msg);
   void markerUpdate ( std_msgs::Header header, geometry_msgs::Pose pose);
   void publish_pose_cb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
 private:
   bool use_dynamic_tf_, move_2d_;
   ros::ServiceClient dynamic_tf_publisher_client_;
-  ros::Subscriber sub_set_pose_;
+  ros::Subscriber sub_set_pose_, sub_show_marker_;
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   ros::NodeHandle nh_, pnh_;
   ros::Publisher pub_pose_, pub_selected_pose_;
@@ -77,6 +79,7 @@ UrdfControlMarker::UrdfControlMarker() : nh_(), pnh_("~"){
   pub_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("pose", 1);
   pub_selected_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("selected_pose", 1);
   sub_set_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> ("set_pose", 1, boost::bind( &UrdfControlMarker::set_pose_cb, this, _1));
+  sub_show_marker_ = pnh_.subscribe<std_msgs::Bool> ("show_marker", 1, boost::bind( &UrdfControlMarker::show_marker_cb, this, _1));
 
   marker_menu_.insert( "Publish Pose",
 		       boost::bind( &UrdfControlMarker::publish_pose_cb, this, _1) );
@@ -98,6 +101,15 @@ void UrdfControlMarker::set_pose_cb ( const geometry_msgs::PoseStampedConstPtr &
   server_->setPose("urdf_control_marker", msg->pose, msg->header);
   server_->applyChanges();
   markerUpdate( msg->header, msg->pose);
+}
+
+void UrdfControlMarker::show_marker_cb ( const std_msgs::BoolConstPtr &msg){
+  if(msg->data){
+    makeControlMarker( false );
+  }else{
+    server_->clear();
+    server_->applyChanges();
+  }
 }
 
 
