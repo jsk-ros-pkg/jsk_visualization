@@ -1,4 +1,5 @@
 <library path="lib/libjsk_rviz_plugins">
+
   <class name="jsk_rviz_plugin/CloseAll" type="jsk_rviz_plugin::CloseAllTool" base_class_type="rviz::Tool">
     <description>
       close all displays
@@ -10,6 +11,15 @@
     </description>
   </class>
 
+  <class name="jsk_rviz_plugin/Pictogram"
+         type="jsk_rviz_plugin::PictogramDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize pictogram
+    </description>
+  </class>
+
+  
   <class name="jsk_rviz_plugin/CameraInfo"
          type="jsk_rviz_plugin::CameraInfoDisplay"
          base_class_type="rviz::Display">

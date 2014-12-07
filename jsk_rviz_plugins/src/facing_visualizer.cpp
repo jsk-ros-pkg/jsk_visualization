@@ -51,7 +51,7 @@ namespace jsk_rviz_plugin
                              double inner_radius,
                              std::string name):
     manager_(manager), outer_radius_(outer_radius),
-    inner_radius_(inner_radius), name_(name)
+    inner_radius_(inner_radius), name_(name), polygon_type_(CIRCLE)
   {
     manual_ = manager->createManualObject();
     rebuildPolygon();
@@ -83,40 +83,78 @@ namespace jsk_rviz_plugin
     manual_->clear();
     manual_->begin(name_,
                    Ogre::RenderOperation::OT_TRIANGLE_STRIP);
-    const size_t resolution = 100;
-    const double radius_ratio = inner_radius_ / outer_radius_;
-    const double inner_offset = - outer_radius_ * 0.0;
-    int counter = 0;
-    for (size_t i = 0; i < resolution; i++) {
-      double theta = 2.0 * M_PI / resolution * i;
-      double next_theta = 2.0 * M_PI / resolution * (i + 1);
+    if (polygon_type_ == CIRCLE) {
+      const size_t resolution = 100;
+      const double radius_ratio = inner_radius_ / outer_radius_;
+      const double inner_offset = - outer_radius_ * 0.0;
+      int counter = 0;
+      for (size_t i = 0; i < resolution; i++) {
+        double theta = 2.0 * M_PI / resolution * i;
+        double next_theta = 2.0 * M_PI / resolution * (i + 1);
       
-      manual_->position(inner_radius_ * cos(theta) + inner_offset,
-                        inner_radius_ * sin(theta) + inner_offset,
-                        0.0f);
-      manual_->textureCoord((1 + radius_ratio *  cos(theta)) / 2.0, (1.0 - radius_ratio * sin(theta)) / 2.0);
-      manual_->index(counter++);
-      manual_->position(outer_radius_ * cos(theta),
-                        outer_radius_ * sin(theta),
-                        0.0f);
-      manual_->textureCoord((1 + cos(theta)) / 2.0, (1.0 -sin(theta)) / 2.0);
-      manual_->index(counter++);
-      manual_->position(inner_radius_ * cos(next_theta) + inner_offset,
-                        inner_radius_ * sin(next_theta) + inner_offset,
-                        0.0f);
-      manual_->textureCoord((1 + radius_ratio *  cos(next_theta)) / 2.0, (1.0 - radius_ratio * sin(next_theta)) / 2.0);
-      manual_->index(counter++);
-      manual_->position(outer_radius_ * cos(next_theta),
-                        outer_radius_ * sin(next_theta),
-                        0.0f);
-      manual_->textureCoord((1 + cos(next_theta)) / 2.0, (1.0 -sin(next_theta)) / 2.0);
-      manual_->index(counter++);
+        manual_->position(inner_radius_ * cos(theta) + inner_offset,
+                          inner_radius_ * sin(theta) + inner_offset,
+                          0.0f);
+        manual_->textureCoord((1 + radius_ratio *  cos(theta)) / 2.0,
+                              (1.0 - radius_ratio * sin(theta)) / 2.0);
+        manual_->index(counter++);
+        manual_->position(outer_radius_ * cos(theta),
+                          outer_radius_ * sin(theta),
+                          0.0f);
+        manual_->textureCoord((1 + cos(theta)) / 2.0,
+                              (1.0 -sin(theta)) / 2.0);
+        manual_->index(counter++);
+        manual_->position(inner_radius_ * cos(next_theta) + inner_offset,
+                          inner_radius_ * sin(next_theta) + inner_offset,
+                          0.0f);
+        manual_->textureCoord((1 + radius_ratio *  cos(next_theta)) / 2.0,
+                              (1.0 - radius_ratio * sin(next_theta)) / 2.0);
+        manual_->index(counter++);
+        manual_->position(outer_radius_ * cos(next_theta),
+                          outer_radius_ * sin(next_theta),
+                          0.0f);
+        manual_->textureCoord((1 + cos(next_theta)) / 2.0,
+                              (1.0 -sin(next_theta)) / 2.0);
+        manual_->index(counter++);
       
+      }
+    }
+    else if (polygon_type_ == SQUARE) {
+      manual_->position(outer_radius_, outer_radius_,
+                        0.0f);
+      manual_->textureCoord(1, 0);
+      manual_->index(0);
+      
+      manual_->position(-outer_radius_, outer_radius_,
+                        0.0f);
+      manual_->textureCoord(1, 1);
+      manual_->index(1);
+      
+      manual_->position(-outer_radius_, -outer_radius_,
+                        0.0f);
+      manual_->textureCoord(0, 1);
+      manual_->index(2);
+      
+      manual_->position(outer_radius_, -outer_radius_,
+                        0.0f);
+      
+      manual_->textureCoord(0, 0);
+      manual_->index(3);
+      
+      manual_->position(outer_radius_, outer_radius_,
+                        0.0f);
+      manual_->textureCoord(1, 0);
+      manual_->index(4);
     }
     // for (size_t i = 0; i < resolution; i++) {
     // }
     // manual_->index(0);
     manual_->end();
+  }
+
+  void SquareObject::setPolygonType(PolygonType type)
+  {
+    polygon_type_ = type;
   }
   
   TextureObject::TextureObject(const int width, const int height,
@@ -196,7 +234,13 @@ namespace jsk_rviz_plugin
     rviz::ViewManager* manager = context->getViewManager();
     rviz::RenderPanel* panel = manager->getRenderPanel();
     Ogre::Camera* camera = panel->getCamera();
-    node_->setOrientation(camera->getDerivedOrientation());
+    Ogre::Quaternion q = camera->getDerivedOrientation();
+    setOrientation(q);
+  }
+
+  void FacingObject::setOrientation(Ogre::Quaternion& rot)
+  {
+    node_->setOrientation(rot);
   }
 
   void FacingObject::setSize(double size)
