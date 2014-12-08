@@ -68,6 +68,10 @@ namespace jsk_rviz_plugin
                     int entypo_social_font_id);
     virtual void update(float wall_dt, float ros_dt);
     virtual void setEnable(bool enable);
+    virtual void setText(std::string text);
+    virtual void setAlpha(double alpha);
+    virtual void setColor(QColor color);
+    virtual void setSize(double size);
   protected:
     bool isFontAwesome(std::string);
     bool isEntypo(std::string);

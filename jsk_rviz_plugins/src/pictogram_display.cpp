@@ -48,7 +48,12 @@
 #include "pictogram_font_mapping.h"
 
 namespace jsk_rviz_plugin
-{  
+{
+  bool epsEqual(double a, double b)
+  {
+    return (std::abs(a - b) < 0.01);
+  }
+  
   bool PictogramObject::isCharacterSupported(std::string character)
   {
     return ((entypo_social_character_map_.find(character)
@@ -112,9 +117,17 @@ namespace jsk_rviz_plugin
 
   void PictogramObject::setEnable(bool enable)
   {
-    FacingTexturedObject::setEnable(enable);
-    if (enable) {
+    if (enable && !enable_) {
       need_to_update_ = true;
+    }
+    FacingTexturedObject::setEnable(enable);
+  }
+
+  void PictogramObject::setSize(double size)
+  {
+    if (size_ != size) {
+      need_to_update_ = true;
+      FacingTexturedObject::setSize(size);
     }
   }
 
@@ -169,13 +182,38 @@ namespace jsk_rviz_plugin
 
   void PictogramObject::updateColor()
   {
-    need_to_update_ = true;
   }
+  
   void PictogramObject::updateText()
   {
-    need_to_update_ = true;
   }
 
+  void PictogramObject::setColor(QColor color)
+  {
+    if (!epsEqual(color_.r * 255.0, color.red()) ||
+        !epsEqual(color_.g * 255.0, color.green()) ||
+        !epsEqual(color_.b * 255.0, color.blue())) {
+      FacingTexturedObject::setColor(color);
+      need_to_update_ = true;
+    }
+  }
+
+  void PictogramObject::setText(std::string text)
+  {
+    if (text_ != text) {
+      FacingTexturedObject::setText(text);
+      need_to_update_ = true;
+    }
+  }
+  
+  void PictogramObject::setAlpha(double alpha)
+  {
+    if (!epsEqual(color_.a, alpha)) {
+      need_to_update_ = true;
+      FacingTexturedObject::setAlpha(alpha);
+    }
+  }
+  
   int PictogramDisplay::addFont(unsigned char* data, unsigned int data_len)
   {
     // register font
