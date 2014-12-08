@@ -6,7 +6,7 @@ from random import random
 rospy.init_node("pictogram_sample")
 p = rospy.Publisher("/pictogram", Pictogram)
 
-r = rospy.Rate(5)
+r = rospy.Rate(0.1)
 
 pictograms = ["phone",
               "mobile",
@@ -845,8 +845,7 @@ pictograms = ["phone",
 counter = 0
 while not rospy.is_shutdown():
     msg = Pictogram()
-    # if random() < 0.5:
-    #     msg.action = Pictogram.DELETE
+    msg.action = Pictogram.JUMP_ONCE
     msg.header.frame_id = "/base_link"
     msg.header.stamp = rospy.Time.now()
     msg.pose.position.z = 1.6
@@ -854,7 +853,7 @@ while not rospy.is_shutdown():
     msg.pose.orientation.x = 0
     msg.pose.orientation.y = -0.7
     msg.pose.orientation.z = 0
-    msg.size = 1
+    msg.size = 0.5
     msg.color.r = 25 / 255.0
     msg.color.g = 255 / 255.0
     msg.color.b = 240 / 255.0
