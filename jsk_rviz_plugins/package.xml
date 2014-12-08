@@ -40,6 +40,8 @@
   <run_depend>jsk_topic_tools</run_depend>
   <build_depend>urdfdom_py</build_depend>
   <run_depend>urdfdom_py</run_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <run_depend>geometry_msgs</run_depend>
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>
