@@ -498,6 +498,10 @@ namespace jsk_rviz_plugin
     else {
       pictogram_->setSize(msg->size);
     }
+    pictogram_->setColor(QColor(msg->color.r * 255,
+                                msg->color.g * 255,
+                                msg->color.b * 255));
+    pictogram_->setAlpha(msg->color.a);
     pictogram_->setPosition(position);
     pictogram_->setOrientation(quaternion);
     pictogram_->setText(msg->character);

@@ -7,3 +7,5 @@ uint8 action
 
 string character
 float64 size
+
+std_msgs/ColorRGBA color
