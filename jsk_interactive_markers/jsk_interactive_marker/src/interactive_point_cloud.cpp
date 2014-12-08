@@ -246,7 +246,8 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
     }
   }
   else{
-    
+    int_marker.pose.position.x=int_marker.pose.position.y=int_marker.pose.position.z=int_marker.pose.orientation.x=int_marker.pose.orientation.y=int_marker.pose.orientation.z=0;
+    int_marker.pose.orientation.w=1;
   }
 
 
