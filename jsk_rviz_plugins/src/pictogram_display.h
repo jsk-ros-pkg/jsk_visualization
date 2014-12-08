@@ -67,7 +67,10 @@ namespace jsk_rviz_plugin
                     int entypo_font_id,
                     int entypo_social_font_id);
     virtual void update(float wall_dt, float ros_dt);
+    virtual void setEnable(bool enable);
   protected:
+    bool isFontAwesome(std::string);
+    bool isEntypo(std::string);
     virtual void updateColor();
     virtual void updateText();
     virtual void setupCharacterMap();
@@ -76,8 +79,10 @@ namespace jsk_rviz_plugin
     virtual QString lookupPictogramText(std::string character);
     std::map<std::string, QString> entypo_character_map_;
     std::map<std::string, QString> entypo_social_character_map_;
+    std::map<std::string, QString> fontawesome_character_map_;
     int entypo_font_id_;
     int entypo_social_font_id_;
+    bool need_to_update_;
   private:
     
   };
