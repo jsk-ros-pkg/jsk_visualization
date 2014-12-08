@@ -395,7 +395,11 @@ namespace jsk_rviz_plugin
     painter.setPen(QPen(foreground, 5, Qt::SolidLine));
     painter.setBrush(white);
     //QFont font("DejaVu Sans Mono");
-    if (isCharacterSupported(text_)) {
+    if (text_.empty()) {
+      // not yet setted
+      return;
+    }
+    else if (isCharacterSupported(text_)) {
       QFont font = getFont(text_);
       font.setPointSize(200);
       painter.setFont(font);
@@ -479,6 +483,10 @@ namespace jsk_rviz_plugin
     boost::mutex::scoped_lock (mutex_);
     pictogram_->setEnable(isEnabled());
     if (!isEnabled()) {
+      return;
+    }
+    if (msg->action == jsk_rviz_plugins::Pictogram::DELETE) {
+      pictogram_->setEnable(false);
       return;
     }
     Ogre::Vector3 position;
