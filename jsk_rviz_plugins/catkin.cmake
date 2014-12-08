@@ -10,11 +10,14 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   ${people_msgs}
   message_generation std_msgs diagnostic_msgs cv_bridge
   jsk_topic_tools
-  image_geometry)
+  image_geometry
+  geometry_msgs)
 
-add_message_files(FILES OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg)
+add_message_files(FILES
+  OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg
+  Pictogram.msg)
 add_service_files(FILES RequestMarkerOperate.srv EusCommand.srv)
-generate_messages(DEPENDENCIES std_msgs)
+generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 catkin_package(
     DEPENDS rviz
@@ -75,6 +78,7 @@ qt4_wrap_cpp(MOC_FILES
   src/transformable_marker_operator.h
   src/robot_command_interface.h
   src/empty_service_call_interface.h
+  src/pictogram_display.h
 )
 
 set(SOURCE_FILES
@@ -108,6 +112,7 @@ set(SOURCE_FILES
   src/transformable_marker_operator.cpp
   src/robot_command_interface.cpp
   src/empty_service_call_interface.cpp
+  src/pictogram_display.cpp
   ${MOC_FILES}
 )
 

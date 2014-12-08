@@ -41,10 +41,10 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
   pub_box_movement_ = pnh_.advertise<jsk_pcl_ros::BoundingBoxMovement>("box_movement", 1);
   pub_handle_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("handle_pose", 1);
   pub_handle_pose_array_ = pnh_.advertise<geometry_msgs::PoseArray>("handle_pose_array", 1);
-
+  
   //subscribe
   sub_handle_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> ("set_handle_pose", 1, boost::bind( &InteractivePointCloud::setHandlePoseCallback, this, _1));
-
+  sub_marker_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped>("set_marker_pose", 1, boost::bind( &InteractivePointCloud::setMarkerPoseCallback, this, _1)); 
   sub_point_cloud_.subscribe(pnh_, input_pointcloud_, 1);
 
 
@@ -115,6 +115,11 @@ void InteractivePointCloud::setHandlePoseCallback(const geometry_msgs::PoseStamp
       box_movement_.handle_pose = handle_pose;
     }
   }
+}
+
+void InteractivePointCloud::setMarkerPoseCallback( const geometry_msgs::PoseStampedConstPtr &pose_stamped_msg){
+  marker_server_.setPose(marker_name_, pose_stamped_msg->pose, pose_stamped_msg->header);
+  marker_server_.applyChanges();
 }
 
 // create menu
@@ -239,6 +244,10 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
     if(handle->header.frame_id != ""){
       setHandlePoseCallback(handle);
     }
+  }
+  else{
+    int_marker.pose.position.x=int_marker.pose.position.y=int_marker.pose.position.z=int_marker.pose.orientation.x=int_marker.pose.orientation.y=int_marker.pose.orientation.z=0;
+    int_marker.pose.orientation.w=1;
   }
 
 
