@@ -7,12 +7,13 @@
 import rospy
 import math
 from jsk_rviz_plugins.msg import Pictogram
-from random import random
+from random import random, choice
 rospy.init_node("pictogram_sample")
 p = rospy.Publisher("/pictogram", Pictogram)
 
 r = rospy.Rate(1)
-
+actions = [Pictogram.JUMP, Pictogram.JUMP_ONCE, Pictogram.ADD, 
+           Pictogram.ROTATE_X, Pictogram.ROTATE_Y, Pictogram.ROTATE_Z]
 pictograms = ["phone",
               "mobile",
               "mouse",
@@ -859,10 +860,11 @@ while not rospy.is_shutdown():
     for character, pub in zip(pictograms, publishers):
         msg = Pictogram()
         msg.header.frame_id = "/base_link"
+        msg.action = choice(actions)
         msg.header.stamp = rospy.Time.now()
         msg.pose.position.x = prev_xyz[0] + 1
         msg.pose.position.y = prev_xyz[1]
-        msg.pose.position.z = 1.6
+        msg.pose.position.z = 0
         msg.pose.orientation.w = 0.7
         msg.pose.orientation.x = 0
         msg.pose.orientation.y = -0.7

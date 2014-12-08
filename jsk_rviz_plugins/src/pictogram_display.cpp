@@ -102,7 +102,8 @@ namespace jsk_rviz_plugin
     FacingTexturedObject(manager, parent, size),
     entypo_font_id_(entypo_font_id),
     entypo_social_font_id_(entypo_social_font_id),
-    need_to_update_(false)
+    need_to_update_(false),
+    action_(STATIC)
   {
     square_object_->setPolygonType(SquareObject::SQUARE);
     square_object_->rebuildPolygon();
@@ -123,12 +124,25 @@ namespace jsk_rviz_plugin
     FacingTexturedObject::setEnable(enable);
   }
 
+  void PictogramObject::start()
+  {
+    time_ = ros::WallTime::now();
+  }
+    
+  
   void PictogramObject::setSize(double size)
   {
     if (size_ != size) {
       need_to_update_ = true;
       FacingTexturedObject::setSize(size);
     }
+  }
+
+  void PictogramObject::setPose(const geometry_msgs::Pose& pose,
+                                const std::string& frame_id)
+  {
+    pose_ = pose;
+    frame_id_ = frame_id;
   }
 
   bool PictogramObject::isEntypo(std::string text) {
@@ -143,8 +157,92 @@ namespace jsk_rviz_plugin
             != fontawesome_character_map_.end());
   }
   
+  void PictogramObject::setContext(rviz::DisplayContext* context)
+  {
+    context_ = context;
+  }
+
+  void PictogramObject::setAction(ActionType type)
+  {
+    action_ = type;
+  }
+
+  void PictogramObject::updatePose(float wall_dt)
+  {
+    Ogre::Vector3 position;
+    Ogre::Quaternion quaternion;
+    std_msgs::Header header;
+    header.frame_id = frame_id_;
+    if(!context_->getFrameManager()->transform(header,
+                                               pose_,
+                                               position,
+                                               quaternion)) {
+      ROS_ERROR( "Error transforming pose from frame '%s'",
+                 frame_id_.c_str());
+      return;
+    }
+    
+    if (action_ == STATIC) {
+      setPosition(position);
+      setOrientation(quaternion);
+    }
+    else if (action_ == ROTATE_Z ||
+             action_ == ROTATE_X ||
+             action_ == ROTATE_Y) {
+      Ogre::Vector3 axis;
+      if (action_ == ROTATE_Z) {
+        axis = Ogre::Vector3(0, 0, 1);
+      }
+      else if (action_ == ROTATE_X) {
+        axis = Ogre::Vector3(1, 0, 0);
+      }
+      else if (action_ == ROTATE_Y) {
+        axis = Ogre::Vector3(0, 1, 0);
+      }
+      time_ = time_ + ros::WallDuration(wall_dt);
+      // time_ -> theta
+      Ogre::Radian theta(M_PI * 2 * fmod(time_.toSec(), 1.0));
+      
+      Ogre::Quaternion offset;
+      offset.FromAngleAxis(theta, axis);
+      Ogre::Quaternion final_rot = quaternion * offset;
+      setPosition(position);
+      setOrientation(final_rot);
+    }
+    else if (action_ == JUMP || action_ == JUMP_ONCE) {
+      bool jumpingp = false;
+      if (action_ == JUMP) {
+        jumpingp = true;
+      }
+      else if (action_ == JUMP_ONCE && (ros::WallTime::now() - time_).toSec() < 2) {
+        jumpingp = true;
+      }
+      
+      if (!jumpingp) {
+        setPosition(position);
+      }
+      else {
+        // t(2-t) * size
+        double t = fmod((ros::WallTime::now() - time_).toSec(), 2.0);
+        double height = size_ * t * (2 - t);
+        Ogre::Vector3 new_pos = position + quaternion * Ogre::Vector3(height, 0, 0);
+        setPosition(new_pos);
+      }
+      setOrientation(quaternion);
+    }
+  }
+  
   void PictogramObject::update(float wall_dt, float ros_dt)
   {
+    if (text_.empty()) {
+      // not yet setted
+      return;
+    }
+    // update position and orientation
+    if (!context_) {
+      return;
+    }
+    updatePose(wall_dt);
     if (!need_to_update_) {
       return;
     }
@@ -156,11 +254,8 @@ namespace jsk_rviz_plugin
     painter.setRenderHint(QPainter::Antialiasing, true);
     QColor foreground = rviz::ogreToQt(color_);
     painter.setPen(QPen(foreground, 5, Qt::SolidLine));
-    if (text_.empty()) {
-      // not yet setted
-      return;
-    }
-    else if (isCharacterSupported(text_)) {
+    
+    if (isCharacterSupported(text_)) {
       QFont font = getFont(text_);
       QString pictogram_text = lookupPictogramText(text_);
       if (isEntypo(text_)) {
@@ -252,7 +347,9 @@ namespace jsk_rviz_plugin
                                          1.0,
                                          entypo_id_,
                                          entypo_social_id_));
+    pictogram_->setContext(context_);
     pictogram_->setEnable(false);
+    pictogram_->start();
     // initial setting
     pictogram_->setColor(QColor(25, 255, 240));
     pictogram_->setAlpha(1.0);
@@ -277,6 +374,7 @@ namespace jsk_rviz_plugin
   void PictogramDisplay::processMessage(const jsk_rviz_plugins::Pictogram::ConstPtr& msg)
   {
     boost::mutex::scoped_lock (mutex_);
+    
     pictogram_->setEnable(isEnabled());
     if (!isEnabled()) {
       return;
@@ -285,17 +383,26 @@ namespace jsk_rviz_plugin
       pictogram_->setEnable(false);
       return;
     }
-    Ogre::Vector3 position;
-    Ogre::Quaternion quaternion;
-    if(!context_->getFrameManager()->transform(msg->header,
-                                               msg->pose,
-                                               position,
-                                               quaternion)) {
-      ROS_ERROR( "Error transforming pose '%s' from frame '%s' to frame '%s'",
-                 qPrintable( getName() ), msg->header.frame_id.c_str(),
-                 qPrintable( fixed_frame_ ));
-      return;
+    else if (msg->action == jsk_rviz_plugins::Pictogram::ADD) {
+      pictogram_->setAction(PictogramObject::STATIC);
     }
+    else if (msg->action == jsk_rviz_plugins::Pictogram::ROTATE_Z) {
+      pictogram_->setAction(PictogramObject::ROTATE_Z);
+    }
+    else if (msg->action == jsk_rviz_plugins::Pictogram::ROTATE_Y) {
+      pictogram_->setAction(PictogramObject::ROTATE_Y);
+    }
+    else if (msg->action == jsk_rviz_plugins::Pictogram::ROTATE_X) {
+      pictogram_->setAction(PictogramObject::ROTATE_X);
+    }
+    else if (msg->action == jsk_rviz_plugins::Pictogram::JUMP) {
+      pictogram_->setAction(PictogramObject::JUMP);
+    }
+    else if (msg->action == jsk_rviz_plugins::Pictogram::JUMP_ONCE) {
+      pictogram_->setAction(PictogramObject::JUMP_ONCE);
+      pictogram_->start();
+    }
+    
     if (msg->size <= 0.0) {
       pictogram_->setSize(0.5);
     }
@@ -306,8 +413,9 @@ namespace jsk_rviz_plugin
                                 msg->color.g * 255,
                                 msg->color.b * 255));
     pictogram_->setAlpha(msg->color.a);
-    pictogram_->setPosition(position);
-    pictogram_->setOrientation(quaternion);
+    pictogram_->setPose(msg->pose, msg->header.frame_id);
+    // pictogram_->setPosition(position);
+    // pictogram_->setOrientation(quaternion);
     pictogram_->setText(msg->character);
   }
 
