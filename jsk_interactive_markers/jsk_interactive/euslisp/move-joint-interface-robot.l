@@ -225,21 +225,4 @@
 (ros::subscribe (format nil "~A/~A/base_move" server-nodename *robot-topic-name*)
 		geometry_msgs::PoseStamped #'base-callback)
 
-
-
-(ros::rate 30)
-
-(warn "type (start-loop) to start~%")
-
-(defun start-loop
-  ()
-  (while t
-    (send *ri* :spin-once)
-    (ros::spin-once)
-    (unless (or (null x::*display*) (= x::*display* 0))
-      (x::window-main-one))
-    (ros::sleep)
-    (unless (ros::ok) (return)))
-  )
-
-(start-loop)
+(ros::spin)
