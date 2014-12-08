@@ -6,3 +6,4 @@ uint8 DELETE=1
 uint8 action
 
 string character
+float64 size

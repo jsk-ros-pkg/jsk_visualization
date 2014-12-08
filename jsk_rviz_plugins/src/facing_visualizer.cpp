@@ -121,29 +121,28 @@ namespace jsk_rviz_plugin
     }
     else if (polygon_type_ == SQUARE) {
       manual_->position(outer_radius_, outer_radius_,
-                        0.0f);
-      manual_->textureCoord(1, 0);
+                        0.0f);     // 1
+      manual_->textureCoord(0, 0); // 4
       manual_->index(0);
       
       manual_->position(-outer_radius_, outer_radius_,
-                        0.0f);
-      manual_->textureCoord(1, 1);
+                        0.0f);  // 2
+      manual_->textureCoord(0, 1); // 3
       manual_->index(1);
       
       manual_->position(-outer_radius_, -outer_radius_,
-                        0.0f);
-      manual_->textureCoord(0, 1);
+                        0.0f);  // 3
+      manual_->textureCoord(1, 1); // 2
       manual_->index(2);
       
       manual_->position(outer_radius_, -outer_radius_,
-                        0.0f);
-      
-      manual_->textureCoord(0, 0);
+                        0.0f);  // 4
+      manual_->textureCoord(1, 0); // 1
       manual_->index(3);
       
       manual_->position(outer_radius_, outer_radius_,
-                        0.0f);
-      manual_->textureCoord(1, 0);
+                        0.0f);  // 1
+      manual_->textureCoord(0, 0); // 4
       manual_->index(4);
     }
     // for (size_t i = 0; i < resolution; i++) {

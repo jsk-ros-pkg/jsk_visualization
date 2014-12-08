@@ -50,6 +50,7 @@
 #include <OGRE/OgreSceneManager.h>
 #include <jsk_rviz_plugins/Pictogram.h>
 #include "facing_visualizer.h"
+
 namespace jsk_rviz_plugin
 {
   
@@ -62,11 +63,21 @@ namespace jsk_rviz_plugin
     typedef boost::shared_ptr<PictogramObject> Ptr;
     PictogramObject(Ogre::SceneManager* manager,
                     Ogre::SceneNode* parent,
-                    double size);
+                    double size,
+                    int entypo_font_id,
+                    int entypo_social_font_id);
     virtual void update(float wall_dt, float ros_dt);
   protected:
     virtual void updateColor();
     virtual void updateText();
+    virtual void setupCharacterMap();
+    virtual bool isCharacterSupported(std::string character);
+    virtual QFont getFont(std::string character);
+    virtual QString lookupPictogramText(std::string character);
+    std::map<std::string, QString> entypo_character_map_;
+    std::map<std::string, QString> entypo_social_character_map_;
+    int entypo_font_id_;
+    int entypo_social_font_id_;
   private:
     
   };
@@ -87,6 +98,7 @@ namespace jsk_rviz_plugin
     ////////////////////////////////////////////////////////
     // methods
     ////////////////////////////////////////////////////////
+    virtual int addFont(unsigned char* data, unsigned int data_len);
     virtual void onInitialize();
     virtual void reset();
     virtual void onEnable();
@@ -94,14 +106,12 @@ namespace jsk_rviz_plugin
     void update(float wall_dt, float ros_dt);
 
     ////////////////////////////////////////////////////////
-    // ROS parameters
+    // parameters
     ////////////////////////////////////////////////////////
     boost::mutex mutex_;
-    
     PictogramObject::Ptr pictogram_;
-    ////////////////////////////////////////////////////////
-    // properties
-    ////////////////////////////////////////////////////////
+    int entypo_id_;
+    int entypo_social_id_;
   private Q_SLOTS:
     
   private:
