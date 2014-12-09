@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.14 (2014-12-09)
+-------------------
 * reduce load
 * add baxter to ik contollers
 * Merge pull request `#192 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/192>`_ from hyaguchijsk/feature/add_hrp2w_interactive_marker_control

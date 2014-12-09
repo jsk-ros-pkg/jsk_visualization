@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.14 (2014-12-09)
+-------------------
 * added initializer if box_msg is empty
 * added subscriber to set point_marker pose
 * add show and hide marker method

@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.14 (2014-12-09)
+-------------------
 * Add more action to pictogram
 * Add documentation about pictogram
 * Do not rewrite texture if no need
