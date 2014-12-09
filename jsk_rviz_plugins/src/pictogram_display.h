@@ -72,9 +72,19 @@ namespace jsk_rviz_plugin
     virtual void setAlpha(double alpha);
     virtual void setColor(QColor color);
     virtual void setSize(double size);
+    virtual void setPose(const geometry_msgs::Pose& pose,
+                         const std::string& frame_id);
+    virtual void start();
+    virtual void setContext(rviz::DisplayContext* context);
+    enum ActionType
+    {
+      STATIC, ROTATE_Z, ROTATE_Y, ROTATE_X, JUMP_ONCE, JUMP
+    };
+    virtual void setAction(ActionType type);
   protected:
     bool isFontAwesome(std::string);
     bool isEntypo(std::string);
+    virtual void updatePose(float dt);
     virtual void updateColor();
     virtual void updateText();
     virtual void setupCharacterMap();
@@ -87,6 +97,11 @@ namespace jsk_rviz_plugin
     int entypo_font_id_;
     int entypo_social_font_id_;
     bool need_to_update_;
+    ActionType action_;
+    geometry_msgs::Pose pose_;
+    std::string frame_id_;
+    rviz::DisplayContext* context_;
+    ros::WallTime time_;
   private:
     
   };
