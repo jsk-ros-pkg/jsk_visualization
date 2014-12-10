@@ -58,7 +58,7 @@ TransformableInteractiveServer::~TransformableInteractiveServer()
 void TransformableInteractiveServer::configCallback(InteractiveSettingConfig &config, uint32_t level)
   {
     boost::mutex::scoped_lock lock(mutex_);
-    display_interactive_manipulator_=config.display_interactive_manipulator;
+    display_interactive_manipulator_ = config.display_interactive_manipulator;
     for (std::map<string, TransformableObject* >::iterator itpairstri = transformable_objects_map_.begin(); itpairstri != transformable_objects_map_.end(); itpairstri++) {
       TransformableObject* tobject = itpairstri->second;
       tobject->setInteractiveMarkerSetting(config);
