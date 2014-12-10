@@ -1646,10 +1646,7 @@
      )
     ((equal (string-upcase *robot-name*) "HRP2W")
      (require "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2w-interface.l")
-     (hrp2w-init)
-     (setq *robot* *hrp2w*)
-     (defvar *robot-origin* "BODY")
-     (defvar *robot-offset* (send (send *robot* :body_lk :copy-worldcoords) :transformation (make-coords)))
+     (setq *robot* (instance hrp2w-robot :init))
      (setq *have-leg* nil)
      )
     ((equal (string-upcase *robot-name*) "STARO")
@@ -1990,7 +1987,7 @@
 	     (setq ik-suc
 		   (send *robot* :inverse-kinematics
 			 target-coords
-			 :move-arm :arms
+			 :move-target (send *robot* :arms :end-coords)
 			 :use-torso use-torso
 			 :rotation-axis rotation-axis
 			 :stop 100
