@@ -217,8 +217,10 @@ namespace jsk_rviz_plugin
     boost::mutex::scoped_lock lock(mutex_);
     if (image_updated_) {
       ROS_DEBUG("image updated");
-      drawImageTexture();
-      image_updated_ = false;
+      if (!bottom_texture_.isNull()) {
+        drawImageTexture();
+        image_updated_ = false;
+      }
     }
   }
 
