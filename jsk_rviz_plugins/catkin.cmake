@@ -79,6 +79,7 @@ qt4_wrap_cpp(MOC_FILES
   src/robot_command_interface.h
   src/empty_service_call_interface.h
   src/pictogram_display.h
+  src/view_controller/tablet_view_controller.h
 )
 
 set(SOURCE_FILES
@@ -113,6 +114,7 @@ set(SOURCE_FILES
   src/robot_command_interface.cpp
   src/empty_service_call_interface.cpp
   src/pictogram_display.cpp
+  src/view_controller/tablet_view_controller.cpp
   ${MOC_FILES}
 )
 
