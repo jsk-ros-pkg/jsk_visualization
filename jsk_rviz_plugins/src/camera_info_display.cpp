@@ -50,7 +50,9 @@ namespace jsk_rviz_plugin
     const cv::Point3d& A,
     const cv::Point3d& B,
     const std::string& name,
-    const Ogre::ColourValue& color)
+    const Ogre::ColourValue& color,
+    bool use_color,
+    bool upper_triangle)
   {
     // uniq string is requred for name
     
@@ -59,11 +61,35 @@ namespace jsk_rviz_plugin
     manual_->begin(name,
                    Ogre::RenderOperation::OT_TRIANGLE_STRIP);
     manual_->position(O.x, O.y, O.z);
-    manual_->colour(color);
+    if (upper_triangle) {
+      manual_->textureCoord(0, 0);
+    }
+    else {
+      manual_->textureCoord(1, 0);
+    }
+    if (use_color) {
+      manual_->colour(color);
+    }
     manual_->position(A.x, A.y, A.z);
-    manual_->colour(color);
+    if (upper_triangle) {
+      manual_->textureCoord(1, 0);
+    }
+    else {
+      manual_->textureCoord(1, 1);
+    }
+    if (use_color) {
+      manual_->colour(color);
+    }
     manual_->position(B.x, B.y, B.z);
-    manual_->colour(color);
+    if (upper_triangle) {
+      manual_->textureCoord(0, 1);
+    }
+    else {
+      manual_->textureCoord(0, 1);
+    }
+    if (use_color) {
+      manual_->colour(color);
+    }
     manual_->end();
     node->attachObject(manual_);
   }
@@ -74,7 +100,7 @@ namespace jsk_rviz_plugin
     //manager_->destroyManualObject(manual_); // this crashes rviz
   }
   
-  CameraInfoDisplay::CameraInfoDisplay()
+  CameraInfoDisplay::CameraInfoDisplay(): image_updated_(true)
   {
     ////////////////////////////////////////////////////////
     // initialize properties
@@ -84,11 +110,31 @@ namespace jsk_rviz_plugin
       1.0,
       "far clip distance from the origin of camera info",
       this, SLOT(updateFarClipDistance()));
+    show_edges_property_ = new rviz::BoolProperty(
+      "show edges",
+      true,
+      "show edges of the region of the camera info",
+      this, SLOT(updateShowEdges()));
     show_polygons_property_ = new rviz::BoolProperty(
       "show polygons",
       true,
       "show polygons of the region of the camera info",
       this, SLOT(updateShowPolygons()));
+    not_show_side_polygons_property_ = new rviz::BoolProperty(
+      "not show side polygons",
+      true,
+      "do not show polygons of the region of the camera info",
+      this, SLOT(updateNotShowSidePolygons()));
+    use_image_property_ = new rviz::BoolProperty(
+      "use image",
+      false,
+      "use image as texture",
+      this, SLOT(updateUseImage()));
+    image_topic_property_ = new rviz::RosTopicProperty(
+      "Image Topic", "",
+      ros::message_traits::datatype<sensor_msgs::Image>(),
+      "sensor_msgs::Image topic to subscribe to.",
+      this, SLOT( updateImageTopic() ));
     color_property_ = new rviz::ColorProperty(
       "color",
       QColor(85, 255, 255),
@@ -137,6 +183,10 @@ namespace jsk_rviz_plugin
     updateAlpha();
     updateFarClipDistance();
     updateShowPolygons();
+    updateNotShowSidePolygons();
+    updateShowEdges();
+    updateImageTopic();
+    updateUseImage();
     updateEdgeColor();
   }
   
@@ -160,6 +210,18 @@ namespace jsk_rviz_plugin
      scene_node_->setPosition(position);
      scene_node_->setOrientation(quaternion);
      camera_info_ = msg;        // store for caching
+  }
+
+  void CameraInfoDisplay::update(float wall_dt, float ros_dt)
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    if (image_updated_) {
+      ROS_DEBUG("image updated");
+      if (!bottom_texture_.isNull()) {
+        drawImageTexture();
+        image_updated_ = false;
+      }
+    }
   }
 
   bool CameraInfoDisplay::isSameCameraInfo(
@@ -199,21 +261,58 @@ namespace jsk_rviz_plugin
   }
 
   void CameraInfoDisplay::addPolygon(
-    const cv::Point3d& O, const cv::Point3d& A, const cv::Point3d& B)
+    const cv::Point3d& O, const cv::Point3d& A, const cv::Point3d& B, std::string name, bool use_color, bool upper_triangle)
   {
     Ogre::ColourValue color = rviz::qtToOgre(color_);
     color.a = alpha_;
     TrianglePolygon::Ptr triangle (new TrianglePolygon(
                                      scene_manager_,
                                      scene_node_,
-                                     O, A, B, material_->getName(),
-                                     color));
+                                     O, A, B, name,
+                                     color,
+                                     use_color,
+                                     upper_triangle));
     polygons_.push_back(triangle);
+  }
+
+  void CameraInfoDisplay::createTextureForBottom(int width, int height)
+  {
+    ROS_INFO("%dx%d", width, height);
+    if (bottom_texture_.isNull() 
+        || bottom_texture_->getWidth() != width
+        || bottom_texture_->getHeight() != height) {
+      static uint32_t count = 0;
+      rviz::UniformStringStream ss;
+      ss << "CameraInfoDisplayPolygonBottom" << count++;
+      material_bottom_
+        = Ogre::MaterialManager::getSingleton().create(
+          ss.str(),
+          Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+      bottom_texture_ = Ogre::TextureManager::getSingleton().createManual(
+        material_bottom_->getName() + "Texture",        // name
+        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+        Ogre::TEX_TYPE_2D, width, height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
+      material_bottom_->getTechnique(0)->getPass(0)->setColourWriteEnabled(true);
+      Ogre::ColourValue color = rviz::qtToOgre(color_);
+      color.a = alpha_;
+      material_bottom_->getTechnique(0)->getPass(0)->setAmbient(color);
+      material_bottom_->setReceiveShadows(false);
+      material_bottom_->getTechnique(0)->setLightingEnabled(true);
+      material_bottom_->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+      material_bottom_->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+      material_bottom_->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+      material_bottom_->getTechnique(0)->getPass(0)->setDepthCheckEnabled(true);
+    
+      material_bottom_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
+      material_bottom_->getTechnique(0)->getPass(0)->createTextureUnitState(bottom_texture_->getName());
+      material_bottom_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    }
   }
 
   void CameraInfoDisplay::prepareMaterial()
   {
     if (texture_.isNull()) {
+      // material
       static uint32_t count = 0;
       rviz::UniformStringStream ss;
       ss << "CameraInfoDisplayPolygon" << count++;
@@ -221,12 +320,10 @@ namespace jsk_rviz_plugin
         = Ogre::MaterialManager::getSingleton().create(
           ss.str(),
           Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    
       texture_ = Ogre::TextureManager::getSingleton().createManual(
         material_->getName() + "Texture",        // name
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
         Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
-    
       material_->getTechnique(0)->getPass(0)->setColourWriteEnabled(true);
       Ogre::ColourValue color = rviz::qtToOgre(color_);
       color.a = alpha_;
@@ -241,14 +338,87 @@ namespace jsk_rviz_plugin
       material_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
       material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_->getName());
       material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      createTextureForBottom(640, 480);
     }
   }
 
+  void CameraInfoDisplay::subscribeImage(std::string topic)
+  {
+    
+    image_sub_.shutdown();
+    if (topic.empty()) {
+      ROS_WARN("topic name is empty");
+    }
+    ros::NodeHandle nh;
+    image_sub_ = nh.subscribe(topic, 1, 
+                              &CameraInfoDisplay::imageCallback, this);
+  }
   
+  void CameraInfoDisplay::drawImageTexture()
+  {
+    bottom_texture_->getBuffer()->lock( Ogre::HardwareBuffer::HBL_NORMAL );
+    const Ogre::PixelBox& pixelBox 
+      = bottom_texture_->getBuffer()->getCurrentLock();
+    Ogre::uint8* pDest = static_cast<Ogre::uint8*> (pixelBox.data);
+    memset(pDest, 0, bottom_texture_->getWidth() * bottom_texture_->getHeight());
+    QImage Hud(pDest, bottom_texture_->getWidth(), bottom_texture_->getHeight(), QImage::Format_ARGB32 );
+    for (size_t j = 0; j < bottom_texture_->getHeight(); j++) {
+      for (size_t i = 0; i < bottom_texture_->getWidth(); i++) {
+        if (use_image_ && !image_.empty() &&
+            bottom_texture_->getHeight() == image_.rows &&
+            bottom_texture_->getWidth() == image_.cols) {
+          ROS_DEBUG("bottom_texture_->getHeight(): %lu", bottom_texture_->getHeight());
+          ROS_DEBUG("bottom_texture_->getWidth(): %lu", bottom_texture_->getWidth());
+          ROS_DEBUG("image_.rows: %d", image_.rows);
+          ROS_DEBUG("image_.cols: %d", image_.cols);
+          QColor color(image_.data[j * image_.step + i * image_.elemSize() + 0],
+                       image_.data[j * image_.step + i * image_.elemSize() + 1],
+                       image_.data[j * image_.step + i * image_.elemSize() + 2],
+                       alpha_ * 255.0);
+          Hud.setPixel(i, j, color.rgba());
+        }
+        else {
+          Hud.setPixel(i, j, color_.rgba());
+        }
+      }
+    }
+    bottom_texture_->getBuffer()->unlock();
+  }
+
+  // convert sensor_msgs::Image into cv::Mat
+  void CameraInfoDisplay::imageCallback(
+      const sensor_msgs::Image::ConstPtr& msg)
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    cv_bridge::CvImagePtr cv_ptr;
+    try
+    {
+      cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
+      image_ = cv_ptr->image;
+      // check the size of bottom texture
+      if (bottom_texture_.isNull()
+          || bottom_texture_->getWidth() != image_.cols
+          || bottom_texture_->getHeight() != image_.rows) {
+        createTextureForBottom(image_.cols, image_.rows);
+        if (camera_info_) {
+          createCameraInfoShapes(camera_info_);
+        }
+      }
+      image_updated_ = true;
+    }
+    catch (cv_bridge::Exception& e)
+    {
+      ROS_ERROR("cv_bridge exception: %s", e.what());
+    }
+  }
+
   void CameraInfoDisplay::createCameraInfoShapes(
     const sensor_msgs::CameraInfo::ConstPtr& msg)
   {
     polygons_.clear();
+    if (edges_) {
+      edges_->clear();
+    }
     image_geometry::PinholeCameraModel model;
     bool model_success_p = model.fromCameraInfo(msg);
     if (!model_success_p) {
@@ -290,43 +460,49 @@ namespace jsk_rviz_plugin
       Ogre::ColourValue color = rviz::qtToOgre(color_);
       color.a = alpha_;
       prepareMaterial();
-      material_->getTechnique(0)->getPass(0)->setAmbient(color);
-      {      
-        texture_->getBuffer()->lock( Ogre::HardwareBuffer::HBL_NORMAL );
-        const Ogre::PixelBox& pixelBox = texture_->getBuffer()->getCurrentLock();
-        Ogre::uint8* pDest = static_cast<Ogre::uint8*> (pixelBox.data);
-        memset(pDest, 0, 1);
-        QImage Hud(pDest, 1, 1, QImage::Format_ARGB32 );
-        Hud.setPixel(0, 0, color_.rgba());
-        texture_->getBuffer()->unlock();
+      if (!not_show_side_polygons_) {
+        material_->getTechnique(0)->getPass(0)->setAmbient(color);
+        {      
+          texture_->getBuffer()->lock( Ogre::HardwareBuffer::HBL_NORMAL );
+          const Ogre::PixelBox& pixelBox 
+            = texture_->getBuffer()->getCurrentLock();
+          Ogre::uint8* pDest = static_cast<Ogre::uint8*> (pixelBox.data);
+          memset(pDest, 0, 1);
+          QImage Hud(pDest, 1, 1, QImage::Format_ARGB32 );
+          Hud.setPixel(0, 0, color_.rgba());
+          texture_->getBuffer()->unlock();
+        }
+        addPolygon(O, scaled_B, scaled_A, material_->getName(), true, true);
+        addPolygon(O, scaled_C, scaled_B, material_->getName(), true, true);
+        addPolygon(O, scaled_D, scaled_C, material_->getName(), true, true);
+        addPolygon(O, scaled_A, scaled_D, material_->getName(), true, true);
       }
+      // bottom
+      drawImageTexture();
 
-      addPolygon(O, scaled_B, scaled_A);
-      addPolygon(O, scaled_C, scaled_B);
-      addPolygon(O, scaled_D, scaled_C);
-      addPolygon(O, scaled_A, scaled_D);
-      addPolygon(scaled_A, scaled_B, scaled_D);
-      addPolygon(scaled_B, scaled_C, scaled_D);
+      addPolygon(scaled_A, scaled_B, scaled_D, material_bottom_->getName(), false, true);
+      addPolygon(scaled_B, scaled_C, scaled_D, material_bottom_->getName(), false, false);
     }
     ////////////////////////////////////////////////////////
     // build edges
     ////////////////////////////////////////////////////////
-    
-    edges_->clear();
-    edges_->setMaxPointsPerLine(2);
-    edges_->setNumLines(8);
-    edges_->setColor(edge_color_.red() / 255.0,
-                     edge_color_.green() / 255.0,
-                     edge_color_.blue() / 255.0,
-                     alpha_);
-    addPointToEdge(O); addPointToEdge(scaled_A); edges_->newLine();
-    addPointToEdge(O); addPointToEdge(scaled_B); edges_->newLine();
-    addPointToEdge(O); addPointToEdge(scaled_C); edges_->newLine();
-    addPointToEdge(O); addPointToEdge(scaled_D); edges_->newLine();
-    addPointToEdge(scaled_A); addPointToEdge(scaled_B); edges_->newLine();
-    addPointToEdge(scaled_B); addPointToEdge(scaled_C); edges_->newLine();
-    addPointToEdge(scaled_C); addPointToEdge(scaled_D); edges_->newLine();
-    addPointToEdge(scaled_D); addPointToEdge(scaled_A);
+    if (show_edges_) {
+      edges_->clear();
+      edges_->setMaxPointsPerLine(2);
+      edges_->setNumLines(8);
+      edges_->setColor(edge_color_.red() / 255.0,
+                       edge_color_.green() / 255.0,
+                       edge_color_.blue() / 255.0,
+                       alpha_);
+      addPointToEdge(O); addPointToEdge(scaled_A); edges_->newLine();
+      addPointToEdge(O); addPointToEdge(scaled_B); edges_->newLine();
+      addPointToEdge(O); addPointToEdge(scaled_C); edges_->newLine();
+      addPointToEdge(O); addPointToEdge(scaled_D); edges_->newLine();
+      addPointToEdge(scaled_A); addPointToEdge(scaled_B); edges_->newLine();
+      addPointToEdge(scaled_B); addPointToEdge(scaled_C); edges_->newLine();
+      addPointToEdge(scaled_C); addPointToEdge(scaled_D); edges_->newLine();
+      addPointToEdge(scaled_D); addPointToEdge(scaled_A);
+    }
   }
 
   ////////////////////////////////////////////////////////
@@ -371,7 +547,35 @@ namespace jsk_rviz_plugin
       createCameraInfoShapes(camera_info_);
     }
   }
-  
+
+  void CameraInfoDisplay::updateShowEdges()
+  {
+    show_edges_ = show_edges_property_->getBool();
+    if (camera_info_) {
+      createCameraInfoShapes(camera_info_);
+    }
+  }
+
+  void CameraInfoDisplay::updateImageTopic()
+  {
+    if (use_image_) {
+      std::string topic = image_topic_property_->getStdString();
+      subscribeImage(topic);
+    }
+  }
+
+  void CameraInfoDisplay::updateUseImage()
+  {
+    use_image_ = use_image_property_->getBool();
+    updateImageTopic();
+  }
+  void CameraInfoDisplay::updateNotShowSidePolygons()
+  {
+    not_show_side_polygons_ = not_show_side_polygons_property_->getBool();
+    if (camera_info_) {
+      createCameraInfoShapes(camera_info_);
+    }
+  }
 }
 
 
