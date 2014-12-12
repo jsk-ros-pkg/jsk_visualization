@@ -202,15 +202,12 @@
 	  (apply-joint-angles joint-names joint-angles)
 	  ;; move only head
 	  (send *ri* :angle-vector (send *robot* :angle-vector) (* (send (send joint-trajectory-point :time_from_start) :to-sec) 1000) :head-controller)
-	  (send *ri* :angle-vector-motion-plan
-		(send *robot* :angle-vector)
-		:move-arm :rarm :use-torso t)
-	  (send *ri* :wait-interpolation)
 
 	  (send *ri* :angle-vector-motion-plan
-		(send *robot* :angle-vector)
-		:move-arm :larm :use-torso t)
+	  	(send *robot* :angle-vector)
+	  	:move-arm :arms :use-torso t)
 	  (send *ri* :wait-interpolation)
+	  
 	  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
 	  )
 	 ;;stop grasp

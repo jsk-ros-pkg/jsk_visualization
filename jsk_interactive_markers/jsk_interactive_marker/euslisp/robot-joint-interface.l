@@ -1,7 +1,6 @@
 #!/usr/bin/env roseus
 
 (ros::load-ros-manifest "jsk_interactive_marker")
-;;(ros::roseus "ik-controller")
 
 (defclass robot-joint-interface
   :slots (robot
@@ -21,6 +20,10 @@
    (setq joint-traj-msg (instance jsk_interactive_marker::JointTrajectoryWithType :init))
    (send joint-traj-msg :joint_names (send robot :joint-list :name))
    )
+
+  (:reset
+   ()
+   (send self :init-joint-traj-msg))
 
   (:start-grasp
    (&rest args)
@@ -65,7 +68,7 @@
    ()
    (send joint-traj-msg :header :stamp (ros::time-now))
    (ros::publish joint-traj-topic joint-traj-msg)
-   (send self :init-joint-traj-msg)
+   (send self :reset)
    )
   )
 
@@ -90,3 +93,4 @@
 
 (send *rji* :start-trajectory)
 (print-ros-msg (cdadr (send *rji* :slots)))
+#|

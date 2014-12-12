@@ -15,6 +15,7 @@
 (require "package://roseus/euslisp/actionlib.l")
 (require "package://pr2eus/pr2-interface.l")
 (require "package://jsk_ik_server/euslisp/fullbody-ik-client.l")
+(require "package://jsk_interactive_marker/euslisp/robot-joint-interface.l")
 
 ;;;;;;;; setup ;;;;;;;;;;;
 (defclass touch-it-client
@@ -41,6 +42,7 @@
    *frame-id*
    *ik-update-times*
    *target-update-times*
+   *rji*
    )
   )
 
@@ -366,10 +368,10 @@
      (cond
       ((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
        (format t "[marker-menu] move robot!!~%")
+       (send self :publish-joint-states :real? t)
        ;;test
-       (send self :publish-joint-trajectory (list (send *robot* :angle-vector)) 5000 :moveit t :real? t)
+       ;;(send self :publish-joint-trajectory (list (send *robot* :angle-vector)) 5000 :moveit t :real? t)
        )
-       ;;(send self :publish-joint-states :real? t))
       ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
        (setq *origin-key* :free)
        (send self :set-origin)
@@ -575,7 +577,7 @@
 	  (cds (ros::tf-pose-stamped->coords pose))
 	  map->marker
 	  )
-     (setq cds (send self :get-eus-coords cds (send pose :header :frame_id)))
+     (setq cds (send self :get-eus-coords cds (send pose :header)))
      (send *target-coords* :move-to (send (car (send *real-robot* :links)) :copy-worldcoords) :world)
      (send *target-coords* :transform cds :local)
 
@@ -1024,7 +1026,7 @@
 	  map->marker
 	  pre-pose
 	  )
-     (setq cds (send self :get-eus-coords cds (send pose :header :frame_id)))
+     (setq cds (send self :get-eus-coords cds (send pose :header)))
      (send *target-coords* :move-to (send (car (send *real-robot* :links)) :copy-worldcoords) :world)
      (send *target-coords* :transform cds :local)
 
@@ -1394,7 +1396,7 @@
        (send *robot* :inverse-kinematics
 	     cds
 	     :move-target (send *robot* *one-click-grasp-arm* :end-coords)         
-             :use-torso nil
+             :use-torso t
 	     :rotation-axis t
 	     :debug-view t)
        (push (send *robot* :angle-vector) avs)
@@ -1407,23 +1409,28 @@
    )
 
   (:get-eus-coords
-   (cds frame-id)
+   (cds header)
    (let (origin->frame
+	 (frame-id (send header :frame_id))
+	 ;;(time (send header :stamp))
+	 (time (ros::time-now))
+	 (wait-times 3)
 	 )
-     (while t
+     (dotimes (i wait-times)
        (setq origin->frame
 	     (send *tfl* :lookup-transform
-		   *robot-origin* frame-id (ros::time 0)))
+		   *robot-origin* frame-id time))
        (cond
 	(origin->frame
 	 (send cds :transform origin->frame :world)
-	 (return)
+	 (return-from :get-eus-coords cds)
 	 )
 	(t
 	 (ros::ros-info "~A -> ~A cannot transform yet" *robot-origin* frame-id)
+	 (unix:sleep 1)
 	 (ros::sleep)
 	 ))))
-   cds
+   nil
    )
 
   (:pose-stamped->coords
@@ -1441,6 +1448,7 @@
 	 )
 	(t
 	 (ros::ros-info "~A -> ~A cannot transform yet" *frame-id* (send pose-stamped :header :frame_id))
+	 (unix:sleep 1)
 	 (ros::sleep)
 	 )
 	)
@@ -1451,107 +1459,140 @@
 
   (:box-movement-callback
    (msg)
-   (setq hoge msg)
    ;;grasp
    (let* ((pose msg)
 	  start-cds
 	  des-cds
 	  (handle-pose (ros::tf-pose->coords (send msg :handle_pose)))
 	  box-cds
+	  (move-arm :rarm)
+	  (use-torso t)
 	  )
-     (setq start-cds (send self :get-eus-coords (ros::tf-pose->coords (send msg :box :pose)) (send msg :box :header :frame_id)))
-     (setq des-cds (send self :get-eus-coords (ros::tf-pose->coords (send msg :destination :pose)) (send msg :destination :header :frame_id)))
+     
+     (setq start-cds (send self :get-eus-coords (ros::tf-pose->coords (send msg :box :pose)) (send msg :box :header)))
+     (setq des-cds (send self :get-eus-coords (ros::tf-pose->coords (send msg :destination :pose)) (send msg :destination :header)))
+     (unless start-cds
+       (return-from :box-movement-callback nil)
+       )
+     (unless des-cds
+       (return-from :box-movement-callback nil)
+       )
 
      (setq start-cds (send start-cds :transform handle-pose))
      (setq des-cds (send des-cds :transform handle-pose))
 
-     (setq a (send start-cds :copy-worldcoords))
-     (setq b (send des-cds :copy-worldcoords))
-
      (let (avs)
        ;;pre grasp
-       (print "pre grasp")
+       (ros::ros-info "pre grasp")
        (send start-cds :translate #f(-100 0 0))
-       (print start-cds)
-       (send *robot* :inverse-kinematics
-	     start-cds
-	     :move-target (send *robot* :rarm :end-coords)
-	     :use-torso nil
-	     :rotation-axis t
-	     :debug-view t)
-       (push (send *robot* :angle-vector) avs)
+       (unless
+	   (send *robot* :inverse-kinematics
+		 start-cds
+		 :move-target (send *robot* move-arm :end-coords)
+		 :use-torso use-torso
+		 :rotation-axis t
+		 :look-at-target t
+		 :debug-view nil)
+	 (return-from :box-movement-callback nil)
+	 )
+       (send *rji* :angle-vector (send *robot* :angle-vector) 5000 :moveit t)
+       (send *rji* :angle-vector (send *robot* :angle-vector) 3000)
+
        ;;grasp
-       (print "grasp")
+       (ros::ros-info "grasp")
        (send start-cds :translate #f(100 0 0))
-       (print start-cds)
-       (send *robot* :inverse-kinematics
-	     start-cds
-	     :move-target (send *robot* :rarm :end-coords)
-	     :use-torso nil
-	     :rotation-axis t
-	     :debug-view t)
-       (push (send *robot* :angle-vector) avs)
-       (setq avs (reverse avs))
-       (send self :publish-joint-trajectory avs (list 3000 1000) :real? t)
-       (unix::sleep 3)
-       (send self :start-grasp :arm :rarm)
-       (unix::sleep 3)
+       (unless
+	   (send *robot* :inverse-kinematics
+		 start-cds
+		 :move-target (send *robot* move-arm :end-coords)
+		 :use-torso use-torso
+		 :look-at-target t
+		 :rotation-axis t
+		 :debug-view nil)
+	 (send *rji* :reset)
+	 (return-from :box-movement-callback nil)
+	 )
+
+       (send *rji* :angle-vector (send *robot* :angle-vector) 2000)
+       (send *rji* :start-grasp move-arm)
        )
 
      (let (avs)
        ;;raise
-       (print "raise")
+       (ros::ros-info "raise")
        (send start-cds :translate #f(0 0 100) :world)
        (print start-cds)
-       (send *robot* :inverse-kinematics
-	     start-cds
-	     :move-target (send *robot* :rarm :end-coords)
-	     :use-torso nil
-	     :rotation-axis t
-	     :debug-view t)
-       (push (send *robot* :angle-vector) avs)
+       (unless
+	   (send *robot* :inverse-kinematics
+		 start-cds
+		 :move-target (send *robot* move-arm :end-coords)
+		 :use-torso use-torso
+		 :rotation-axis t
+		 :look-at-target t
+		 :debug-view nil)
+	 (send *rji* :reset)
+	 (return-from :box-movement-callback nil)
+	 )
 
-       (print "pre place")
+       (send *rji* :angle-vector (send *robot* :angle-vector) 2000)
+
+       (ros::ros-info "pre place")
        (send des-cds :translate #f(0 0 100) :world)
        (print des-cds)
-       (send *robot* :inverse-kinematics
-	     des-cds
-	     :move-target (send *robot* :rarm :end-coords)
-	     :use-torso nil
-	     :rotation-axis t
-	     :debug-view t)
-       (push (send *robot* :angle-vector) avs)
+       (unless
+	   (send *robot* :inverse-kinematics
+		 des-cds
+		 :move-target (send *robot* :rarm :end-coords)
+		 :use-torso use-torso
+		 :rotation-axis t
+		 :look-at-target t
+		 :debug-view nil)
+	 (send *rji* :reset)
+	 (return-from :box-movement-callback nil)
+	 )
 
-       (print "place")
+       (send *rji* :angle-vector (send *robot* :angle-vector) 5000 :moveit t)
+       (send *rji* :angle-vector (send *robot* :angle-vector) 3000)
+
+       (ros::ros-info "place")
        (send des-cds :translate #f(0 0 -100) :world)
-       (print des-cds)
-       (send *robot* :inverse-kinematics
-	     des-cds
-	     :move-target (send *robot* :rarm :end-coords)
-	     :use-torso nil
-	     :rotation-axis t
-	     :debug-view t)
-       (push (send *robot* :angle-vector) avs)
-       (setq avs (reverse avs))
-       (send self :publish-joint-trajectory avs (list 1000 3000 1000) :real? t)
-       (unix::sleep 3)
-       (send self :stop-grasp :arm :rarm)
-       (unix::sleep 5)
+       (unless 
+	   (send *robot* :inverse-kinematics
+		 des-cds
+		 :move-target (send *robot* :rarm :end-coords)
+		 :use-torso use-torso
+		 :rotation-axis t
+		 :look-at-target t
+		 :debug-view nil)
+	 (send *rji* :reset)
+	 (return-from :box-movement-callback nil)
+	 )
+       (send *rji* :angle-vector (send *robot* :angle-vector) 2000)
+       (send *rji* :stop-grasp :rarm)
        )
 
      (let (avs)
        ;;pose-place
-       (print "post place")
+       (ros::ros-info "post place")
        (send des-cds :translate #f(-100 0 0))
-       (send *robot* :inverse-kinematics
-	     des-cds
-	     :move-target (send *robot* :rarm :end-coords)
-	     :use-torso nil
-	     :rotation-axis t
-	     :debug-view t)
-       (push (send *robot* :angle-vector) avs)
-       (setq avs (reverse avs))
-       (send self :publish-joint-trajectory avs (list 2000) :real? t)
+       (unless
+	   (send *robot* :inverse-kinematics
+		 des-cds
+		 :move-target (send *robot* :rarm :end-coords)
+		 :use-torso use-torso
+		 :rotation-axis t
+		 :look-at-target t
+		 :debug-view nil)
+	 (send *rji* :reset)
+	 (return-from :box-movement-callback nil)
+	 )
+
+       (send *rji* :angle-vector (send *robot* :angle-vector) 2000)
+
+       (send *robot* :reset-manip-pose)
+       (send *rji* :angle-vector (send *robot* :angle-vector) 5000 :moveit t)
+
+       (send *rji* :start-trajectory)
        )
      (objects (list *pr2* start-cds des-cds))
      )
@@ -1682,7 +1723,6 @@
     )
    (defvar *robot-origin* (send (car (send *robot* :links)) :name))
 
-
    (defvar *im-nodename* "jsk_model_marker_interface")
    (defvar *gripper-im-nodename* "gripper_marker_for_interactive_marker_interface")
    (defvar *server-nodename*
@@ -1700,6 +1740,11 @@
    (setq *tfb* (instance ros::transform-broadcaster :init))
    (setq *tfl* (instance ros::transform-listener :init))
    (setq *fullbody-ik-client* (instance fullbody-ik-client :init))
+
+   ;;robot-joint-interface
+   (setq *rji* (instance robot-joint-interface :init *robot*
+			 (format nil "~A/~A/joint_trajectory_with_type_ri_move" *im-nodename* *robot-topic-name*)))
+
 
    (ros::roseus-add-msgs "sensor_msgs")
    (ros::subscribe "/spacenav/joy"
