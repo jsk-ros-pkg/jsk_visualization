@@ -16,6 +16,14 @@
     </description>
   </class>
 
+  <class name="jsk_rviz_plugin/PictogramArray"
+         type="jsk_rviz_plugin::PictogramArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize PictogramArray
+    </description>
+  </class>
+
   <class name="jsk_rviz_plugin/Pictogram"
          type="jsk_rviz_plugin::PictogramDisplay"
          base_class_type="rviz::Display">
