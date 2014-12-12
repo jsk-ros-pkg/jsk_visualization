@@ -158,6 +158,14 @@
   </class>
 
   
+  <class name="jsk_rviz_plugin/TabletControllerPanel"
+         type="jsk_rviz_plugin::TabletControllerPanel"
+         base_class_type="rviz::Panel">
+    <description>
+      tablet controller panel
+    </description>
+  </class>
+
   <class name="jsk_rviz_plugin/PublishTopic"
          type="jsk_rviz_plugin::PublishTopic"
          base_class_type="rviz::Panel">
