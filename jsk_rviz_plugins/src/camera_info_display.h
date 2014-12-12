@@ -42,13 +42,17 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/ros_topic_property.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <OGRE/OgreSceneNode.h>
 #include <image_geometry/pinhole_camera_model.h>
+#include <sensor_msgs/Image.h>
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreTextureManager.h>
 #include <OGRE/OgreTexture.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
 
 namespace jsk_rviz_plugin
 {
@@ -62,7 +66,9 @@ namespace jsk_rviz_plugin
                     const cv::Point3d& A,
                     const cv::Point3d& B,
                     const std::string& name,
-                    const Ogre::ColourValue& color);
+                    const Ogre::ColourValue& color,
+                    bool use_color,
+                    bool upper_triangle);
     virtual ~TrianglePolygon();
   protected:
     Ogre::ManualObject* manual_;
@@ -91,6 +97,7 @@ namespace jsk_rviz_plugin
     ////////////////////////////////////////////////////////
     // methods
     ///////////////////////////////////////////////////////
+    virtual void update(float wall_dt, float ros_dt);
     virtual bool isSameCameraInfo(
       const sensor_msgs::CameraInfo::ConstPtr& camera_info);
     virtual void createCameraInfoShapes(
@@ -98,8 +105,13 @@ namespace jsk_rviz_plugin
     virtual void addPointToEdge(
       const cv::Point3d& point);
     virtual void addPolygon(
-      const cv::Point3d& O, const cv::Point3d& A, const cv::Point3d& B);
+      const cv::Point3d& O, const cv::Point3d& A, const cv::Point3d& B, std::string name,
+      bool use_color, bool upper_triangle);
     virtual void prepareMaterial();
+    virtual void createTextureForBottom(int width, int height);
+    virtual void imageCallback(const sensor_msgs::Image::ConstPtr& msg);
+    virtual void drawImageTexture();
+    virtual void subscribeImage(std::string topic);
     /////////////////////////////////////////////////////////
     // variables
     //////////////////////////////////////////////////////// 
@@ -108,7 +120,10 @@ namespace jsk_rviz_plugin
     sensor_msgs::CameraInfo::ConstPtr camera_info_;
     Ogre::MaterialPtr material_;
     Ogre::TexturePtr texture_;
-    
+    Ogre::MaterialPtr material_bottom_;
+    Ogre::TexturePtr bottom_texture_;
+    ros::Subscriber image_sub_;
+    boost::mutex mutex_;
     ////////////////////////////////////////////////////////
     // variables updated by rviz properties
     ////////////////////////////////////////////////////////
@@ -117,7 +132,11 @@ namespace jsk_rviz_plugin
     QColor color_;
     QColor edge_color_;
     bool show_polygons_;
-    
+    bool show_edges_;
+    bool use_image_;
+    bool image_updated_;
+    bool not_show_side_polygons_;
+    cv::Mat image_;
     ////////////////////////////////////////////////////////
     // properties
     ////////////////////////////////////////////////////////
@@ -126,11 +145,20 @@ namespace jsk_rviz_plugin
     rviz::ColorProperty* color_property_;
     rviz::ColorProperty* edge_color_property_;
     rviz::BoolProperty* show_polygons_property_;
+    rviz::BoolProperty* not_show_side_polygons_property_;
+    rviz::BoolProperty* use_image_property_;
+    rviz::RosTopicProperty* image_topic_property_;
+    rviz::BoolProperty* show_edges_property_;
+    
   protected Q_SLOTS:
     void updateFarClipDistance();
     void updateAlpha();
     void updateColor();
+    void updateShowEdges();
     void updateShowPolygons();
+    void updateNotShowSidePolygons();
+    void updateImageTopic();
+    void updateUseImage();
     void updateEdgeColor();
   };
   

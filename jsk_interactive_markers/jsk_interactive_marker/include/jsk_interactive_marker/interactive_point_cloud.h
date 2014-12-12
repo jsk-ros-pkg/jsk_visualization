@@ -112,6 +112,7 @@ private:
   geometry_msgs::PoseStamped handle_pose_;
   tf::Transform handle_tf_;
   bool exist_handle_tf_;
+  bool display_interactive_manipulator_;
 
   jsk_pcl_ros::BoundingBoxMovement box_movement_;
 };

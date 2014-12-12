@@ -42,6 +42,12 @@
   <run_depend>urdfdom_py</run_depend>
   <build_depend>geometry_msgs</build_depend>
   <run_depend>geometry_msgs</run_depend>
+  <build_depend>jsk_gui_msgs</build_depend>
+  <run_depend>jsk_gui_msgs</run_depend>
+  <build_depend>view_controller_msgs</build_depend>
+  <run_depend>view_controller_msgs</run_depend>
+  <build_depend>roseus</build_depend>
+  <run_depend>roseus</run_depend>
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>

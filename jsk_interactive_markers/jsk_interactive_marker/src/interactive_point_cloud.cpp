@@ -11,6 +11,7 @@
 #include <tf/transform_listener.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+#include <boost/range/algorithm_ext/erase.hpp>
 
 using namespace visualization_msgs;
 using namespace interactive_markers;
@@ -31,7 +32,7 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
   pnh_.param<bool>("use_bounding_box", use_bounding_box_, "true");
   pnh_.param<std::string>("input_bounding_box", input_bounding_box_, "/bounding_box_marker/selected_box_array");
   pnh_.param<std::string>("handle_pose", initial_handle_pose_, "/handle_estimator/output_best");
-
+  pnh_.param<bool>("display_interactive_manipulator", display_interactive_manipulator_, true);
   //publish
   pub_click_point_ = pnh_.advertise<geometry_msgs::PointStamped>("right_click_point", 1);
   pub_left_click_ = pnh_.advertise<geometry_msgs::PointStamped>("left_click_point", 1);
@@ -73,6 +74,26 @@ void InteractivePointCloud::configCallback(Config &config, uint32_t level)
 {
   boost::mutex::scoped_lock(mutex_);
   point_size_ = config.point_size;
+  if(display_interactive_manipulator_ != config.display_interactive_manipulator){
+    display_interactive_manipulator_ = config.display_interactive_manipulator;
+    visualization_msgs::InteractiveMarker int_marker;
+    marker_server_.get(marker_name_, int_marker );
+    if(display_interactive_manipulator_){
+      addVisible6DofControl(int_marker);
+    }else{
+      for(std::vector<visualization_msgs::InteractiveMarkerControl>::iterator it=int_marker.controls.begin(); it!=int_marker.controls.end();){	
+      	if(it->interaction_mode==visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS
+      	   || it->interaction_mode==visualization_msgs::InteractiveMarkerControl::MOVE_AXIS){
+	  it = int_marker.controls.erase(it);
+      	}else{
+	  it++;
+	}
+      }
+    }
+    marker_server_.erase(marker_name_);
+    marker_server_.insert(int_marker);
+    marker_server_.applyChanges();
+  }
 }
 
 void InteractivePointCloud::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cloud){
@@ -366,9 +387,9 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
 	control.markers.push_back( bounding_box_marker );
       }
       int_marker.controls.push_back( control );
-    
-      addVisible6DofControl(int_marker);
-
+      if(display_interactive_manipulator_){
+	addVisible6DofControl(int_marker);
+      }
       marker_server_.insert( int_marker, boost::bind( &InteractivePointCloud::leftClickPoint, this, _1 ),
 			     visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK);
       marker_server_.setCallback( int_marker.name,
