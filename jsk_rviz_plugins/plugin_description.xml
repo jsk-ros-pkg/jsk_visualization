@@ -1,4 +1,9 @@
 <library path="lib/libjsk_rviz_plugins">
+  <class name="jsk_rviz_plugin/TabletViewController" type="jsk_rviz_plugin::TabletViewController" base_class_type="rviz::ViewController">
+    <description>
+      A view controller for tablet
+    </description>
+  </class>
 
   <class name="jsk_rviz_plugin/CloseAll" type="jsk_rviz_plugin::CloseAllTool" base_class_type="rviz::Tool">
     <description>

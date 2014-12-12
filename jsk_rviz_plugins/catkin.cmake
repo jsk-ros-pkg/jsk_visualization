@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   message_generation std_msgs diagnostic_msgs cv_bridge
   jsk_topic_tools
   image_geometry
+  view_controller_msgs
   geometry_msgs)
 
 add_message_files(FILES
@@ -79,6 +80,7 @@ qt4_wrap_cpp(MOC_FILES
   src/robot_command_interface.h
   src/empty_service_call_interface.h
   src/pictogram_display.h
+  src/view_controller/tablet_view_controller.h
 )
 
 set(SOURCE_FILES
@@ -113,6 +115,7 @@ set(SOURCE_FILES
   src/robot_command_interface.cpp
   src/empty_service_call_interface.cpp
   src/pictogram_display.cpp
+  src/view_controller/tablet_view_controller.cpp
   ${MOC_FILES}
 )
 
