@@ -36,7 +36,7 @@
 
 #include "tablet_controller_panel.h"
 #include <Eigen/Core>
-
+#include <Eigen/Geometry>
 namespace jsk_rviz_plugin
 {
   TabletCmdVelArea::TabletCmdVelArea(QWidget* parent, ros::Publisher& pub_cmd_vel):
@@ -94,7 +94,8 @@ namespace jsk_rviz_plugin
     // position of mouse
     QPen inner_pen;
     inner_pen.setColor(QColor(33, 150, 243));
-    inner_pen.setWidth(10);
+    int inner_size = 40;
+    inner_pen.setWidth(inner_size);
     painter.setPen(inner_pen);
     if (mouse_x_ == -1 && mouse_y_ == -1) {
       mouse_x_ = center_x;
@@ -103,7 +104,9 @@ namespace jsk_rviz_plugin
     else {
       publishVelocity(mouse_x_, mouse_y_, center_x, center_y);
     }
-    painter.drawArc(mouse_x_, mouse_y_, 10, 10, 0, (360 + 1) * 16);
+    painter.drawArc(mouse_x_ - inner_size / 2,
+		    mouse_y_ - inner_size / 2, 
+		    inner_size, inner_size, 0, (360 + 1) * 16);
   }
 
   void TabletCmdVelArea::publishVelocity(
@@ -129,7 +132,7 @@ namespace jsk_rviz_plugin
     if (!isnan(theta)) {
       Eigen::Vector3d vel_refined(-vel[1], -vel[0], 0);
       
-      publishCmdVel(vel_refined[0], vel_refined[1], theta);
+      publishCmdVel(vel_refined[0] * 0.2 , vel_refined[1] * 0.2, theta * 0.2);
     }
   }
 
@@ -240,7 +243,7 @@ namespace jsk_rviz_plugin
     task_dialog_layout_ = new QVBoxLayout();
     task_radio_buttons_.clear();
     std::vector<std::string> tasks;
-    tasks.push_back("/Tablet/Other/GetGeorgia");
+    tasks.push_back("/Tablet/other/GetGeorgia");
     tasks.push_back("/Tablet/chen/GoToElevator");
     tasks.push_back("/Tablet/chen/Greeting1");
     tasks.push_back("/Tablet/chen/Greeting2");
