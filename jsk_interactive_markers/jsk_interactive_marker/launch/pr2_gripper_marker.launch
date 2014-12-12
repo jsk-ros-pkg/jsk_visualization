@@ -12,6 +12,7 @@
   <group if="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)">
     <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_for_pr2_gripper_marker" output="screen">
       <param name="use_cache" type="bool" value="false"/>
+      <param name="check_update" type="bool" value="true"/>
     </node>
   </group>
 </launch>
