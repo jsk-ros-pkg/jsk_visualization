@@ -34,6 +34,7 @@
 
 #include <interactive_markers/interactive_marker_server.h>
 #include <jsk_pcl_ros/Int32Stamped.h>
+#include <jsk_interactive_marker/IndexRequest.h>
 #include <jsk_pcl_ros/BoundingBoxArray.h>
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
@@ -43,6 +44,16 @@ boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
 boost::mutex mutex;
 ros::Publisher pub, box_pub, box_arr_pub;
 jsk_pcl_ros::BoundingBoxArray::ConstPtr box_msg;
+
+void publishClickedBox(jsk_pcl_ros::Int32Stamped& msg)
+{
+  pub.publish(msg);
+  box_pub.publish(box_msg->boxes[msg.data]);
+  jsk_pcl_ros::BoundingBoxArray array_msg;
+  array_msg.header = box_msg->header;
+  array_msg.boxes.push_back(box_msg->boxes[msg.data]);
+  box_arr_pub.publish(array_msg);
+}
 
 void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
@@ -59,13 +70,14 @@ void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr
     index.header.stamp.nsec = boost::lexical_cast<int>(splitted_string.front());
     splitted_string.pop_front();
     index.data = boost::lexical_cast<int>(splitted_string.front());
-    pub.publish(index);
-    box_pub.publish(box_msg->boxes[index.data]);
-    jsk_pcl_ros::BoundingBoxArray array_msg;
-    array_msg.header = box_msg->header;
-    array_msg.boxes.push_back(box_msg->boxes[index.data]);
-    box_arr_pub.publish(array_msg);
+    publishClickedBox(index);
   }
+}
+
+bool indexRequest(jsk_interactive_marker::IndexRequest::Request  &req,
+                  jsk_interactive_marker::IndexRequest::Response &res)
+{
+  publishClickedBox(req.index);
 }
 
 void boxCallback(const jsk_pcl_ros::BoundingBoxArray::ConstPtr& msg)
