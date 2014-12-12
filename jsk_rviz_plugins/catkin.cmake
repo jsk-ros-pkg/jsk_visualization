@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   message_generation std_msgs diagnostic_msgs cv_bridge
   jsk_topic_tools
   image_geometry
+  view_controller_msgs
   geometry_msgs)
 
 add_message_files(FILES
