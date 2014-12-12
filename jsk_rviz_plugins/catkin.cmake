@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   jsk_topic_tools
   image_geometry
   view_controller_msgs
+  roseus
   geometry_msgs)
 
 add_message_files(FILES
@@ -81,6 +82,7 @@ qt4_wrap_cpp(MOC_FILES
   src/empty_service_call_interface.h
   src/pictogram_display.h
   src/view_controller/tablet_view_controller.h
+  src/tablet_controller_panel.h
 )
 
 set(SOURCE_FILES
@@ -116,6 +118,7 @@ set(SOURCE_FILES
   src/empty_service_call_interface.cpp
   src/pictogram_display.cpp
   src/view_controller/tablet_view_controller.cpp
+  src/tablet_controller_panel.cpp
   ${MOC_FILES}
 )
 
