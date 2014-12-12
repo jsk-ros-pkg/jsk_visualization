@@ -359,6 +359,7 @@ namespace jsk_rviz_plugin
   void PictogramDisplay::reset()
   {
     MFDClass::reset();
+    pictogram_->setEnable(false);
   }
 
   void PictogramDisplay::onEnable()
