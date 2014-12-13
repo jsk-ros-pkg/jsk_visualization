@@ -49,29 +49,46 @@
 
 namespace jsk_rviz_plugin
 {
+
+  int addFont(unsigned char* data, unsigned int data_len)
+  {
+    // register font
+    QByteArray entypo =
+      QByteArray::fromRawData(
+        reinterpret_cast<const char*>(data), data_len);
+    int id =
+      QFontDatabase::addApplicationFontFromData(entypo);
+    if (id == -1) {
+      ROS_WARN("failed to load font");
+    }
+    else {
+      return id;
+    }
+  }  
+  
   bool epsEqual(double a, double b)
   {
     return (std::abs(a - b) < 0.01);
   }
   
-  bool PictogramObject::isCharacterSupported(std::string character)
+  bool isCharacterSupported(std::string character)
   {
-    return ((entypo_social_character_map_.find(character)
-             != entypo_social_character_map_.end()) ||
-            (entypo_character_map_.find(character)
-             != entypo_character_map_.end()) ||
-            (fontawesome_character_map_.find(character)
-             != fontawesome_character_map_.end()));
+    return ((entypo_social_character_map.find(character)
+             != entypo_social_character_map.end()) ||
+            (entypo_character_map.find(character)
+             != entypo_character_map.end()) ||
+            (fontawesome_character_map.find(character)
+             != fontawesome_character_map.end()));
   }
   
-  QFont PictogramObject::getFont(std::string character)
+  QFont getFont(std::string character)
   {
-    if (entypo_social_character_map_.find(character)
-        != entypo_social_character_map_.end()) {
+    if (entypo_social_character_map.find(character)
+        != entypo_social_character_map.end()) {
       return QFont("Entypo Social");
     }
-    else if (entypo_character_map_.find(character)
-             != entypo_character_map_.end()) {
+    else if (entypo_character_map.find(character)
+             != entypo_character_map.end()) {
       return QFont("Entypo");
     }
     else {
@@ -79,38 +96,47 @@ namespace jsk_rviz_plugin
     }
   }
   
-  QString PictogramObject::lookupPictogramText(std::string character)
+  QString lookupPictogramText(std::string character)
   {
-    if (entypo_social_character_map_.find(character)
-        != entypo_social_character_map_.end()) {
-      return entypo_social_character_map_[character];
+    if (entypo_social_character_map.find(character)
+        != entypo_social_character_map.end()) {
+      return entypo_social_character_map[character];
     }
-    else if (entypo_character_map_.find(character)
-             != entypo_character_map_.end()){
-      return entypo_character_map_[character];
+    else if (entypo_character_map.find(character)
+             != entypo_character_map.end()){
+      return entypo_character_map[character];
     }
     else {
-      return fontawesome_character_map_[character];
+      return fontawesome_character_map[character];
     }
   }
+
+  bool isEntypo(std::string text) {
+    return ((entypo_social_character_map.find(text)
+             != entypo_social_character_map.end()) ||
+            (entypo_character_map.find(text)
+             != entypo_character_map.end()));
+  }
+
+  bool isFontAwesome(std::string text) {
+    return (fontawesome_character_map.find(text)
+            != fontawesome_character_map.end());
+  }
+
+  
   
   PictogramObject::PictogramObject(Ogre::SceneManager* manager,
                                    Ogre::SceneNode* parent,
-                                   double size,
-                                   int entypo_font_id,
-                                   int entypo_social_font_id):
+                                   double size):
     FacingTexturedObject(manager, parent, size),
-    entypo_font_id_(entypo_font_id),
-    entypo_social_font_id_(entypo_social_font_id),
     need_to_update_(false),
-    action_(STATIC)
+    action_(jsk_rviz_plugins::Pictogram::ADD)
   {
     square_object_->setPolygonType(SquareObject::SQUARE);
     square_object_->rebuildPolygon();
-    setupCharacterMap();
     
-    // for (std::map<std::string, QString>::iterator it = fontawesome_character_map_.begin();
-    //      it != fontawesome_character_map_.end();
+    // for (std::map<std::string, QString>::iterator it = fontawesome_character_map.begin();
+    //      it != fontawesome_character_map.end();
     //      ++it) {
     //   ROS_INFO("%s", it->first.c_str());
     // }
@@ -144,27 +170,21 @@ namespace jsk_rviz_plugin
     pose_ = pose;
     frame_id_ = frame_id;
   }
-
-  bool PictogramObject::isEntypo(std::string text) {
-    return ((entypo_social_character_map_.find(text)
-             != entypo_social_character_map_.end()) ||
-            (entypo_character_map_.find(text)
-             != entypo_character_map_.end()));
-  }
-
-  bool PictogramObject::isFontAwesome(std::string text) {
-    return (fontawesome_character_map_.find(text)
-            != fontawesome_character_map_.end());
-  }
   
   void PictogramObject::setContext(rviz::DisplayContext* context)
   {
     context_ = context;
   }
 
-  void PictogramObject::setAction(ActionType type)
+  void PictogramObject::setAction(uint8_t type)
   {
     action_ = type;
+    if (action_ == jsk_rviz_plugins::Pictogram::DELETE) {
+      setEnable(false);
+    }
+    else if (action_ == jsk_rviz_plugins::Pictogram::JUMP_ONCE) {
+      start();
+    }
   }
 
   void PictogramObject::updatePose(float wall_dt)
@@ -182,21 +202,21 @@ namespace jsk_rviz_plugin
       return;
     }
     
-    if (action_ == STATIC) {
+    if (action_ == jsk_rviz_plugins::Pictogram::ADD) {
       setPosition(position);
       setOrientation(quaternion);
     }
-    else if (action_ == ROTATE_Z ||
-             action_ == ROTATE_X ||
-             action_ == ROTATE_Y) {
+    else if (action_ == jsk_rviz_plugins::Pictogram::ROTATE_Z ||
+             action_ == jsk_rviz_plugins::Pictogram::ROTATE_X ||
+             action_ == jsk_rviz_plugins::Pictogram::ROTATE_Y) {
       Ogre::Vector3 axis;
-      if (action_ == ROTATE_Z) {
+      if (action_ == jsk_rviz_plugins::Pictogram::ROTATE_Z) {
         axis = Ogre::Vector3(0, 0, 1);
       }
-      else if (action_ == ROTATE_X) {
+      else if (action_ == jsk_rviz_plugins::Pictogram::ROTATE_X) {
         axis = Ogre::Vector3(1, 0, 0);
       }
-      else if (action_ == ROTATE_Y) {
+      else if (action_ == jsk_rviz_plugins::Pictogram::ROTATE_Y) {
         axis = Ogre::Vector3(0, 1, 0);
       }
       time_ = time_ + ros::WallDuration(wall_dt);
@@ -209,12 +229,14 @@ namespace jsk_rviz_plugin
       setPosition(position);
       setOrientation(final_rot);
     }
-    else if (action_ == JUMP || action_ == JUMP_ONCE) {
+    else if (action_ == jsk_rviz_plugins::Pictogram::JUMP ||
+             action_ == jsk_rviz_plugins::Pictogram::JUMP_ONCE) {
       bool jumpingp = false;
-      if (action_ == JUMP) {
+      if (action_ == jsk_rviz_plugins::Pictogram::JUMP) {
         jumpingp = true;
       }
-      else if (action_ == JUMP_ONCE && (ros::WallTime::now() - time_).toSec() < 2) {
+      else if (action_ == jsk_rviz_plugins::Pictogram::JUMP_ONCE &&
+               (ros::WallTime::now() - time_).toSec() < 2) {
         jumpingp = true;
       }
       
@@ -309,29 +331,9 @@ namespace jsk_rviz_plugin
     }
   }
   
-  int PictogramDisplay::addFont(unsigned char* data, unsigned int data_len)
-  {
-    // register font
-    QByteArray entypo =
-      QByteArray::fromRawData(
-        reinterpret_cast<const char*>(data), data_len);
-    int id =
-      QFontDatabase::addApplicationFontFromData(entypo);
-    if (id == -1) {
-      ROS_WARN("failed to load font");
-    }
-    else {
-      return id;
-    }
-
-  }
-  
   PictogramDisplay::PictogramDisplay()
   {
-    entypo_id_ = addFont(Entypo_ttf, Entypo_ttf_len);
-    entypo_social_id_ = addFont(Entypo_Social_ttf, Entypo_Social_ttf_len);
-    addFont(fontawesome_webfont_ttf,
-            font_awesome_4_2_0_fonts_fontawesome_webfont_ttf_len);
+    setupFont();
   }
 
   PictogramDisplay::~PictogramDisplay()
@@ -344,9 +346,8 @@ namespace jsk_rviz_plugin
     MFDClass::onInitialize();
     pictogram_.reset(new PictogramObject(scene_manager_,
                                          scene_node_,
-                                         1.0,
-                                         entypo_id_,
-                                         entypo_social_id_));
+                                         1.0));
+
     pictogram_->setContext(context_);
     pictogram_->setEnable(false);
     pictogram_->start();
@@ -359,6 +360,7 @@ namespace jsk_rviz_plugin
   void PictogramDisplay::reset()
   {
     MFDClass::reset();
+    pictogram_->setEnable(false);
   }
 
   void PictogramDisplay::onEnable()
@@ -379,28 +381,9 @@ namespace jsk_rviz_plugin
     if (!isEnabled()) {
       return;
     }
+    pictogram_->setAction(msg->action);
     if (msg->action == jsk_rviz_plugins::Pictogram::DELETE) {
-      pictogram_->setEnable(false);
       return;
-    }
-    else if (msg->action == jsk_rviz_plugins::Pictogram::ADD) {
-      pictogram_->setAction(PictogramObject::STATIC);
-    }
-    else if (msg->action == jsk_rviz_plugins::Pictogram::ROTATE_Z) {
-      pictogram_->setAction(PictogramObject::ROTATE_Z);
-    }
-    else if (msg->action == jsk_rviz_plugins::Pictogram::ROTATE_Y) {
-      pictogram_->setAction(PictogramObject::ROTATE_Y);
-    }
-    else if (msg->action == jsk_rviz_plugins::Pictogram::ROTATE_X) {
-      pictogram_->setAction(PictogramObject::ROTATE_X);
-    }
-    else if (msg->action == jsk_rviz_plugins::Pictogram::JUMP) {
-      pictogram_->setAction(PictogramObject::JUMP);
-    }
-    else if (msg->action == jsk_rviz_plugins::Pictogram::JUMP_ONCE) {
-      pictogram_->setAction(PictogramObject::JUMP_ONCE);
-      pictogram_->start();
     }
     
     if (msg->size <= 0.0) {
@@ -414,8 +397,6 @@ namespace jsk_rviz_plugin
                                 msg->color.b * 255));
     pictogram_->setAlpha(msg->color.a);
     pictogram_->setPose(msg->pose, msg->header.frame_id);
-    // pictogram_->setPosition(position);
-    // pictogram_->setOrientation(quaternion);
     pictogram_->setText(msg->character);
   }
 

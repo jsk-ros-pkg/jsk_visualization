@@ -2,6 +2,13 @@
 Changelog for package jsk_interactive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.15 (2014-12-13)
+-------------------
+* use robot-joint-interface in move bounding box
+* add grasp hand method
+* use moveit
+* Contributors: Ryohei Ueda, Yusuke Furuta
+
 1.0.14 (2014-12-09)
 -------------------
 * reduce load

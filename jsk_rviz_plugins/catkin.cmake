@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
 
 add_message_files(FILES
   OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg
-  Pictogram.msg)
+  Pictogram.msg PictogramArray.msg)
 add_service_files(FILES RequestMarkerOperate.srv EusCommand.srv)
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
@@ -81,6 +81,7 @@ qt4_wrap_cpp(MOC_FILES
   src/robot_command_interface.h
   src/empty_service_call_interface.h
   src/pictogram_display.h
+  src/pictogram_array_display.h
   src/view_controller/tablet_view_controller.h
   src/tablet_controller_panel.h
 )
@@ -117,6 +118,7 @@ set(SOURCE_FILES
   src/robot_command_interface.cpp
   src/empty_service_call_interface.cpp
   src/pictogram_display.cpp
+  src/pictogram_array_display.cpp
   src/view_controller/tablet_view_controller.cpp
   src/tablet_controller_panel.cpp
   ${MOC_FILES}
