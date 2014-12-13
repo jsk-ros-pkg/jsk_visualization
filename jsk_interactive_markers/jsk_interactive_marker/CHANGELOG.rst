@@ -2,6 +2,20 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use robot-joint-interface in move bounding box
+* add service request index to choose box from other program
+* added config for show or not show controlls
+* added spaces infront and behind equal
+* update interactive marker controller for hrp2w
+* changed dyn_reconfogure_effect_trigger_to_switch
+* add interface to send joint trajectory
+* add grasp hand method
+* use moveit
+* add JointTrajectoryPointWithType.msg
+* Contributors: Ryohei Ueda, Yu Ohara, Yuto Inagaki, Yu Ohara, Yusuke Furuta
+
 1.0.14 (2014-12-09)
 -------------------
 * added initializer if box_msg is empty
