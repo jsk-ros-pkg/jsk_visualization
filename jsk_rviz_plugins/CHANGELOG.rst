@@ -2,6 +2,22 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.15 (2014-12-13)
+-------------------
+* Add new plugin and message to display array of pictograms
+* Remove pictogram when the display is disabled
+* Fix policy to move head using rviz: Do not consider movement of mouse,
+  just use the position of the mouse. Because we cannot ignore
+  network latency
+* Fix several parameters suitable for surface
+* Add panel for tablet demonstration
+* Add view_controller_msgs
+* Compute difference to mouse position
+* Add TabletViewController to control robot from tablet using rviz
+* Check texture is available or not when initializing CameraInfo
+* Paster image on the bottom of the camera parameter pyramid
+* Contributors: Ryohei Ueda
+
 1.0.14 (2014-12-09)
 -------------------
 * Add more action to pictogram

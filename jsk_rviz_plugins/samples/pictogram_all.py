@@ -6,10 +6,10 @@
 
 import rospy
 import math
-from jsk_rviz_plugins.msg import Pictogram
+from jsk_rviz_plugins.msg import Pictogram, PictogramArray
 from random import random, choice
-rospy.init_node("pictogram_sample")
-p = rospy.Publisher("/pictogram", Pictogram)
+rospy.init_node("pictogram_all_sample")
+p = rospy.Publisher("/pictogram_array", PictogramArray)
 
 r = rospy.Rate(1)
 actions = [Pictogram.JUMP, Pictogram.JUMP_ONCE, Pictogram.ADD, 
@@ -848,16 +848,14 @@ pictograms = ["phone",
 "fa-youtube-play",
 "fa-youtube-square"]
 
-publishers = []
-print len(pictograms)
-for i in range(len(pictograms)):
-    publishers.append(rospy.Publisher("pictogram_%d" % i, Pictogram))
-
 counter = 0
 while not rospy.is_shutdown():
     initial_x = -int(math.sqrt(len(pictograms)))/2
+    arr = PictogramArray()
+    arr.header.frame_id = "/base_link"
+    arr.header.stamp = rospy.Time.now()
     prev_xyz = [initial_x, -10, 0]
-    for character, pub in zip(pictograms, publishers):
+    for character in pictograms:
         msg = Pictogram()
         msg.header.frame_id = "/base_link"
         msg.action = choice(actions)
@@ -875,11 +873,12 @@ while not rospy.is_shutdown():
         msg.color.b = 240 / 255.0
         msg.color.a = 1.0
         msg.character = character
-        pub.publish(msg)
+        arr.pictograms.append(msg)
         prev_xyz = [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z]
         if prev_xyz[0] > -initial_x:
             prev_xyz[0] = initial_x
             prev_xyz[1] = prev_xyz[1] + 1
+    p.publish(arr)
     r.sleep()
     counter = counter + 1
     if len(pictograms) == counter:

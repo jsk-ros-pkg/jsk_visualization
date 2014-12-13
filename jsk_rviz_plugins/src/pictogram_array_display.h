@@ -34,79 +34,23 @@
  *********************************************************************/
 
 
-#ifndef JSK_RVIZ_PLUGIN_PICTOGRAM_DISPLAY_H_
-#define JSK_RVIZ_PLUGIN_PICTOGRAM_DISPLAY_H_
+#ifndef JSK_RVIZ_PLUGINS_PICTOGRAM_ARRAY_DISPLAY_H_
+#define JSK_RVIZ_PLUGINS_PICTOGRAM_ARRAY_DISPLAY_H_
 
-#include <rviz/display.h>
-#include <rviz/message_filter_display.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/string_property.h>
-#include <rviz/properties/editable_enum_property.h>
-#include <rviz/properties/tf_frame_property.h>
-#include <rviz/properties/ros_topic_property.h>
-#include <rviz/properties/enum_property.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <jsk_rviz_plugins/Pictogram.h>
-#include "facing_visualizer.h"
-
+#include "pictogram_display.h"
+#include <jsk_rviz_plugins/PictogramArray.h>
 namespace jsk_rviz_plugin
 {
-  void setupFont();
-  int addFont(unsigned char* data, unsigned int data_len);
-  bool isFontAwesome(std::string);
-  bool isEntypo(std::string);
-  bool isCharacterSupported(std::string character);
-  QFont getFont(std::string character);
-  QString lookupPictogramText(std::string character);
-  ////////////////////////////////////////////////////////
-  // PictogramObject
-  ////////////////////////////////////////////////////////
-  class PictogramObject: public FacingTexturedObject
-  {
-  public:
-    typedef boost::shared_ptr<PictogramObject> Ptr;
-    PictogramObject(Ogre::SceneManager* manager,
-                    Ogre::SceneNode* parent,
-                    double size);
-    virtual void update(float wall_dt, float ros_dt);
-    virtual void setEnable(bool enable);
-    virtual void setText(std::string text);
-    virtual void setAlpha(double alpha);
-    virtual void setColor(QColor color);
-    virtual void setSize(double size);
-    virtual void setPose(const geometry_msgs::Pose& pose,
-                         const std::string& frame_id);
-    virtual void start();
-    virtual void setContext(rviz::DisplayContext* context);
-    virtual void setAction(uint8_t action);
-  protected:
-    virtual void updatePose(float dt);
-    virtual void updateColor();
-    virtual void updateText();
-    
-    bool need_to_update_;
-    uint8_t action_;
-    geometry_msgs::Pose pose_;
-    std::string frame_id_;
-    rviz::DisplayContext* context_;
-    ros::WallTime time_;
-  private:
-    
-  };
-
-  
   ////////////////////////////////////////////////////////
   // Display to visualize pictogram on rviz
   ////////////////////////////////////////////////////////
-  class PictogramDisplay:
-    public rviz::MessageFilterDisplay<jsk_rviz_plugins::Pictogram>
+  class PictogramArrayDisplay:
+    public rviz::MessageFilterDisplay<jsk_rviz_plugins::PictogramArray>
   {
     Q_OBJECT
   public:
-    PictogramDisplay();
-    virtual ~PictogramDisplay();
+    PictogramArrayDisplay();
+    virtual ~PictogramArrayDisplay();
   protected:
     
     ////////////////////////////////////////////////////////
@@ -115,18 +59,21 @@ namespace jsk_rviz_plugin
     virtual void onInitialize();
     virtual void reset();
     virtual void onEnable();
-    void processMessage(const jsk_rviz_plugins::Pictogram::ConstPtr& msg);
+    void processMessage(const jsk_rviz_plugins::PictogramArray::ConstPtr& msg);
     void update(float wall_dt, float ros_dt);
-
+    void allocatePictograms(size_t num);
+    
     ////////////////////////////////////////////////////////
     // parameters
     ////////////////////////////////////////////////////////
     boost::mutex mutex_;
-    PictogramObject::Ptr pictogram_;
+    std::vector<PictogramObject::Ptr> pictograms_;
   private Q_SLOTS:
     
   private:
   };
+
 }
 
 #endif
+
