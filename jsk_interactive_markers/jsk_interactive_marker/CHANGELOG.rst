@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.15 (2014-12-13)
+-------------------
 * use robot-joint-interface in move bounding box
 * add service request index to choose box from other program
 * added config for show or not show controlls

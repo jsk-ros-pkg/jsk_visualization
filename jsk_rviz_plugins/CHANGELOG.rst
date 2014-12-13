@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.15 (2014-12-13)
+-------------------
 * Add new plugin and message to display array of pictograms
 * Remove pictogram when the display is disabled
 * Fix policy to move head using rviz: Do not consider movement of mouse,
