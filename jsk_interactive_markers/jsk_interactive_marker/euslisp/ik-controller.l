@@ -1015,7 +1015,6 @@
 
   (:grasp-pose-callback
    (msg)
-   (setq hoge msg)
    (when *movingp*
      (ros::ros-error "still moving")
      (return-from :grasp-pose-callback nil))
@@ -1367,7 +1366,6 @@
   ;;TODO
   (:move-object-callback
    (msg)
-   (setq hoge msg)
    ;;grasp
    (let* ((pose msg)
 	  (cds (ros::tf-pose-stamped->coords msg))
