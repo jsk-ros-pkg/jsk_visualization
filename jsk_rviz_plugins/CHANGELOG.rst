@@ -2,6 +2,62 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.15 (2014-12-13)
+-------------------
+* Add new plugin and message to display array of pictograms
+* Remove pictogram when the display is disabled
+* Fix policy to move head using rviz: Do not consider movement of mouse,
+  just use the position of the mouse. Because we cannot ignore
+  network latency
+* Fix several parameters suitable for surface
+* Add panel for tablet demonstration
+* Add view_controller_msgs
+* Compute difference to mouse position
+* Add TabletViewController to control robot from tablet using rviz
+* Check texture is available or not when initializing CameraInfo
+* Paster image on the bottom of the camera parameter pyramid
+* Contributors: Ryohei Ueda
+
+1.0.14 (2014-12-09)
+-------------------
+* Add more action to pictogram
+* Add documentation about pictogram
+* Do not rewrite texture if no need
+* Add sample to visualize all the pictograms
+* Add FontAwesome fonts and several improvements about font drawing:
+  1) decide size of font according to font metrics
+  2) do not re-write pictogram texture if no need
+* Support deletion of pictogram
+* Add color field to Pictogram.msg
+* Add sample script for pictogram
+* Add display to visualize pictogram
+* fixed parameter namespace mismatch.
+* set the components to align left
+* added button for start_impedance_for_drill
+* added service to check marker existence. added copy to marker operation.
+* fix quatation signiture for function name in robot_command_interface.cpp
+* refact and delete some unneeded includes
+* add empty_service_call_interface
+* add robot_command_interface
+* Change the size of menu according to the change of title and fix
+  position of the popup window if the window is larger than the rviz
+* Use name for decomposed topic of motor_states_temperature_decomposer.py
+* Change color of text according to the foreground color of PieChart
+* Show value as string on Plotter2DDisplay
+* Decompose joint_state's effort value and read the max value from robot_description
+* Fix motor_state_decomposer.py
+* Take title into account to decide the size of OverlayMenu
+* compacting the panel with using tab
+* move msg to jsk_rviz_plugins
+* add depend on jsk_interactive_marker
+* add transformable marker operator panel
+* Coloring footstep by jsk_footstep_msgs::Footstep::footstep_group
+* Show text on footstep to display left or right
+* Separate 'OvertakeProperties' into 'Overtake Color Properties' and
+  'Overtake Position Properties'
+* Script to decompose MotorStates/temperature into std_msgs/Float32
+* Contributors: Masaki Murooka, Ryohei Ueda, Yuto Inagaki, Masaki Murooka
+
 1.0.13 (2014-10-10)
 -------------------
 * Add "overtake properties" property to OverlayTextDisplay

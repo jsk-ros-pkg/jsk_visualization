@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_rviz_plugins</name>
-  <version>1.0.13</version>
+  <version>1.0.15</version>
   <description>The jsk_rviz_plugins package</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
   <license>BSD</license>
@@ -40,6 +40,14 @@
   <run_depend>jsk_topic_tools</run_depend>
   <build_depend>urdfdom_py</build_depend>
   <run_depend>urdfdom_py</run_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <build_depend>jsk_gui_msgs</build_depend>
+  <run_depend>jsk_gui_msgs</run_depend>
+  <build_depend>view_controller_msgs</build_depend>
+  <run_depend>view_controller_msgs</run_depend>
+  <build_depend>roseus</build_depend>
+  <run_depend>roseus</run_depend>
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>

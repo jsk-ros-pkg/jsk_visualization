@@ -2,6 +2,95 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.15 (2014-12-13)
+-------------------
+* use robot-joint-interface in move bounding box
+* add service request index to choose box from other program
+* added config for show or not show controlls
+* added spaces infront and behind equal
+* update interactive marker controller for hrp2w
+* changed dyn_reconfogure_effect_trigger_to_switch
+* add interface to send joint trajectory
+* add grasp hand method
+* use moveit
+* add JointTrajectoryPointWithType.msg
+* Contributors: Ryohei Ueda, Yu Ohara, Yuto Inagaki, Yu Ohara, Yusuke Furuta
+
+1.0.14 (2014-12-09)
+-------------------
+* added initializer if box_msg is empty
+* added subscriber to set point_marker pose
+* add show and hide marker method
+* update pr2 spacenav sample
+* load baxter-interface when using baxter
+* refactoring ik-controller (delete functions and meanless comment out)
+* add baxter to ik contollers
+* Merge branch 'master' into irteus-to-urdf-interactive-marker
+* add grasp offset
+* fix generate msg
+* added codes to pub relative_pose
+* move and recognize handle
+* Merge branch 'master' into irteus-to-urdf-interactive-marker
+  Conflicts:
+  jsk_interactive_markers/jsk_interactive_marker/catkin.cmake
+* changed marker_type because BUTTON_CLICK was not driven
+* update joint state and root
+* check ptr is null
+* change staro config
+* add open door function
+* added service to check marker existence. added copy to marker operation.
+* added service to get/set color and focus.
+* added service function and service files for GetTransformableMarkerPose and SetTransformableMarkerPose
+* publish tf of transformable marker in timer callback
+* update transformable marker when dimension is set.
+* added topic to add pose to transformable mareker with relative coords
+* publish marker dimensions as topic. added MarkerDimensions.msg and use this message in service files.
+* publish tf of transformable object.
+* publish tf at low frequency
+* add new msg
+* add marker description and publish marker model movement
+* add black list to fasten converting ros package file style
+* improve speed of creating marker
+* fix bag
+* fix link when robot mode
+* add center marker to urdf control marker
+* modified teleop source for hrp2jsknts
+* set fixed link
+* adding hrp2w interactive markers
+* rotate marker in world coorlds
+* merge origin/master and fixed conflicts
+* added service to set/get marker dimensions
+* use msg int value for object shape.
+* move msg to jsk_rviz_plugins
+* add transformable marker operator panel
+* add RequestMarkerOperate
+* Merging and update
+* integrate files and arrange srv
+* disable one click grasp by default
+* add reconfigure to transformable server
+* use Eigen for transfomation in addPose
+* added new srvice for transformable object. added ros service to insert/erase marker dynamically.
+* update marker pose when marker menu changed
+* display ik controller info
+* Merge remote-tracking branch 'tarukosu/hand-marker-for-im-control' into hand-marker-for-im-control
+* add scale for urdf marker
+* use robot description for hand marker
+* update launch file
+* add samplerobot yaml
+* add samplerobot controller
+* add staro hand
+* update base pose
+* extract hand urdf from all urdf
+* do not use *robot-offset*
+* Remove warning message of FootstepMarker
+* Supress messages from footstep_marker
+* delete old code
+* load urdf to visualize hand pose
+* move functions to interactive_marker_utils.cpp
+* add hand marker for hrp2
+* tiny debug to avoid compilation warning
+* Contributors: Hiroaki Yaguchi, Kei Okada, Masaki Murooka, Ryohei Ueda, Yuto Inagaki, Eisoku Kuroiwa, Masaki Murooka, Yu Ohara, Yusuke Furuta
+
 1.0.13 (2014-10-10)
 -------------------
 * add tabletop launch file

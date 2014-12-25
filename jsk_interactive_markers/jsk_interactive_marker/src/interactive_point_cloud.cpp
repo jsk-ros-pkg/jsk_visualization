@@ -11,6 +11,7 @@
 #include <tf/transform_listener.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+#include <boost/range/algorithm_ext/erase.hpp>
 
 using namespace visualization_msgs;
 using namespace interactive_markers;
@@ -31,7 +32,7 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
   pnh_.param<bool>("use_bounding_box", use_bounding_box_, "true");
   pnh_.param<std::string>("input_bounding_box", input_bounding_box_, "/bounding_box_marker/selected_box_array");
   pnh_.param<std::string>("handle_pose", initial_handle_pose_, "/handle_estimator/output_best");
-
+  pnh_.param<bool>("display_interactive_manipulator", display_interactive_manipulator_, true);
   //publish
   pub_click_point_ = pnh_.advertise<geometry_msgs::PointStamped>("right_click_point", 1);
   pub_left_click_ = pnh_.advertise<geometry_msgs::PointStamped>("left_click_point", 1);
@@ -41,10 +42,10 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
   pub_box_movement_ = pnh_.advertise<jsk_pcl_ros::BoundingBoxMovement>("box_movement", 1);
   pub_handle_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("handle_pose", 1);
   pub_handle_pose_array_ = pnh_.advertise<geometry_msgs::PoseArray>("handle_pose_array", 1);
-
+  
   //subscribe
   sub_handle_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> ("set_handle_pose", 1, boost::bind( &InteractivePointCloud::setHandlePoseCallback, this, _1));
-
+  sub_marker_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped>("set_marker_pose", 1, boost::bind( &InteractivePointCloud::setMarkerPoseCallback, this, _1)); 
   sub_point_cloud_.subscribe(pnh_, input_pointcloud_, 1);
 
 
@@ -73,6 +74,26 @@ void InteractivePointCloud::configCallback(Config &config, uint32_t level)
 {
   boost::mutex::scoped_lock(mutex_);
   point_size_ = config.point_size;
+  if(display_interactive_manipulator_ != config.display_interactive_manipulator){
+    display_interactive_manipulator_ = config.display_interactive_manipulator;
+    visualization_msgs::InteractiveMarker int_marker;
+    marker_server_.get(marker_name_, int_marker );
+    if(display_interactive_manipulator_){
+      addVisible6DofControl(int_marker);
+    }else{
+      for(std::vector<visualization_msgs::InteractiveMarkerControl>::iterator it=int_marker.controls.begin(); it!=int_marker.controls.end();){	
+      	if(it->interaction_mode==visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS
+      	   || it->interaction_mode==visualization_msgs::InteractiveMarkerControl::MOVE_AXIS){
+	  it = int_marker.controls.erase(it);
+      	}else{
+	  it++;
+	}
+      }
+    }
+    marker_server_.erase(marker_name_);
+    marker_server_.insert(int_marker);
+    marker_server_.applyChanges();
+  }
 }
 
 void InteractivePointCloud::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cloud){
@@ -115,6 +136,11 @@ void InteractivePointCloud::setHandlePoseCallback(const geometry_msgs::PoseStamp
       box_movement_.handle_pose = handle_pose;
     }
   }
+}
+
+void InteractivePointCloud::setMarkerPoseCallback( const geometry_msgs::PoseStampedConstPtr &pose_stamped_msg){
+  marker_server_.setPose(marker_name_, pose_stamped_msg->pose, pose_stamped_msg->header);
+  marker_server_.applyChanges();
 }
 
 // create menu
@@ -240,6 +266,10 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
       setHandlePoseCallback(handle);
     }
   }
+  else{
+    int_marker.pose.position.x=int_marker.pose.position.y=int_marker.pose.position.z=int_marker.pose.orientation.x=int_marker.pose.orientation.y=int_marker.pose.orientation.z=0;
+    int_marker.pose.orientation.w=1;
+  }
 
 
   int num_points = pcl_cloud.points.size();
@@ -357,9 +387,9 @@ void InteractivePointCloud::makeMarker(const sensor_msgs::PointCloud2ConstPtr cl
 	control.markers.push_back( bounding_box_marker );
       }
       int_marker.controls.push_back( control );
-    
-      addVisible6DofControl(int_marker);
-
+      if(display_interactive_manipulator_){
+	addVisible6DofControl(int_marker);
+      }
       marker_server_.insert( int_marker, boost::bind( &InteractivePointCloud::leftClickPoint, this, _1 ),
 			     visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK);
       marker_server_.setCallback( int_marker.name,

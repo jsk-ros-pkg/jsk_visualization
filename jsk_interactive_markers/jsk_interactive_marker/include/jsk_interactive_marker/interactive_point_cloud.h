@@ -78,12 +78,14 @@ private:
   void publishGraspPose();
   void publishHandPose( geometry_msgs::PoseStamped box_pose);
   
+  void setMarkerPoseCallback( const geometry_msgs::PoseStampedConstPtr &pose_stamped_msg);
 
   std::string marker_name_, topic_;
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
   ros::Publisher pub_marker_pose_, pub_click_point_, pub_left_click_, pub_left_click_relative_, pub_handle_pose_, pub_handle_pose_array_, pub_box_movement_, pub_grasp_pose_;
   ros::Subscriber sub_handle_pose_;
+  ros::Subscriber sub_marker_pose_;
   //ros::Subscriber sub_point_cloud_, sub_bounding_box_;
   message_filters::Subscriber<sensor_msgs::PointCloud2> sub_point_cloud_;
   message_filters::Subscriber<jsk_pcl_ros::BoundingBoxArray> sub_bounding_box_;
@@ -94,7 +96,7 @@ private:
   tf::TransformListener tfl_;
   boost::shared_ptr<message_filters::Synchronizer<SyncPolicy> >sync_;
   boost::shared_ptr<message_filters::Synchronizer<SyncHandlePose> > sync_handle_;
-
+  
   interactive_markers::InteractiveMarkerServer marker_server_;
   interactive_markers::MenuHandler menu_handler_;
 
@@ -110,6 +112,7 @@ private:
   geometry_msgs::PoseStamped handle_pose_;
   tf::Transform handle_tf_;
   bool exist_handle_tf_;
+  bool display_interactive_manipulator_;
 
   jsk_pcl_ros::BoundingBoxMovement box_movement_;
 };

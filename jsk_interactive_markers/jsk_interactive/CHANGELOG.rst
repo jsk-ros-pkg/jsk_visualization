@@ -2,6 +2,24 @@
 Changelog for package jsk_interactive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.15 (2014-12-13)
+-------------------
+* use robot-joint-interface in move bounding box
+* add grasp hand method
+* use moveit
+* Contributors: Ryohei Ueda, Yusuke Furuta
+
+1.0.14 (2014-12-09)
+-------------------
+* reduce load
+* add baxter to ik contollers
+* Merge pull request `#192 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/192>`_ from hyaguchijsk/feature/add_hrp2w_interactive_marker_control
+  adding hrp2w interactive markers
+* modified teleop source for hrp2jsknts
+* adding hrp2w interactive markers
+* do not use *robot-offset*
+* Contributors: Hiroaki Yaguchi, Kei Okada, Yuto Inagaki, Masaki Murooka, Yuki Furuta
+
 1.0.13 (2014-10-10)
 -------------------
 * interactive marker control for hrp2

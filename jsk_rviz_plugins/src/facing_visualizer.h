@@ -62,17 +62,24 @@ namespace jsk_rviz_plugin
                  double outer_radius,
                  double inner_radius,
                  std::string name);
+    enum PolygonType
+    {
+      CIRCLE, SQUARE
+    };
+    
     virtual ~SquareObject();
     virtual Ogre::ManualObject* getManualObject();
     virtual void setOuterRadius(double outer_radius);
     virtual void setInnerRadius(double inner_radius);
     virtual void rebuildPolygon();
+    virtual void setPolygonType(PolygonType type);
   protected:
     Ogre::ManualObject* manual_;
     Ogre::SceneManager* manager_;
     double outer_radius_;
     double inner_radius_;
     std::string name_;
+    PolygonType polygon_type_;
   private:
   };
 
@@ -106,6 +113,7 @@ namespace jsk_rviz_plugin
     virtual ~FacingObject();
     virtual void setPosition(Ogre::Vector3& pos);
     virtual void setOrientation(rviz::DisplayContext* context);
+    virtual void setOrientation(Ogre::Quaternion& rot); // non facing API
     virtual void update(float wall_dt, float ros_dt) = 0;
     virtual void setSize(double size);
     virtual void setEnable(bool enable);
@@ -188,7 +196,6 @@ namespace jsk_rviz_plugin
   private:
     
   };
-
   
   class GISCircleVisualizer: public FacingTexturedObject
   {
