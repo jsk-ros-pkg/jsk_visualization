@@ -18,18 +18,6 @@
 (require "package://jsk_interactive_marker/euslisp/robot-joint-interface.l")
 
 ;;;;;;;; setup ;;;;;;;;;;;
-(defclass touch-it-client
-  :super ros::simple-action-client
-  :slots (feedback))
-(defmethod touch-it-client
-  (:action-feedback-cb
-   (msg)
-   (ros::ros-debug "[~A] feedback-cb ~A" ros::name-space msg)
-   (setq feedback msg))
-  (:feedback () feedback)
-  (:simple-state () ros::simple-state)
-  )
-
 (defclass im-controller
   :slots
   (*robot*
@@ -46,129 +34,7 @@
    )
   )
 
-(defvar *touch-it-interface*
-  (setq *c* (instance touch-it-client :init
-		      "/touchit/act/exec"
-		      move_base_msgs::MoveBaseAction)))
-(defvar *touch-it-interface-ocs*
-  (setq *c* (instance ros::simple-action-client :init
-		      "/touchit/act/exec_ocs"
-		      move_base_msgs::MoveBaseAction)))
-(defvar *touchit-reached* 4)
-(defvar *touchit-touched* 3)
-(defvar *touchit-cancelled* 6)
-
-(defvar *touchit-target-larm* 0)
-(defvar *touchit-target-larm-torso* 1)
-(defvar *touchit-target-larm-fullbody* 2)
-(defvar *touchit-target-rarm* 3)
-(defvar *touchit-target-rarm-torso* 4)
-(defvar *touchit-target-rarm-fullbody* 5)
-
-(defvar *touch-it-server-detected* nil)
-
 (defmethod im-controller
-  (:call-touch-it-server
-   (command
-    &key
-    (ik-type
-     (cond
-      ((eq *move-limb* :rarm)
-       (cond
-	(*use-fullbody* *touchit-target-rarm-fullbody*)
-	(*use-torso* *touchit-target-rarm-torso*)
-	(t *touchit-target-rarm*)))
-      ((eq *move-limb* :larm)
-       (cond
-	(*use-fullbody* *touchit-target-larm-fullbody*)
-	(*use-torso* *touchit-target-larm-torso*)
-	(t *touchit-target-larm*)))))
-    (frame_id (format nil "/~A" *robot-origin*))
-    (target-coords *target-coords*)
-    (target-coords-from-pelvis
-     (send (send *robot* :copy-worldcoords)
-	   :transformation target-coords))
-    (touch-it-interface
-     (case command
-       (:prev *touch-it-interface-ocs*)
-       (t *touch-it-interface*)))
-    (axis
-     (case *rotation-axis*
-       (:z 0)
-       (:x 1)
-       (:y 2)
-       (nil 3)
-       (t 4)))
-    res)
-   (let (feedback-value feedback-value2)
-     (case command
-       (:cancel (send touch-it-interface :cancel-all-goals))
-       (t
-	(let* ((c target-coords-from-pelvis)
-	       (p (scale 1e-3 (send c :worldpos)))
-	       (q (matrix2quaternion (send c :worldrot)))
-	       goal)
-	  ;; set request
-	  (warning-message 2 "[touch_it_client] start waiting for server~%")
-	  (cond
-	   ((not *touch-it-server-detected*)
-	    (setq *touch-it-server-detected* t)
-	    (send touch-it-interface :wait-for-server)))
-	  (warning-message 2 "[touch_it_client] finish waiting for server ~%")
-	  (setq goal (instance move_base_msgs::MoveBaseActionGoal :init))
-	  (send goal :goal :target_pose :header :frame_id frame_id)
-	  (send goal :goal :target_pose :header :stamp (ros::time 0.0))
-	  (send goal :goal :target_pose :pose :position :x (elt p 0))
-	  (send goal :goal :target_pose :pose :position :y (elt p 1))
-	  (send goal :goal :target_pose :pose :position :z (elt p 2))
-	  (send goal :goal :target_pose :pose :orientation :x (elt q 1))
-	  (send goal :goal :target_pose :pose :orientation :y (elt q 2))
-	  (send goal :goal :target_pose :pose :orientation :z (elt q 3))
-	  (send goal :goal :target_pose :pose :orientation :w (elt q 0))
-	  (send goal :goal :target_pose :header :seq (+ (* 10 axis) ik-type))
-	  ;; send request
-	  (warning-message 2 "[touch_it_client] send goal to server ~%")
-	  (send touch-it-interface :send-goal goal)
-	  ;; wait
-	  (warning-message 2 "[touch_it_client] start waiting for result~%")
-	  (ros::rate 10)
-	  (while (not (equal (send touch-it-interface :simple-state) ros::*simple-goal-state-done*))
-	    (warning-message 2 "[touch_it_client] waiting for result ... ~A~%" (send touch-it-interface :feedback))
-	    (when (send touch-it-interface :feedback)
-	      (setq feedback-value (send (ros::tf-pose-stamped->coords (send (send touch-it-interface :feedback) :feedback :base_position)) :pos))
-	      (setq feedback-value2 (car (rpy-angle (send (ros::tf-pose-stamped->coords (send (send touch-it-interface :feedback) :feedback :base_position)) :rot))))
-	      (send self :publish-touchit-status
-		    (format nil "force ~5,2f / ~5,2f ~% IK ~a  (~5,2f %)"
-			    (elt feedback-value 0) (elt feedback-value 1) (if (eps= (elt feedback-value2 0) 0) "FAIL" "SUCC") (elt feedback-value 2)))
-	      )
-	    (ros::sleep)
-	    (ros::spin-once)
-	    ))))
-     ;; (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
-     (setq res (send touch-it-interface :get-state))
-     ;; (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
-     (send self :publish-touchit-status
-	   (if (send touch-it-interface :feedback)
-	       (progn
-		 (setq feedback-value (send (ros::tf-pose-stamped->coords (send (send touch-it-interface :feedback) :feedback :base_position)) :pos))
-		 (format nil
-			 (format nil "~A (~a)~%force ~5,2f / ~5,2f  (~5,2f %)"
-				 (cond
-				  ((equal res *touchit-touched*) "TOUCHED")
-				  ((equal res *touchit-reached*) "REACHED")
-				  ((equal res *touchit-cancelled*) "CANCELLED"))
-				 res
-				 (elt feedback-value 0) (elt feedback-value 1) (elt feedback-value 2))))
-	     (format nil
-		     (format nil "~A (~a)"
-			     (cond
-			      ((equal res *touchit-touched*) "TOUCHED")
-			      ((equal res *touchit-reached*) "REACHED")
-			      ((equal res *touchit-cancelled*) "CANCELLED"))
-			     res))
-	     :scale 0.25))
-     res))
-
   ;; initial pose
   (:init-pose
    nil
@@ -183,84 +49,6 @@
    (send *robot* :fix-leg-to-coords (make-coords) :both)
    (send *real-robot* :fix-leg-to-coords (make-coords) :both)
    )
-;;;;;;;; setup ;;;;;;;;;;;
-
-;;;;;;;; controller ;;;;;;;;;
-  (:spacenav-subscriber
-   (msg
-    &optional
-    (move-filter '(1 1 1))
-    (rpy-filter '(1 1 1)))
-   (cond
-    ((and (> (aref (send msg :buttons) 0) 0.1)
-	  (> (aref (send msg :buttons) 1) 0.1))
-     (format t "mouse-mode~%")
-     (format t "standby..?~%")
-     (setq *mouse-mode* (not *mouse-mode*))
-     (print 3) (unix:sleep 1)
-     (print 2) (unix:sleep 1)
-     (print 1) (unix:sleep 1)
-     (format t "start!!~%")
-     )
-    ((not *mouse-mode*)
-     (return-from :spacenav-subscriber nil))
-    ((> (aref (send msg :buttons) 1) 0.1)
-     (print 'waist-fix)
-     (waist-fix :waist-key :waist-r :cnt 3)
-     (waist-fix :waist-key :waist-p :cnt 3)
-     (waist-fix :waist-key :waist-y :cnt 3)
-     (print 'done)
-     )
-    ((null *success-state-collection*) nil)
-    ((> (aref (send msg :buttons) 0) 0.1)
-     (print 'pop-back-robot-state)
-     (let ((state (pop *success-state-collection*)))
-       (send *robot* :angle-vector
-	     (cdr (assoc :angle-vector state)))
-       (send *robot* :newcoords
-	     (cdr (assoc :worldcoords state)))
-       (send *viewer* :draw-objects))
-     ))
-   (let ((move
-	  (scale
-	   30
-	   (coerce
-	    (subseq (send msg :axes) 0 3)
-	    float-vector)))
-	 (rpy
-	  (reverse
-	   (scale
-	    0.12
-	    (coerce
-	     (subseq (send msg :axes) 3 6)
-	     float-vector)))))
-     (cond
-      ((< (norm
-	   (coerce
-	    (send msg :axes)
-	    float-vector)) 0.01)
-       ;; (concatenate
-       ;;  float-vector
-       ;;  (scale 1e-3 move)
-       ;;  rpy)) 0.01)
-       (format t "skip ~A ~A~%" move rpy))
-      (t
-       (setq move
-	     (map float-vector
-		  #'*
-		  move move-filter))
-       (setq rpy
-	     (map float-vector
-		  #'*
-		  rpy rpy-filter))
-       (if (vectorp
-	    (send self :call-ik-server
-		  :rotation-axis t
-		  :translation-axis t
-		  :move-coords
-		  (make-coords :pos move :rpy rpy)))
-	   (send self :publish-joint-states :real? nil))
-       ))))
 
   (:robot-marker-joint-state-subscriber
    (msg)
@@ -478,18 +266,6 @@
        (send self :stop-grasp :arm *move-limb*)
        )
 
-      ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_EXEC*)
-       (format t "[marker-menu] touch it exec~%")
-       (send self :call-touch-it-server :exec)
-       )
-      ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_PREV*)
-       (format t "[marker-menu] touch it prev~%")
-       ;;(send self :call-touch-it-server :prev)
-       )
-      ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_CANCEL*)
-       (format t "[marker-menu] touch it cancel~%")
-       (send self :call-touch-it-server :cancel)
-       )
       ((eq menu jsk_interactive_marker::MarkerMenu::*LOOK_RARM*)
        (format t "[marker-menu] look rarm~%")
        (look-hand :rarm :rotate 0)
@@ -761,24 +537,6 @@
      )
    )
 
-  (:publish-touchit-status
-   (text &key (scale 0.15))
-   (let ((marker (instance visualization_msgs::marker :init)))
-     (send marker :header :frame_id "/im_target_coords_arrow")
-     (send marker :id 1)
-     (send marker :lifetime (ros::time 5))
-     (send marker :pose :position :z 1.05)
-     (send marker :pose :orientation :w 1)
-     (send marker :color :r 1)
-     (send marker :color :g 1)
-     (send marker :color :a 1)
-     (send marker :scale :z scale)
-     (send marker :type visualization_msgs::marker::*TEXT_VIEW_FACING*)
-     (send marker :text text)
-     (ros::publish (format nil "~A/marker" *server-nodename*) marker)
-     )
-   )
-
   (:overlay-text-color
    (status &key (a 0.8))
    (let ((color (instance std_msgs::ColorRGBA :init)))
@@ -821,7 +579,6 @@
      (ros::publish (format nil "~A/ik_status" *nodename*) text_msg)
      ))
 
-
   (:publish-status
    (&key (delete nil) (status :INFO) (text_size 20))
    (let ((text_msg (instance jsk_rviz_plugins::OverlayText :init))
@@ -853,7 +610,6 @@
      (send text_msg :text text)
      (ros::publish (format nil "~A/status" *nodename*) text_msg)
      ))
-
 
   (:publish-joint-states
    (&key
@@ -1152,10 +908,6 @@
 
 
    (ros::roseus-add-msgs "sensor_msgs")
-   (ros::subscribe "/spacenav/joy"
-		   sensor_msgs::Joy
-		   #'send self :spacenav-subscriber
-		   1)
 
    (ros::advertise (format nil "~A/status" *nodename*)
 		   jsk_rviz_plugins::OverlayText)
@@ -1185,11 +937,6 @@
     sensor_msgs::JointState
     #'send self :joint-state-subscriber 1)
 
-   (ros::subscribe
-    "/multisense_sl/joint_states_decompressed"
-    sensor_msgs::JointState
-    #'send self :joint-state-subscriber 1)
-
    ;;Update Interactive Marker
    (ros::advertise
     (format nil "~A/~A/reset_joint_states" *im-nodename* *robot-topic-name*)
@@ -1210,10 +957,6 @@
    (ros::advertise
     (format nil "~A/~A/joint_states_ri_move" *im-nodename* *robot-topic-name*)
     sensor_msgs::JointState)
-
-   (ros::advertise
-    (format nil "~A/~A/joint_trajectory_ri_move" *im-nodename* *robot-topic-name*)
-    trajectory_msgs::JointTrajectory)
 
    (ros::advertise
     (format nil "~A/~A/joint_trajectory_with_type_ri_move" *im-nodename* *robot-topic-name*)
