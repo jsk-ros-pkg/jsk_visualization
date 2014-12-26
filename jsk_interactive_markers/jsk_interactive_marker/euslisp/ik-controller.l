@@ -4,10 +4,10 @@
 (ros::load-ros-manifest "move_base_msgs")
 
 (ros::load-ros-manifest "moveit_msgs")
-(ros::load-ros-manifest "jsk_interactive")
+(ros::load-ros-manifest "jsk_pcl_ros")
 (ros::load-ros-manifest "jsk_interactive_marker")
 (ros::load-ros-manifest "jsk_rviz_plugins")
-(ros::load-ros-manifest "jsk_pcl_ros")
+
 
 (ros::roseus "ik-controller")
 
