@@ -266,69 +266,39 @@
   (:robot-marker-joint-state-subscriber
    (msg)
    (format t "[robot-marker-joint-state-subscriber] called ")
-
-   (bench
-    (let ((joint-names (send msg :name))
-	  (joint-angles (send msg :position))
-	  joint-name joint-angle
-	  buf
-	  )
-      ;;(describe msg)
-      (dotimes (x (length joint-names))
-	(setq joint-name (elt joint-names x))
-	(let ((joint-method (intern (string-upcase joint-name) *keyword-package*)))
-	  (when (find-method *robot* joint-method)
-	    (if (subclassp (class (send *robot* joint-method)) rotational-joint)
-		(setq joint-angle (rad2deg (elt joint-angles x)))
-	      (setq joint-angle (* 1000.0 (elt joint-angles x))))
-	    (send *robot* joint-method :joint-angle joint-angle))))
-      (send self :fix-robot-coords)
-      (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      )))
+   (apply-joint_state msg *robot*)
+   (send self :fix-robot-coords)
+   (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+   )
 
   (:joint-state-subscriber
    (msg)
    (format t "[joint-state-subscriber] called ")
    (bench
-    (let ((joint-names (send msg :name))
-	  (joint-angles (send msg :position))
-	  joint-name joint-angle
-	  buf
-	  )
+    (apply-joint_state msg *real-robot*)
+    (send self :fix-robot-coords)
 
-      (dotimes (x (length joint-names))
-	(setq joint-name (elt joint-names x))
-
-	(setq joint-angle (rad2deg (elt joint-angles x)))
-	(setq buf
-	      (intern (string-upcase joint-name) *keyword-package*))
-	(if (find-method *real-robot* buf)
-	    (send *real-robot* buf :joint-angle joint-angle))
-	)
-      (send self :fix-robot-coords)
-
-      (case *origin-key*
-	(:free nil)
-	(t 
-	 (let ((from-frame *robot-origin*)
-	       (to-frame (if (eq *origin-key* :rarm) *rhand-frame* *lhand-frame*))
-               (trans nil))
-           (if to-frame
-               (setq (send *tfl* :lookup-transform ;pelvis -> grasp_frame
-                           from-frame to-frame (ros::time 0.0))))
-           (if trans
-               (progn
-                 (send trans :transform 
-                       (send (make-coords) :transformation ;origin -> pelvis
-                             (send *real-robot* :copy-worldcoords))
-                       :world)
-                 (send *origin-coords* :move-to trans :world))
-             (send *origin-coords* :move-to
-                   (send *real-robot* *origin-key* :end-coords :worldcoords)
-                   :world)
-             )))
-        ))
-
+    (case *origin-key*
+      (:free nil)
+      (t
+       (let ((from-frame *robot-origin*)
+	     (to-frame (if (eq *origin-key* :rarm) *rhand-frame* *lhand-frame*))
+	     (trans nil))
+	 (if to-frame
+	     (setq (send *tfl* :lookup-transform ;pelvis -> grasp_frame
+			 from-frame to-frame (ros::time 0.0))))
+	 (if trans
+	     (progn
+	       (send trans :transform
+		     (send (make-coords) :transformation ;origin -> pelvis
+			   (send *real-robot* :copy-worldcoords))
+		     :world)
+	       (send *origin-coords* :move-to trans :world))
+	   (send *origin-coords* :move-to
+		 (send *real-robot* *origin-key* :end-coords :worldcoords)
+		 :world)
+	   )))
+      )
     
     (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     ))
@@ -669,26 +639,8 @@
    ()
    (let (res)
      (setq res (ros::service-call (format nil "~A/~A/get_joint_states" *im-nodename* *robot-topic-name*) (instance jsk_interactive_marker::GetJointStateRequest :init)))
-
-     (let* ((res-joint-state (send res :joint_state))
-	    (joint-names (send res-joint-state :name))
-	    (joint-angles (send res-joint-state :position))
-	    joint-name joint-angle
-	    )
-       (dotimes (x (length joint-names))
-	 (setq joint-name (elt joint-names x))
-	 (let ((joint-method (intern (string-upcase joint-name) *keyword-package*)))
-	   (when (find-method *real-robot* joint-method)
-	     (if (subclassp (class (send *robot* joint-method)) rotational-joint)
-		 (setq joint-angle (rad2deg (elt joint-angles x)))
-	       (setq joint-angle (* 1000.0 (elt joint-angles x)))))
-	   (send *real-robot* joint-method :joint-angle joint-angle)))
-       )
-
-     (send *robot*
-	   :angle-vector
-	   (copy-object
-	    (send *real-robot* :angle-vector)))
+     (apply-joint_state (send res :joint_state) *real-robot*)
+     (send *robot* :angle-vector (send *real-robot* :angle-vector))
      (send self :fix-robot-coords)
      )
    )
@@ -702,7 +654,6 @@
      (while t
        (setq torso->map
 	     (send *tfl* :lookup-transform
-		   ;;"r_foot" "map" (ros::time 0)))
 		   *robot-origin* *frame-id* (ros::time 0)))
        (cond
 	(torso->map
@@ -1015,7 +966,6 @@
 
   (:grasp-pose-callback
    (msg)
-   (setq hoge msg)
    (when *movingp*
      (ros::ros-error "still moving")
      (return-from :grasp-pose-callback nil))
@@ -1112,18 +1062,6 @@
    (setq *movingp* nil)
    )
 
-  (:apply-joint-state
-   (model joint-state)
-   (dotimes (i (length (send joint-state :name)))
-     (let ((joint-name (elt (send joint-state :name) i))
-	   (joint-angle (elt (send joint-state :position) i)))
-       (when (find-method model (intern (string-upcase joint-name) *keyword-package*))
-	 (send model (intern (string-upcase joint-name) *keyword-package*) :ros-joint-angle joint-angle)
-	 )
-       )
-     )
-   )
-
   (:move-model-callback
    (msg)
    (require "models/room73b2-scene.l")
@@ -1153,8 +1091,8 @@
    (send model :move-to (send self :pose-stamped->coords (send msg :pose_goal)) :world)
    (send *robot* :move-to (send self :pose-stamped->coords (ros::coords->tf-pose-stamped (make-coords) *robot-origin*)) :world)
 
-   (send self :apply-joint-state model-origin (send msg :joint_state_origin))
-   (send self :apply-joint-state model-goal (send msg :joint_state_goal))
+   (apply-joint_state model-origin (send msg :joint_state_origin))
+   (apply-joint_state model-goal (send msg :joint_state_goal))
 
    (setq joint-num (length (send model-origin :joint-list)))
 
@@ -1367,7 +1305,6 @@
   ;;TODO
   (:move-object-callback
    (msg)
-   (setq hoge msg)
    ;;grasp
    (let* ((pose msg)
 	  (cds (ros::tf-pose-stamped->coords msg))
