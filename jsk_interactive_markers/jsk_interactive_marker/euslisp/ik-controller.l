@@ -66,7 +66,6 @@
 (defvar *touchit-target-rarm-fullbody* 5)
 
 (defvar *touch-it-server-detected* nil)
-(defvar *one-click-grasp-arm* :larm)
 
 (defmethod im-controller
   (:call-touch-it-server
@@ -1053,8 +1052,7 @@
    (defvar *robot-topic-name* (ros::get-param "~robot_topic_name" "robot"))
    (setq *use-ik-server* (ros::get-param "~use_ik_server" t))
    (setq *frame-id* (ros::get-param "~frame_id" "map"))
-   (setq *one-click-grasp* (ros::get-param "~one_click_grasp" nil))
-   (setq *one-click-grasp-arm* (intern (string-upcase (ros::get-param "~one_click_grasp_arm" "rarm")) *keyword-package*))
+
 
    (setq *publish-ik* (ros::get-param "~start_ik" t))
    (defvar *ik-stop* (not *publish-ik*))

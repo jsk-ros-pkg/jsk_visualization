@@ -11,6 +11,7 @@
   :slots
   (*movingp*
    *frame-id*
+   *one-click-grasp*
    *one-click-grasp-arm*
    )
   )
@@ -558,6 +559,8 @@
    (setq *use-torso* nil)
 
    (setq *frame-id* (ros::get-param "~frame_id" "map"))
+
+   (setq *one-click-grasp* (ros::get-param "~one_click_grasp" nil))
    (setq *one-click-grasp-arm* (intern (string-upcase (ros::get-param "~one_click_grasp_arm" "rarm")) *keyword-package*))
 
    (setq *robot-origin* (send (car (send *robot* :links)) :name))
@@ -583,9 +586,11 @@
     (format nil "~A/move_model" *im-nodename*)
     jsk_interactive_marker::MoveModel #'send self :move-model-callback)
 
-   (ros::subscribe
-    (format nil "~A/grasp_pose" *interactive-pc-nodename*)
-    geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
+   (if *one-click-grasp*
+       (ros::subscribe
+	(format nil "~A/grasp_pose" *interactive-pc-nodename*)
+	geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
+     )
 
    (objects
     (list *robot* *target-coords*))
