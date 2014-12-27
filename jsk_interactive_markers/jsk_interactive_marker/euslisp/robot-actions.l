@@ -11,6 +11,7 @@
   :slots
   (*movingp*
    *frame-id*
+   *use-moveit*
    *one-click-grasp*
    *one-click-grasp-arm*
    )
@@ -440,9 +441,13 @@
 	       :debug-view nil)
        (return-from :box-movement-callback nil)
        )
-     (send *ri* :angle-vector (send *robot* :angle-vector) 5000 :head-controller)
-     (send *ri* :angle-vector-motion-plan (send *robot* :angle-vector)
-	   :move-arm :arms :use-torso t)
+     (if *use-moveit*
+	 (progn
+	   (send *ri* :angle-vector (send *robot* :angle-vector) 5000 :head-controller)
+	   (send *ri* :angle-vector-motion-plan (send *robot* :angle-vector)
+		 :move-arm :arms :use-torso t))
+       (send *ri* :angle-vector (send *robot* :angle-vector) 5000))
+
      (send *ri* :wait-interpolation)
      (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
      (send *ri* :wait-interpolation)
@@ -497,9 +502,14 @@
        (return-from :box-movement-callback nil)
        )
 
-     (send *ri* :angle-vector (send *robot* :angle-vector) 5000 :head-controller)
-     (send *ri* :angle-vector-motion-plan (send *robot* :angle-vector)
-	   :move-arm :arms :use-torso t)
+     (if *use-moveit*
+	 (progn
+	   (send *ri* :angle-vector (send *robot* :angle-vector) 5000 :head-controller)
+	   (send *ri* :angle-vector-motion-plan (send *robot* :angle-vector)
+		 :move-arm :arms :use-torso t)
+	   )
+       (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
+       )
      (send *ri* :wait-interpolation)
      (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
      (send *ri* :wait-interpolation)
@@ -540,13 +550,16 @@
 
      ;;reset pose
      (send *robot* :reset-manip-pose)
-     (send *ri* :angle-vector (send *robot* :angle-vector) 5000 :head-controller)
-     (send *ri* :angle-vector-motion-plan (send *robot* :angle-vector)
-	   :move-arm :arms :use-torso t)
+     (if *use-moveit*
+	 (progn
+	   (send *ri* :angle-vector (send *robot* :angle-vector) 5000 :head-controller)
+	   (send *ri* :angle-vector-motion-plan (send *robot* :angle-vector)
+		 :move-arm :arms :use-torso t)
+	   )
+       (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
+       )
      (send *ri* :wait-interpolation)
-
      )
-   (objects (list *pr2* start-cds des-cds))
   )
 
   (:init 
@@ -558,6 +571,7 @@
    (setq *use-torso* nil)
 
    (setq *frame-id* (ros::get-param "~frame_id" "map"))
+   (setq *use-moveit* (ros::get-param "~use_moveit" t))
 
    (setq *one-click-grasp* (ros::get-param "~one_click_grasp" nil))
    (setq *one-click-grasp-arm* (intern (string-upcase (ros::get-param "~one_click_grasp_arm" "rarm")) *keyword-package*))
