@@ -17,7 +17,6 @@
   )
 
 (defmethod robot-actions
-  ;;fixed flame is foot?
   (:grasp-pose-callback
    (msg)
    (when *movingp*
@@ -591,14 +590,18 @@
 	(format nil "~A/grasp_pose" *interactive-pc-nodename*)
 	geometry_msgs::PoseStamped #'send self :grasp-pose-callback)
      )
+   
+   (when (and x::*display* (> x::*display* 0))
+     (objects
+      (list *robot* *target-coords*))
+     )
+   (when (and (boundp '*irtviewer*) *irtviewer*)
+     (send *irtviewer* :change-background #f(0.9 0.9 1.0))
+     (send *irtviewer* :title "Robot Actions")
 
-   (objects
-    (list *robot* *target-coords*))
-   (send *irtviewer* :change-background #f(0.9 0.9 1.0))
-   (send *irtviewer* :title "Robot Actions")
-
-   (send *irtviewer* :draw-objects)
-   (send *irtviewer* :look-all)
+     (send *irtviewer* :draw-objects)
+     (send *irtviewer* :look-all)
+     )
    )
   )
 
