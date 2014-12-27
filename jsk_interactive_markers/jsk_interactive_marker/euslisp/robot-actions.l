@@ -36,7 +36,7 @@
      (send *target-coords* :translate (float-vector 10 0 0)) ; move a little bit forward
      (setq *tmp-rotation-axis* t)
      (dotimes (i 2)
-       (send self :stop-grasp :arm *one-click-grasp-arm*)
+       (send *ri* :stop-grasp *one-click-grasp-arm*)
        (unix:sleep 1))
      (let (avs time-sequences)
        (send *robot* *one-click-grasp-arm* :move-end-pos (float-vector -100 0 0))
@@ -79,20 +79,21 @@
                      :debug-view t)
          (setq *movingp* nil)
          (return-from :grasp-pose-callback nil))
-       (print 'bbb)
+
        (push (send *robot* :angle-vector) avs)
 
        (setq avs (reverse avs))
        (cond 
 	((equal (string-upcase *robot-name*) "BAXTER")
-	 (setq time-sequences  (list 2000 5000 2000)))
+	 (setq time-sequences  (list 2000 5000 3000)))
 	(t
 	 (setq time-sequences  (list 500 500 500))))
-       (send self :publish-joint-trajectory avs time-sequences :real? t)
+       (send *ri* :angle-vector-sequence avs time-sequences)
        )
-     (unix:usleep (* 1000 (+ 500 500 500)))
-     (send self :start-grasp :arm *one-click-grasp-arm*)
-     (unix:usleep (* 1000 1000))
+     (send *ri* :wait-interpolation)
+     (send *ri* :start-grasp  *one-click-grasp-arm*)
+     (send *ri* :wait-interpolation)
+     ;;(unix:usleep (* 1000 1000))
      (let (avs time-sequences)
        ;; pick up and place
        (push (send *robot* :angle-vector) avs)
@@ -105,13 +106,12 @@
 	 (setq time-sequences  (list 3000 3000)))
 	(t
 	 (setq time-sequences  (list 1000 1000))))
-       (send self :publish-joint-trajectory avs time-sequences :real? t)
+       (send *ri* :angle-vector-sequence avs time-sequences)
        )
 
      (when (boundp '*irtviewer*)
        (send *irtviewer* :draw-objects))
      )
-   (send self :publish-arrow-tf)
    (setq *movingp* nil)
    )
 
