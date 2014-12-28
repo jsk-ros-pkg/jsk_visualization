@@ -5,6 +5,11 @@
     </description>
   </class>
 
+  <class name="jsk_rviz_plugin/ScreenshotListener" type="jsk_rviz_plugin::ScreenshotListenerTool" base_class_type="rviz::Tool">
+    <description>
+      screenshot utility
+    </description>
+  </class>
   <class name="jsk_rviz_plugin/CloseAll" type="jsk_rviz_plugin::CloseAllTool" base_class_type="rviz::Tool">
     <description>
       close all displays

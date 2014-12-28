@@ -1170,14 +1170,40 @@
 			      ;;:target-centroid-pos nil
 			      ;;:cog-gain 0
 			      )))))
-	     (setq ik-suc
-		   (send *robot* :inverse-kinematics
-			 target-coords
-			 :move-target (send *robot* :arms :end-coords)
-			 :use-torso use-torso
-			 :rotation-axis rotation-axis
-			 :stop 100
-			 :debug-view nil))
+
+	     (let ((tc target-coords)
+		   (mt (send *robot* :arms :end-coords))
+		   (torso-link-num 0)
+		   )
+	       ;; use null space for aligning orientation
+	       (if use-torso
+		   (cond
+		    ((equal (string-upcase *robot-name*) "PR2")
+		     (setq torso-link-num 1)
+		     ))
+		 )
+	       (setq ik-suc
+		     (send *robot* :inverse-kinematics tc
+			   :use-torso use-torso :rotation-axis rotation-axis :thre (list 10 10)
+			   :stop 100
+			   :null-space #'(lambda ()
+					   (concatenate float-vector (make-array torso-link-num :element-type float-vector)
+							(scale 0.1
+							       (transform
+								(send *robot* :calc-inverse-jacobian
+								      (send *robot* :calc-jacobian-from-link-list
+									    (mapcar #'(lambda (tmp-mt arm) (send *robot* :link-list (send tmp-mt :parent) (send *robot* arm :root-link)))
+										    mt '(:larm :rarm))
+									    :move-target mt
+									    :translation-axis (list nil nil) :rotation-axis (list t t)))
+								(apply #'concatenate float-vector
+								       (mapcar #'(lambda (tmp-tc tmp-mt)
+										   (send tmp-mt :difference-rotation tmp-tc))
+									       tc mt))
+								)))
+					   )
+			   ))
+	       )
 	     )
 	   (cond
 	    ((if *use-ik-server* (= (send ik-server-res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*) (vectorp ik-suc))
