@@ -50,7 +50,7 @@
      )
     ((equal (string-upcase *robot-name*) "BAXTER")
      (setq *robot-name* "baxter")
-     (load "package://baxtereus/baxter-interface.l")
+     (load "package://baxtereus/baxter-moveit.l")
      (baxter-init)
      (setq *robot* *baxter*)
      )

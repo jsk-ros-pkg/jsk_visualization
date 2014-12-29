@@ -18,7 +18,10 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
 add_message_files(FILES
   OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg
   Pictogram.msg PictogramArray.msg)
-add_service_files(FILES RequestMarkerOperate.srv EusCommand.srv)
+add_service_files(FILES
+  RequestMarkerOperate.srv EusCommand.srv
+  Screenshot.srv
+  )
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 catkin_package(
@@ -114,6 +117,7 @@ set(SOURCE_FILES
   src/camera_info_display.cpp
   src/close_all_tool.cpp
   src/open_all_tool.cpp
+  src/screenshot_listener_tool.cpp
   src/transformable_marker_operator.cpp
   src/robot_command_interface.cpp
   src/empty_service_call_interface.cpp
