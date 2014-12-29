@@ -1,4 +1,5 @@
 <library path="lib/libjsk_rviz_plugins">
+  
   <class name="jsk_rviz_plugin/TabletViewController" type="jsk_rviz_plugin::TabletViewController" base_class_type="rviz::ViewController">
     <description>
       A view controller for tablet
@@ -21,6 +22,13 @@
     </description>
   </class>
 
+  <class name="jsk_rviz_plugin/VideoCapture"
+         type="jsk_rviz_plugin::VideoCaptureDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      capture rviz view as movie
+    </description>
+  </class>
   <class name="jsk_rviz_plugin/PictogramArray"
          type="jsk_rviz_plugin::PictogramArrayDisplay"
          base_class_type="rviz::Display">
