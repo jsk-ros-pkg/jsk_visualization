@@ -33,58 +33,53 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <ros/ros.h>
-#include <rviz/tool_manager.h>
-#include <rviz/display_context.h>
-#include <rviz/view_manager.h>
-#include <rviz/display_group.h>
+
+#ifndef JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
+#define JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
+
 #include <rviz/display.h>
-#include <rviz/render_panel.h>
-#include <QImageWriter>
-#include "screenshot_listener_tool.h"
+#include <rviz/properties/string_property.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/float_property.h>
+#include <opencv2/opencv.hpp>
 
 namespace jsk_rviz_plugin
 {
-  ScreenshotListenerTool::ScreenshotListenerTool()
-    : rviz::Tool()
+  class VideoCaptureDisplay: public rviz::Display
   {
-
-  }
-  ScreenshotListenerTool::~ScreenshotListenerTool()
-  {
-
-  }
-
-  void ScreenshotListenerTool::onInitialize()
-  {
-    ros::NodeHandle nh;
-    screenshot_service_ = nh.advertiseService(
-      "/rviz/screenshot",
-      &ScreenshotListenerTool::takeScreenShot, this);
-  }
-  
-  void ScreenshotListenerTool::activate()
-  {
+    Q_OBJECT
+  public:
+    typedef boost::shared_ptr<VideoCaptureDisplay> Ptr;
+    VideoCaptureDisplay();
+    virtual ~VideoCaptureDisplay();
+  protected:
+    virtual void onInitialize();
+    // virtual void subscribe();
+    // virtual void unsubscribe();
+    virtual void onEnable();
+    // virtual void onDisable();
+    virtual void update(float wall_dt, float ros_dt);
+    virtual void startCapture();
+    virtual void stopCapture();
+    ////////////////////////////////////////////////////////
+    // Variables
+    ////////////////////////////////////////////////////////
+    rviz::StringProperty* file_name_property_;
+    rviz::BoolProperty* start_capture_property_;
+    rviz::FloatProperty* fps_property_;
+    std::string file_name_;
+    bool capturing_;
+    double fps_;
+    int frame_counter_;
+    bool first_time_;
+    cv::VideoWriter writer_;
+  protected Q_SLOTS:
+    void updateFileName();
+    void updateStartCapture();
+    void updateFps();
+  private:
     
-  }
-
-  void ScreenshotListenerTool::deactivate()
-  {
-   
-  }
-
-  bool ScreenshotListenerTool::takeScreenShot(
-    jsk_rviz_plugins::Screenshot::Request& req,
-    jsk_rviz_plugins::Screenshot::Response& res)
-  {
-    QPixmap screenshot = QPixmap::grabWindow(context_->getViewManager()->getRenderPanel()->winId());
-    QString output_file = QString::fromStdString(req.file_name);
-    QImageWriter writer(output_file);
-    writer.write(screenshot.toImage());
-    return true;
-  }
-
+  };
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::ScreenshotListenerTool, rviz::Tool )
+#endif
