@@ -77,9 +77,6 @@ namespace jsk_rviz_plugin
     jsk_rviz_plugins::Screenshot::Request& req,
     jsk_rviz_plugins::Screenshot::Response& res)
   {
-    // main windwow...?
-    // get visualiztionframe
-    context_->getViewManager()->getRenderPanel();
     QPixmap screenshot = QPixmap::grabWindow(context_->getViewManager()->getRenderPanel()->winId());
     QString output_file = QString::fromStdString(req.file_name);
     QImageWriter writer(output_file);
