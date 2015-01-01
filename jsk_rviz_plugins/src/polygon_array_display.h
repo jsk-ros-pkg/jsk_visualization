@@ -15,7 +15,7 @@
 #include <rviz/properties/bool_property.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class PolygonArrayDisplay : public rviz::MessageFilterDisplay<jsk_pcl_ros::PolygonArray>
   {

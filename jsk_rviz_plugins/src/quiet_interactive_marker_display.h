@@ -39,7 +39,7 @@
 #include <rviz/default_plugin/interactive_marker_display.h>
 #include <rviz/properties/status_property.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class QuietInteractiveMarkerDisplay: public rviz::InteractiveMarkerDisplay
   {

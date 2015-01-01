@@ -43,7 +43,7 @@
 #include <rviz/properties/float_property.h>
 #include <opencv2/opencv.hpp>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class VideoCaptureDisplay: public rviz::Display
   {

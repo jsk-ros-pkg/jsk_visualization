@@ -34,7 +34,7 @@
 
 #include "bounding_box_array_display.h"
 #include <jsk_topic_tools/color_utils.h>
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {  
   BoundingBoxArrayDisplay::BoundingBoxArrayDisplay()
   {
@@ -259,4 +259,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::BoundingBoxArrayDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::BoundingBoxArrayDisplay, rviz::Display )

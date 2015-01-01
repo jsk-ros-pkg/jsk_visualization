@@ -51,7 +51,7 @@
 #include <jsk_rviz_plugins/Pictogram.h>
 #include "facing_visualizer.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   void setupFont();
   int addFont(unsigned char* data, unsigned int data_len);

@@ -46,7 +46,7 @@
 #include <rviz/view_manager.h>
 #include <rviz/render_panel.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   const double overlay_diagnostic_animation_duration = 5.0;
   OverlayDiagnosticDisplay::OverlayDiagnosticDisplay()
@@ -446,4 +446,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::OverlayDiagnosticDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayDiagnosticDisplay, rviz::Display)

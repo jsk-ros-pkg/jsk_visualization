@@ -49,7 +49,7 @@
 #include <QImage>
 #include <QColor>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class OverlayObject;
   

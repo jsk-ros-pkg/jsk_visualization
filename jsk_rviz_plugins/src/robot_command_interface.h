@@ -11,7 +11,7 @@ namespace Ui
   class RobotCommandInterface;
 }
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class RobotCommandInterfaceAction: public rviz::Panel
   {

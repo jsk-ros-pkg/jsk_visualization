@@ -13,7 +13,7 @@ class QPushButton;
 class PropertyTreeWidget;
 
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class SelectPointCloudPublishAction: public rviz::Panel
     {
