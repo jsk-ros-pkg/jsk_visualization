@@ -68,7 +68,7 @@
 #include <image_transport/camera_common.h>
 #include "overlay_camera_display.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 using namespace rviz;
 const QString OverlayCameraDisplay::BACKGROUND( "background" );
@@ -631,4 +631,4 @@ void OverlayCameraDisplay::updateTextureAlpha()
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::OverlayCameraDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayCameraDisplay, rviz::Display )

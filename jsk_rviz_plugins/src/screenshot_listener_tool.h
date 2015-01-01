@@ -42,7 +42,7 @@
 #include <rviz/properties/property_tree_model.h>
 #include <jsk_rviz_plugins/Screenshot.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class ScreenshotListenerTool: public rviz::Tool
   {

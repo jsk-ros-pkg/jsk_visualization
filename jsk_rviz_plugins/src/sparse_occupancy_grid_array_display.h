@@ -44,7 +44,7 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/ogre_helpers/point_cloud.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class SparseOccupancyGridArrayDisplay: public rviz::MessageFilterDisplay<jsk_pcl_ros::SparseOccupancyGridArray>
   {

@@ -79,7 +79,7 @@ class DisplayGroupVisibilityProperty;
  * \class CameraDisplay
  *
  */
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 using namespace rviz;
 class OverlayCameraDisplay: public rviz::ImageDisplayBase, public Ogre::RenderTargetListener

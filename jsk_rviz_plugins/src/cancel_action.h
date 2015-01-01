@@ -11,7 +11,7 @@ class QLabel;
 class QPushButton;
 //class QSignalMapper;
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class CancelAction: public rviz::Panel
     {

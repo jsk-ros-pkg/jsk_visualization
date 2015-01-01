@@ -3,7 +3,7 @@
 
 using namespace rviz;
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
   NormalDisplay::NormalDisplay():skip_rate_(1),scale_(0.3),alpha_(1.0)
@@ -297,4 +297,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugin::NormalDisplay,rviz::Display )
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::NormalDisplay,rviz::Display )

@@ -40,7 +40,7 @@
 #include <rviz/properties/parse_color.h>
 #include <QPainter>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
   const double minimum_font_size = 0.2;

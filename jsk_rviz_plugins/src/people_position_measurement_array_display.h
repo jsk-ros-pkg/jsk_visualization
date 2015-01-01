@@ -53,7 +53,7 @@
 #include "overlay_utils.h"
 #include "facing_visualizer.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   
   class PeoplePositionMeasurementArrayDisplay:

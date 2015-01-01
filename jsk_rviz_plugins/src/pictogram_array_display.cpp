@@ -35,7 +35,7 @@
 
 #include "pictogram_array_display.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   PictogramArrayDisplay::PictogramArrayDisplay()
   {
@@ -136,4 +136,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugin::PictogramArrayDisplay, rviz::Display);
+PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::PictogramArrayDisplay, rviz::Display);

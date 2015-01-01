@@ -41,7 +41,7 @@
 #include <rviz/render_panel.h>
 #include <QImage>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   VideoCaptureDisplay::VideoCaptureDisplay():
     Display(), capturing_(false), first_time_(true)
@@ -166,5 +166,5 @@ namespace jsk_rviz_plugin
 
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugin::VideoCaptureDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::VideoCaptureDisplay, rviz::Display)
 

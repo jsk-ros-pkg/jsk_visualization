@@ -44,7 +44,7 @@
 #include <rviz/display_context.h>
 #include <QPainter>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
   PieChartDisplay::PieChartDisplay()
@@ -370,4 +370,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::PieChartDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::PieChartDisplay, rviz::Display )

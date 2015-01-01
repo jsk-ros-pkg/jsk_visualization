@@ -47,7 +47,7 @@
 #include "fontawesome.dat"
 #include "pictogram_font_mapping.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
   int addFont(unsigned char* data, unsigned int data_len)
@@ -410,4 +410,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugin::PictogramDisplay, rviz::Display);
+PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::PictogramDisplay, rviz::Display);

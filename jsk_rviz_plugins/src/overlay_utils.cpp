@@ -36,7 +36,7 @@
 #include "overlay_utils.h"
 #include <ros/ros.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   ScopedPixelBuffer::ScopedPixelBuffer(Ogre::HardwarePixelBufferSharedPtr pixel_buffer):
     pixel_buffer_(pixel_buffer)

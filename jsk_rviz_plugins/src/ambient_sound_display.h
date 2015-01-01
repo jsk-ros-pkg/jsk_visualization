@@ -13,7 +13,7 @@ class SceneNode;
 
 // All the source in this plugin is in its own namespace.  This is not
 // required but is good practice.
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
 class AmbientSoundVisual;
@@ -113,7 +113,7 @@ private:
 };
 // END_TUTORIAL
 
-} // end namespace jsk_rviz_plugin
+} // end namespace jsk_rviz_plugins
 
 #endif // __AMBIENT_SOUND_DISPLAY__
 // %EndTag(FULL_SOURCE)%

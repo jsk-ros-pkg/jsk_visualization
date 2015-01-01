@@ -47,7 +47,7 @@
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/color_property.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class OverlayTextDisplay
   : public rviz::Display
