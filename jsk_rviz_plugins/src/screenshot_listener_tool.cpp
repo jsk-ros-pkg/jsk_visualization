@@ -43,7 +43,7 @@
 #include <QImageWriter>
 #include "screenshot_listener_tool.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   ScreenshotListenerTool::ScreenshotListenerTool()
     : rviz::Tool()
@@ -87,4 +87,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::ScreenshotListenerTool, rviz::Tool )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::ScreenshotListenerTool, rviz::Tool )

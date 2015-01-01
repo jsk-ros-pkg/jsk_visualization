@@ -37,7 +37,7 @@
 #include <rviz/validate_floats.h>
 #include <jsk_topic_tools/color_utils.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   FootstepDisplay::FootstepDisplay()
   {
@@ -344,4 +344,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::FootstepDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::FootstepDisplay, rviz::Display )

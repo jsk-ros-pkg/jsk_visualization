@@ -40,7 +40,7 @@
 #include "target_visualizer_display.h"
 #include <OGRE/OgreManualObject.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   const float arrow_animation_duration = 1.0;
   const double minimum_font_size = 0.2;
@@ -214,5 +214,5 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::TargetVisualizerDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TargetVisualizerDisplay, rviz::Display )
 

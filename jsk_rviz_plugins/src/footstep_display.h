@@ -45,7 +45,7 @@
 #include <rviz/ogre_helpers/movable_text.h>
 #include <OGRE/OgreSceneNode.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class FootstepDisplay : public rviz::MessageFilterDisplay<jsk_footstep_msgs::FootstepArray>
   {

@@ -7,7 +7,7 @@
 
 #include "ambient_sound_visual.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
     // BEGIN_TUTORIAL
@@ -123,5 +123,5 @@ namespace jsk_rviz_plugin
 
     // END_TUTORIAL
 
-} // end namespace jsk_rviz_plugin
+} // end namespace jsk_rviz_plugins
 

@@ -40,7 +40,7 @@
 #include <OGRE/OgreHardwarePixelBuffer.h>
 #include <QPainter>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   OverlayTextDisplay::OverlayTextDisplay() : Display(),
                                              texture_width_(0), texture_height_(0),
@@ -412,4 +412,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::OverlayTextDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayTextDisplay, rviz::Display )

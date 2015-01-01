@@ -34,7 +34,7 @@
  *********************************************************************/
 
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   std::map<std::string, QString> entypo_character_map;
   std::map<std::string, QString> entypo_social_character_map;

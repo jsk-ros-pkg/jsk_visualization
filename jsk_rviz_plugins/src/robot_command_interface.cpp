@@ -8,7 +8,7 @@
 #include "ui_robot_command_interface.h"
 
 using namespace rviz;
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   RobotCommandInterfaceAction::RobotCommandInterfaceAction( QWidget* parent )
     : rviz::Panel( parent )
@@ -180,4 +180,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugin::RobotCommandInterfaceAction, rviz::Panel )
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::RobotCommandInterfaceAction, rviz::Panel )

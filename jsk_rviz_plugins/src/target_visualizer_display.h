@@ -57,7 +57,7 @@
 
 #include "facing_visualizer.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class TargetVisualizerDisplay:
     public rviz::MessageFilterDisplay<geometry_msgs::PoseStamped>

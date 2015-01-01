@@ -39,7 +39,7 @@
 #include <rviz/display_context.h>
 #include <QPainter>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   Plotter2DDisplay::Plotter2DDisplay()
     : rviz::Display()
@@ -513,4 +513,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::Plotter2DDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::Plotter2DDisplay, rviz::Display )

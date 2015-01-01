@@ -9,7 +9,7 @@
 class QLineEdit;
 class QPushButton;
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class TransformableMarkerOperatorAction: public rviz::Panel
     {

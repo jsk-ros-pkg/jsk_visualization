@@ -39,7 +39,7 @@
 
 #include "pictogram_display.h"
 #include <jsk_rviz_plugins/PictogramArray.h>
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   ////////////////////////////////////////////////////////
   // Display to visualize pictogram on rviz

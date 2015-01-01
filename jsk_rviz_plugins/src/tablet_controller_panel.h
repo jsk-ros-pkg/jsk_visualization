@@ -58,7 +58,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <boost/thread.hpp>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class TabletCmdVelArea: public QWidget
   {

@@ -4,7 +4,7 @@
 #include <jsk_topic_tools/color_utils.h>
 #include <jsk_pcl_ros/geo_util.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   PolygonArrayDisplay::PolygonArrayDisplay()
   {
@@ -323,4 +323,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::PolygonArrayDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::PolygonArrayDisplay, rviz::Display )

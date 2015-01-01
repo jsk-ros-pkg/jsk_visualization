@@ -10,7 +10,7 @@
 #include <geometry_msgs/Vector3.h>
 #include <sensor_msgs/PointCloud2.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
   class NormalVisual

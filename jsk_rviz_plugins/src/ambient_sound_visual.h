@@ -19,7 +19,7 @@ class BillboardLine;
 //class Axes;
 }
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
 // BEGIN_TUTORIAL
@@ -81,6 +81,6 @@ private:
 };
 // END_TUTORIAL
 
-} // end namespace jsk_rviz_plugin
+} // end namespace jsk_rviz_plugins
 
 #endif // __AMBIENT_SOUND_VISUAL__

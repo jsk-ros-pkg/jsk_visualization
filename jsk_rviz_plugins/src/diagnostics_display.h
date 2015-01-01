@@ -51,7 +51,7 @@
 #include <OGRE/OgreSceneManager.h>
 #include <rviz/ogre_helpers/movable_text.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class DiagnosticsDisplay : public rviz::Display
   {

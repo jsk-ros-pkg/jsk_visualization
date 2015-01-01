@@ -6,7 +6,7 @@
 #include <std_srvs/Empty.h>
 #include <QtGui>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   struct ServiceCallButtonInfo
   {
