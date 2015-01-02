@@ -61,7 +61,7 @@
 #include <rviz/ogre_helpers/render_widget.h>
 #include <OGRE/OgreRenderWindow.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 using namespace view_controller_msgs;
 using namespace rviz;
@@ -858,4 +858,4 @@ void TabletViewController::move_eye( float x, float y, float z )
 } // end namespace rviz
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::TabletViewController, rviz::ViewController )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TabletViewController, rviz::ViewController )
