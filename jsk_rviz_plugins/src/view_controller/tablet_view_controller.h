@@ -55,7 +55,7 @@ namespace rviz {
   class RosTopicProperty;
 }
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
 /** @brief An un-constrained "flying" camera, specified by an eye point, focus point, and up vector. */
