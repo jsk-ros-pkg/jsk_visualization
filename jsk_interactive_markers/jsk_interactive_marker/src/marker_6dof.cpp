@@ -7,13 +7,17 @@
 
 class Marker6DOF {
 public:
-Marker6DOF() {
+Marker6DOF(): show_6dof_circle_(true) {
   ros::NodeHandle nh, pnh("~");
   pnh.param("frame_id", frame_id_, std::string("/map"));
   pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("pose", 1);
   pose_stamped_sub_ = pnh.subscribe("move_marker", 1, &Marker6DOF::moveMarkerCB, this);
-    
-    
+
+  circle_menu_entry_
+    = menu_handler_.insert("Toggle 6DOF Circle",
+                           boost::bind(&Marker6DOF::menuFeedbackCB, this, _1));
+  menu_handler_.setCheckState(circle_menu_entry_,
+                              interactive_markers::MenuHandler::CHECKED);
   server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
   initializeInteractiveMarker();
 }
@@ -55,9 +59,11 @@ protected:
     control.orientation.x = 1;
     control.orientation.y = 0;
     control.orientation.z = 0;
-    control.name = "rotate_x";
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
+    if (show_6dof_circle_) {
+      control.name = "rotate_x";
+      control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+      int_marker.controls.push_back(control);
+    }
     control.name = "move_x";
     control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
     int_marker.controls.push_back(control);
@@ -66,9 +72,11 @@ protected:
     control.orientation.x = 0;
     control.orientation.y = 1;
     control.orientation.z = 0;
-    control.name = "rotate_z";
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
+    if (show_6dof_circle_) {
+      control.name = "rotate_z";
+      control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+      int_marker.controls.push_back(control);
+    }
     control.name = "move_z";
     control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
     int_marker.controls.push_back(control);
@@ -77,15 +85,19 @@ protected:
     control.orientation.x = 0;
     control.orientation.y = 0;
     control.orientation.z = 1;
-    control.name = "rotate_y";
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
+    if (show_6dof_circle_) {
+      control.name = "rotate_y";
+      control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+      int_marker.controls.push_back(control);
+    }
     control.name = "move_y";
     control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
     int_marker.controls.push_back(control);
   
     server_->insert(int_marker,
                     boost::bind(&Marker6DOF::processFeedbackCB, this, _1));
+    
+    menu_handler_.apply(*server_, "marker");
     server_->applyChanges();
   }
   
@@ -95,11 +107,27 @@ protected:
     pose.pose = feedback->pose;
     pose_pub_.publish(pose);
   }
+
+  void menuFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
+    show_6dof_circle_ = !show_6dof_circle_;
+    if (show_6dof_circle_) {
+      menu_handler_.setCheckState(circle_menu_entry_,
+                                  interactive_markers::MenuHandler::CHECKED);
+    }
+    else {
+      menu_handler_.setCheckState(circle_menu_entry_,
+                                  interactive_markers::MenuHandler::UNCHECKED);
+    }
+    initializeInteractiveMarker(); // ok...?
+  }
   
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  interactive_markers::MenuHandler menu_handler_;
   ros::Subscriber pose_stamped_sub_;
   ros::Publisher pose_pub_;
   std::string frame_id_;
+  bool show_6dof_circle_;
+  interactive_markers::MenuHandler::EntryHandle circle_menu_entry_;
 };
 
 
