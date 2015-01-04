@@ -2,6 +2,9 @@
 Changelog for package jsk_interactive_test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.15 (2014-12-13)
 -------------------
 
