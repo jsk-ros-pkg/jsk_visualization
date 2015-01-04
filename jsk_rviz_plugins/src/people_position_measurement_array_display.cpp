@@ -45,8 +45,8 @@
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
 
-namespace jsk_rviz_plugin
-{  
+namespace jsk_rviz_plugins
+{
   PeoplePositionMeasurementArrayDisplay::PeoplePositionMeasurementArrayDisplay()
   {
     size_property_ = new rviz::FloatProperty("size", 0.3,
@@ -193,5 +193,5 @@ namespace jsk_rviz_plugin
 
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::PeoplePositionMeasurementArrayDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::PeoplePositionMeasurementArrayDisplay, rviz::Display )
 

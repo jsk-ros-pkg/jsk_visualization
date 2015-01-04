@@ -41,7 +41,7 @@
 #include <QImage>
 #include <OGRE/OgreHardwarePixelBuffer.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   TrianglePolygon::TrianglePolygon(
     Ogre::SceneManager* manager,
@@ -580,4 +580,4 @@ namespace jsk_rviz_plugin
 
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::CameraInfoDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::CameraInfoDisplay, rviz::Display )

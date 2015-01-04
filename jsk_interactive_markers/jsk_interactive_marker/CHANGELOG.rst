@@ -2,6 +2,34 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.16 (2015-01-04)
+-------------------
+* [jsk_interactive_marker] Add bsd license header to marker_6dof.cpp
+* [jsk_interactive_marker] Keep pose of the marker even after toggling
+  rotation circle in marker_6dof
+* [jsk_interactive_marker] Add menu to toggle 6dof circle
+* add README.md
+* add rviz for robot_actions_test.launch
+* add test for robot-actions.l
+* change to load baxter-moveit instead of baxter-interface
+* add moveit param to robot-actions.l
+* use null space for aligning orientation
+* Merge branch 'master' of https://github.com/jsk-ros-pkg/jsk_visualization into replace-self-to-ri
+* replace self to *ri* in robot-actions.l
+* check irtviewer
+* Merge branch 'master' into split-ik-controller
+  Conflicts:
+  jsk_interactive_markers/jsk_interactive_marker/euslisp/ik-controller.l
+* change loading order
+* add one click grasp parameter
+* devide ik-controller.l into two scripts
+* Merge branch 'master' of https://github.com/jsk-ros-pkg/jsk_visualization into refactoring-ik-control
+  Conflicts:
+  jsk_interactive_markers/jsk_interactive_marker/euslisp/ik-controller.l
+* use apply-joint_state
+* refactoring ik controller deleted deprecated functions
+* remove hoge from ik-control.l
+
 1.0.15 (2014-12-13)
 -------------------
 * use robot-joint-interface in move bounding box

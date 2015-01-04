@@ -2,6 +2,19 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.16 (2015-01-04)
+-------------------
+* [jsk_rviz_plugins] Fix namespace of TabletViewController
+* [jsk_rviz_plugins] Fix namespace jsk_rviz_plugin -> jsk_rviz_plugins
+* [jsk_rviz_plugins] Utility script to draw the number of samples during
+  capturing data
+* [jsk_rviz_plugins] Remove invalid codes of ScreenshotListenerTool
+* [jsk_rviz_plugins] VideoCaptureDisplay Display to capture rviz as movie
+* [jsk_rviz_plugins] ScreenshotListenerTool: A simple tool to listen to
+  a service and save screenshot to specified file
+* [jsk_rviz_plugins] Avoid Segmentation Fault when size 0 texture is
+  specified
+
 1.0.15 (2014-12-13)
 -------------------
 * Add new plugin and message to display array of pictograms

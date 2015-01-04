@@ -37,7 +37,7 @@
 #include "tablet_controller_panel.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   TabletCmdVelArea::TabletCmdVelArea(QWidget* parent, ros::Publisher& pub_cmd_vel):
     QWidget(parent), mouse_x_(-1), mouse_y_(-1), pub_cmd_vel_(pub_cmd_vel)
@@ -365,4 +365,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugin::TabletControllerPanel, rviz::Panel);
+PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::TabletControllerPanel, rviz::Panel);

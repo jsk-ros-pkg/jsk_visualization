@@ -45,7 +45,7 @@
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <OGRE/OgreSceneNode.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class BoundingBoxArrayDisplay: public rviz::MessageFilterDisplay<jsk_pcl_ros::BoundingBoxArray>
   {

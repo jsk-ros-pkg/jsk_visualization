@@ -21,7 +21,7 @@
 #include <rviz/properties/float_property.h>
 #include "normal_visual.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
 class NormalDisplay: public rviz::MessageFilterDisplay<sensor_msgs::PointCloud2>

@@ -8,7 +8,7 @@
 #include "transformable_marker_operator.h"
 
 using namespace rviz;
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   TransformableMarkerOperatorAction::TransformableMarkerOperatorAction( QWidget* parent )
     : rviz::Panel( parent )
@@ -155,4 +155,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugin::TransformableMarkerOperatorAction, rviz::Panel )
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::TransformableMarkerOperatorAction, rviz::Panel )

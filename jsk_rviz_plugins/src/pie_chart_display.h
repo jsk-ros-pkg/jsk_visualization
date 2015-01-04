@@ -46,7 +46,7 @@
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/ros_topic_property.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class PieChartDisplay
     : public rviz::Display

@@ -48,7 +48,7 @@
 
 #include "overlay_utils.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class OverlayMenuDisplay : public rviz::Display
   {

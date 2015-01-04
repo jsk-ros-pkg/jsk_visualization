@@ -41,7 +41,7 @@
 #include <rviz/properties/property.h>
 #include <rviz/properties/property_tree_model.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   class CloseAllTool: public rviz::Tool
   {

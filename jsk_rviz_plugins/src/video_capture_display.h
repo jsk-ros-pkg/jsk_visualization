@@ -33,63 +33,52 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef FOOTSTEP_DISPLAY_H
-#define FOOTSTEP_DISPLAY_H
 
-#include <jsk_footstep_msgs/FootstepArray.h>
-#include <rviz/message_filter_display.h>
-#include <rviz/properties/float_property.h>
+#ifndef JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
+#define JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
+
+#include <rviz/display.h>
+#include <rviz/properties/string_property.h>
 #include <rviz/properties/bool_property.h>
-#include <rviz/ogre_helpers/billboard_line.h>
-#include <rviz/ogre_helpers/shape.h>
-#include <rviz/ogre_helpers/movable_text.h>
-#include <OGRE/OgreSceneNode.h>
+#include <rviz/properties/float_property.h>
+#include <opencv2/opencv.hpp>
 
 namespace jsk_rviz_plugins
 {
-  class FootstepDisplay : public rviz::MessageFilterDisplay<jsk_footstep_msgs::FootstepArray>
+  class VideoCaptureDisplay: public rviz::Display
   {
     Q_OBJECT
   public:
-    FootstepDisplay();
-    virtual ~FootstepDisplay();
+    typedef boost::shared_ptr<VideoCaptureDisplay> Ptr;
+    VideoCaptureDisplay();
+    virtual ~VideoCaptureDisplay();
   protected:
     virtual void onInitialize();
-    virtual void reset();
+    // virtual void subscribe();
+    // virtual void unsubscribe();
+    virtual void onEnable();
+    // virtual void onDisable();
     virtual void update(float wall_dt, float ros_dt);
+    virtual void startCapture();
+    virtual void stopCapture();
+    ////////////////////////////////////////////////////////
+    // Variables
+    ////////////////////////////////////////////////////////
+    rviz::StringProperty* file_name_property_;
+    rviz::BoolProperty* start_capture_property_;
+    rviz::FloatProperty* fps_property_;
+    std::string file_name_;
+    bool capturing_;
+    double fps_;
+    int frame_counter_;
+    bool first_time_;
+    cv::VideoWriter writer_;
+  protected Q_SLOTS:
+    void updateFileName();
+    void updateStartCapture();
+    void updateFps();
   private:
-    virtual void allocateCubes(size_t num);
-    virtual void allocateTexts(size_t num);
-    virtual double estimateTextSize(
-      const jsk_footstep_msgs::Footstep& footstep);
-    virtual double minNotZero(double a, double b);
-    virtual void processMessage(const jsk_footstep_msgs::FootstepArray::ConstPtr& msg);
-    virtual bool validateFloats(const jsk_footstep_msgs::FootstepArray& msg);
     
-    rviz::FloatProperty* alpha_property_;
-    rviz::FloatProperty* width_property_;
-    rviz::FloatProperty* height_property_;
-    rviz::FloatProperty* depth_property_;
-    rviz::BoolProperty* show_name_property_;
-    rviz::BoolProperty* use_group_coloring_property_;
-    jsk_footstep_msgs::FootstepArray::ConstPtr latest_footstep_;
-    typedef boost::shared_ptr<rviz::Shape> ShapePtr;
-    std::vector<ShapePtr> shapes_;
-    std::vector<rviz::MovableText*> texts_;
-    std::vector<Ogre::SceneNode*> text_nodes_;
-    rviz::BillboardLine* line_;
-    double width_, height_, depth_;
-    double alpha_;
-    bool show_name_;
-    bool use_group_coloring_;
-    //Ogre::SceneNode* scene_node_;
-  private Q_SLOTS:
-    void updateAlpha();
-    void updateWidth();
-    void updateHeight();
-    void updateDepth();
-    void updateShowName();
-    void updateUseGroupColoring();
   };
 }
 

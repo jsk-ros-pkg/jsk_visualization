@@ -12,7 +12,7 @@
 
 #include "ambient_sound_display.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
     // BEGIN_TUTORIAL
@@ -395,5 +395,5 @@ namespace jsk_rviz_plugin
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::AmbientSoundDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::AmbientSoundDisplay, rviz::Display )
 

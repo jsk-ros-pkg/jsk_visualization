@@ -46,7 +46,7 @@
 #include <rviz/view_manager.h>
 #include <rviz/render_panel.h>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
   const int menu_padding_x = 100;
@@ -405,4 +405,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::OverlayMenuDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayMenuDisplay, rviz::Display )

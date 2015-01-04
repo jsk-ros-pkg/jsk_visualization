@@ -12,7 +12,7 @@
 
 #include "publish_topic.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
   PublishTopic::PublishTopic( QWidget* parent )
     : rviz::Panel( parent )
@@ -90,5 +90,5 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugin::PublishTopic, rviz::Panel )
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::PublishTopic, rviz::Panel )
 

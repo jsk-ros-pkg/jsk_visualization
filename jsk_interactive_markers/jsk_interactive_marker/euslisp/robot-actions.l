@@ -145,8 +145,12 @@
    (send model :move-to (send self :pose-stamped->coords (send msg :pose_goal)) :world)
    (send *robot* :move-to (send self :pose-stamped->coords (ros::coords->tf-pose-stamped (make-coords) *robot-origin*)) :world)
 
-   (apply-joint_state model-origin (send msg :joint_state_origin))
-   (apply-joint_state model-goal (send msg :joint_state_goal))
+   (apply-joint_state (send msg :joint_state_origin) model-origin)
+   (apply-joint_state (send msg :joint_state_goal) model-goal)
+
+   (when (and (boundp '*irtviewer*) *irtviewer*)
+     (objects (list model model-origin model-goal *robot*))
+     )
 
    (setq joint-num (length (send model-origin :joint-list)))
 
@@ -169,8 +173,8 @@
 
    (print move-joint)
    (send model :move-to (send model-goal :copy-worldcoords) :world)
-
-   (objects (list model model-origin model-goal *robot*))
+   (when (boundp '*irtviewer*)
+     (objects (list model model-origin model-goal *robot*)))
    (dotimes (i joint-num)
      (when (elt move-joint i)
        (setq grasp-handle nil)
@@ -184,21 +188,24 @@
        (setq angle-goal (send (elt (send model-goal :joint-list) i) :joint-angle))
        (setq interpolation-num 10)
        (setq grasp-handle-list nil)
+       (setq move-model-list nil)
        (dotimes (j (1+ interpolation-num))
 	 (send (elt (send model :joint-list) i) :joint-angle
 	       (+ (* (/ (- angle-goal angle-origin) interpolation-num) j) angle-origin))
 
 	 (push (send (send  grasp-handle :copy-worldcoords) :rotate pi :z) grasp-handle-list)
+	 (push (copy-object model) move-model-list)
 	 )
        (setq grasp-handle-list (reverse grasp-handle-list))
-       (send self :move-model-ik grasp-handle-list)
+       (setq move-model-list (reverse move-model-list))
+       (send self :move-model-ik grasp-handle-list move-model-list)
        )
      )
-   (objects (list model model-origin model-goal *robot*))
+
    )
   
   (:move-model-ik
-   (grasp-handle-list)
+   (grasp-handle-list move-model-list)
    (setq ik-args
 	 (list :use-base 0.01
 	       :use-torso t
@@ -226,7 +233,8 @@
 					 :rot (rotate-matrix (unit-matrix 3) initial-rot :z)))
        (send *robot* :move-to initial-coords :world)
        )
-
+     (when (boundp '*irtviewer*)
+       (objects (list model model-origin model-goal *robot*)))
      (setq test-ik-index (list 0 5 10 5 0))
      (dolist (i test-ik-index)
        (send* *robot* :rarm
@@ -257,23 +265,23 @@
 	 (send *irtviewer* :draw-objects))
        )
      
-     ;;move-to
-     (unless (boundp '*ri*)
-       (setq *ri* (instance pr2-interface :init)))
-
      ;;tuck arm
      (pr2-tuckarm-pose)
      ;;move to
      (send *ri* :move-to (send *robot* :worldcoords) :frame-id *frame-id*)
-     (send *robot* :move-to (send self :pose-stamped->coords (ros::coords->tf-pose-stamped (make-coords) *robot-origin*)) :world)
+     (unless (send *ri* :simulation-modep)
+       (send *robot* :move-to (send self :pose-stamped->coords (ros::coords->tf-pose-stamped (make-coords) *robot-origin*)) :world)
+       )
 
      ;;ik
      (send *robot* :head :look-at (send (car grasp-handle-list) :worldpos))
      (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
      (send *ri* :wait-interpolation)
-     (ros::ros-info "sleep for nearest bounding box")
-     (unix::sleep 7)
-     (ros::ros-info "sleep end for nearest bounding box")
+     (unless (send *ri* :simulation-modep)
+       (ros::ros-info "sleep for nearest bounding box")
+       (unix::sleep 7)
+       (ros::ros-info "sleep end for nearest bounding box")
+       )
      ;;get nearest bounding box and modify grasp-handle-list
      (let ((req (instance jsk_pcl_ros::NearestBoundingBoxRequest :init))
 	   req-pose-stamped
@@ -324,14 +332,25 @@
    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
    (send *ri* :wait-interpolation)
 
+   (when (boundp '*irtviewer*)
+     (objects (list model *robot*)))
+
    (setq avs nil)
-   (dolist (grasp-handle grasp-handle-list)
+   (dotimes (i (length grasp-handle-list))
      (if
 	 (send* *robot* :rarm
-		:inverse-kinematics grasp-handle
+		:inverse-kinematics (elt grasp-handle-list i)
+		:look-at-target t
 		:use-base nil ;;parameter
 		ik-args)
-	 (push (send *robot* :angle-vector) avs)
+	 (progn
+	   (push (send *robot* :angle-vector) avs)
+	   (setq model (elt move-model-list i))
+	   (when (boundp '*irtviewer*)
+	     (objects (list model *robot*))
+	     (send *irtviewer* :draw-objects)
+	     (unix:sleep 3))
+	   )
        (return)
        )
      )
@@ -560,7 +579,7 @@
        )
      (send *ri* :wait-interpolation)
      )
-  )
+   )
 
   (:init 
    ()
@@ -606,18 +625,25 @@
      )
    
    (when (and x::*display* (> x::*display* 0))
-     (objects
-      (list *robot* *target-coords*))
-     )
-   (when (and (boundp '*irtviewer*) *irtviewer*)
+     (objects (list *robot* *target-coords*)))
+
+   (cond
+    ((boundp '*irtviewer*)
      (send *irtviewer* :change-background #f(0.9 0.9 1.0))
      (send *irtviewer* :title "Robot Actions")
 
      (send *irtviewer* :draw-objects)
      (send *irtviewer* :look-all)
+     (while (ros::ok)
+       (x::window-main-one)
+       (ros::spin-once)
+       )
+     )
+    (t
+     (ros::spin)
      )
    )
   )
+  )
 
 (instance robot-actions :init)
-(ros::spin)

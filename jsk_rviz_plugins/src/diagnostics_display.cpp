@@ -37,7 +37,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
   DiagnosticsDisplay::DiagnosticsDisplay()
@@ -356,4 +356,4 @@ namespace jsk_rviz_plugin
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugin::DiagnosticsDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::DiagnosticsDisplay, rviz::Display )

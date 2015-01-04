@@ -49,7 +49,7 @@
 #include <rviz/ogre_helpers/movable_text.h>
 #include "overlay_utils.h"
 
-namespace jsk_rviz_plugin
+namespace jsk_rviz_plugins
 {
 
   // outer radius
