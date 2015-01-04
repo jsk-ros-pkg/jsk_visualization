@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.16 (2015-01-04)
+-------------------
 * [jsk_rviz_plugins] Fix namespace of TabletViewController
 * [jsk_rviz_plugins] Fix namespace jsk_rviz_plugin -> jsk_rviz_plugins
 * [jsk_rviz_plugins] Utility script to draw the number of samples during

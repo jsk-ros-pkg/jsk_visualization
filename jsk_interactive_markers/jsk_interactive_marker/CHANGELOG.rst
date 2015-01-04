@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.16 (2015-01-04)
+-------------------
 * [jsk_interactive_marker] Add bsd license header to marker_6dof.cpp
 * [jsk_interactive_marker] Keep pose of the marker even after toggling
   rotation circle in marker_6dof
