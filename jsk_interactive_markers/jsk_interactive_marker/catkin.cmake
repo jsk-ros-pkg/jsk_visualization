@@ -126,14 +126,20 @@ install(TARGETS footstep_marker door_foot triangle_foot point_cloud_config_marke
 
 
 # copy *.rviz.default to *.rviz
+macro(copy_rviz_files _rviz_files)
+  foreach(_rviz_default_file ${_rviz_default_files})
+    string(REGEX REPLACE "\\.default$" "" _rviz_file "${_rviz_default_file}")
+    if(EXISTS "${_rviz_file}")
+      message("${_rviz_file} exists")
+    else()
+      execute_process(
+	COMMAND cmake -E copy "${_rviz_default_file}" "${_rviz_file}")
+      message("copy ${_rviz_default_file} to ${_rviz_file}")
+    endif()
+  endforeach()
+endmacro(copy_rviz_files _rviz_files)
+
 file(GLOB _rviz_default_files "${PROJECT_SOURCE_DIR}/launch/*.rviz.default")
-foreach(_rviz_default_file ${_rviz_default_files})
-  string(REGEX REPLACE "\\.default$" "" _rviz_file "${_rviz_default_file}")
-  if(EXISTS "${_rviz_file}")
-    message("${_rviz_file} exists")
-  else()
-    execute_process(
-      COMMAND cmake -E copy "${_rviz_default_file}" "${_rviz_file}")
-    message("copy ${_rviz_default_file} to ${_rviz_file}")
-  endif()
-endforeach()
+copy_rviz_files(_rviz_default_files)
+file(GLOB _rviz_default_files "${PROJECT_SOURCE_DIR}/config/*.rviz.default")
+copy_rviz_files(_rviz_default_files)
