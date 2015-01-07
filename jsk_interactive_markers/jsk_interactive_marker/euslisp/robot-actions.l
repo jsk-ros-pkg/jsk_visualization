@@ -118,6 +118,30 @@
    (setq *movingp* nil)
    )
 
+  (:box-movement-callback
+   (msg)
+   (let* (current-coords
+	  goal-coords
+	  (handle-pose (ros::tf-pose->coords (send msg :handle_pose)))
+	  box-model
+	  )
+     (setq current-coords (send self :pose-stamped->coords (instance geometry_msgs::PoseStamped :init :header (send msg :box :header) :pose (send msg :box :pose))))
+     (setq goal-coords (send self :pose-stamped->coords (send msg :destination)))
+     (unless current-coords
+       (return-from :box-movement-callback nil)
+       )
+     (unless goal-coords
+       (return-from :box-movement-callback nil)
+       )
+
+     (setq box-model (make-cube (send msg :box :dimensions :x) (send msg :box :dimensions :y) (send msg :box :dimensions :z)))
+     (send box-model :move-to current-coords)
+     (send self :move-object current-coords goal-coords 
+	   :model box-model
+	   :handle-pose handle-pose)
+     )
+   )
+
   (:move-model-callback
    (msg)
    (require "models/room73b2-scene.l")
@@ -207,13 +231,13 @@
      )
    
    (when (equal joint-num 0)
-     (ros::ros-info "pre grasp")
      (send self :move-object 
 	   (send self :pose-stamped->coords (send msg :pose_origin))
 	   (send self :pose-stamped->coords (send msg :pose_goal))
 	   :model model)
      )
    )
+  
   (:move-model-ik
    (grasp-handle-list move-model-list)
    (setq ik-args
@@ -517,15 +541,6 @@
        ;; move base
        (when ik-suc
 	 (send self :tuckarm-pose move-arm :grasp-object grasp-object :only-free-arm tuck-free-arm)
-	 ;; (case (move-arm
-	 ;; 	(:larm (send *robot* :larm :angle-vector #f(25 0 0 -121 0 -6 0)))
-	 ;; 	(:rarm (send *robot* :rarm :angle-vector #f(-25 0 0 -121 0 -6 0)))))
-	 ;; (send self :send-angle-vector)
-
-	 ;; (let ((side (if grasp-object :outside :inside)))
-	 ;;   (send *robot* move-arm :angle-vecor (get-tuckarm move-arm side move-arm))
-	 ;;   )
-	 ;; (send self :send-angle-vector)
 	 ;;move to
 	 (send *ri* :move-to (send *robot* :worldcoords) :frame-id *frame-id*)
 	 (unless (send *ri* :simulation-modep)
@@ -571,8 +586,10 @@
    
    (setq current-coords (send current-coords :transform handle-pose))
    (setq goal-coords (send goal-coords :transform handle-pose))
-
-   (objects (list *robot* model current-coords goal-coords))
+   
+   (when model
+     (objects (list *robot* model current-coords goal-coords))
+     (objects (list *robot* current-coords goal-coords)))
 
      ;;;;;;;;;;;;;;;;;;;;;;
      ;;;;;;; pick ;;;;;;;;;
@@ -649,39 +666,11 @@
    (send *ri* :start-grasp move-arm)
    )
 
-  (:box-movement-callback
-   (msg)
-   ;;grasp
-   (let* ((pose msg)
-	  current-coords
-	  des-cds
-	  (handle-pose (ros::tf-pose->coords (send msg :handle_pose)))
-	  box-cds
-	  (move-arm :rarm)
-	  (use-torso t)
-	  )
-     
-     (setq current-coords (send self :get-eus-coords (ros::tf-pose->coords (send msg :box :pose)) (send msg :box :header)))
-     (setq des-cds (send self :get-eus-coords (ros::tf-pose->coords (send msg :destination :pose)) (send msg :destination :header)))
-     (unless current-coords
-       (return-from :box-movement-callback nil)
-       )
-     (unless des-cds
-       (return-from :box-movement-callback nil)
-       )
-
-     (send self :move-object current-coords des-cds :handle-pose handle-pose)
-
-     )
-   )
-
   (:init 
    ()
    (send-super :init)
    (setq *target-coords* (instance arrow-object :init))
    (send *target-coords* :translate #f(500 0 0)) ;; initial pose
-   (setq *use-fullbody* t)
-   ;;(setq *use-torso* nil)
 
    (setq *frame-id* (ros::get-param "~frame_id" "map"))
    (setq *use-moveit* (ros::get-param "~use_moveit" t))
