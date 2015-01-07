@@ -437,7 +437,6 @@
      )
    )
 
-  ;;(move-target (send *robot* move-arm :end-coords))
   (:inverse-kinematics
    (target-coords &rest args &key 
 		  (move-arm :rarm)
@@ -475,7 +474,7 @@
    )
 
   (:move-robot-in-front-of-object
-   (target-coords &key (offset-length 500) (real nil))
+   (target-coords &key (offset-length 1000) (real nil))
    (let (target-x-vec
 	 pos
 	 yaw
@@ -495,184 +494,159 @@
        (send *ri* :move-to (send *robot* :worldcoords) :frame-id *frame-id*)
        )
      ))
-  
-  (:move-object
-   (current-coords goal-coords &key (handle-pose) (model) (move-arm :rarm))
 
-   (let* (ik-suc
-	  )
-     (unless (or handle-pose model)
-       (ros::ros-warn "handle-pose or model should be set")
-       (return-from :move-object nil)
-       )
+  (:check-ik-and-move-base
+   (target-cds-list &key (move-arm :rarm) (grasp-object nil) (tuck-free-arm nil))
+   (let ik-suc
+     ;;check if ik can be solved
+     (dolist (target target-cds-list)
+       (setq ik-suc (send self :inverse-kinematics target :move-arm move-arm))
+       (unless ik-suc (return)))
 
-     (unless handle-pose
-       (dolist (one-handle (send model :handle))
-	 (when (equal (send one-handle :parent) (car (send model :links)))
-	   (setq handle-pose (send one-handle :coords))
-	   ;;(send handle-pose :rotate pi :z)
-	   (return)
-	   )))
-
-     (unless handle-pose
-       (ros::ros-warn "handle is not defined")
-       (return-from :move-object nil)
-       )
-     
-     (setq current-coords (send current-coords :transform handle-pose))
-     (setq goal-coords (send goal-coords :transform handle-pose))
-
-     (setq a current-coords)
-
-     (objects (list *robot* model current-coords goal-coords))
-
-     ;;;;;;;;;;;;;;;;;;;;;;
-     ;;;;;;; grasp ;;;;;;;;
-     ;;;;;;;;;;;;;;;;;;;;;;
-     (let* ((target-cds (send current-coords :copy-worldcoords))
-	    (pre-cds (send (send current-coords :copy-worldcoords) :translate #f(-100 0 0) :local))
-	    (post-cds (send (send current-coords :copy-worldcoords) :translate #f(0 0 100) :world))
-	    (target-cds-list (list pre-cds target-cds post-cds)))
-       
-       ;;check if ik can be solved
-       (dolist (target target-cds-list)
-	 (setq ik-suc (send self :inverse-kinematics target :move-arm move-arm))
-	 (unless ik-suc (return)))
-
-       ;;when ik cannot be solved, move base
-       (when (and (not ik-suc) *use-base-movement*)
-	 ;;(ros::ros-warn "in front of")
-	 (send self :move-robot-in-front-of-object target-cds :offset-length 500)
-	 ;;(return-from :move-object nil)
-	 ;;(ros::ros-warn "use-base-ik")
-
-	 (dolist (target target-cds-list)
-	   (setq ik-suc
-		 (send self :inverse-kinematics target :move-arm move-arm
-		       :use-base 0.01
-		       :base-range (list :min #f(-10000 -10000 -10000) :max #f(10000 10000 10000))
-		       )))
-
-	 ;; move base
-	 (when ik-suc
-	   (pr2-tuckarm-pose move-arm)
-	   ;;move to
-	   (send *ri* :move-to (send *robot* :worldcoords) :frame-id *frame-id*)
-
-	   (unless (send *ri* :simulation-modep)
-	     (send *robot* :move-to (send self :pose-stamped->coords (ros::coords->tf-pose-stamped (make-coords) *robot-origin*)) :world)
-	     ;;(setq ik-suc (send self :inverse-kinematics current-coords :move-arm move-arm))
-	     )
-	   )
-	 )
-
-
-       ;;pre grasp
-       (ros::ros-info "pre grasp")
-       (setq ik-suc (send self :inverse-kinematics pre-cds :move-arm move-arm))
-       (unless ik-suc
-	 (ros::ros-info "ik failed")
-	 (return-from :move-object nil))
-       (send self :send-angle-vector)
-       (send *ri* :stop-grasp move-arm :wait t)
-
-       ;; ;;when ik cannot be solved, move base
-       ;; (when (and (not ik-suc) *use-base-movement*)
-       ;;   (ros::ros-warn "in front of")
-       ;;   (send self :move-robot-in-front-of-object current-coords :offset-length 500)
-       ;;   ;;(return-from :move-object nil)
-       ;;   (ros::ros-warn "use-base-ik")
-       ;;   (setq ik-suc
-       ;; 	     (send self :inverse-kinematics current-coords :move-arm move-arm
-       ;; 		   :use-base 0.01
-       ;; 		   :base-range (list :min #f(-10000 -10000 -10000) :max #f(10000 10000 10000))
-       ;; 		   ))
-       ;;   ;; move base
-       ;;   (when ik-suc
-       ;; 	 (pr2-tuckarm-pose move-arm)
-       ;; 	 ;;move to
-       ;; 	 (send *ri* :move-to (send *robot* :worldcoords) :frame-id *frame-id*)
-
-       ;; 	 (unless (send *ri* :simulation-modep)
-       ;; 	   (send *robot* :move-to (send self :pose-stamped->coords (ros::coords->tf-pose-stamped (make-coords) *robot-origin*)) :world)
-       ;; 	   (setq ik-suc (send self :inverse-kinematics current-coords :move-arm move-arm))
-       ;; 	   )
-       ;; 	 )
-       ;;   )
-       
-       ;;grasp
-       (ros::ros-info "grasp")
-       ;;(send current-coords :translate #f(100 0 0))
-
-       (setq ik-suc (send self :inverse-kinematics target-cds :move-arm move-arm))
-
-       (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-       (send *ri* :wait-interpolation)
-       (send *ri* :start-grasp move-arm)
-       (send *ri* :wait-interpolation)
-
-       ;;raise
-       (ros::ros-info "raise")
-       ;;(send post-coords :translate #f(0 0 100) :world)
-       (setq ik-suc (send self :inverse-kinematics post-cds :move-arm move-arm))
-       (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-       (send *ri* :wait-interpolation)
-
-       )
-     ;;(return-from :move-object nil)
-
-     ;;pre place
-     (ros::ros-info "pre place")
-     (send goal-coords :translate #f(0 0 100) :world)
-     (setq ik-suc (send self :inverse-kinematics goal-coords :move-arm move-arm))
-     
      ;;when ik cannot be solved, move base
      (when (and (not ik-suc) *use-base-movement*)
-       (ros::ros-warn "in front of")
-       (send self :move-robot-in-front-of-object goal-coords :offset-length 500)
-       (ros::ros-warn "use-base-ik")
-       (setq ik-suc
-	     (send self :inverse-kinematics goal-coords :move-arm move-arm
-		   :use-base 0.01
-		   :base-range (list :min #f(-10000 -10000 -10000) :max #f(10000 10000 10000))
-		   ))
+       (send self :move-robot-in-front-of-object (car target-cds-list) :offset-length 1000)
+
+       (dolist (target target-cds-list)
+	 (setq ik-suc
+	       (send self :inverse-kinematics target :move-arm move-arm
+		     :use-base 0.01
+		     :base-range (list :min #f(-10000 -10000 -10000) :max #f(10000 10000 10000))
+		     )))
+
        ;; move base
        (when ik-suc
-	 (pr2-tuckarm-pose move-arm :outside)
+	 (send self :tuckarm-pose move-arm :grasp-object grasp-object :only-free-arm tuck-free-arm)
+	 ;; (case (move-arm
+	 ;; 	(:larm (send *robot* :larm :angle-vector #f(25 0 0 -121 0 -6 0)))
+	 ;; 	(:rarm (send *robot* :rarm :angle-vector #f(-25 0 0 -121 0 -6 0)))))
+	 ;; (send self :send-angle-vector)
+
+	 ;; (let ((side (if grasp-object :outside :inside)))
+	 ;;   (send *robot* move-arm :angle-vecor (get-tuckarm move-arm side move-arm))
+	 ;;   )
+	 ;; (send self :send-angle-vector)
 	 ;;move to
 	 (send *ri* :move-to (send *robot* :worldcoords) :frame-id *frame-id*)
-
 	 (unless (send *ri* :simulation-modep)
 	   (send *robot* :move-to (send self :pose-stamped->coords (ros::coords->tf-pose-stamped (make-coords) *robot-origin*)) :world)
-	   (setq ik-suc (send self :inverse-kinematics goal-coords :move-arm move-arm))
 	   )
 	 )
        )
+     )
+   )
+
+  (:tuckarm-pose
+   (&optional (arm :rarm) &key (grasp-object nil) (only-free-arm nil))
+   (let ((side (if grasp-object :outside :inside)))
+     (if only-free-arm
+	 (progn
+	   (case arm
+	     (:larm (send *robot* :larm :angle-vector #f(25 0 0 -121 0 -6 0)))
+	     (:rarm (send *robot* :rarm :angle-vector #f(-25 0 0 -121 0 -6 0))))
+	   (send self :send-angle-vector)
+	   (send *robot* arm :angle-vector (get-tuckarm arm side arm))
+	   (send self :send-angle-vector))
+       (pr2-tuckarm-pose arm side)
+   )))
+  
+  (:move-object 
+   (current-coords goal-coords &key (handle-pose) (model) (move-arm :rarm))
+   (unless (or handle-pose model)
+     (ros::ros-warn "handle-pose or model should be set")
+     (return-from :move-object nil)
+     )
+
+   (unless handle-pose
+     (dolist (one-handle (send model :handle))
+       (when (equal (send one-handle :parent) (car (send model :links)))
+	 (setq handle-pose (send one-handle :coords))
+	 (return)
+	 )))
+
+   (unless handle-pose
+     (ros::ros-warn "handle is not defined")
+     (return-from :move-object nil)
+     )
+   
+   (setq current-coords (send current-coords :transform handle-pose))
+   (setq goal-coords (send goal-coords :transform handle-pose))
+
+   (objects (list *robot* model current-coords goal-coords))
+
+     ;;;;;;;;;;;;;;;;;;;;;;
+     ;;;;;;; pick ;;;;;;;;;
+     ;;;;;;;;;;;;;;;;;;;;;;
+   (let* ((target-cds (send current-coords :copy-worldcoords))
+	  (pre-cds (send (send current-coords :copy-worldcoords) :translate #f(-100 0 0) :local))
+	  (post-cds (send (send current-coords :copy-worldcoords) :translate #f(0 0 100) :world))
+	  (target-cds-list (list pre-cds target-cds post-cds))
+	  ik-suc)
+
+     (send self :check-ik-and-move-base target-cds-list :move-arm move-arm)
+
+     ;;pre grasp
+     (ros::ros-info "pre grasp")
+     (setq ik-suc (send self :inverse-kinematics pre-cds :move-arm move-arm))
+     (unless ik-suc
+       (ros::ros-info "ik failed")
+       (return-from :move-object nil))
+     (send self :send-angle-vector)
+     (send *ri* :stop-grasp move-arm :wait t)
+
+     ;;grasp
+     (ros::ros-info "grasp")
+     (setq ik-suc (send self :inverse-kinematics target-cds :move-arm move-arm))
+
+     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+     (send *ri* :wait-interpolation)
+     (send *ri* :start-grasp move-arm)
+     (send *ri* :wait-interpolation)
+
+     ;;raise
+     (ros::ros-info "raise")
+     (setq ik-suc (send self :inverse-kinematics post-cds :move-arm move-arm))
+     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+     (send *ri* :wait-interpolation)
+     )
+
+     ;;;;;;;;;;;;;;;;;;;;;;
+     ;;;;;;; place ;;;;;;;;
+     ;;;;;;;;;;;;;;;;;;;;;;
+   (let* ((target-cds (send goal-coords :copy-worldcoords))
+	  (pre-cds (send (send goal-coords :copy-worldcoords) :translate #f(0 0 100) :world))
+	  (post-cds (send (send goal-coords :copy-worldcoords) :translate #f(-100 0 0) :local))
+	  (target-cds-list (list pre-cds target-cds post-cds))
+	  ik-suc)
+
+     (send self :check-ik-and-move-base target-cds-list :move-arm move-arm :grasp-object t :tuck-free-arm t)
+     ;;pre place
+     (ros::ros-info "pre place")
+     (setq ik-suc (send self :inverse-kinematics pre-cds :move-arm move-arm))
+     (unless ik-suc
+       (ros::ros-info "ik failed")
+       (return-from :move-object nil))
      (send self :send-angle-vector)
 
      ;;place
      (ros::ros-info "place")
-     (send goal-coords :translate #f(0 0 -100) :world)
-     (setq ik-suc (send self :inverse-kinematics goal-coords :move-arm move-arm))
-     
+     (setq ik-suc (send self :inverse-kinematics target-cds :move-arm move-arm))
+
      (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
      (send *ri* :wait-interpolation)
      (send *ri* :stop-grasp move-arm :wait t)
 
      ;;release
      (ros::ros-info "release")
-     (send goal-coords :translate #f(-100 0 0))
-     (setq ik-suc (send self :inverse-kinematics goal-coords :move-arm move-arm))
-
+     (setq ik-suc (send self :inverse-kinematics post-cds :move-arm move-arm))
      (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
      (send *ri* :wait-interpolation)
-
-     ;;reset pose
-     (send *robot* :reset-manip-pose)
-     (send self :send-angle-vector)
-     (send *ri* :start-grasp move-arm)
-     
      )
+
+   ;;reset pose
+   (send self :tuckarm-pose move-arm :only-free-arm t)
+   (send self :send-angle-vector)
+   (send *ri* :start-grasp move-arm)
    )
 
   (:box-movement-callback
