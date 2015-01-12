@@ -74,6 +74,7 @@ qt4_wrap_cpp(MOC_FILES
   src/ambient_sound_display_groovy.h
   src/quiet_interactive_marker_display.h
   src/bounding_box_array_display.h
+  src/torus_array_display.h
   src/overlay_diagnostic_display.h
   src/target_visualizer_display.h
 #  ${people_position_measurement_array_header}
@@ -102,6 +103,7 @@ set(SOURCE_FILES
   src/ambient_sound_visual.cpp
   src/quiet_interactive_marker_display.cpp
   src/bounding_box_array_display.cpp
+  src/torus_array_display.cpp
   src/overlay_diagnostic_display.cpp
   src/sparse_occupancy_grid_array_display.cpp
   src/target_visualizer_display.cpp
