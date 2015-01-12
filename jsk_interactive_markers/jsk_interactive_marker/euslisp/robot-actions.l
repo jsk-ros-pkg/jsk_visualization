@@ -22,100 +22,18 @@
 (defmethod robot-actions
   (:grasp-pose-callback
    (msg)
-   (when *movingp*
-     (ros::ros-error "still moving")
-     (return-from :grasp-pose-callback nil))
-   (setq *movingp* t)
-   ;;grasp
-   (let* ((pose msg)
-	  (cds (ros::tf-pose-stamped->coords msg))
-	  map->marker
-	  pre-pose
+   (let* ((box-movement-msg (instance jsk_pcl_ros::BoundingBoxMovement :init))
+	  tmp-pose
 	  )
-     (setq cds (send self :get-eus-coords cds (send pose :header)))
-     (send *target-coords* :move-to (send (car (send *robot* :links)) :copy-worldcoords) :world)
-     (send *target-coords* :transform cds :local)
-
-     (send *target-coords* :translate (float-vector 10 0 0)) ; move a little bit forward
-     (setq *tmp-rotation-axis* t)
-     (dotimes (i 2)
-       (send *ri* :stop-grasp *one-click-grasp-arm*)
-       (unix:sleep 1))
-     (let (avs time-sequences)
-       (send *robot* *one-click-grasp-arm* :move-end-pos (float-vector -100 0 0))
-       (send *robot* *one-click-grasp-arm* :move-end-pos (float-vector -50 0 0))
-       (push (send *robot* :angle-vector) avs)
-
-       (setq pre-pose (send (send *target-coords* :copy-worldcoords) :translate (float-vector -100 0 0)))
-       (send pre-pose :translate (float-vector 0 0 50) :world)
-       (when (> (abs (v. (send pre-pose :x-axis) (float-vector 0 0 1))) 0.5) ;??
-         (send pre-pose :translate (float-vector 0 0 50) :world)
-         (send pre-pose :translate (float-vector -30 0 0))
-         )
-       (unless (send *robot* :inverse-kinematics
-                     pre-pose
-                     :move-target (send *robot* *one-click-grasp-arm* :end-coords)
-		     :use-torso t
-                     :rotation-axis t
-                     :debug-view t)
-         (send pre-pose :rotate (deg2rad -180) :x)
-         (if (send *robot* :inverse-kinematics
-                   pre-pose
-		   :move-target (send *robot* *one-click-grasp-arm* :end-coords)   
-                   :use-torso t
-                   :rotation-axis t
-                   :debug-view t)
-             (progn
-               (send *target-coords* :rotate (deg2rad -180) :x)
-               )
-           (progn
-             (setq *movingp* nil)
-             (return-from :grasp-pose-callback nil)
-             )))
-       (push (send *robot* :angle-vector) avs)
-
-       (unless (send *robot* :inverse-kinematics
-                     *target-coords*
-                     :move-target (send *robot* *one-click-grasp-arm* :end-coords) 
-                     :use-torso t
-                     :rotation-axis t
-                     :debug-view t)
-         (setq *movingp* nil)
-         (return-from :grasp-pose-callback nil))
-
-       (push (send *robot* :angle-vector) avs)
-
-       (setq avs (reverse avs))
-       (cond 
-	((equal (string-upcase *robot-name*) "BAXTER")
-	 (setq time-sequences  (list 2000 5000 3000)))
-	(t
-	 (setq time-sequences  (list 500 500 500))))
-       (send *ri* :angle-vector-sequence avs time-sequences)
-       )
-     (send *ri* :wait-interpolation)
-     (send *ri* :start-grasp  *one-click-grasp-arm*)
-     (send *ri* :wait-interpolation)
-     ;;(unix:usleep (* 1000 1000))
-     (let (avs time-sequences)
-       ;; pick up and place
-       (push (send *robot* :angle-vector) avs)
-       (send *robot* *one-click-grasp-arm* :move-end-pos #f(0 0 100) :world)
-       (push (send *robot* :angle-vector) avs)
-       
-       (send *target-coords* :locate #f(0 0 -100) :world)
-       (cond 
-	((equal (string-upcase *robot-name*) "BAXTER")
-	 (setq time-sequences  (list 3000 3000)))
-	(t
-	 (setq time-sequences  (list 1000 1000))))
-       (send *ri* :angle-vector-sequence avs time-sequences)
-       )
-
-     (when (boundp '*irtviewer*)
-       (send *irtviewer* :draw-objects))
+     (send box-movement-msg :header (send msg :header))
+     (setq tmp-pose (instance geometry_msgs::Pose :init))
+     (send box-movement-msg :handle_pose   tmp-pose)
+     (send box-movement-msg :box :header (send msg :header))
+     (send box-movement-msg :box :pose   (send msg :pose))
+     (send box-movement-msg :destination :header (send msg :header))
+     (send box-movement-msg :destination :pose (send msg :pose))
+     (send self :box-movement-callback box-movement-msg)
      )
-   (setq *movingp* nil)
    )
 
   (:box-movement-callback
