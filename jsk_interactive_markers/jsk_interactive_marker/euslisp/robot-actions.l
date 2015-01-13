@@ -554,7 +554,7 @@
 	  (target-cds-list (list pre-cds target-cds post-cds))
 	  ik-suc)
 
-     (send self :check-ik-and-move-base target-cds-list :move-arm move-arm :grasp-object t :tuck-free-arm t)
+     (send self :check-ik-and-move-base (reverse target-cds-list) :move-arm move-arm :grasp-object t :tuck-free-arm t)
      ;;pre place
      (ros::ros-info "pre place")
      (setq ik-suc (send self :inverse-kinematics pre-cds :move-arm move-arm))
