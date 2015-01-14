@@ -38,7 +38,7 @@
 #define PI 3.14159265
 
 namespace jsk_rviz_plugins
-{  
+{
   TorusArrayDisplay::TorusArrayDisplay()
   {
     color_property_ = new rviz::ColorProperty("color", QColor(25, 255, 0),
@@ -47,16 +47,22 @@ namespace jsk_rviz_plugins
     alpha_property_ = new rviz::FloatProperty("alpha", 0.8,
                                               "alpha value to draw the toruses",
                                               this, SLOT(updateAlpha()));
+    uv_property_ = new rviz::IntProperty("uv-smooth", 50,
+                                            "torus uv dimension setting",
+                                            this, SLOT(updateUVdimension()));
     auto_color_property_ = new rviz::BoolProperty("auto color", false,
                                                   "change the color of the toruses automatically",
                                                   this, SLOT(updateAutoColor()));
+
+    uv_property_->setMin(5);
   }
-  
+
   TorusArrayDisplay::~TorusArrayDisplay()
   {
     delete color_property_;
     delete alpha_property_;
     delete auto_color_property_;
+    delete uv_property_;
   }
 
   QColor TorusArrayDisplay::getColor(size_t index)
@@ -79,9 +85,9 @@ namespace jsk_rviz_plugins
     updateColor();
     updateAlpha();
     updateAutoColor();
+    updateUVdimension();
 
-    large_dimension_ = 10;
-    small_dimension_ = 10;
+    uv_dimension_ = 50;
   }
 
   void TorusArrayDisplay::updateColor()
@@ -92,6 +98,11 @@ namespace jsk_rviz_plugins
   void TorusArrayDisplay::updateAlpha()
   {
     alpha_ = alpha_property_->getFloat();
+  }
+
+  void TorusArrayDisplay::updateUVdimension()
+  {
+    uv_dimension_ = uv_property_->getInt();
   }
 
   void TorusArrayDisplay::updateAutoColor()
@@ -208,7 +219,7 @@ namespace jsk_rviz_plugins
       std::vector<Ogre::Vector3> vertices;
       std::vector<Ogre::Vector3> normals;
 
-      calcurateTriangleMesh(large_dimension_, small_dimension_,
+      calcurateTriangleMesh(uv_dimension_, uv_dimension_,
                             large_radius, small_radius,
                             position,quaternion,
                             triangles, vertices, normals);
