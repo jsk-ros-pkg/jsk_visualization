@@ -40,6 +40,7 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/mesh_shape.h>
@@ -66,18 +67,19 @@ namespace jsk_rviz_plugins
     QColor getColor(size_t index);
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
+    rviz::IntProperty* uv_property_;
     rviz::BoolProperty* auto_color_property_;
     QColor color_;
     double alpha_;
     bool auto_color_;
 
-    int large_dimension_;
-    int small_dimension_;
+    int uv_dimension_;
 
     std::vector<ShapePtr> shapes_;
   private Q_SLOTS:
     void updateColor();
     void updateAlpha();
+    void updateUVdimension();
     void updateAutoColor();
     void calcurateTriangleMesh(
                                int large_dimension, int small_dimension,
