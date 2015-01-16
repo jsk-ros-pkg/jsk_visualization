@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   geometry_msgs)
 
 add_message_files(FILES
-  OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg
+  OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg ObjectFitCommand.msg
   Pictogram.msg PictogramArray.msg)
 add_service_files(FILES
   RequestMarkerOperate.srv EusCommand.srv
@@ -82,6 +82,7 @@ qt4_wrap_cpp(MOC_FILES
   src/close_all_tool.h
   src/open_all_tool.h
   src/transformable_marker_operator.h
+  src/object_fit_operator.h
   src/robot_command_interface.h
   src/empty_service_call_interface.h
   src/pictogram_display.h
@@ -122,6 +123,7 @@ set(SOURCE_FILES
   src/open_all_tool.cpp
   src/screenshot_listener_tool.cpp
   src/transformable_marker_operator.cpp
+  src/object_fit_operator.cpp
   src/robot_command_interface.cpp
   src/empty_service_call_interface.cpp
   src/pictogram_display.cpp
