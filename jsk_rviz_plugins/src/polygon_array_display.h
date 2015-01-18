@@ -14,13 +14,16 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz/ogre_helpers/arrow.h>
 
 namespace jsk_rviz_plugins
 {
+  
   class PolygonArrayDisplay : public rviz::MessageFilterDisplay<jsk_pcl_ros::PolygonArray>
   {
     Q_OBJECT
   public:
+    typedef boost::shared_ptr<rviz::Arrow> ArrowPtr;
     PolygonArrayDisplay();
     virtual ~PolygonArrayDisplay();
   protected:
@@ -32,16 +35,24 @@ namespace jsk_rviz_plugins
   private Q_SLOTS:
     void updateAutoColoring();
     void updateOnlyBorder();
+    void updateShowNormal();
+    void updateNormalLength();
   private:
     void processMessage(const jsk_pcl_ros::PolygonArray::ConstPtr& msg);
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::BoolProperty* only_border_property_;
     rviz::BoolProperty* auto_coloring_property_;
+    rviz::BoolProperty* show_normal_property_;
+    rviz::FloatProperty* normal_length_property_;
     bool only_border_;
     bool auto_coloring_;
+    bool show_normal_;
+    double normal_length_;
     std::vector<Ogre::ManualObject*> manual_objects_;
     std::vector<Ogre::SceneNode*> scene_nodes_;
+    std::vector<Ogre::SceneNode*> arrow_nodes_;
+    std::vector<ArrowPtr> arrow_objects_;
     std::vector<Ogre::MaterialPtr> materials_;
     std::vector<rviz::BillboardLine*> lines_;
   };
