@@ -1,3 +1,38 @@
+// -*- mode: c++ -*-
+/*********************************************************************
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2015, JSK Lab
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/o2r other materials provided
+ *     with the distribution.
+ *   * Neither the name of the JSK Lab nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *********************************************************************/
+
 #include "polygon_array_display.h"
 #include "rviz/properties/parse_color.h"
 #include <rviz/validate_floats.h>
@@ -9,14 +44,14 @@ namespace jsk_rviz_plugins
   PolygonArrayDisplay::PolygonArrayDisplay()
   {
     auto_coloring_property_ = new rviz::BoolProperty("auto color", true,
-                                                      "automatically change the color of the polygons",
-                                                      this, SLOT(updateAutoColoring()));
-    color_property_ = new rviz::ColorProperty( "Color", QColor( 25, 255, 0 ),
+                                                     "automatically change the color of the polygons",
+                                                     this, SLOT(updateAutoColoring()));
+    color_property_ = new rviz::ColorProperty("Color", QColor(25, 255, 0),
                                                "Color to draw the polygons.",
-                                               this, SLOT( queueRender() ));
-    alpha_property_ = new rviz::FloatProperty( "Alpha", 1.0,
+                                               this, SLOT(queueRender()));
+    alpha_property_ = new rviz::FloatProperty("Alpha", 1.0,
                                                "Amount of transparency to apply to the polygon.",
-                                               this, SLOT( queueRender() ));
+                                               this, SLOT(queueRender()));
     only_border_property_ = new rviz::BoolProperty("only border", true,
                                                    "only shows the borders of polygons",
                                                    this, SLOT(updateOnlyBorder()));
@@ -28,17 +63,18 @@ namespace jsk_rviz_plugins
                                                       this, SLOT(updateNormalLength()));
     normal_length_property_->setMin(0);
     //only_border_ = true;
-    alpha_property_->setMin( 0 );
-    alpha_property_->setMax( 1 );
+    alpha_property_->setMin(0);
+    alpha_property_->setMax(1);
   }
   
   PolygonArrayDisplay::~PolygonArrayDisplay()
   {
     delete alpha_property_;
     delete color_property_;
-    //delete only_border_property_;
+    delete only_border_property_;
     delete auto_coloring_property_;
-
+    delete show_normal_property_;
+    delete normal_length_property_;
     for (size_t i = 0; i < lines_.size(); i++) {
       delete lines_[i];
     }
@@ -77,13 +113,13 @@ namespace jsk_rviz_plugins
         Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(ss.str(), "rviz");
         material->setReceiveShadows(false);
         material->getTechnique(0)->setLightingEnabled(true);
-        material->getTechnique(0)->setAmbient( 0.5, 0.5, 0.5 );
+        material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
         materials_.push_back(material);
       }
     }
   }
   
-  bool validateFloats( const jsk_pcl_ros::PolygonArray& msg)
+  bool validateFloats(const jsk_pcl_ros::PolygonArray& msg)
   {
     for (size_t i = 0; i < msg.polygons.size(); i++) {
       if (!rviz::validateFloats(msg.polygons[i].polygon.points))
@@ -110,8 +146,8 @@ namespace jsk_rviz_plugins
       for (size_t i = manual_objects_.size(); i < msg->polygons.size() * scale_factor; i++) {
         Ogre::SceneNode* scene_node = scene_node_->createChildSceneNode();
         Ogre::ManualObject* manual_object = scene_manager_->createManualObject();
-        manual_object->setDynamic( true );
-        scene_node->attachObject( manual_object );
+        manual_object->setDynamic(true);
+        scene_node->attachObject(manual_object);
         manual_objects_.push_back(manual_object);
         scene_nodes_.push_back(scene_node);
       }
@@ -131,7 +167,7 @@ namespace jsk_rviz_plugins
       }
     }
     else if (msg->polygons.size() < manual_objects_.size()) {
-      for (size_t i = msg->polygons.size() * scale_factor; i < manual_objects_.size(); i++) {
+      for (size_t i = msg->polygons.size(); i < arrow_nodes_.size(); i++) {
         //arrow_objects_[i]->setVisible(false);
         arrow_nodes_[i]->setVisible(false);
       }
@@ -152,11 +188,173 @@ namespace jsk_rviz_plugins
       lines_[i]->clear();
     }
   }
+  Ogre::ColourValue PolygonArrayDisplay::getColor(size_t index)
+  {
+    Ogre::ColourValue color;
+    if (auto_coloring_) {
+      std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(index);
+      color.r = ros_color.r;
+      color.g = ros_color.g;
+      color.b = ros_color.b;
+      color.a = ros_color.a;
+    }
+    else {
+      color = rviz::qtToOgre(color_property_->getColor());
+    }
+    color.a = alpha_property_->getFloat();
+    return color;
+  }
+
+  void PolygonArrayDisplay::processLine(
+    const size_t i,
+    const geometry_msgs::PolygonStamped& polygon)
+  {
+    Ogre::SceneNode* scene_node = scene_nodes_[i];
+    //Ogre::ManualObject* manual_object = manual_objects_[i];
+    Ogre::Vector3 position;
+    Ogre::Quaternion orientation;
+    if(!context_->getFrameManager()->getTransform(
+          polygon.header, position, orientation)) {
+      ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
+                 polygon.header.frame_id.c_str(), qPrintable(fixed_frame_));
+    }
+    scene_node->setPosition(position);
+    scene_node->setOrientation(orientation);
+    rviz::BillboardLine* line = lines_[i];
+    line->clear();
+    line->setMaxPointsPerLine(polygon.polygon.points.size() + 1);
+        
+    Ogre::ColourValue color = getColor(i);
+    line->setColor(color.r, color.g, color.b, color.a);
+
+    for (size_t i = 0; i < polygon.polygon.points.size(); ++i) {
+      Ogre::Vector3 step_position;
+      step_position.x = polygon.polygon.points[i].x;
+      step_position.y = polygon.polygon.points[i].y;
+      step_position.z = polygon.polygon.points[i].z;
+      line->addPoint(step_position);
+    }
+    Ogre::Vector3 step_position;
+    step_position.x = polygon.polygon.points[0].x;
+    step_position.y = polygon.polygon.points[0].y;
+    step_position.z = polygon.polygon.points[0].z;
+    line->addPoint(step_position);
+  }
+
+  void PolygonArrayDisplay::processPolygonMaterial(const size_t i)
+  {
+    Ogre::ColourValue color = getColor(i);
+    materials_[i]->getTechnique(0)->setAmbient(color * 0.5);
+    materials_[i]->getTechnique(0)->setDiffuse(color);
+    if (color.a < 0.9998)
+    {
+      materials_[i]->getTechnique(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+      materials_[i]->getTechnique(0)->setDepthWriteEnabled(false);
+    }
+    else
+    {
+      materials_[i]->getTechnique(0)->setSceneBlending(Ogre::SBT_REPLACE);
+      materials_[i]->getTechnique(0)->setDepthWriteEnabled(true);
+    }
+      
+    materials_[i]->getTechnique(0)->setAmbient(color * 0.5);
+    materials_[i]->getTechnique(0)->setDiffuse(color);
+  }
+
+  void PolygonArrayDisplay::processPolygon(
+    const size_t i, const geometry_msgs::PolygonStamped& polygon)
+  {
+    Ogre::Vector3 position;
+    Ogre::Quaternion orientation;
+    if(!context_->getFrameManager()->getTransform(
+         polygon.header, position, orientation)) {
+      ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
+                 polygon.header.frame_id.c_str(), qPrintable(fixed_frame_));
+      return;
+    }
+    
+    {
+      Ogre::SceneNode* scene_node = scene_nodes_[i * 2];
+      Ogre::ManualObject* manual_object = manual_objects_[i * 2];
+      scene_node->setPosition(position);
+      scene_node->setOrientation(orientation);
+      manual_object->clear();
+      manual_object->setVisible(true);
+      
+      jsk_pcl_ros::Polygon geo_polygon
+        = jsk_pcl_ros::Polygon::fromROSMsg(polygon.polygon);
+      std::vector<jsk_pcl_ros::Polygon::Ptr>
+        triangles = geo_polygon.decomposeToTriangles();
+        
+      uint32_t num_points = 0;
+      for (size_t j = 0; j < triangles.size(); j++) {
+        num_points += triangles[j]->getNumVertices();
+      }
+      if(num_points > 0) {
+        manual_object->estimateVertexCount(num_points * 2);
+        manual_object->begin(
+          materials_[i]->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+        for (size_t ii = 0; ii < triangles.size(); ii++) {
+          jsk_pcl_ros::Polygon::Ptr triangle = triangles[ii];
+          size_t num_vertices = triangle->getNumVertices();
+          for (size_t j = 0; j < num_vertices; j++) {
+            Eigen::Vector3f v = triangle->getVertex(j);
+            manual_object->position(v[0], v[1], v[2]);
+          }
+          for (int j = num_vertices - 1; j >= 0; j--) {
+            Eigen::Vector3f v = triangle->getVertex(j);
+            manual_object->position(v[0], v[1], v[2]);
+          }
+        }
+        manual_object->end();
+      }
+    }
+  }
+  
+  void PolygonArrayDisplay::processNormal(
+    const size_t i, const geometry_msgs::PolygonStamped& polygon)
+  {
+    Ogre::SceneNode* scene_node = arrow_nodes_[i];
+    scene_node->setVisible(true);
+    ArrowPtr arrow = arrow_objects_[i];
+    Ogre::Vector3 position;
+    Ogre::Quaternion orientation;
+    if(!context_->getFrameManager()->getTransform(
+         polygon.header, position, orientation)) {
+      ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
+                 polygon.header.frame_id.c_str(), qPrintable(fixed_frame_));
+      return;
+    }
+    scene_node->setPosition(position);
+    scene_node->setOrientation(orientation); // scene node is at frame pose
+    jsk_pcl_ros::Polygon geo_polygon
+      = jsk_pcl_ros::Polygon::fromROSMsg(polygon.polygon);
+    jsk_pcl_ros::Vertices vertices
+      = geo_polygon.getVertices();
+    Eigen::Vector3f centroid(0, 0, 0); // should be replaced by centroid method
+    if (vertices.size() == 0) {
+      ROS_ERROR("the size of vertices is 0");
+    }
+    else {
+      for (size_t j = 0; j < vertices.size(); j++) {
+        centroid = vertices[j] + centroid;
+      }
+      centroid = centroid / vertices.size();
+    }
+    Ogre::Vector3 pos(centroid[0], centroid[1], centroid[2]);
+    arrow->setPosition(pos);
+    Eigen::Vector3f normal = geo_polygon.getNormal();
+    Ogre::Vector3 direction(normal[0], normal[1], normal[2]);
+    arrow->setDirection(direction);
+    Ogre::Vector3 scale(normal_length_, normal_length_, normal_length_);
+    arrow->setScale(scale);
+    arrow->setColor(getColor(i));
+  }
   
   void PolygonArrayDisplay::processMessage(const jsk_pcl_ros::PolygonArray::ConstPtr& msg)
   {
     if (!validateFloats(*msg)) {
-      setStatus( rviz::StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
+      setStatus(rviz::StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
       return;
     }
     // create nodes and manual objects
@@ -172,206 +370,25 @@ namespace jsk_rviz_plugins
       for (size_t i = 0; i < msg->polygons.size(); i++) {
         geometry_msgs::PolygonStamped polygon = msg->polygons[i];
         if (polygon.polygon.points.size() >= 3) {
-          Ogre::SceneNode* scene_node = scene_nodes_[i];
-          //Ogre::ManualObject* manual_object = manual_objects_[i];
-          Ogre::Vector3 position;
-          Ogre::Quaternion orientation;
-          if( !context_->getFrameManager()->getTransform(
-                polygon.header, position, orientation )) {
-            ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-                       polygon.header.frame_id.c_str(), qPrintable( fixed_frame_ ));
-          }
-          scene_node->setPosition( position );
-          scene_node->setOrientation( orientation );
-          rviz::BillboardLine* line = lines_[i];
-          line->clear();
-          line->setMaxPointsPerLine(polygon.polygon.points.size() + 1);
-        
-          Ogre::ColourValue color;
-          if (auto_coloring_) {
-            std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(i);
-            color.r = ros_color.r;
-            color.g = ros_color.g;
-            color.b = ros_color.b;
-            color.a = ros_color.a;
-          }
-          else {
-            color = rviz::qtToOgre( color_property_->getColor() );
-          }
-          color.a = alpha_property_->getFloat();
-          line->setColor(color.r, color.g, color.b, color.a);
-
-          for (size_t i = 0; i < polygon.polygon.points.size(); ++i) {
-            Ogre::Vector3 step_position;
-            step_position.x = polygon.polygon.points[i].x;
-            step_position.y = polygon.polygon.points[i].y;
-            step_position.z = polygon.polygon.points[i].z;
-            line->addPoint(step_position);
-          }
-          Ogre::Vector3 step_position;
-          step_position.x = polygon.polygon.points[0].x;
-          step_position.y = polygon.polygon.points[0].y;
-          step_position.z = polygon.polygon.points[0].z;
-          line->addPoint(step_position);
+          processLine(i, polygon);
         }
       }
     }
     else {
       for (size_t i = 0; i < msg->polygons.size(); i++) {
-        Ogre::ColourValue color;
-        if (auto_coloring_) {
-          std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(i);
-          color.r = ros_color.r;
-          color.g = ros_color.g;
-          color.b = ros_color.b;
-          color.a = ros_color.a;
-        }
-        else {
-          color = rviz::qtToOgre( color_property_->getColor() );
-        }
-        color.a = alpha_property_->getFloat();
-        materials_[i]->getTechnique(0)->setAmbient( color * 0.5 );
-        materials_[i]->getTechnique(0)->setDiffuse( color );
-        if ( color.a < 0.9998 )
-        {
-          materials_[i]->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-          materials_[i]->getTechnique(0)->setDepthWriteEnabled( false );
-        }
-        else
-        {
-          materials_[i]->getTechnique(0)->setSceneBlending( Ogre::SBT_REPLACE );
-          materials_[i]->getTechnique(0)->setDepthWriteEnabled( true );
-        }
-      
-        materials_[i]->getTechnique(0)->setAmbient( color * 0.5 );
-        materials_[i]->getTechnique(0)->setDiffuse( color );
+        processPolygonMaterial(i);
       }
       
       for (size_t i = 0; i < msg->polygons.size(); i++) {
         geometry_msgs::PolygonStamped polygon = msg->polygons[i];
-        Ogre::SceneNode* scene_node = scene_nodes_[i * 2];
-        Ogre::ManualObject* manual_object = manual_objects_[i * 2];
-        Ogre::Vector3 position;
-        Ogre::Quaternion orientation;
-        if(!context_->getFrameManager()->getTransform(
-             polygon.header, position, orientation)) {
-          ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-                     polygon.header.frame_id.c_str(), qPrintable(fixed_frame_));
-        }
-        scene_node->setPosition( position );
-        scene_node->setOrientation( orientation );
-        manual_object->clear();
-        manual_object->setVisible(true);
-
-        jsk_pcl_ros::Polygon geo_polygon
-          = jsk_pcl_ros::Polygon::fromROSMsg(polygon.polygon);
-        std::vector<jsk_pcl_ros::Polygon::Ptr>
-          triangles = geo_polygon.decomposeToTriangles();
-        
-        uint32_t num_points = 0;
-        for (size_t j = 0; j < triangles.size(); j++) {
-          num_points += triangles[j]->getNumVertices();
-        }
-        if( num_points > 0 ) {
-          manual_object->estimateVertexCount(num_points * 2);
-          manual_object->begin(
-            materials_[i]->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
-          for (size_t ii = 0; ii < triangles.size(); ii++) {
-            jsk_pcl_ros::Polygon::Ptr triangle = triangles[ii];
-            size_t num_vertices = triangle->getNumVertices();
-            for (size_t j = 0; j < num_vertices; j++) {
-              Eigen::Vector3f v = triangle->getVertex(j);
-              manual_object->position(v[0], v[1], v[2]);
-            }
-            for (int j = num_vertices - 1; j >= 0; j--) {
-              Eigen::Vector3f v = triangle->getVertex(j);
-              manual_object->position(v[0], v[1], v[2]);
-            }
-          }
-          manual_object->end();
-        }
+        processPolygon(i, polygon);
       }
-      //     reverse order
-      for (size_t i = 0; i < msg->polygons.size(); i++) {
-        geometry_msgs::PolygonStamped polygon = msg->polygons[i];
-        Ogre::SceneNode* scene_node = scene_nodes_[i * 2 + 1];
-        Ogre::ManualObject* manual_object = manual_objects_[i * 2 + 1];
-        Ogre::Vector3 position;
-        Ogre::Quaternion orientation;
-        if( !context_->getFrameManager()->getTransform( polygon.header, position, orientation )) {
-          ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-                     polygon.header.frame_id.c_str(), qPrintable( fixed_frame_ ));
-        }
-        scene_node->setPosition( position );
-        scene_node->setOrientation( orientation );
-        manual_object->setVisible(false);
-        manual_object->clear();
-        
-        uint32_t num_points = polygon.polygon.points.size();
-        if( num_points > 0 )
-        {
-          manual_object->estimateVertexCount( num_points );
-          manual_object->begin(materials_[i]->getName(), Ogre::RenderOperation::OT_TRIANGLE_FAN );
-          for( uint32_t i = num_points; i > 0; --i )
-          {
-            const geometry_msgs::Point32& msg_point = polygon.polygon.points[ i % num_points ];
-            manual_object->position( msg_point.x, msg_point.y, msg_point.z );
-          }
-          manual_object->end();
-        }
-      }
-
     }
 
     if (show_normal_) {
       for (size_t i = 0; i < msg->polygons.size(); i++) {
         geometry_msgs::PolygonStamped polygon = msg->polygons[i];
-        Ogre::SceneNode* scene_node = arrow_nodes_[i];
-        scene_node->setVisible(true);
-        ArrowPtr arrow = arrow_objects_[i];
-        Ogre::Vector3 position;
-        Ogre::Quaternion orientation;
-        if(!context_->getFrameManager()->getTransform(
-             polygon.header, position, orientation)) {
-          ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-                     polygon.header.frame_id.c_str(), qPrintable(fixed_frame_));
-          continue;
-        }
-        scene_node->setPosition(position);
-        scene_node->setOrientation(orientation); // scene node is at frame pose
-        jsk_pcl_ros::Polygon geo_polygon
-          = jsk_pcl_ros::Polygon::fromROSMsg(polygon.polygon);
-        jsk_pcl_ros::Vertices vertices
-          = geo_polygon.getVertices();
-        Eigen::Vector3f centroid(0, 0, 0); // should be replaced by centroid method
-        if (vertices.size() == 0) {
-          ROS_ERROR("the size of vertices is 0");
-        }
-        else {
-          for (size_t j = 0; j < vertices.size(); j++) {
-            centroid = vertices[j] + centroid;
-          }
-          centroid = centroid / vertices.size();
-        }
-        Ogre::Vector3 pos(centroid[0], centroid[1], centroid[2]);
-        arrow->setPosition(pos);
-        Eigen::Vector3f normal = geo_polygon.getNormal();
-        Ogre::Vector3 direction(normal[0], normal[1], normal[2]);
-        arrow->setDirection(direction);
-        Ogre::Vector3 scale(normal_length_, normal_length_, normal_length_);
-        arrow->setScale(scale);
-        Ogre::ColourValue color;
-        if (auto_coloring_) {
-          std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(i);
-          color.r = ros_color.r;
-          color.g = ros_color.g;
-          color.b = ros_color.b;
-          color.a = ros_color.a;
-        }
-        else {
-          color = rviz::qtToOgre( color_property_->getColor() );
-        }
-        arrow->setColor(color);
+        processNormal(i, polygon);
       }
     }
   }
@@ -405,4 +422,4 @@ namespace jsk_rviz_plugins
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::PolygonArrayDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::PolygonArrayDisplay, rviz::Display)
