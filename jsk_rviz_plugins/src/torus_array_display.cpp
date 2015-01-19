@@ -53,6 +53,12 @@ namespace jsk_rviz_plugins
     auto_color_property_ = new rviz::BoolProperty("auto color", false,
                                                   "change the color of the toruses automatically",
                                                   this, SLOT(updateAutoColor()));
+    show_normal_property_ = new rviz::BoolProperty("show normal", true,
+                                                   "show normal direction",
+                                                   this, SLOT(updateShowNormal()));
+    normal_length_property_ = new rviz::FloatProperty("normal length", 0.1,
+                                                      "normal length",
+                                                      this, SLOT(updateNormalLength()));
 
     uv_property_->setMin(5);
   }
@@ -63,6 +69,8 @@ namespace jsk_rviz_plugins
     delete alpha_property_;
     delete auto_color_property_;
     delete uv_property_;
+    delete show_normal_property_;
+    delete normal_length_property_;
   }
 
   QColor TorusArrayDisplay::getColor(size_t index)
@@ -86,6 +94,8 @@ namespace jsk_rviz_plugins
     updateAlpha();
     updateAutoColor();
     updateUVdimension();
+    updateNormalLength();
+    updateShowNormal();
 
     uv_dimension_ = 50;
   }
@@ -127,6 +137,20 @@ namespace jsk_rviz_plugins
     else if (num < shapes_.size())
     {
       shapes_.resize(num);
+    }
+
+    if (num > arrow_objects_.size()) {
+      for (size_t i = arrow_objects_.size(); i < num; i++) {
+        Ogre::SceneNode* scene_node = scene_node_->createChildSceneNode();
+        ArrowPtr arrow (new rviz::Arrow(scene_manager_, scene_node));
+        arrow_objects_.push_back(arrow);
+        arrow_nodes_.push_back(scene_node);
+      }
+    }
+    else if (num < arrow_objects_.size()) {
+      for (size_t i = num; i < arrow_objects_.size(); i++) {
+        arrow_nodes_[i]->setVisible(false);
+      }
     }
   }
 
@@ -192,6 +216,26 @@ namespace jsk_rviz_plugins
     }
   }
 
+  void TorusArrayDisplay::updateShowNormal()
+  {
+    show_normal_ = show_normal_property_->getBool();
+    if (show_normal_) {
+      normal_length_property_->show();
+    }
+    else {
+      normal_length_property_->hide();
+      for (size_t i = 0; i < arrow_objects_.size(); i++) {
+        arrow_nodes_[i]->setVisible(false);
+      }
+    }
+  }
+
+  void TorusArrayDisplay::updateNormalLength()
+  {
+    normal_length_ = normal_length_property_->getFloat();
+  }
+
+
   void TorusArrayDisplay::processMessage(const jsk_pcl_ros::TorusArray::ConstPtr& msg)
   {
     allocateShapes(msg->toruses.size());
@@ -236,6 +280,20 @@ namespace jsk_rviz_plugins
                       color.green() / 255.0,
                       color.blue() / 255.0,
                       alpha_);
+
+      if (show_normal_) {
+        Ogre::Vector3 normal;
+        arrow_nodes_[i]->setVisible(true);
+        arrow_nodes_[i]->setPosition(position);
+        arrow_nodes_[i]->setOrientation(quaternion);
+        normal.x = 0;      normal.y = 0;      normal.z = 1;
+        Ogre::Vector3 scale(normal_length_, normal_length_, normal_length_);
+        arrow_objects_[i]->setScale(scale);
+        arrow_objects_[i]->setColor(color.red() / 255.0,
+                                    color.green() / 255.0,
+                                    color.blue() / 255.0,
+                                    alpha_);
+      }
     }
   }
 }

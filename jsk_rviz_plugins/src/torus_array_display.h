@@ -44,6 +44,7 @@
 #include <rviz/message_filter_display.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/mesh_shape.h>
+#include <rviz/ogre_helpers/arrow.h>
 #include <OGRE/OgreSceneNode.h>
 
 namespace jsk_rviz_plugins
@@ -57,6 +58,7 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
+    typedef boost::shared_ptr<rviz::Arrow> ArrowPtr;
     typedef boost::shared_ptr<rviz::MeshShape> ShapePtr;
     TorusArrayDisplay();
     virtual ~TorusArrayDisplay();
@@ -69,18 +71,25 @@ namespace jsk_rviz_plugins
     rviz::FloatProperty* alpha_property_;
     rviz::IntProperty* uv_property_;
     rviz::BoolProperty* auto_color_property_;
+    rviz::BoolProperty* show_normal_property_;
+    rviz::FloatProperty* normal_length_property_;
     QColor color_;
     double alpha_;
     bool auto_color_;
-
+    bool show_normal_;
+    double normal_length_;
     int uv_dimension_;
-
+    std::vector<Ogre::SceneNode*> arrow_nodes_;
+    std::vector<ArrowPtr> arrow_objects_;
     std::vector<ShapePtr> shapes_;
   private Q_SLOTS:
     void updateColor();
     void updateAlpha();
     void updateUVdimension();
     void updateAutoColor();
+    void updateShowNormal();
+    void updateNormalLength();
+
     void calcurateTriangleMesh(
                                int large_dimension, int small_dimension,
                                float large_radius, float small_radius,
