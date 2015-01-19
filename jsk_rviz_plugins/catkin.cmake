@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
 
 add_message_files(FILES
   OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg ObjectFitCommand.msg
-  Pictogram.msg PictogramArray.msg)
+  Pictogram.msg PictogramArray.msg RecordCommand.msg)
 add_service_files(FILES
   RequestMarkerOperate.srv EusCommand.srv
   Screenshot.srv
@@ -62,6 +62,7 @@ qt4_wrap_cpp(MOC_FILES
   src/footstep_display.h
   src/publish_topic.h
   src/cancel_action.h
+  src/record_action.h
   src/polygon_array_display.h
   src/normal_display.h
   src/overlay_text_display.h
@@ -98,6 +99,7 @@ set(SOURCE_FILES
   src/footstep_display.cpp
   src/publish_topic.cpp
   src/cancel_action.cpp
+  src/record_action.cpp
   src/select_point_cloud_publish_action.cpp
   src/polygon_array_display.cpp
   src/normal_display.cpp
