@@ -210,6 +210,14 @@
     </description>
   </class>
 
+  <class name="jsk_rviz_plugin/RecordAction"
+         type="jsk_rviz_plugins::RecordAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to record action
+    </description>
+  </class>
+
   <class name="jsk_rviz_plugin/SelectPointCloudPublishAction"
          type="jsk_rviz_plugins::SelectPointCloudPublishAction"
          base_class_type="rviz::Panel">
