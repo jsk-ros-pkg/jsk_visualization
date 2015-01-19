@@ -42,8 +42,6 @@ Q_OBJECT
       void OnClickDeleteButton(int id);
 
     protected:
-      QLineEdit* output_topic_editor_;
-
       QString output_topic_;
 
       QPushButton* add_topic_button_;
