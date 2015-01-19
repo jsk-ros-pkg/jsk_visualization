@@ -23,8 +23,6 @@ namespace jsk_rviz_plugins
 
     //Text Box and Add Button to add new topic
     QHBoxLayout* topic_layout = new QHBoxLayout;
-    output_topic_editor_ = new QLineEdit;
-    //topic_layout->addWidget( output_topic_editor_ );
 
     add_topic_box_ = new QComboBox;
     initComboBox();
@@ -92,12 +90,10 @@ namespace jsk_rviz_plugins
 
   void CancelAction::addTopic()
   {
-    //output_topic_ = output_topic_editor_->text();
     output_topic_ = add_topic_box_->currentText();
     if( output_topic_ != "" ){
       add_topic_box_->setCurrentIndex( 0 );
       addTopicList(output_topic_.toStdString());
-      //output_topic_editor_->setText("");
     }
     Q_EMIT configChanged();
   }
