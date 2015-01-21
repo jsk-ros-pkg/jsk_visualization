@@ -45,6 +45,15 @@ public:
 Marker6DOF(): show_6dof_circle_(true) {
   ros::NodeHandle nh, pnh("~");
   pnh.param("frame_id", frame_id_, std::string("/map"));
+  pnh.param("object_type", object_type_, std::string("sphere"));
+  pnh.param("object_x", object_x_, 1.0);
+  pnh.param("object_y", object_y_, 1.0);
+  pnh.param("object_z", object_z_, 1.0);
+  pnh.param("object_r", object_r_, 1.0);
+  pnh.param("object_g", object_g_, 1.0);
+  pnh.param("object_b", object_b_, 1.0);
+  pnh.param("object_a", object_a_, 1.0);
+  pnh.param("line_width", line_width_, 0.007);
   latest_pose_.header.frame_id = frame_id_;
   latest_pose_.pose.orientation.w = 1.0;
   pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("pose", 1);
@@ -67,6 +76,47 @@ protected:
     latest_pose_ = geometry_msgs::PoseStamped(*msg);
     server_->applyChanges();
   }
+
+  
+  void calculateBoundingBox( visualization_msgs::Marker& object_marker){
+    geometry_msgs::Point top[5];
+    top[0].x = object_x_/2;
+    top[0].y = object_y_/2;
+    top[1].x = -object_x_/2;
+    top[1].y = object_y_/2;
+    top[2].x = -object_x_/2;
+    top[2].y = -object_y_/2;
+    top[3].x = object_x_/2;
+    top[3].y = -object_y_/2;    
+    top[4].x = object_x_/2;
+    top[4].y = object_y_/2;
+
+    geometry_msgs::Point bottom[5];
+    bottom[0].x = object_x_/2;
+    bottom[0].y = object_y_/2;
+    bottom[1].x = -object_x_/2;
+    bottom[1].y = object_y_/2;
+    bottom[2].x = -object_x_/2;
+    bottom[2].y = -object_y_/2;
+    bottom[3].x = object_x_/2;
+    bottom[3].y = -object_y_/2;
+    bottom[4].x = object_x_/2;
+    bottom[4].y = object_y_/2;
+
+    for(int i = 0; i< 5; i++){
+      top[i].z = object_z_/2;
+      bottom[i].z = -object_z_/2;
+    }
+
+    for(int i = 0; i< 4; i++){
+      object_marker.points.push_back(top[i]);
+      object_marker.points.push_back(top[i+1]);
+      object_marker.points.push_back(bottom[i]);
+      object_marker.points.push_back(bottom[i+1]);
+      object_marker.points.push_back(top[i]);
+      object_marker.points.push_back(bottom[i]);
+    }
+  }
   
   void initializeInteractiveMarker() {
     visualization_msgs::InteractiveMarker int_marker;
@@ -74,22 +124,44 @@ protected:
     int_marker.name = "marker";
     int_marker.pose = geometry_msgs::Pose(latest_pose_.pose);
     
-    visualization_msgs::Marker sphere_marker;
-    sphere_marker.type = visualization_msgs::Marker::SPHERE;
-    sphere_marker.scale.x = 0.1;
-    sphere_marker.scale.y = 0.1;
-    sphere_marker.scale.z = 0.1;
-    sphere_marker.color.r = 0.0;
-    sphere_marker.color.g = 1.0;
-    sphere_marker.color.b = 0.0;
-    sphere_marker.color.a = 1.0;
-    sphere_marker.pose.orientation.w = 1.0;
+    visualization_msgs::Marker object_marker;
+    if(object_type_ == std::string("cube")){
+      object_marker.type = visualization_msgs::Marker::CUBE;
+      object_marker.scale.x = object_x_;
+      object_marker.scale.y = object_y_;
+      object_marker.scale.z = object_z_;
+      object_marker.color.r = object_r_;
+      object_marker.color.g = object_g_;
+      object_marker.color.b = object_b_;
+      object_marker.color.a = object_a_;
+      object_marker.pose.orientation.w = 1.0;
+    }
+    else if( object_type_ == std::string("sphere") ){
+      object_marker.type = visualization_msgs::Marker::SPHERE;
+      object_marker.scale.x = object_x_;
+      object_marker.scale.y = object_y_;
+      object_marker.scale.z = object_z_;
+      object_marker.color.r = object_r_;
+      object_marker.color.g = object_g_;
+      object_marker.color.b = object_b_;
+      object_marker.color.a = object_a_;
+      object_marker.pose.orientation.w = 1.0;
+    }else if(object_type_ == std::string("line")){
+      object_marker.type = visualization_msgs::Marker::LINE_LIST;
+      object_marker.scale.x = line_width_;
+      object_marker.color.g = object_g_;
+      object_marker.color.b = object_b_;
+      object_marker.color.a = object_a_;
+      object_marker.pose.orientation.w = 1.0;
+      calculateBoundingBox(object_marker);
+    }
+
     
-    visualization_msgs::InteractiveMarkerControl sphere_marker_control;
-    sphere_marker_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
-    sphere_marker_control.always_visible = true;
-    sphere_marker_control.markers.push_back(sphere_marker);
-    int_marker.controls.push_back(sphere_marker_control);
+    visualization_msgs::InteractiveMarkerControl object_marker_control;
+    object_marker_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+    object_marker_control.always_visible = true;
+    object_marker_control.markers.push_back(object_marker);
+    int_marker.controls.push_back(object_marker_control);
   
     visualization_msgs::InteractiveMarkerControl control;
   
@@ -132,6 +204,8 @@ protected:
     control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
     int_marker.controls.push_back(control);
   
+    int_marker.scale = std::max(object_x_, std::max(object_y_, object_z_)) + 0.5;
+
     server_->insert(int_marker,
                     boost::bind(&Marker6DOF::processFeedbackCB, this, _1));
     
@@ -165,6 +239,15 @@ protected:
   ros::Subscriber pose_stamped_sub_;
   ros::Publisher pose_pub_;
   std::string frame_id_;
+  std::string object_type_;
+  double object_x_;
+  double object_y_;
+  double object_z_;
+  double object_r_;
+  double object_g_;
+  double object_b_;
+  double object_a_;
+  double line_width_;
   bool show_6dof_circle_;
   interactive_markers::MenuHandler::EntryHandle circle_menu_entry_;
   geometry_msgs::PoseStamped latest_pose_;
