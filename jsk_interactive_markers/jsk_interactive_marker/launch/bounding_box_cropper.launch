@@ -1,0 +1,44 @@
+<launch>
+  <!-- bounding box setting -->
+  <arg name="x" default="0.5"/>
+  <arg name="y" default="0.5"/>
+  <arg name="z" default="0.5"/>
+
+  <arg name="input_point" default="/openni/depth_registered/points"/>
+
+  <node name="marker_6dof" pkg="jsk_interactive_marker" type="marker_6dof">
+    <param name="~frame_id" value="/base"/>
+    <param name="~object_type" value="line"/>
+    <param name="~object_x" value="$(arg x)"/>
+    <param name="~object_y" value="$(arg y)"/>
+    <param name="~object_z" value="$(arg z)"/>
+    <param name="~object_r" value="0.0"/>
+    <param name="~object_g" value="0.0"/>
+    <param name="~object_b" value="0.2"/>
+    <param name="~object_a" value="0.8"/>
+  </node>
+
+  <node pkg="jsk_pcl_ros" type="attention_clipper" name="attention_clipper" output="screen">
+    <param name="~frame_id" value="/base"/>
+    <remap from="~input/pose" to="/marker_6dof/pose" />
+    <remap from="~input/points" to="$(arg input_point)" />
+    <param name="~dimension_x" value="$(arg x)"/>
+    <param name="~dimension_y" value="$(arg y)"/>
+    <param name="~dimension_z" value="$(arg z)"/>
+    <rosparam>
+      use_multiple_attention: false
+    </rosparam>
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="candidate_points"
+	args="standalone pcl/ExtractIndices">
+    <remap from="~input" to="$(arg input_point)" />
+    <remap from="~indices" to="/attention_clipper/output/point_indices" />
+    <rosparam>
+      approximate_sync: true
+      use_indices: true
+      negative: false
+      max_queue_size: 5000
+    </rosparam>
+  </node>
+</launch>
