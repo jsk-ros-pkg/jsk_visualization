@@ -13,7 +13,8 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   image_geometry
   view_controller_msgs
   roseus
-  geometry_msgs)
+  geometry_msgs
+  jsk_recognition_msgs)
 
 add_message_files(FILES
   OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg ObjectFitCommand.msg

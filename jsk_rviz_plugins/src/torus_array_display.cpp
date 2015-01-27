@@ -236,11 +236,11 @@ namespace jsk_rviz_plugins
   }
 
 
-  void TorusArrayDisplay::processMessage(const jsk_pcl_ros::TorusArray::ConstPtr& msg)
+  void TorusArrayDisplay::processMessage(const jsk_recognition_msgs::TorusArray::ConstPtr& msg)
   {
     allocateShapes(msg->toruses.size());
     for (size_t i = 0; i < msg->toruses.size(); i++) {
-      jsk_pcl_ros::Torus torus = msg->toruses[i];
+      jsk_recognition_msgs::Torus torus = msg->toruses[i];
       ShapePtr shape = shapes_[i];
 
       Ogre::Vector3 position;

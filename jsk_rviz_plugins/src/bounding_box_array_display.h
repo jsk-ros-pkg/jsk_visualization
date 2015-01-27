@@ -36,7 +36,7 @@
 #ifndef JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
 #define JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
 
-#include <jsk_pcl_ros/BoundingBoxArray.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
@@ -47,7 +47,7 @@
 
 namespace jsk_rviz_plugins
 {
-  class BoundingBoxArrayDisplay: public rviz::MessageFilterDisplay<jsk_pcl_ros::BoundingBoxArray>
+  class BoundingBoxArrayDisplay: public rviz::MessageFilterDisplay<jsk_recognition_msgs::BoundingBoxArray>
   {
     Q_OBJECT
   public:
@@ -80,7 +80,7 @@ namespace jsk_rviz_plugins
     void updateAutoColor();
     void updateLineWidth();
   private:
-    void processMessage(const jsk_pcl_ros::BoundingBoxArray::ConstPtr& msg);
+    void processMessage(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
   };
 
 }

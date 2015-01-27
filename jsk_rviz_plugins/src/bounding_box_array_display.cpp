@@ -147,13 +147,13 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void BoundingBoxArrayDisplay::processMessage(const jsk_pcl_ros::BoundingBoxArray::ConstPtr& msg)
+  void BoundingBoxArrayDisplay::processMessage(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
   {
     if (!only_edge_) {
       edges_.clear();
       allocateShapes(msg->boxes.size());
       for (size_t i = 0; i < msg->boxes.size(); i++) {
-        jsk_pcl_ros::BoundingBox box = msg->boxes[i];
+        jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
         ShapePtr shape = shapes_[i];
         Ogre::Vector3 position;
         Ogre::Quaternion quaternion;
@@ -184,7 +184,7 @@ namespace jsk_rviz_plugins
       shapes_.clear();
       allocateBillboardLines(msg->boxes.size());
       for (size_t i = 0; i < msg->boxes.size(); i++) {
-        jsk_pcl_ros::BoundingBox box = msg->boxes[i];
+        jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
         geometry_msgs::Vector3 dimensions = box.dimensions;
       
         BillboardLinePtr edge = edges_[i];

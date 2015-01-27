@@ -119,7 +119,7 @@ namespace jsk_rviz_plugins
     }
   }
   
-  bool validateFloats(const jsk_pcl_ros::PolygonArray& msg)
+  bool validateFloats(const jsk_recognition_msgs::PolygonArray& msg)
   {
     for (size_t i = 0; i < msg.polygons.size(); i++) {
       if (!rviz::validateFloats(msg.polygons[i].polygon.points))
@@ -136,7 +136,7 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void PolygonArrayDisplay::updateSceneNodes(const jsk_pcl_ros::PolygonArray::ConstPtr& msg)
+  void PolygonArrayDisplay::updateSceneNodes(const jsk_recognition_msgs::PolygonArray::ConstPtr& msg)
   {
     int scale_factor = 2;
     if (only_border_) {
@@ -351,7 +351,7 @@ namespace jsk_rviz_plugins
     arrow->setColor(getColor(i));
   }
   
-  void PolygonArrayDisplay::processMessage(const jsk_pcl_ros::PolygonArray::ConstPtr& msg)
+  void PolygonArrayDisplay::processMessage(const jsk_recognition_msgs::PolygonArray::ConstPtr& msg)
   {
     if (!validateFloats(*msg)) {
       setStatus(rviz::StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)");
