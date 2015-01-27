@@ -3,8 +3,8 @@
 #include <ros/ros.h>
 #include <interactive_markers/interactive_marker_server.h>
 
-#include <jsk_pcl_ros/PolygonArray.h>
-#include <jsk_pcl_ros/ModelCoefficientsArray.h>
+#include <jsk_recognition_msgs/PolygonArray.h>
+#include <jsk_recognition_msgs/ModelCoefficientsArray.h>
 
 #include <interactive_markers/menu_handler.h>
 #include <jsk_interactive_marker/SetPose.h>
@@ -29,8 +29,8 @@ public:
   FootstepMarker();
   virtual ~FootstepMarker();
   void updateInitialFootstep();
-  typedef message_filters::sync_policies::ExactTime< jsk_pcl_ros::PolygonArray,
-                                                     jsk_pcl_ros::ModelCoefficientsArray> PlaneSyncPolicy;
+  typedef message_filters::sync_policies::ExactTime< jsk_recognition_msgs::PolygonArray,
+                                                     jsk_recognition_msgs::ModelCoefficientsArray> PlaneSyncPolicy;
   typedef actionlib::SimpleActionClient<jsk_footstep_msgs::PlanFootstepsAction>
   PlanningActionClient;
   typedef actionlib::SimpleActionClient<jsk_footstep_msgs::ExecFootstepsAction>
@@ -44,8 +44,8 @@ protected:
   void menuCommandCB(const std_msgs::UInt8::ConstPtr& msg);
   void executeCB(const std_msgs::Empty::ConstPtr& msg);
   void resumeCB(const std_msgs::Empty::ConstPtr& msg);
-  void planeCB(const jsk_pcl_ros::PolygonArray::ConstPtr& planes,
-               const jsk_pcl_ros::ModelCoefficientsArray::ConstPtr& coefficients);
+  void planeCB(const jsk_recognition_msgs::PolygonArray::ConstPtr& planes,
+               const jsk_recognition_msgs::ModelCoefficientsArray::ConstPtr& coefficients);
   void planDoneCB(const actionlib::SimpleClientGoalState &state, 
                   const PlanResult::ConstPtr &result);
   void processMenuFeedback(uint8_t id);
@@ -69,8 +69,8 @@ protected:
                             const geometry_msgs::PoseStamped& point,
                             geometry_msgs::PoseStamped& foot);
   
-  jsk_pcl_ros::PolygonArray::ConstPtr latest_planes_;
-  jsk_pcl_ros::ModelCoefficientsArray::ConstPtr latest_coefficients_;
+  jsk_recognition_msgs::PolygonArray::ConstPtr latest_planes_;
+  jsk_recognition_msgs::ModelCoefficientsArray::ConstPtr latest_coefficients_;
   // read a geometry_msgs/pose from the parameter specified.
   // the format of the parameter is [x, y, z, xx, yy, zz, ww].
   // where x, y and z means position and xx, yy, zz and ww means
@@ -97,8 +97,8 @@ protected:
   ros::Subscriber menu_command_sub_;
   ros::Subscriber exec_sub_;
   ros::Subscriber resume_sub_;
-  message_filters::Subscriber<jsk_pcl_ros::PolygonArray> polygons_sub_;
-  message_filters::Subscriber<jsk_pcl_ros::ModelCoefficientsArray> coefficients_sub_;
+  message_filters::Subscriber<jsk_recognition_msgs::PolygonArray> polygons_sub_;
+  message_filters::Subscriber<jsk_recognition_msgs::ModelCoefficientsArray> coefficients_sub_;
   boost::shared_ptr<message_filters::Synchronizer<PlaneSyncPolicy> >sync_;
   
   ros::Publisher snapped_pose_pub_;
