@@ -91,6 +91,7 @@ qt4_wrap_cpp(MOC_FILES
   src/view_controller/tablet_view_controller.h
   src/tablet_controller_panel.h
   src/video_capture_display.h
+  src/twist_stamped_display.h
 )
 
 set(SOURCE_FILES
@@ -133,6 +134,7 @@ set(SOURCE_FILES
   src/view_controller/tablet_view_controller.cpp
   src/tablet_controller_panel.cpp
   src/video_capture_display.cpp
+  src/twist_stamped_display.cpp
   ${MOC_FILES}
 )
 
