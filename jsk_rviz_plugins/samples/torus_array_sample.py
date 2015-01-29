@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from jsk_pcl_ros.msg import TorusArray, Torus
+from jsk_recognition_msgs.msg import TorusArray, Torus
 from geometry_msgs.msg import Pose
 import math
 

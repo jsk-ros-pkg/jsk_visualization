@@ -36,7 +36,7 @@
 #ifndef JSK_RVIZ_PLUGINS_SPARSE_OCCUPANCY_GRID_ARRAY_DISPLAY_H_
 #define JSK_RVIZ_PLUGINS_SPARSE_OCCUPANCY_GRID_ARRAY_DISPLAY_H_
 
-#include <jsk_pcl_ros/SparseOccupancyGridArray.h>
+#include <jsk_recognition_msgs/SparseOccupancyGridArray.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/bool_property.h>
@@ -46,7 +46,7 @@
 
 namespace jsk_rviz_plugins
 {
-  class SparseOccupancyGridArrayDisplay: public rviz::MessageFilterDisplay<jsk_pcl_ros::SparseOccupancyGridArray>
+  class SparseOccupancyGridArrayDisplay: public rviz::MessageFilterDisplay<jsk_recognition_msgs::SparseOccupancyGridArray>
   {
     Q_OBJECT
   public:
@@ -73,7 +73,7 @@ namespace jsk_rviz_plugins
     bool axis_color_;
   private:
     void processMessage(
-      const jsk_pcl_ros::SparseOccupancyGridArray::ConstPtr& msg);
+      const jsk_recognition_msgs::SparseOccupancyGridArray::ConstPtr& msg);
   private Q_SLOTS:
     void updateAlpha();
     void updateMaxColor();

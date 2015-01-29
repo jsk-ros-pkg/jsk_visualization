@@ -133,13 +133,13 @@ namespace jsk_rviz_plugins
   }
   
   void SparseOccupancyGridArrayDisplay::processMessage(
-    const jsk_pcl_ros::SparseOccupancyGridArray::ConstPtr& msg)
+    const jsk_recognition_msgs::SparseOccupancyGridArray::ConstPtr& msg)
   {
     allocateCloudsAndNodes(msg->grids.size()); // not enough
     for (size_t i = 0; i < msg->grids.size(); i++) {
       Ogre::SceneNode* node = nodes_[i];
       rviz::PointCloud* cloud = clouds_[i];
-      const jsk_pcl_ros::SparseOccupancyGrid grid = msg->grids[i];
+      const jsk_recognition_msgs::SparseOccupancyGrid grid = msg->grids[i];
       Ogre::Vector3 position;
       Ogre::Quaternion quaternion;
       if(!context_->getFrameManager()->transform(grid.header, grid.origin_pose,
@@ -155,10 +155,10 @@ namespace jsk_rviz_plugins
       cloud->setDimensions(grid.resolution, grid.resolution, 0.0);
       std::vector<rviz::PointCloud::Point> points;
       for (size_t ci = 0; ci < grid.columns.size(); ci++) {
-        const jsk_pcl_ros::SparseOccupancyGridColumn column = grid.columns[ci];
+        const jsk_recognition_msgs::SparseOccupancyGridColumn column = grid.columns[ci];
         const int column_index = column.column_index;
         for (size_t ri = 0; ri < column.cells.size(); ri++) {
-          const jsk_pcl_ros::SparseOccupancyGridCell cell = column.cells[ri];
+          const jsk_recognition_msgs::SparseOccupancyGridCell cell = column.cells[ri];
           const int row_index = cell.row_index;
           rviz::PointCloud::Point point;
           if (!axis_color_) {

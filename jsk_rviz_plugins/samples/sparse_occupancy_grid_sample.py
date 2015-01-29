@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 try:
-  from jsk_pcl_ros.msg import *
+  from jsk_recognition_msgs.msg import *
 except:
   import roslib; roslib.load_manifest("jsk_rviz_plugins")
-  from jsk_pcl_ros.msg import *
+  from jsk_recognition_msgs.msg import *
 import rospy
 import random
 

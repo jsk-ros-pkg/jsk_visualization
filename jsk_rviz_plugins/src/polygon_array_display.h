@@ -36,7 +36,7 @@
 #ifndef POLYGON_ARRAY_DISPLAY_H
 #define POLYGON_ARRAY_DISPLAY_H
 
-#include <jsk_pcl_ros/PolygonArray.h>
+#include <jsk_recognition_msgs/PolygonArray.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/ogre_helpers/billboard_line.h>
@@ -52,7 +52,7 @@
 namespace jsk_rviz_plugins
 {
   
-  class PolygonArrayDisplay : public rviz::MessageFilterDisplay<jsk_pcl_ros::PolygonArray>
+  class PolygonArrayDisplay : public rviz::MessageFilterDisplay<jsk_recognition_msgs::PolygonArray>
   {
     Q_OBJECT
   public:
@@ -62,7 +62,7 @@ namespace jsk_rviz_plugins
   protected:
     virtual void onInitialize();
     virtual void reset();
-    virtual void updateSceneNodes(const jsk_pcl_ros::PolygonArray::ConstPtr& msg);
+    virtual void updateSceneNodes(const jsk_recognition_msgs::PolygonArray::ConstPtr& msg);
     virtual void allocateMaterials(int num);
     virtual void updateLines(int num);
     virtual Ogre::ColourValue getColor(size_t index);
@@ -70,7 +70,7 @@ namespace jsk_rviz_plugins
     virtual void processPolygon(const size_t i, const geometry_msgs::PolygonStamped& polygon);
     virtual void processNormal(const size_t i, const geometry_msgs::PolygonStamped& polygon);
     virtual void processPolygonMaterial(const size_t i);
-    virtual void processMessage(const jsk_pcl_ros::PolygonArray::ConstPtr& msg);
+    virtual void processMessage(const jsk_recognition_msgs::PolygonArray::ConstPtr& msg);
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::BoolProperty* only_border_property_;

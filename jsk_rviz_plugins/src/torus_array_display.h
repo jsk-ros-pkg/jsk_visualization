@@ -36,7 +36,7 @@
 #ifndef JSK_RVIZ_PLUGINS_TORUS_ARRAY_DISPLAY_H_
 #define JSK_RVIZ_PLUGINS_TORUS_ARRAY_DISPLAY_H_
 
-#include <jsk_pcl_ros/TorusArray.h>
+#include <jsk_recognition_msgs/TorusArray.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
@@ -54,7 +54,7 @@ namespace jsk_rviz_plugins
     unsigned v1, v2, v3; // index for the 3 vertices that make up a triangle
   };
 
-  class TorusArrayDisplay: public rviz::MessageFilterDisplay<jsk_pcl_ros::TorusArray>
+  class TorusArrayDisplay: public rviz::MessageFilterDisplay<jsk_recognition_msgs::TorusArray>
   {
     Q_OBJECT
   public:
@@ -99,7 +99,7 @@ namespace jsk_rviz_plugins
                                std::vector<Ogre::Vector3> &normals
                                );
   private:
-    void processMessage(const jsk_pcl_ros::TorusArray::ConstPtr& msg);
+    void processMessage(const jsk_recognition_msgs::TorusArray::ConstPtr& msg);
   };
 
 }

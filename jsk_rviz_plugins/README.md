@@ -71,12 +71,12 @@ roslaunch jsk_rviz_plugins overlay_sample.launch
 #### PolygonArray
 ![PolygonArray](images/polygon_array.png)
 
-Visualize `jsk_pcl_ros/PolygonArray` message
+Visualize `jsk_recognition_msgs/PolygonArray` message
 
 ##### Properties
 * `Topic`
 
-  Name of topic of `jsk_pcl_ros/PolygonArray`
+  Name of topic of `jsk_recognition_msgs/PolygonArray`
 * `auto color`
 
   If it's true, color of polygons are automatically changed
