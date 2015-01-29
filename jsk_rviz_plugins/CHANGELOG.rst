@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.17 (2015-01-29)
+-------------------
 * [jsk_rviz_plugins] Add TwistStampedDisplay
 * [jsk_rviz_plugins] Use jsk_recognition_msgs
 * update README file for mainly panels
