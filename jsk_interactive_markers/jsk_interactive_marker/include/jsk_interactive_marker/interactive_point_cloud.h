@@ -6,9 +6,9 @@
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/menu_handler.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <jsk_pcl_ros/BoundingBoxArray.h>
-#include <jsk_pcl_ros/BoundingBoxMovement.h>
-#include <jsk_pcl_ros/Int32Stamped.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
+#include <jsk_recognition_msgs/BoundingBoxMovement.h>
+#include <jsk_recognition_msgs/Int32Stamped.h>
 #include <geometry_msgs/PoseArray.h>
 
 #include <actionlib/client/simple_action_client.h>
@@ -42,11 +42,11 @@ public:
   //! Clear the cloud stored in this object
   void hide(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
   void handlePoseCallback(const geometry_msgs::PoseStampedConstPtr &ps);
-  void pointCloudAndBoundingBoxCallback(const sensor_msgs::PointCloud2ConstPtr &cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr &box, const geometry_msgs::PoseStampedConstPtr &handle);
+  void pointCloudAndBoundingBoxCallback(const sensor_msgs::PointCloud2ConstPtr &cloud, const jsk_recognition_msgs::BoundingBoxArrayConstPtr &box, const geometry_msgs::PoseStampedConstPtr &handle);
   void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cloud);
-  //  void handlePoseAndBoundingBoxCallback(const geometry_msgs::PoseStampedConstPtr &ps, const jsk_pcl_ros::BoundingBoxArrayConstPtr &box);
+  //  void handlePoseAndBoundingBoxCallback(const geometry_msgs::PoseStampedConstPtr &ps, const jsk_recognition_msgs::BoundingBoxArrayConstPtr &box);
   void setHandlePoseCallback(const geometry_msgs::PoseStampedConstPtr &ps);
-  void handlePoseAndBoundingBoxCallback(const jsk_pcl_ros::Int32StampedConstPtr &index, const geometry_msgs::PoseArrayConstPtr &pa, const jsk_pcl_ros::BoundingBoxArrayConstPtr &box);
+  void handlePoseAndBoundingBoxCallback(const jsk_recognition_msgs::Int32StampedConstPtr &index, const geometry_msgs::PoseArrayConstPtr &pa, const jsk_recognition_msgs::BoundingBoxArrayConstPtr &box);
 private:
 
   typedef jsk_interactive_marker::InteractivePointCloudConfig Config;
@@ -55,10 +55,10 @@ private:
   virtual void configCallback (Config &config, uint32_t level);
 
   typedef interactive_markers::MenuHandler MenuHandler;
-  typedef message_filters::sync_policies::ExactTime<sensor_msgs::PointCloud2, jsk_pcl_ros::BoundingBoxArray, geometry_msgs::PoseStamped> SyncPolicy;
-  //typedef message_filters::sync_policies::ExactTime<geometry_msgs::PoseStamped, jsk_pcl_ros::BoundingBoxArray> SyncHandlePose;
+  typedef message_filters::sync_policies::ExactTime<sensor_msgs::PointCloud2, jsk_recognition_msgs::BoundingBoxArray, geometry_msgs::PoseStamped> SyncPolicy;
+  //typedef message_filters::sync_policies::ExactTime<geometry_msgs::PoseStamped, jsk_recognition_msgs::BoundingBoxArray> SyncHandlePose;
 
-  typedef message_filters::sync_policies::ExactTime<jsk_pcl_ros::Int32Stamped, geometry_msgs::PoseArray, jsk_pcl_ros::BoundingBoxArray> SyncHandlePose;
+  typedef message_filters::sync_policies::ExactTime<jsk_recognition_msgs::Int32Stamped, geometry_msgs::PoseArray, jsk_recognition_msgs::BoundingBoxArray> SyncHandlePose;
   
 
   void makeMenu();
@@ -66,7 +66,7 @@ private:
   void pickup( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
 
   void makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, float size);
-  void makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, const jsk_pcl_ros::BoundingBoxArrayConstPtr box, const geometry_msgs::PoseStampedConstPtr handle, float size);
+  void makeMarker(const sensor_msgs::PointCloud2ConstPtr cloud, const jsk_recognition_msgs::BoundingBoxArrayConstPtr box, const geometry_msgs::PoseStampedConstPtr handle, float size);
 
   void menuPoint( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void move( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
@@ -88,10 +88,10 @@ private:
   ros::Subscriber sub_marker_pose_;
   //ros::Subscriber sub_point_cloud_, sub_bounding_box_;
   message_filters::Subscriber<sensor_msgs::PointCloud2> sub_point_cloud_;
-  message_filters::Subscriber<jsk_pcl_ros::BoundingBoxArray> sub_bounding_box_;
+  message_filters::Subscriber<jsk_recognition_msgs::BoundingBoxArray> sub_bounding_box_;
   message_filters::Subscriber<geometry_msgs::PoseStamped> sub_initial_handle_pose_;
   //message_filters::Subscriber<geometry_msgs::PoseStamped> sub_handle_pose_;
-  message_filters::Subscriber<jsk_pcl_ros::Int32Stamped> sub_selected_index_;
+  message_filters::Subscriber<jsk_recognition_msgs::Int32Stamped> sub_selected_index_;
   message_filters::Subscriber<geometry_msgs::PoseArray> sub_handle_array_;
   tf::TransformListener tfl_;
   boost::shared_ptr<message_filters::Synchronizer<SyncPolicy> >sync_;
@@ -108,13 +108,13 @@ private:
   std::string input_pointcloud_, input_bounding_box_, initial_handle_pose_;
 
   sensor_msgs::PointCloud2 current_croud_;
-  jsk_pcl_ros::BoundingBoxArray current_box_;
+  jsk_recognition_msgs::BoundingBoxArray current_box_;
   geometry_msgs::PoseStamped handle_pose_;
   tf::Transform handle_tf_;
   bool exist_handle_tf_;
   bool display_interactive_manipulator_;
 
-  jsk_pcl_ros::BoundingBoxMovement box_movement_;
+  jsk_recognition_msgs::BoundingBoxMovement box_movement_;
 };
 
 #endif

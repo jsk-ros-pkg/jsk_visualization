@@ -33,9 +33,9 @@
  *********************************************************************/
 
 #include <interactive_markers/interactive_marker_server.h>
-#include <jsk_pcl_ros/Int32Stamped.h>
+#include <jsk_recognition_msgs/Int32Stamped.h>
 #include <jsk_interactive_marker/IndexRequest.h>
-#include <jsk_pcl_ros/BoundingBoxArray.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
 
@@ -43,13 +43,13 @@
 boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
 boost::mutex mutex;
 ros::Publisher pub, box_pub, box_arr_pub;
-jsk_pcl_ros::BoundingBoxArray::ConstPtr box_msg;
+jsk_recognition_msgs::BoundingBoxArray::ConstPtr box_msg;
 
-void publishClickedBox(jsk_pcl_ros::Int32Stamped& msg)
+void publishClickedBox(jsk_recognition_msgs::Int32Stamped& msg)
 {
   pub.publish(msg);
   box_pub.publish(box_msg->boxes[msg.data]);
-  jsk_pcl_ros::BoundingBoxArray array_msg;
+  jsk_recognition_msgs::BoundingBoxArray array_msg;
   array_msg.header = box_msg->header;
   array_msg.boxes.push_back(box_msg->boxes[msg.data]);
   box_arr_pub.publish(array_msg);
@@ -64,7 +64,7 @@ void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr
     ROS_INFO_STREAM("control_name: " << control_name);
     std::list<std::string> splitted_string;
     boost::split(splitted_string, control_name, boost::is_space());
-    jsk_pcl_ros::Int32Stamped index;
+    jsk_recognition_msgs::Int32Stamped index;
     index.header.stamp.sec = boost::lexical_cast<int>(splitted_string.front());
     splitted_string.pop_front();
     index.header.stamp.nsec = boost::lexical_cast<int>(splitted_string.front());
@@ -80,14 +80,14 @@ bool indexRequest(jsk_interactive_marker::IndexRequest::Request  &req,
   publishClickedBox(req.index);
 }
 
-void boxCallback(const jsk_pcl_ros::BoundingBoxArray::ConstPtr& msg)
+void boxCallback(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
 {
   boost::mutex::scoped_lock(mutex);
   box_msg = msg;
   server->clear();
   // create cube markers
   for (size_t i = 0; i < msg->boxes.size(); i++) {
-    jsk_pcl_ros::BoundingBox box = msg->boxes[i];
+    jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
     visualization_msgs::InteractiveMarker int_marker;
     int_marker.header.frame_id = box.header.frame_id;
     int_marker.pose = box.pose;
@@ -128,9 +128,9 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "bounding_box_interactive_marker");
   ros::NodeHandle n, pnh("~");
   server.reset(new interactive_markers::InteractiveMarkerServer("bounding_box_interactive_marker", "", false));
-  pub = pnh.advertise<jsk_pcl_ros::Int32Stamped>("selected_index", 1);
-  box_pub = pnh.advertise<jsk_pcl_ros::BoundingBox>("selected_box", 1);
-  box_arr_pub = pnh.advertise<jsk_pcl_ros::BoundingBoxArray>("selected_box_array", 1);
+  pub = pnh.advertise<jsk_recognition_msgs::Int32Stamped>("selected_index", 1);
+  box_pub = pnh.advertise<jsk_recognition_msgs::BoundingBox>("selected_box", 1);
+  box_arr_pub = pnh.advertise<jsk_recognition_msgs::BoundingBoxArray>("selected_box_array", 1);
   ros::Subscriber sub = pnh.subscribe("bounding_box_array", 1, boxCallback);
   ros::spin();
   server.reset();

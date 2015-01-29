@@ -257,7 +257,7 @@ void UrdfModelMarker::proc_feedback( const visualization_msgs::InteractiveMarker
     }else{
       geometry_msgs::PoseStamped ps = getOriginPoseStamped();
       pub_selected_.publish(ps);
-      jsk_pcl_ros::Int32Stamped index_msg;
+      jsk_recognition_msgs::Int32Stamped index_msg;
       index_msg.data = index_;
       index_msg.header.stamp = init_stamp_;
       pub_selected_index_.publish(index_msg);
@@ -1185,7 +1185,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
   pub_move_object_ =  pnh_.advertise<jsk_interactive_marker::MoveObject> ("move_object", 1);
   pub_move_model_ =  pnh_.advertise<jsk_interactive_marker::MoveModel> ("move_model", 1);
   pub_selected_ =  pnh_.advertise<geometry_msgs::PoseStamped> (model_name + "/selected", 1);
-  pub_selected_index_ =  pnh_.advertise<jsk_pcl_ros::Int32Stamped> (model_name + "/selected_index", 1);
+  pub_selected_index_ =  pnh_.advertise<jsk_recognition_msgs::Int32Stamped> (model_name + "/selected_index", 1);
   pub_joint_state_ =  pnh_.advertise<sensor_msgs::JointState> (model_name_ + "/joint_states", 1);
   
   sub_set_root_pose_ = pnh_.subscribe<geometry_msgs::PoseStamped> (model_name_ + "/set_pose", 1, boost::bind( &UrdfModelMarker::setRootPoseCB, this, _1));

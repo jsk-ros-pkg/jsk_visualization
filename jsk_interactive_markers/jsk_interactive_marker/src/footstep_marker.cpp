@@ -769,8 +769,8 @@ FootstepMarker::~FootstepMarker() {
 }
 
 void FootstepMarker::planeCB(
-  const jsk_pcl_ros::PolygonArray::ConstPtr& planes,
-  const jsk_pcl_ros::ModelCoefficientsArray::ConstPtr& coefficients)
+  const jsk_recognition_msgs::PolygonArray::ConstPtr& planes,
+  const jsk_recognition_msgs::ModelCoefficientsArray::ConstPtr& coefficients)
 {
   boost::mutex::scoped_lock lock(plane_mutex_);
   if (planes->polygons.size() > 0) {

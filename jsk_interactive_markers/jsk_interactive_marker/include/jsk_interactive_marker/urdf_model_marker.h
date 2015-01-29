@@ -32,7 +32,7 @@
 #include <diagnostic_updater/diagnostic_updater.h>
 #include <diagnostic_updater/publisher.h>
 
-#include <jsk_pcl_ros/Int32Stamped.h>
+#include <jsk_recognition_msgs/Int32Stamped.h>
 
 #include <jsk_topic_tools/time_accumulator.h>
 

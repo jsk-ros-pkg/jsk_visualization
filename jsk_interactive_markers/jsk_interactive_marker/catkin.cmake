@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions
   actionlib roscpp roslib urdf
   pcl_conversions
+  jsk_recognition_msgs
   ${PCL_MSGS}
   jsk_topic_tools)
 find_package(orocos_kdl REQUIRED)
@@ -105,7 +106,7 @@ target_link_libraries(transformable_server_sample ${catkin_LIBRARIES})
 add_dependencies(transformable_server_sample ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 generate_messages(
-  DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs jsk_pcl_ros
+  DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs jsk_recognition_msgs
 )
 
 catkin_package(
