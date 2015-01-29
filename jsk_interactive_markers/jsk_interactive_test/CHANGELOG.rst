@@ -2,6 +2,9 @@
 Changelog for package jsk_interactive_test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.16 (2015-01-04)
 -------------------
 
@@ -91,4 +94,4 @@ Changelog for package jsk_interactive_test
 * add spacenav controller
 * updating view plugin and adding move_marker topic
 * add jsk_interactive_test
-* Contributors: Yusuke Furuta, Kei Okada, Masaki Murooka, Shintaro Noda, Ryohei Ueda, Youhei Kakiuchi
+* Contributors: Youhei Kakiuchi, Kei Okada, Shintaro Noda, Masaki Murooka, Ryohei Ueda, Yusuke Furuta

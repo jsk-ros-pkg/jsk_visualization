@@ -2,6 +2,19 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_interactive_markers] Use jsk_recognition_msgs instead of jsk_pcl_ros
+* add bounding box cropper example launch
+* add bounding box marker version and line version
+* revert target-cds-list to prevent ik failure
+* modify robot-actions and pass the msg to box movement
+* use move-object function in box-movement-callback
+* add move base function and tuck arm function
+* use base to carry object
+* rename robot_actions_test to robot_actions_sample
+* Contributors: Ryohei Ueda, Yusuke Furuta, Yuto Inagaki
+
 1.0.16 (2015-01-04)
 -------------------
 * [jsk_interactive_marker] Add bsd license header to marker_6dof.cpp
@@ -42,7 +55,7 @@ Changelog for package jsk_interactive_marker
 * add grasp hand method
 * use moveit
 * add JointTrajectoryPointWithType.msg
-* Contributors: Ryohei Ueda, Yu Ohara, Yuto Inagaki, Yu Ohara, Yusuke Furuta
+* Contributors: Ryohei Ueda, Yusuke Furuta, Yu Ohara, Yuto Inagaki
 
 1.0.14 (2014-12-09)
 -------------------
@@ -117,7 +130,7 @@ Changelog for package jsk_interactive_marker
 * move functions to interactive_marker_utils.cpp
 * add hand marker for hrp2
 * tiny debug to avoid compilation warning
-* Contributors: Hiroaki Yaguchi, Kei Okada, Masaki Murooka, Ryohei Ueda, Yuto Inagaki, Eisoku Kuroiwa, Masaki Murooka, Yu Ohara, Yusuke Furuta
+* Contributors: Hiroaki Yaguchi, Kei Okada, Yuto Inagaki, Ryohei Ueda, Masaki Murooka, Eisoku Kuroiwa, Yusuke Furuta, Yu Ohara
 
 1.0.13 (2014-10-10)
 -------------------
@@ -148,7 +161,7 @@ Changelog for package jsk_interactive_marker
   the name is too annoying
 * update urdf model with topic
 * add launch file to make bounding box interactive marker
-* Contributors: Ryohei Ueda, Yuto Inagaki, Eisoku Kuroiwa, Yusuke Furuta
+* Contributors: Ryohei Ueda, Eisoku Kuroiwa, Yusuke Furuta, Yuto Inagaki
 
 1.0.12 (2014-09-23)
 -------------------
@@ -238,14 +251,14 @@ Changelog for package jsk_interactive_marker
 * publish the selected bounding box as BondingBoxArray for visualization
 * publish the selected box as well as the index of the box
 * add dummy camera launch file
-* Contributors: Masaki Murooka, Ryohei Ueda, Yusuke Furuta
+* Contributors: Ryohei Ueda, Yusuke Furuta, Masaki Murooka
 
 1.0.4 (2014-05-31)
 ------------------
 * jsk_interactive_marker: fix for rosbuild, add mk/rosbuild to package.xml
 * add "execute the plan" and "force to replan" mouse menu to footstep_marker
 * add bounding_box_marker to select jsk_pcl_ros/BoundingBoxArray
-* Contributors: Kei Okada, Ryohei Ueda
+* Contributors: Ryohei Ueda, Kei Okada
 
 1.0.3 (2014-05-22)
 ------------------
@@ -424,4 +437,4 @@ Changelog for package jsk_interactive_marker
 * add interactive operation sample of eus simulator
 * add head marker and change msg
 * add jsk_interactive_markers/ by yusuke furuta
-* Contributors: Kei Okada, Ryohei Ueda, Yusuke Furuta, Masaki Murooka, Shintaro Noda, tarukosu, Youhei Kakiuchi
+* Contributors: Youhei Kakiuchi, Kei Okada, Shintaro Noda, Masaki Murooka, Ryohei Ueda, Yusuke Furuta

@@ -2,6 +2,11 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rqt_plugins] Add simple viewer to visualize mini maxwell status.
+* Contributors: Ryohei Ueda
+
 1.0.16 (2015-01-04)
 -------------------
 
@@ -47,7 +52,7 @@ Changelog for package jsk_rqt_plugins
 ------------------
 * jsk_rqt_plugins: add mk/rosbuild to build_depend
 * jsk_rqt_plugins) install missing .ui file
-* Contributors: Isaac IY Saito, Kei Okada
+* Contributors: Kei Okada, Isaac IY Saito
 
 1.0.3 (2014-05-22)
 ------------------

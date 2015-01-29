@@ -2,6 +2,9 @@
 Changelog for package jsk_interactive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.16 (2015-01-04)
 -------------------
 
@@ -21,7 +24,7 @@ Changelog for package jsk_interactive
 * modified teleop source for hrp2jsknts
 * adding hrp2w interactive markers
 * do not use *robot-offset*
-* Contributors: Hiroaki Yaguchi, Kei Okada, Yuto Inagaki, Masaki Murooka, Yuki Furuta
+* Contributors: Yuki Furuta, Hiroaki Yaguchi, Kei Okada, Masaki Murooka, Yuto Inagaki
 
 1.0.13 (2014-10-10)
 -------------------

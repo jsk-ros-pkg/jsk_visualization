@@ -2,6 +2,23 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins] Add TwistStampedDisplay
+* [jsk_rviz_plugins] Use jsk_recognition_msgs
+* update README file for mainly panels
+* [jsk_rviz_plugins] Add document of PolygonArray display
+* add publishing pointcloud information as overlay text
+* add record action panel
+* remove unused QLineEdit variable
+* add normal option for torus display
+* [jsk_rviz_plugins] Refactor PolygonArrayDisplay class
+* [jsk_rviz_plugins] Add "Show Normal" to PolygonArrayDisplay
+* add object fit operator panel
+* Make torus more smooth and add beatiful parameter
+* add torus array display
+* Contributors: Ryohei Ueda, JSK Lab member, Yuto Inagaki
+
 1.0.16 (2015-01-04)
 -------------------
 * [jsk_rviz_plugins] Fix namespace of TabletViewController
@@ -69,7 +86,7 @@ Changelog for package jsk_rviz_plugins
 * Separate 'OvertakeProperties' into 'Overtake Color Properties' and
   'Overtake Position Properties'
 * Script to decompose MotorStates/temperature into std_msgs/Float32
-* Contributors: Masaki Murooka, Ryohei Ueda, Yuto Inagaki, Masaki Murooka
+* Contributors: Ryohei Ueda, Masaki Murooka, Yuto Inagaki
 
 1.0.13 (2014-10-10)
 -------------------
@@ -159,7 +176,7 @@ Changelog for package jsk_rviz_plugins
 * update the initial parameter of FootstepDisplay
 * add line width property to BoundingBoxArrayDisplay
 * add new plugin: BoundingBoxArray for jsk_pcl_ros/BoundingBoxArray
-* Contributors: Kei Okada, Ryohei Ueda
+* Contributors: Ryohei Ueda, Kei Okada
 
 1.0.3 (2014-05-22)
 ------------------
@@ -186,7 +203,7 @@ Changelog for package jsk_rviz_plugins
 ------------------
 * supress erro message of NormalDisplay
 * depends to hark_msgs is no longer needed
-* Contributors: Kei Okada, Ryohei Ueda
+* Contributors: Ryohei Ueda, Kei Okada
 
 0.0.2 (2014-05-15)
 ------------------
@@ -292,4 +309,4 @@ Changelog for package jsk_rviz_plugins
 * support scale for effort_plugin, `#3595106 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/3595106>`_
 * update jsk_rviz_plugins
 * add jsk_rviz_plugins
-* Contributors: Kei Okada, Ryohei Ueda, Yuto Inagaki, Shohei Fujii, Yusuke Furuta, Satoshi Iwaishi, Youhei Kakiuchi
+* Contributors: Shohei Fujii, Youhei Kakiuchi, Kei Okada, Yuto Inagaki, Satoshi Iwaishi, Ryohei Ueda, Yusuke Furuta
