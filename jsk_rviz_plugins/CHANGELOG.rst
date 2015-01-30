@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.18 (2015-01-30)
+-------------------
 * add depends to cv_bridge instaed of opencv2
 
 1.0.17 (2015-01-29)
