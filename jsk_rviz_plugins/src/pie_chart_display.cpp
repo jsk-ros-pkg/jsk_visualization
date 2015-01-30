@@ -48,7 +48,7 @@ namespace jsk_rviz_plugins
 {
 
   PieChartDisplay::PieChartDisplay()
-    : rviz::Display(), update_required_(false)
+    : rviz::Display(), update_required_(false), data_(0.0)
   {
     update_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "",
@@ -177,10 +177,10 @@ namespace jsk_rviz_plugins
     if (!overlay_->isVisible()) {
       return;
     }
-
-    data_ = msg->data;
-    update_required_ = true;
-    
+    if (data_ != msg->data) {
+      data_ = msg->data;
+      update_required_ = true;
+    }
   }
   
   void PieChartDisplay::drawPlot(double val)
