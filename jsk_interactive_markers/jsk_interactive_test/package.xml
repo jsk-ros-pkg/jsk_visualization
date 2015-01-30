@@ -25,7 +25,6 @@
   <run_depend>rviz</run_depend>
   <run_depend>jsk_interactive</run_depend>
   <run_depend>jsk_interactive_marker</run_depend>
-  <run_depend>joy_mouse</run_depend>
   <!-- <test_depend>mk</test_depend> -->
   <!-- <test_depend>rospy</test_depend> -->
   <!-- <test_depend>visualization_msgs</test_depend> -->
