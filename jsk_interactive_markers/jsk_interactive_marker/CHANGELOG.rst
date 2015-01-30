@@ -2,6 +2,10 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add link to boost
+
 1.0.17 (2015-01-29)
 -------------------
 * [jsk_interactive_markers] Use jsk_recognition_msgs instead of jsk_pcl_ros
