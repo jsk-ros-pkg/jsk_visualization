@@ -7,14 +7,8 @@ compiler:
   - gcc
 env:
   - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=true
-  - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false
   - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true
-  - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false
 matrix:
-  allow_failures:
-    - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true
-    - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false
-    - env: ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false
 before_script:
   - export ROS_PARALLEL_JOBS="-j2 -l2"
 script: source .travis/travis.sh
