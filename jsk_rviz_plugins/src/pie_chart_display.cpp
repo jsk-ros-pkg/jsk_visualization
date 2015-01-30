@@ -48,7 +48,7 @@ namespace jsk_rviz_plugins
 {
 
   PieChartDisplay::PieChartDisplay()
-    : rviz::Display()
+    : rviz::Display(), update_required_(false)
   {
     update_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "",
@@ -158,6 +158,18 @@ namespace jsk_rviz_plugins
     overlay_->hide();
   }
 
+  void PieChartDisplay::update(float wall_dt, float ros_dt)
+  {
+    if (update_required_) {
+      update_required_ = false;
+      overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
+      drawPlot(data_);
+      overlay_->setPosition(left_, top_);
+      overlay_->setDimensions(overlay_->getTextureWidth(),
+                              overlay_->getTextureHeight());
+    }
+  }
+  
   void PieChartDisplay::processMessage(const std_msgs::Float32::ConstPtr& msg)
   {
     boost::mutex::scoped_lock lock(mutex_);
@@ -166,11 +178,9 @@ namespace jsk_rviz_plugins
       return;
     }
 
-    overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
-    drawPlot(msg->data);
-    overlay_->setPosition(left_, top_);
-    overlay_->setDimensions(overlay_->getTextureWidth(),
-                            overlay_->getTextureHeight());
+    data_ = msg->data;
+    update_required_ = true;
+    
   }
   
   void PieChartDisplay::drawPlot(double val)
