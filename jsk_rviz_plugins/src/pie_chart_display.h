@@ -63,7 +63,7 @@ namespace jsk_rviz_plugins
     virtual void onInitialize();
     virtual void processMessage(const std_msgs::Float32::ConstPtr& msg);
     virtual void drawPlot(double val);
-
+    virtual void update(float wall_dt, float ros_dt);
     // properties
     rviz::RosTopicProperty* update_topic_property_;
     rviz::IntProperty* size_property_;
@@ -99,6 +99,8 @@ namespace jsk_rviz_plugins
     double bg_alpha_;
     double max_value_;
     double min_value_;
+    float data_;
+    bool update_required_;
     OverlayObject::Ptr overlay_;
     
     boost::mutex mutex_;
