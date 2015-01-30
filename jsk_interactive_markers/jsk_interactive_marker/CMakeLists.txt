@@ -1,79 +1,148 @@
-if(NOT USE_ROSBUILD)
-  include(catkin.cmake)
-  return()
+cmake_minimum_required(VERSION 2.8.3)
+project(jsk_interactive_marker)
+
+if($ENV{ROS_DISTRO} STREQUAL "groovy")
+  set(PCL_MSGS pcl)
+else()
+  set(PCL_MSGS pcl_msgs) ## hydro and later
 endif()
 
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin REQUIRED COMPONENTS
+  cmake_modules jsk_pcl_ros jsk_footstep_msgs geometry_msgs visualization_msgs
+  dynamic_reconfigure jsk_rviz_plugins
+  interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions
+  actionlib roscpp roslib urdf
+  pcl_conversions
+  jsk_recognition_msgs
+  ${PCL_MSGS}
+  jsk_topic_tools)
+find_package(orocos_kdl REQUIRED)
+find_package(TinyXML REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
 
-rosbuild_init()
+add_message_files(
+  DIRECTORY msg
+  FILES JointTrajectoryPointWithType.msg JointTrajectoryWithType.msg MarkerDimensions.msg MarkerMenu.msg MarkerPose.msg MoveModel.msg MoveObject.msg
+)
+add_service_files(DIRECTORY srv
+  FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetType.srv SetMarkerDimensions.srv GetMarkerDimensions.srv GetTransformableMarkerPose.srv SetTransformableMarkerPose.srv GetTransformableMarkerColor.srv SetTransformableMarkerColor.srv GetTransformableMarkerFocus.srv SetTransformableMarkerFocus.srv GetTransformableMarkerExistence.srv IndexRequest.srv)
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+generate_dynamic_reconfigure_options(
+  cfg/InteractivePointCloud.cfg
+  cfg/PointCloudCropper.cfg
+  cfg/CameraInfoPublisher.cfg
+  cfg/InteractiveSetting.cfg
+  )
 
-#uncomment if you have defined messages
-rosbuild_genmsg()
-#uncomment if you have defined services
+add_definitions("-g")
 
-rosbuild_gensrv()
+include_directories(include ${catkin_INCLUDE_DIRS}
+  ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-rosbuild_find_ros_package (dynamic_reconfigure)
-include (${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
-gencfg ()
+# target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${TinyXML_LIBRARIES} ${orocos_kdl_LIBRARIES})
+link_directories(${catkin_LIBRARY_DIRS})
+link_directories(${orocos_kdl_LIBRARY_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
-find_package(Eigen REQUIRED)
-include_directories(${Eigen_INCLUDE_DIRS})
-add_definitions(${EIGEN_DEFINITIONS})
+add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
+target_link_libraries(interactive_marker_interface ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(interactive_marker_interface ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
-rosbuild_add_executable(camera_info_publisher src/camera_info_publisher.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
-rosbuild_add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
-rosbuild_add_executable(urdf_model_marker src/urdf_model_marker_main.cpp src/urdf_model_marker.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
-rosbuild_add_executable(point_cloud_config_marker src/point_cloud_config_marker.cpp)
+add_executable(camera_info_publisher src/camera_info_publisher.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
+target_link_libraries(camera_info_publisher ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(camera_info_publisher ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
-rosbuild_add_executable(triangle_foot src/triangle_foot.cpp src/interactive_marker_helpers.cpp)
-rosbuild_add_executable(door_foot src/door_foot.cpp src/interactive_marker_helpers.cpp)
-rosbuild_add_executable(world2yaml src/world2yaml)
-rosbuild_add_executable(footstep_marker src/footstep_marker.cpp src/interactive_marker_helpers.cpp)
-rosbuild_add_executable(marker_6dof src/marker_6dof.cpp)
-rosbuild_add_executable(bounding_box_marker src/bounding_box_marker.cpp)
-rosbuild_add_executable(pointcloud_cropper
-  src/pointcloud_cropper.cpp
+add_executable(urdf_model_marker src/urdf_model_marker.cpp src/urdf_model_marker_main.cpp src/interactive_marker_utils.cpp src/interactive_marker_helpers.cpp)
+target_link_libraries(urdf_model_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(urdf_model_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(urdf_control_marker src/urdf_control_marker.cpp src/interactive_marker_utils.cpp)
+target_link_libraries(urdf_control_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(urdf_control_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(point_cloud_config_marker src/point_cloud_config_marker.cpp)
+target_link_libraries(point_cloud_config_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(point_cloud_config_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(triangle_foot src/triangle_foot.cpp src/interactive_marker_helpers.cpp)
+target_link_libraries(triangle_foot ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(triangle_foot ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(door_foot src/door_foot.cpp src/interactive_marker_helpers.cpp)
+target_link_libraries(door_foot ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(door_foot ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(footstep_marker src/footstep_marker.cpp src/interactive_marker_helpers.cpp)
+target_link_libraries(footstep_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(footstep_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(marker_6dof src/marker_6dof.cpp)
+target_link_libraries(marker_6dof ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(marker_6dof ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(world2yaml src/world2yaml)
+target_link_libraries(world2yaml ${TinyXML_LIBRARIES} ${orocos_kdl_LIBRARIES}  ${Boost_LIBRARIES})
+add_dependencies(world2yaml ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(bounding_box_marker src/bounding_box_marker.cpp)
+target_link_libraries(bounding_box_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(bounding_box_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(interactive_point_cloud src/interactive_point_cloud_node.cpp src/interactive_point_cloud.cpp src/interactive_marker_helpers.cpp)
+target_link_libraries(interactive_point_cloud ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(interactive_point_cloud ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+add_executable(pointcloud_cropper src/pointcloud_cropper.cpp
   src/interactive_marker_helpers.cpp)
+target_link_libraries(pointcloud_cropper ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(pointcloud_cropper ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
-rosbuild_add_executable(interactive_point_cloud src/interactive_point_cloud_node.cpp src/interactive_point_cloud.cpp src/interactive_marker_helpers.cpp)
-rosbuild_add_executable(urdf_control_marker src/urdf_control_marker.cpp)
+add_executable(transformable_server_sample
+  src/transformable_object.cpp
+  src/transformable_interactive_server.cpp
+  src/transformable_server_sample.cpp
+)
 
-target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
-#rosbuild_add_executable(interactive_marker_interface_both_arm src/interactive_marker_interface_both_arm.cpp)
-#rosbuild_add_executable(button_interactive_marker_interface src/button_interactive_marker_interface.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+target_link_libraries(transformable_server_sample ${catkin_LIBRARIES})
+add_dependencies(transformable_server_sample ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
+generate_messages(
+  DEPENDENCIES geometry_msgs jsk_footstep_msgs visualization_msgs jsk_recognition_msgs
+)
+
+catkin_package(
+    DEPENDS TinyXML
+    CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib jsk_rviz_plugins
+    INCLUDE_DIRS # TODO include
+    LIBRARIES # TODO
+)
+
+
+install(DIRECTORY launch euslisp urdf
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  PATTERN ".svn" EXCLUDE)
+install(TARGETS footstep_marker door_foot triangle_foot point_cloud_config_marker urdf_model_marker interactive_marker_interface
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 
 # copy *.rviz.default to *.rviz
+macro(copy_rviz_files _rviz_files)
+  foreach(_rviz_default_file ${_rviz_default_files})
+    string(REGEX REPLACE "\\.default$" "" _rviz_file "${_rviz_default_file}")
+    if(EXISTS "${_rviz_file}")
+      message("${_rviz_file} exists")
+    else()
+      execute_process(
+	COMMAND cmake -E copy "${_rviz_default_file}" "${_rviz_file}")
+      message("copy ${_rviz_default_file} to ${_rviz_file}")
+    endif()
+  endforeach()
+endmacro(copy_rviz_files _rviz_files)
 
 file(GLOB _rviz_default_files "${PROJECT_SOURCE_DIR}/launch/*.rviz.default")
-foreach(_rviz_default_file ${_rviz_default_files})
-  string(REGEX REPLACE "\\.default$" "" _rviz_file "${_rviz_default_file}")
-  if(EXISTS "${_rviz_file}")
-    message("${_rviz_file} exists")
-  else()
-    execute_process(
-      COMMAND cmake -E copy "${_rviz_default_file}" "${_rviz_file}")
-    message("copy ${_rviz_default_file} to ${_rviz_file}")
-  endif()
-endforeach()
+copy_rviz_files(_rviz_default_files)
+file(GLOB _rviz_default_files "${PROJECT_SOURCE_DIR}/config/*.rviz.default")
+copy_rviz_files(_rviz_default_files)
