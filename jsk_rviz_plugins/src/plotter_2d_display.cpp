@@ -342,10 +342,6 @@ namespace jsk_rviz_plugins
       return;
     }
     
-    overlay_->updateTextureSize(texture_width_,
-                                texture_height_ + caption_offset_);
-    overlay_->setPosition(left_, top_);
-    overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     draw_required_ = true;
   }
 
@@ -353,6 +349,10 @@ namespace jsk_rviz_plugins
   {
     if (draw_required_) {
       if (wall_dt + last_time_ > update_interval_) {
+        overlay_->updateTextureSize(texture_width_,
+                                    texture_height_ + caption_offset_);
+        overlay_->setPosition(left_, top_);
+        overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
         last_time_ = 0;
         drawPlot();
         draw_required_ = false;
