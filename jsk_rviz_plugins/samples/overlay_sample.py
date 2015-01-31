@@ -13,7 +13,7 @@ rospy.init_node("overlay_sample")
 text_pub = rospy.Publisher("text_sample", OverlayText)
 value_pub = rospy.Publisher("value_sample", Float32)
 counter = 0
-rate = 2
+rate = 100
 r = rospy.Rate(rate)
 import random, math
 while not rospy.is_shutdown():
