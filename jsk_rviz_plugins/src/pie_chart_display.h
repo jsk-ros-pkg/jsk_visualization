@@ -101,10 +101,11 @@ namespace jsk_rviz_plugins
     double min_value_;
     float data_;
     bool update_required_;
+    bool first_time_;
     OverlayObject::Ptr overlay_;
     
     boost::mutex mutex_;
-                            
+                       
   protected Q_SLOTS:
     void updateTopic();
     void updateSize();
