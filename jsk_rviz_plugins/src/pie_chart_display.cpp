@@ -374,6 +374,12 @@ namespace jsk_rviz_plugins
   void PieChartDisplay::updateAutoColorChange()
   {
     auto_color_change_ = auto_color_change_property_->getBool();
+    if (auto_color_change_) {
+      max_color_property_->show();
+    }
+    else {
+      max_color_property_->hide();
+    }
   }
 
   void PieChartDisplay::updateMaxColor()
