@@ -298,6 +298,20 @@ namespace jsk_rviz_plugins
     }
     overtake_position_properties_
       = overtake_position_properties_property_->getBool();
+    if (overtake_position_properties_) {
+      top_property_->show();
+      left_property_->show();
+      width_property_->show();
+      height_property_->show();
+      text_size_property_->show();
+    }
+    else {
+      top_property_->hide();
+      left_property_->hide();
+      width_property_->hide();
+      height_property_->hide();
+      text_size_property_->hide();
+    }
   }
   
   void OverlayTextDisplay::updateOvertakeColorProperties()
@@ -314,6 +328,22 @@ namespace jsk_rviz_plugins
       require_update_texture_ = true;
     }
     overtake_color_properties_ = overtake_color_properties_property_->getBool();
+    if (overtake_color_properties_) {
+      fg_color_property_->show();
+      fg_alpha_property_->show();
+      bg_color_property_->show();
+      bg_alpha_property_->show();
+      line_width_property_->show();
+      font_property_->show();
+    }
+    else {
+      fg_color_property_->hide();
+      fg_alpha_property_->hide();
+      bg_color_property_->hide();
+      bg_alpha_property_->hide();
+      line_width_property_->hide();
+      font_property_->hide();
+    }
   }
 
   void OverlayTextDisplay::updateTop()

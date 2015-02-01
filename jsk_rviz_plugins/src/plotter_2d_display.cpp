@@ -467,6 +467,12 @@ namespace jsk_rviz_plugins
   void Plotter2DDisplay::updateAutoColorChange()
   {
     auto_color_change_ = auto_color_change_property_->getBool();
+    if (auto_color_change_) {
+      max_color_property_->show();
+    }
+    else {
+      max_color_property_->hide();
+    }
   }
 
   void Plotter2DDisplay::updateMaxColor()
@@ -490,6 +496,12 @@ namespace jsk_rviz_plugins
   void Plotter2DDisplay::updateShowCaption()
   {
     show_caption_  = show_caption_property_->getBool();
+    if (show_caption_) {
+      text_size_property_->show();
+    }
+    else {
+      text_size_property_->hide();
+    }
   }
 
   void Plotter2DDisplay::updateMinValue()
@@ -509,6 +521,14 @@ namespace jsk_rviz_plugins
   void Plotter2DDisplay::updateAutoScale()
   {
     auto_scale_ = auto_scale_property_->getBool();
+    if (auto_scale_) {
+      min_value_property_->hide();
+      max_value_property_->hide();
+    }
+    else {
+      min_value_property_->show();
+      max_value_property_->show();
+    }
     updateMinValue();
     updateMaxValue();
   }
