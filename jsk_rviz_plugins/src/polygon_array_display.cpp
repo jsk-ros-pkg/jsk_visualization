@@ -342,11 +342,18 @@ namespace jsk_rviz_plugins
       centroid = centroid / vertices.size();
     }
     Ogre::Vector3 pos(centroid[0], centroid[1], centroid[2]);
-    arrow->setPosition(pos);
     Eigen::Vector3f normal = geo_polygon.getNormal();
     Ogre::Vector3 direction(normal[0], normal[1], normal[2]);
-    arrow->setDirection(direction);
+    if (isnan(direction[0]) || isnan(direction[1]) || isnan(direction[2])) {
+      ROS_ERROR("failed to compute normal direction");
+      Ogre::Vector3 zeroscale(0, 0, 0);
+      arrow->setScale(zeroscale);
+      return;
+    }
     Ogre::Vector3 scale(normal_length_, normal_length_, normal_length_);
+    arrow->setPosition(pos);
+    arrow->setDirection(direction);
+    
     arrow->setScale(scale);
     arrow->setColor(getColor(i));
   }
