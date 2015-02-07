@@ -1,8 +1,8 @@
 from rqt_gui_py.plugin import Plugin
 import python_qt_binding.QtGui as QtGui
 from python_qt_binding.QtGui import QAction, QIcon, QMenu, QWidget, \
-QPainter, QColor, QFont, QBrush, QPen, QMessageBox
-from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot, QEvent
+QPainter, QColor, QFont, QBrush, QPen, QMessageBox, QSizePolicy
+from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot, QEvent, QSize
 from threading import Lock
 import rospy
 import python_qt_binding.QtCore as QtCore
@@ -34,17 +34,16 @@ class ServiceButtonWidget(QWidget):
         layout_yaml_file = rospy.get_param(
             "layout_file", 
             "package://jsk_rqt_plugins/resource/service_button_layout.yaml")
-        resolved_layout_yaml_file = get_filename(layout_yaml_file)[len("file:/"):]
+        resolved_layout_yaml_file = get_filename(layout_yaml_file)[len("file://"):]
         # check file exists
-        print resolved_layout_yaml_file
         if not os.path.exists(resolved_layout_yaml_file):
-            QMessageBox.about(self, 
-                              "ERROR",
-                              "Cannot find %s (%s)" % (
-                                  layout_yaml_file, resolved_layout_yaml_file))
+            self.showError("Cannot find %s (%s)" % (
+                           layout_yaml_file, resolved_layout_yaml_file))
             sys.exit(1)
         self.setupButtons(resolved_layout_yaml_file)
         self.show()
+    def showError(self, message):
+        QMessageBox.about(self, "ERROR", message)
     def setupButtons(self, yaml_file):
         """
         Parse yaml file and setup Buttons. Format of the yaml file should be:
@@ -56,7 +55,8 @@ class ServiceButtonWidget(QWidget):
           image: 'path to image' (optional)
           service: 'service' (required)
           column: 'column index' (optional, defaults to 0)
-          """
+        """
+        self.buttons = []
         with open(yaml_file) as f:
             yaml_data = yaml.load(f)
             # first lookup column num
@@ -69,11 +69,27 @@ class ServiceButtonWidget(QWidget):
             for layout in self.layout_boxes:
                 self.layout.addLayout(layout)
             for button_data in yaml_data:
+                # check if all the field is available
+                if not button_data.has_key("name"):
+                    self.showError("name field is missed in yaml")
+                    raise Exception("name field is missed in yaml")
+                if not button_data.has_key("service"):
+                    self.showError("service field is missed in yaml")
+                    raise Exception("service field is missed in yaml")
                 name = button_data['name']
-                button = QtGui.QPushButton(name)
+                button = QtGui.QPushButton()
+                button.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
+                if button_data.has_key("image"):
+                    image_file = get_filename(button_data["image"])[len("file://"):]
+                    if os.path.exists(image_file):
+                        icon = QtGui.QIcon(image_file)
+                        button.setIcon(icon)
+                        button.setIconSize(QSize(100, 100))
+                else:
+                    button.setText(name)
                 button.clicked.connect(self.buttonCallback(button_data['service']))
                 self.layout_boxes[button_data['column']].addWidget(button)
-                print "registring %s" % (name)
+                self.buttons.append(button)
             self.setLayout(self.layout)
     def buttonCallback(self, service_name):
         """
@@ -85,6 +101,4 @@ class ServiceButtonWidget(QWidget):
         try:
             srv()
         except rospy.ServiceException, e:
-            QMessageBox.about(self, 
-                              "ERROR",
-                              "Failed to call %s" % service_name)
+            self.showError("Failed to call %s" % service_name)

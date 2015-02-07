@@ -1,6 +1,7 @@
 - name: 'Button A'
   service: 'dummy'
   column: 0
+  image: "package://jsk_rviz_plugins/icons/hand-grasp-pose.jpg"
 - name: 'Button B'
   service: 'dummy'
   column: 0
