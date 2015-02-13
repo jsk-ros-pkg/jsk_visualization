@@ -3,7 +3,7 @@
 
 import rospy
 
-from jsk_pcl_ros.msg import BoundingBoxArray, BoundingBox
+from jsk_recognition_msgs.msg import BoundingBoxArray, BoundingBox
 from tf.transformations import *
 rospy.init_node("bbox_sample")
 pub = rospy.Publisher("bbox", BoundingBoxArray)

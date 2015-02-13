@@ -53,14 +53,18 @@ namespace jsk_rviz_plugins
     auto_color_property_ = new rviz::BoolProperty("auto color", false,
                                                   "change the color of the boxes automatically",
                                                   this, SLOT(updateAutoColor()));
+    show_coords_property_ = new rviz::BoolProperty("show coords", true,
+                                                   "show coordinate of bounding box",
+                                                   this, SLOT(updateShowCoords()));
   }
-  
+
   BoundingBoxArrayDisplay::~BoundingBoxArrayDisplay()
   {
     delete color_property_;
     delete alpha_property_;
     delete only_edge_property_;
     delete auto_color_property_;
+    delete show_coords_property_;
   }
 
   QColor BoundingBoxArrayDisplay::getColor(size_t index)
@@ -85,6 +89,7 @@ namespace jsk_rviz_plugins
     updateOnlyEdge();
     updateAutoColor();
     updateLineWidth();
+    updateShowCoords();
   }
 
   void BoundingBoxArrayDisplay::updateLineWidth()
@@ -112,6 +117,11 @@ namespace jsk_rviz_plugins
     auto_color_ = auto_color_property_->getBool();
   }
 
+  void BoundingBoxArrayDisplay::updateShowCoords()
+  {
+    show_coords_ = show_coords_property_->getBool();
+  }
+
   void BoundingBoxArrayDisplay::reset()
   {
     MFDClass::reset();
@@ -132,7 +142,7 @@ namespace jsk_rviz_plugins
       shapes_.resize(num);
     }
   }
-  
+
   void BoundingBoxArrayDisplay::allocateBillboardLines(int num)
   {
     if (num > edges_.size()) {
@@ -142,8 +152,28 @@ namespace jsk_rviz_plugins
       }
     }
     else if (num < edges_.size())
+      {
+        edges_.resize(num);       // ok??
+      }
+  }
+
+  void BoundingBoxArrayDisplay::allocateCoords(int num)
+  {
+    if (num > coords_objects_.size()) {
+      for (size_t i = coords_objects_.size(); i < num; i++) {
+        Ogre::SceneNode* scene_node = scene_node_->createChildSceneNode();
+        std::vector<ArrowPtr> coord;
+        for(int i = 0; i < 3; i++){
+          ArrowPtr arrow (new rviz::Arrow(scene_manager_, scene_node));
+          coord.push_back(arrow);
+        }
+        coords_nodes_.push_back(scene_node);
+        coords_objects_.push_back(coord);
+      }
+    }
+    else if (num < coords_objects_.size())
     {
-      edges_.resize(num);       // ok??
+      coords_objects_.resize(num);
     }
   }
 
@@ -253,6 +283,58 @@ namespace jsk_rviz_plugins
         edge->addPoint(B); edge->addPoint(F); edge->newLine();
         edge->addPoint(C); edge->addPoint(G); edge->newLine();
         edge->addPoint(D); edge->addPoint(H);
+      }
+    }
+
+    if(show_coords_){
+      allocateCoords(msg->boxes.size());
+      for (size_t i = 0; i < msg->boxes.size(); i++) {
+        jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
+        std::vector<ArrowPtr> coord = coords_objects_[i];
+
+        Ogre::SceneNode* scene_node = coords_nodes_[i];
+        scene_node->setVisible(true);
+        Ogre::Vector3 position;
+        Ogre::Quaternion orientation;
+        if(!context_->getFrameManager()->getTransform(box.header, position, orientation)) {
+          ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
+                    box.header.frame_id.c_str(), qPrintable(fixed_frame_));
+          return;
+        }
+        scene_node->setPosition(position);
+        scene_node->setOrientation(orientation); // scene node is at frame pose
+
+        float color[3][3] = {{1, 0, 0},
+                             {0, 1, 0},
+                             {0, 0, 1}};
+        for(int j = 0; j < 3; j++){
+          Ogre::Vector3 scale(box.dimensions.x, box.dimensions.y, box.dimensions.z);
+          Ogre::Vector3 direction(color[j][0], color[j][1], color[j][2]);
+          Ogre::Vector3 pos(box.pose.position.x,box.pose.position.y,box.pose.position.z);
+          Ogre::Quaternion qua(
+                               box.pose.orientation.w,
+                               box.pose.orientation.x,
+                               box.pose.orientation.y,
+                               box.pose.orientation.z
+                               );
+          direction = qua * direction;
+          Ogre::ColourValue rgba;
+          rgba.a = 1;
+          rgba.r = color[j][0];
+          rgba.g = color[j][1];
+          rgba.b = color[j][2];
+
+          ArrowPtr arrow = coords_objects_[i][j];
+          arrow->setPosition(pos);
+          arrow->setDirection(direction);
+          arrow->setScale(scale);
+          arrow->setColor(rgba);
+        }
+      }
+    }
+    else{
+      for (size_t i = 0; i < coords_nodes_.size(); i++) {
+        coords_nodes_[i]->setVisible(false);
       }
     }
   }

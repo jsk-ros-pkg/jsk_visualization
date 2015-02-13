@@ -43,6 +43,7 @@
 #include <rviz/message_filter_display.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz/ogre_helpers/arrow.h>
 #include <OGRE/OgreSceneNode.h>
 
 namespace jsk_rviz_plugins
@@ -53,6 +54,7 @@ namespace jsk_rviz_plugins
   public:
     typedef boost::shared_ptr<rviz::Shape> ShapePtr;
     typedef boost::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
+    typedef boost::shared_ptr<rviz::Arrow> ArrowPtr;
     BoundingBoxArrayDisplay();
     virtual ~BoundingBoxArrayDisplay();
   protected:
@@ -60,25 +62,31 @@ namespace jsk_rviz_plugins
     virtual void reset();
     void allocateShapes(int num);
     void allocateBillboardLines(int num);
+    void allocateCoords(int num);
     QColor getColor(size_t index);
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::BoolProperty* only_edge_property_;
     rviz::FloatProperty* line_width_property_;
     rviz::BoolProperty* auto_color_property_;
+    rviz::BoolProperty* show_coords_property_;
     QColor color_;
     double alpha_;
     bool only_edge_;
     bool auto_color_;
+    bool show_coords_;
     double line_width_;
     std::vector<ShapePtr> shapes_;
     std::vector<BillboardLinePtr> edges_;
+    std::vector<Ogre::SceneNode*> coords_nodes_;
+    std::vector<std::vector<ArrowPtr> > coords_objects_;
   private Q_SLOTS:
     void updateColor();
     void updateAlpha();
     void updateOnlyEdge();
     void updateAutoColor();
     void updateLineWidth();
+    void updateShowCoords();
   private:
     void processMessage(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
   };
