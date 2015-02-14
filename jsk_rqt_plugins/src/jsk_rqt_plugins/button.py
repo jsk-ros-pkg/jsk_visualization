@@ -33,7 +33,7 @@ class ServiceButtonWidget(QWidget):
         # Initialize layout of the buttons from yaml file
         # The yaml file can be specified by rosparam
         layout_yaml_file = rospy.get_param(
-            "layout_file", 
+            "~layout_file",
             "package://jsk_rqt_plugins/resource/service_button_layout.yaml")
         resolved_layout_yaml_file = get_filename(layout_yaml_file)[len("file://"):]
         # check file exists
