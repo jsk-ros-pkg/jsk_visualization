@@ -311,6 +311,7 @@ bool TransformableInteractiveServer::getDimensionsService(jsk_interactive_marker
     } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
       tobject->getRSR(res.dimensions.radius, res.dimensions.small_radius);
     }
+    res.dimensions.type = tobject->getType();
   }
   return true;
 }
