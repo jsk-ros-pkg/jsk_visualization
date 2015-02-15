@@ -141,8 +141,8 @@ namespace jsk_interactive_marker{
   }
 
   visualization_msgs::Marker TransformableCylinder::getVisualizationMsgMarker(){
-    marker_.scale.x = cylinder_radius_;
-    marker_.scale.y = cylinder_radius_;
+    marker_.scale.x = cylinder_radius_ * 2.0;
+    marker_.scale.y = cylinder_radius_ * 2.0;
     marker_.scale.z = cylinder_z_;
     marker_.color.r = cylinder_r_;
     marker_.color.g = cylinder_g_;
