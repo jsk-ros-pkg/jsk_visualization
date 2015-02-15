@@ -222,8 +222,8 @@ namespace jsk_rviz_plugins
       double r
         = std::min(std::max((buffer_[buffer_.size() - 1] - min_value_) / (max_value_ - min_value_),
                             0.0), 1.0);
-      if (r > 0.6) {
-        double r2 = (r - 0.6) / 0.4;
+      if (r > 0.5) {
+        double r2 = (r - 0.5) / 0.4;
         fg_color.setRed((max_color_.red() - fg_color_.red()) * r2
                         + fg_color_.red());
         fg_color.setGreen((max_color_.green() - fg_color_.green()) * r2
