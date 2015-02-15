@@ -2,7 +2,7 @@ from rqt_gui_py.plugin import Plugin
 import python_qt_binding.QtGui as QtGui
 from python_qt_binding.QtGui import QAction, QIcon, QMenu, QWidget, \
      QPainter, QColor, QFont, QBrush, QPen, QMessageBox, QSizePolicy, \
-     QImage, QPixmap
+     QImage, QPixmap, qRgb
      
 from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot, \
      QEvent, QSize
@@ -16,7 +16,7 @@ import yaml
 import os, sys
 
 import numpy as np
-import cv2
+import cv2, cv
 from cv_bridge import CvBridge, CvBridgeError
 from image_view2.msg import MouseEvent
 from sensor_msgs.msg import Image
@@ -78,8 +78,8 @@ class ImageView2Widget(QWidget):
         with self.lock:
             if self.cv_image != None:
                 size = self.cv_image.shape
-                img = QImage(self.numpy_image,
-                             size[1], size[0],
+                img = QImage(self.cv_image.data,
+                             size[1], size[0], size[2] * size[1],
                              QImage.Format_RGB888)
                 # convert to QPixmap
                 self.pixmap = QPixmap(size[1], size[0])
