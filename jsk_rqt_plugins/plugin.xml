@@ -1,4 +1,17 @@
 <library path="src">
+  <class name="StringLabel"
+         type="jsk_rqt_plugins.label.StringLabel"
+         base_class_type="rqt_gui_py::Plugin">
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>String</label>
+      <icon type="theme">utilities-system-monitor</icon>
+    </qtgui>
+  </class>
   <class name="ImageView2Plugin"
          type="jsk_rqt_plugins.image_view2_wrapper.ImageView2Plugin"
          base_class_type="rqt_gui_py::Plugin">
