@@ -61,6 +61,9 @@ class StringLabelWidget(QWidget):
             for topic in self._string_topics:
                 self.combo_box.addItem(topic)
             if self._active_topic:
+                if self._active_topic not in self._string_topics:
+                    self._string_topics.append(self._active_topic)
+                    self.combo_box.addItem(self._active_topic)
                 self.combo_box.setCurrentIndex(self._string_topics.index(self._active_topic))
     def setupSubscriber(self, topic):
         if self.string_sub:
