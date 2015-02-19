@@ -94,6 +94,9 @@ class ImageView2Widget(QWidget):
         self.setupSubscriber(self._image_topics[number])
     def imageCallback(self, msg):
         with self.lock:
+            if msg.width == 0 or msg.height == 0:
+                rospy.logdebug("Looks input images is invalid")
+                return
             cv_image = self.bridge.imgmsg_to_cv2(msg, msg.encoding)
             if msg.encoding == "bgr8":
                 self.cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
