@@ -351,7 +351,7 @@ void UrdfModelMarker::resetRootForVisualization(){
       for(int i=0; i<fixed_link_.size(); i++){
 	std::string link = fixed_link_[i];
 	if(!link.empty()){
-	  std::cout << tf_prefix_ + model->getRoot()->name << tf_prefix_ + link << std::endl;
+          ROS_DEBUG_STREAM("fixed_link:" << tf_prefix_ + model->getRoot()->name << tf_prefix_ + link);
 	  tf::StampedTransform st_link_offset;
 	  tfl_.lookupTransform(tf_prefix_ + model->getRoot()->name, tf_prefix_ + link,
 			       ros::Time(0), st_link_offset);
@@ -1012,15 +1012,12 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 	  string model_mesh_ = mesh->filename;
 	  if(linkMarkerMap[link_frame_name_].mesh_file == ""){
 	    model_mesh_ = getRosPathFromModelPath(model_mesh_);
-	    std::cout  << model_mesh_ << std::endl;
 	    linkMarkerMap[link_frame_name_].mesh_file = model_mesh_;
 	  }else{
 	    model_mesh_ = linkMarkerMap[link_frame_name_].mesh_file;
 	  }
-
 	  ps.pose = UrdfPose2Pose(link_visual->origin);
-	  cout << "mesh_file:" << model_mesh_ << endl;
-
+          ROS_DEBUG_STREAM("mesh_file:" << model_mesh_);
 	  geometry_msgs::Vector3 mesh_scale;
 	  mesh_scale.x = mesh->scale.x;
 	  mesh_scale.y = mesh->scale.y;
