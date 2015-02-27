@@ -286,6 +286,7 @@ bool TransformableInteractiveServer::setDimensionsService(jsk_interactive_marker
       tobject->setRZ(req.dimensions.radius, req.dimensions.z);
     } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
       tobject->setRSR(req.dimensions.radius, req.dimensions.small_radius);
+    } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::MESH_RESOURCE) {
     }
     publishMarkerDimensions();
     updateTransformableObject(tobject);
@@ -310,7 +311,9 @@ bool TransformableInteractiveServer::getDimensionsService(jsk_interactive_marker
       tobject->getRZ(res.dimensions.radius, res.dimensions.z);
     } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
       tobject->getRSR(res.dimensions.radius, res.dimensions.small_radius);
+    } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::MESH_RESOURCE) {
     }
+
     res.dimensions.type = tobject->getType();
   }
   return true;
@@ -329,6 +332,7 @@ void TransformableInteractiveServer::publishMarkerDimensions()
       tobject->getRZ(marker_dimensions.radius, marker_dimensions.z);
     } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
       tobject->getRSR(marker_dimensions.radius, marker_dimensions.small_radius);
+    } else if (tobject->getType() == jsk_rviz_plugins::TransformableMarkerOperate::MESH_RESOURCE) {
     }
     marker_dimensions.type = tobject->type_;
     marker_dimensions_pub_.publish(marker_dimensions);
@@ -345,6 +349,8 @@ bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugin
       insertNewCylinder(req.operate.frame_id, req.operate.name, req.operate.description);
     } else if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::TORUS) {
       insertNewTorus(req.operate.frame_id, req.operate.name, req.operate.description);
+    } else if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::MESH_RESOURCE) {
+      insertNewMesh(req.operate.frame_id, req.operate.name, req.operate.description, req.operate.mesh_resource, req.operate.mesh_use_embedded_materials);
     }
     return true;
     break;
@@ -383,6 +389,10 @@ bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugin
       insertNewTorus(tobject->frame_id_, req.operate.name, req.operate.description);
       new_tobject = transformable_objects_map_[req.operate.name];
       new_tobject->setRSR(r, sr);
+      new_tobject->setPose(tobject->getPose());
+    } else if (tobject->type_ == jsk_rviz_plugins::TransformableMarkerOperate::MESH_RESOURCE) {
+      insertNewMesh(tobject->frame_id_, req.operate.name, req.operate.description, req.operate.mesh_resource, req.operate.mesh_use_embedded_materials);
+      new_tobject = transformable_objects_map_[req.operate.name];
       new_tobject->setPose(tobject->getPose());
     }
     float r, g, b, a;
@@ -473,6 +483,12 @@ void TransformableInteractiveServer::insertNewTorus( std::string frame_id, std::
 {
   TransformableTorus* transformable_torus = new TransformableTorus(0.45, 0.2, torus_udiv_, torus_vdiv_, 0.5, 0.5, 0.5, 1.0, frame_id, name, description);
   insertNewObject(transformable_torus, name);
+}
+
+void TransformableInteractiveServer::insertNewMesh( std::string frame_id, std::string name, std::string description, std::string mesh_resource, bool mesh_use_embedded_materials)
+{
+  TransformableMesh* transformable_mesh = new TransformableMesh(frame_id, name, description, mesh_resource, mesh_use_embedded_materials);
+  insertNewObject(transformable_mesh, name);
 }
 
 void TransformableInteractiveServer::insertNewObject( TransformableObject* tobject , std::string name )

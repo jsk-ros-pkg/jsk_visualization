@@ -97,6 +97,30 @@ namespace jsk_interactive_marker
 
 namespace jsk_interactive_marker
 {
+  class TransformableMesh: public TransformableObject
+  {
+  public:
+    TransformableMesh(std::string frame, std::string name, std::string description, std::string mesh_resource, bool mesh_use_embedded_materials);
+    visualization_msgs::Marker getVisualizationMsgMarker();
+    void setRGBA( float r , float g, float b, float a){mesh_r_=r;mesh_g_=g;mesh_b_=b;mesh_a_=a;};
+    void getRGBA(float &r , float &g, float &b, float &a){r=mesh_r_;g=mesh_g_;b=mesh_b_;a=mesh_a_;};
+    void setXYZ( float x , float y, float z){return;};
+    void getXYZ(float &x, float &y, float&z){return;};
+    bool setX(std_msgs::Float32 x){return true;};
+    bool setY(std_msgs::Float32 y){return true;};
+    bool setZ(std_msgs::Float32 z){return true;};
+    float getInteractiveMarkerScale(){return marker_scale_;};
+    float marker_scale_;
+    std::string mesh_resource_;
+    float mesh_r_;
+    float mesh_g_;
+    float mesh_b_;
+    float mesh_a_;
+  };
+};
+
+namespace jsk_interactive_marker
+{
   class TransformableTorus: public TransformableObject
   {
   public:

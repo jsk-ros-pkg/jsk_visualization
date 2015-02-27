@@ -232,6 +232,7 @@ namespace jsk_interactive_marker{
 }
 
 namespace jsk_interactive_marker{
+
   TransformableBox::TransformableBox( float length , float r, float g, float b, float a, std::string frame, std::string name, std::string description){
     box_x_ = box_y_ = box_z_ = length;
 
@@ -270,6 +271,28 @@ namespace jsk_interactive_marker{
     marker_.color.g = box_g_;
     marker_.color.b = box_b_;
     marker_.color.a = box_a_;
+    return marker_;
+  }
+}
+
+namespace jsk_interactive_marker{
+
+  TransformableMesh::TransformableMesh( std::string frame, std::string name, std::string description, std::string mesh_resource, bool mesh_use_embedded_materials){
+    marker_scale_ = 0.5;
+    marker_.type = visualization_msgs::Marker::MESH_RESOURCE;
+    type_ = jsk_rviz_plugins::TransformableMarkerOperate::MESH_RESOURCE;
+    marker_.mesh_resource = mesh_resource;
+    marker_.mesh_use_embedded_materials = mesh_use_embedded_materials;
+    frame_id_ = frame;
+    name_ = name;
+    description_ = description;
+  }
+
+  visualization_msgs::Marker TransformableMesh::getVisualizationMsgMarker(){
+    marker_.color.r = mesh_r_;
+    marker_.color.g = mesh_g_;
+    marker_.color.b = mesh_b_;
+    marker_.color.a = mesh_a_;
     return marker_;
   }
 }

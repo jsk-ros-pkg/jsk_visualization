@@ -51,6 +51,7 @@ namespace jsk_interactive_marker
     void insertNewBox( std::string frame_id, std::string name, std::string description );
     void insertNewCylinder( std::string frame_id, std::string name, std::string description );
     void insertNewTorus( std::string frame_id, std::string name, std::string description );
+    void insertNewMesh( std::string frame_id, std::string name, std::string description , std::string mesh_resource, bool mesh_use_embedded_materials);
 
     void insertNewObject(TransformableObject* tobject, std::string name);
     void eraseObject(std::string name);
