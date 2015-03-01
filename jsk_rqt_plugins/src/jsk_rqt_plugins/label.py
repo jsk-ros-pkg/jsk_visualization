@@ -14,6 +14,7 @@ import yaml
 import os, sys
 
 from std_msgs.msg import String
+from image_view2_wrapper import ComboBoxDialog
 
 class StringLabel(Plugin):
     """
@@ -28,6 +29,8 @@ class StringLabel(Plugin):
         self._widget.save_settings(plugin_settings, instance_settings)
     def restore_settings(self, plugin_settings, instance_settings):
         self._widget.restore_settings(plugin_settings, instance_settings)
+    def trigger_configuration(self):
+        self._widget.trigger_configuration()
 
 
 class StringLabelWidget(QWidget):
@@ -41,9 +44,6 @@ class StringLabelWidget(QWidget):
         font = QFont("Helvetica", 14)
         self.label.setFont(font)
         self.label.setWordWrap(True)
-        self.combo_box = QComboBox(self)
-        self.combo_box.activated.connect(self.onActivated)
-        vbox.addWidget(self.combo_box)
         vbox.addWidget(self.label)
         self.string_sub = None
         self._string_topics = []
@@ -51,6 +51,10 @@ class StringLabelWidget(QWidget):
         self._update_topic_timer.timeout.connect(self.updateTopics)
         self._update_topic_timer.start(1)
         self._active_topic = None
+        self._dialog = ComboBoxDialog()
+    def trigger_configuration(self):
+        self._dialog.exec_()
+        self.setupSubscriber(self._string_topics[self._dialog.number])
     def updateTopics(self):
         need_to_update = False
         for (topic, topic_type) in rospy.get_published_topics():
@@ -60,19 +64,19 @@ class StringLabelWidget(QWidget):
                     need_to_update = True
         if need_to_update:
             self._string_topics = sorted(self._string_topics)
-            self.combo_box.clear()
+            self._dialog.combo_box.clear()
             for topic in self._string_topics:
-                self.combo_box.addItem(topic)
+                self._dialog.combo_box.addItem(topic)
             if self._active_topic:
                 if self._active_topic not in self._string_topics:
                     self._string_topics.append(self._active_topic)
-                    self.combo_box.addItem(self._active_topic)
-                self.combo_box.setCurrentIndex(self._string_topics.index(self._active_topic))
+                    self._dialog.combo_box.addItem(self._active_topic)
+                self._dialog.combo_box.setCurrentIndex(self._string_topics.index(self._active_topic))
     def setupSubscriber(self, topic):
         if self.string_sub:
             self.string_sub.unregister()
-        self.image_sub = rospy.Subscriber(topic, String,
-                                          self.stringCallback)
+        self.string_sub = rospy.Subscriber(topic, String,
+                                           self.stringCallback)
         self._active_topic = topic
     def onActivated(self, number):
         self.setupSubscriber(self._string_topics[number])
@@ -85,7 +89,7 @@ class StringLabelWidget(QWidget):
     def restore_settings(self, plugin_settings, instance_settings):
         if instance_settings.value("active_topic"):
             topic = instance_settings.value("active_topic")
-            self.combo_box.addItem(topic)
+            self._dialog.combo_box.addItem(topic)
             self.setupSubscriber(topic)
 
     

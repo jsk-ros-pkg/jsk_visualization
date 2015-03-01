@@ -2,8 +2,7 @@ from rqt_gui_py.plugin import Plugin
 import python_qt_binding.QtGui as QtGui
 from python_qt_binding.QtGui import QAction, QIcon, QMenu, QWidget, \
      QPainter, QColor, QFont, QBrush, QPen, QMessageBox, QSizePolicy, \
-     QImage, QPixmap, qRgb, QComboBox
-     
+     QImage, QPixmap, qRgb, QComboBox, QDialog, QPushButton
 from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot, \
      QEvent, QSize
 from threading import Lock
@@ -21,6 +20,24 @@ from cv_bridge import CvBridge, CvBridgeError
 from image_view2.msg import MouseEvent
 from sensor_msgs.msg import Image
 
+
+class ComboBoxDialog(QDialog):
+    def __init__(self, parent=None):
+        super(ComboBoxDialog, self).__init__()
+        self.number = 0
+        vbox = QtGui.QVBoxLayout(self)
+        self.combo_box = QComboBox(self)
+        self.combo_box.activated.connect(self.onActivated)
+        vbox.addWidget(self.combo_box)
+        button = QPushButton()
+        button.setText("Done")
+        button.clicked.connect(self.buttonCallback)
+        vbox.addWidget(button)
+        self.setLayout(vbox)
+    def buttonCallback(self, event):
+        self.close()
+    def onActivated(self, number):
+        self.number = number
 class ImageView2Plugin(Plugin):
     """
     rqt wrapper for image_view2
@@ -34,6 +51,9 @@ class ImageView2Plugin(Plugin):
         self._widget.save_settings(plugin_settings, instance_settings)
     def restore_settings(self, plugin_settings, instance_settings):
         self._widget.restore_settings(plugin_settings, instance_settings)
+    def trigger_configuration(self):
+        self._widget.trigger_configuration()
+        
 
 class ScaledLabel(QtGui.QLabel):
     def __init__(self, *args, **kwargs):
@@ -63,10 +83,6 @@ class ImageView2Widget(QWidget):
         self.label.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
         #self.label.installEventFilter(self)
         vbox = QtGui.QVBoxLayout(self)
-        # first add combobox
-        self.combo_box = QComboBox(self)
-        self.combo_box.activated.connect(self.onActivated)
-        vbox.addWidget(self.combo_box)
         vbox.addWidget(self.label)
         self.setLayout(vbox)
         
@@ -81,10 +97,15 @@ class ImageView2Widget(QWidget):
         
         self._active_topic = None
         self.setMouseTracking(True)
+        self._dialog = ComboBoxDialog()
         self.show()
+    def trigger_configuration(self):
+        self._dialog.exec_()
+        self.setupSubscriber(self._image_topics[self._dialog.number])
     def setupSubscriber(self, topic):
         if self.image_sub:
             self.image_sub.unregister()
+        rospy.loginfo("Subscribing %s" % (topic + "/marked"))
         self.image_sub = rospy.Subscriber(topic + "/marked",
                                           Image, 
                                           self.imageCallback)
@@ -112,11 +133,11 @@ class ImageView2Widget(QWidget):
                     need_to_update = True
         if need_to_update:
             self._image_topics = sorted(self._image_topics)
-            self.combo_box.clear()
+            self._dialog.combo_box.clear()
             for topic in self._image_topics:
-                self.combo_box.addItem(topic)
+                self._dialog.combo_box.addItem(topic)
             if self._active_topic:
-                self.combo_box.setCurrentIndex(self._image_topics.index(self._active_topic))
+                self._dialog.combo_box.setCurrentIndex(self._image_topics.index(self._active_topic))
     def redraw(self):
         with self.lock:
             if self.cv_image != None:
@@ -191,6 +212,5 @@ class ImageView2Widget(QWidget):
     def restore_settings(self, plugin_settings, instance_settings):
         if instance_settings.value("active_topic"):
             topic = instance_settings.value("active_topic")
-            self.combo_box.addItem(topic)
+            self._dialog.combo_box.addItem(topic)
             self.setupSubscriber(topic)
-        
