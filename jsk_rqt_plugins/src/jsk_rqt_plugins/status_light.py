@@ -55,7 +55,8 @@ class StatusLightWidget(QWidget):
         self._dialog = ComboBoxDialog()
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
-        self._update_plot_timer.start(40)
+        self._update_plot_timer.start(5)
+        
     def redraw(self):
         self.update()
     def paintEvent(self, event):
@@ -116,14 +117,3 @@ class StatusLightWidget(QWidget):
             topic = instance_settings.value("active_topic")
             self._dialog.combo_box.addItem(topic)
             self.setupSubscriber(topic)
-
-    
-
-
-
-
-
-
-
-
-
