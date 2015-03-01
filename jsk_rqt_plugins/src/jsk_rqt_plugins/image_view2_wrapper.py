@@ -74,7 +74,7 @@ class ImageView2Widget(QWidget):
         super(ImageView2Widget, self).__init__()
         self.left_button_clicked = False
         self.lock = Lock()
-        
+        self.need_to_rewrite = False
         self.bridge = CvBridge()
         self.image_sub = None
         self.event_pub = None
@@ -124,6 +124,7 @@ class ImageView2Widget(QWidget):
             elif msg.encoding == "rgb8":
                 self.cv_image = cv_image
             self.numpy_image = np.asarray(self.cv_image)
+            self.need_to_rewrite = True
     def updateTopics(self):
         need_to_update = False
         for (topic, topic_type) in rospy.get_published_topics():
@@ -140,6 +141,8 @@ class ImageView2Widget(QWidget):
                 self._dialog.combo_box.setCurrentIndex(self._image_topics.index(self._active_topic))
     def redraw(self):
         with self.lock:
+            if not self.need_to_rewrite:
+                return
             if self.cv_image != None:
                 size = self.cv_image.shape
                 img = QImage(self.cv_image.data,
