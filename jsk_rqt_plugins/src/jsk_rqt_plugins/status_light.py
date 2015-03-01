@@ -14,13 +14,13 @@ from resource_retriever import get_filename
 import yaml
 import os, sys
 
-from std_msgs.msg import Int32
+from std_msgs.msg import UInt8
 from image_view2_wrapper import ComboBoxDialog
 
 class StatusLight(Plugin):
     """
     rqt plugin to show light like ultra-man's light.
-    It subscribes std_msgs/Int32 topic and the value means:
+    It subscribes std_msgs/UInt8 topic and the value means:
     0 == Unknown (gray)
     1 == Success (green)
     2 == Warn    (yellow)
@@ -84,7 +84,7 @@ class StatusLightWidget(QWidget):
     def updateTopics(self):
         need_to_update = False
         for (topic, topic_type) in rospy.get_published_topics():
-            if topic_type == "std_msgs/Int32":
+            if topic_type == "std_msgs/UInt8":
                 if not topic in self._status_topics:
                     self._status_topics.append(topic)
                     need_to_update = True
@@ -101,7 +101,7 @@ class StatusLightWidget(QWidget):
     def setupSubscriber(self, topic):
         if self.status_sub:
             self.status_sub.unregister()
-        self.status_sub = rospy.Subscriber(topic, Int32,
+        self.status_sub = rospy.Subscriber(topic, UInt8,
                                            self.statusCallback)
         self._active_topic = topic
     def onActivated(self, number):
