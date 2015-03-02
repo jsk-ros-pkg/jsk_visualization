@@ -20,7 +20,7 @@ namespace jsk_interactive_marker {
   public:
     TransformableObject();
 
-    std::vector<visualization_msgs::InteractiveMarkerControl> makeRotateTransFixControl();
+    std::vector<visualization_msgs::InteractiveMarkerControl> makeRotateTransFixControl(unsigned int orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED);
 
     tf::TransformBroadcaster br;
     visualization_msgs::InteractiveMarker getInteractiveMarker();
@@ -35,7 +35,8 @@ namespace jsk_interactive_marker {
     std::string description_;
     int type_;
     bool display_interactive_manipulator_;
-
+    int interactive_manipulator_orientation_;
+    
     void setPose(geometry_msgs::Pose pose);
     void addPose(geometry_msgs::Pose msg, bool relative=false);
     void publishTF();
