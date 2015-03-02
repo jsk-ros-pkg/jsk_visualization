@@ -4,6 +4,7 @@ using namespace jsk_interactive_marker;
 
 TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::NodeHandle("~")){
   n_->param("display_interactive_manipulator", display_interactive_manipulator_, true);
+  n_->param("interactive_manipulator_orientation", interactive_manipulator_orientation_ , 0);
   n_->param("torus_udiv", torus_udiv_, 20);
   n_->param("torus_vdiv", torus_vdiv_, 20);
   tf_listener_.reset(new tf::TransformListener);
@@ -59,6 +60,7 @@ void TransformableInteractiveServer::configCallback(InteractiveSettingConfig &co
   {
     boost::mutex::scoped_lock lock(mutex_);
     display_interactive_manipulator_ = config.display_interactive_manipulator;
+    interactive_manipulator_orientation_ = config.interactive_manipulator_orientation;
     for (std::map<string, TransformableObject* >::iterator itpairstri = transformable_objects_map_.begin(); itpairstri != transformable_objects_map_.end(); itpairstri++) {
       TransformableObject* tobject = itpairstri->second;
       tobject->setInteractiveMarkerSetting(config);
