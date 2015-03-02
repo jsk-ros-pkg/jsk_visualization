@@ -181,7 +181,7 @@ class ImageView2Widget(QWidget):
         if e.button() == Qt.LeftButton:
             msg.type = MouseEvent.MOUSE_LEFT_DOWN
             self.left_button_clicked = True
-        elif msg.type == Qt.RightButton:
+        elif e.button() == Qt.RightButton:
             msg.type = MouseEvent.MOUSE_RIGHT_DOWN
         msg.width = self.label.pixmap().width()
         msg.height = self.label.pixmap().height()
