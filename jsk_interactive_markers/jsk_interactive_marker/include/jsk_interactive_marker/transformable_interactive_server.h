@@ -46,6 +46,8 @@ namespace jsk_interactive_marker
     void addPose(geometry_msgs::Pose msg);
     void addPoseRelative(geometry_msgs::Pose msg);
 
+    void setControlPose(geometry_msgs::Pose msg);
+
     void setColor(std_msgs::ColorRGBA msg);
 
     void insertNewBox( std::string frame_id, std::string name, std::string description );
@@ -81,7 +83,7 @@ namespace jsk_interactive_marker
     void SetInitialInteractiveMarkerConfig( TransformableObject* tobject );
 
     void tfTimerCallback(const ros::TimerEvent&);
-    bool setPoseWithTfTransformation(TransformableObject* tobject, geometry_msgs::PoseStamped pose_stamped);
+    bool setPoseWithTfTransformation(TransformableObject* tobject, geometry_msgs::PoseStamped pose_stamped, bool for_interactive_server = false);
 
     std::string focus_object_marker_name_;
     ros::NodeHandle* n_;
@@ -92,7 +94,9 @@ namespace jsk_interactive_marker
     ros::Subscriber setpose_sub_;
     ros::Subscriber addpose_sub_;
     ros::Subscriber addpose_relative_sub_;
-
+    
+    ros::Subscriber setcontrol_sub_;
+    
     ros::Subscriber set_r_sub_;
     ros::Subscriber set_sm_r_sub_;
     ros::Subscriber set_h_sub_;

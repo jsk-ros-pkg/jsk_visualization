@@ -19,7 +19,9 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
 
   addpose_sub_ = n_->subscribe("add_pose", 1, &TransformableInteractiveServer::addPose, this);
   addpose_relative_sub_ = n_->subscribe("add_pose_relative", 1, &TransformableInteractiveServer::addPoseRelative, this);
-
+  
+  setcontrol_sub_ = n_->subscribe("set_control_pose", 1, &TransformableInteractiveServer::setControlPose, this);
+  
   setrad_sub_ = n_->subscribe("set_radius", 1, &TransformableInteractiveServer::setRadius, this);
 
   focus_text_pub_ = n_->advertise<jsk_rviz_plugins::OverlayText>("focus_marker_name", 1);
@@ -86,7 +88,7 @@ void TransformableInteractiveServer::processFeedback(
         geometry_msgs::PoseStamped input_pose_stamped;
         input_pose_stamped.header = feedback->header;
         input_pose_stamped.pose = feedback->pose;
-        setPoseWithTfTransformation(tobject, input_pose_stamped);
+        setPoseWithTfTransformation(tobject, input_pose_stamped, true);
       }else
         ROS_ERROR("Invalid ObjectId Request Received %s", feedback->marker_name.c_str());
       break;
@@ -162,7 +164,9 @@ void TransformableInteractiveServer::setPose(geometry_msgs::PoseStamped msg){
   if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return; }
   TransformableObject* tobject =  transformable_objects_map_[focus_object_marker_name_];
   setPoseWithTfTransformation(tobject, msg);
-  server_->setPose(focus_object_marker_name_, msg.pose, msg.header);
+  std_msgs::Header header = msg.header;
+  header.frame_id = tobject->getFrameId();
+  server_->setPose(focus_object_marker_name_, tobject->pose_, header);
   server_->applyChanges();
 }
 
@@ -196,10 +200,11 @@ bool TransformableInteractiveServer::setPoseService(jsk_interactive_marker::SetT
     tobject = transformable_objects_map_[req.target_name];
   }
   if(setPoseWithTfTransformation(tobject, req.pose_stamped)){
-    server_->setPose(focus_object_marker_name_, req.pose_stamped.pose, req.pose_stamped.header);
+    std_msgs::Header header = req.pose_stamped.header;
+    header.frame_id = tobject->getFrameId();
+    server_->setPose(focus_object_marker_name_, tobject->pose_, header);
     server_->applyChanges();
   }
-
   return true;
 }
 
@@ -420,6 +425,20 @@ void TransformableInteractiveServer::addPoseRelative(geometry_msgs::Pose msg){
   updateTransformableObject(tobject);
 }
 
+void TransformableInteractiveServer::setControlPose(geometry_msgs::Pose msg){
+  if (transformable_objects_map_.find(focus_object_marker_name_) == transformable_objects_map_.end()) { return; }
+  TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
+  geometry_msgs::Pose pose = tobject->getPose(); //reserve marker pose
+  tobject->control_offset_pose_ = msg;
+  updateTransformableObject(tobject);
+  tobject->setPose(pose);
+  std_msgs::Header header;
+  header.frame_id = tobject->getFrameId();
+  header.stamp = ros::Time::now();
+  server_->setPose(focus_object_marker_name_, tobject->pose_, header);
+  server_->applyChanges();
+}
+
 void TransformableInteractiveServer::focusTextPublish(){
   jsk_rviz_plugins::OverlayText focus_text;
   focus_text.text = focus_object_marker_name_;
@@ -545,14 +564,19 @@ void TransformableInteractiveServer::tfTimerCallback(const ros::TimerEvent&)
   tobject->publishTF();
 }
 
-bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableObject* tobject, geometry_msgs::PoseStamped pose_stamped)
+bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableObject* tobject, geometry_msgs::PoseStamped pose_stamped, bool for_interactive_control)
 {
   try {
     geometry_msgs::PoseStamped transformed_pose_stamped;
     if (tf_listener_->waitForTransform(tobject->getFrameId(),
                                        pose_stamped.header.frame_id, pose_stamped.header.stamp, ros::Duration(1.0))) {
       tf_listener_->transformPose(tobject->getFrameId(), pose_stamped, transformed_pose_stamped);
-      tobject->setPose(transformed_pose_stamped.pose);
+      if(for_interactive_control) {
+	tobject->pose_ = transformed_pose_stamped.pose;
+      } 
+      else {
+	tobject->setPose(transformed_pose_stamped.pose);
+      }
     }
     else {
       ROS_ERROR("failed to lookup transform %s -> %s", tobject->getFrameId().c_str(), 

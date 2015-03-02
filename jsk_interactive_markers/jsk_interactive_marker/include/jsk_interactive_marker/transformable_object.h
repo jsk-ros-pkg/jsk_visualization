@@ -30,6 +30,7 @@ namespace jsk_interactive_marker {
 
     visualization_msgs::Marker marker_;
     geometry_msgs::Pose pose_;
+    geometry_msgs::Pose control_offset_pose_;
     std::string name_;
     std::string frame_id_;
     std::string description_;
@@ -41,7 +42,7 @@ namespace jsk_interactive_marker {
     void addPose(geometry_msgs::Pose msg, bool relative=false);
     void publishTF();
     std::string getFrameId() { return frame_id_; }
-    geometry_msgs::Pose getPose(){return pose_;};
+    geometry_msgs::Pose getPose();
     void setInteractiveMarkerSetting(InteractiveSettingConfig config);
     virtual bool setRadius(std_msgs::Float32 recieve_val){return false;};
     virtual bool setSmallRadius(std_msgs::Float32 recieve_val){return false;};
