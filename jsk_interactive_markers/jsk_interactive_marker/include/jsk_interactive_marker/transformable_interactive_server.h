@@ -42,11 +42,11 @@ namespace jsk_interactive_marker
     void setY(std_msgs::Float32 msg);
     void setZ(std_msgs::Float32 msg);
 
-    void setPose(geometry_msgs::PoseStamped msg);
+    void setPose( const geometry_msgs::PoseStampedConstPtr &msg_ptr , bool for_interactive_control=false);
     void addPose(geometry_msgs::Pose msg);
     void addPoseRelative(geometry_msgs::Pose msg);
 
-    void setControlPose(geometry_msgs::Pose msg);
+    void setControlRelativePose(geometry_msgs::Pose msg);
 
     void setColor(std_msgs::ColorRGBA msg);
 
@@ -66,8 +66,8 @@ namespace jsk_interactive_marker
 
     void updateTransformableObject(TransformableObject* tobject);
 
-    bool getPoseService(jsk_interactive_marker::GetTransformableMarkerPose::Request &req,jsk_interactive_marker::GetTransformableMarkerPose::Response &res);
-    bool setPoseService(jsk_interactive_marker::SetTransformableMarkerPose::Request &req,jsk_interactive_marker::SetTransformableMarkerPose::Response &res);
+    bool getPoseService(jsk_interactive_marker::GetTransformableMarkerPose::Request &req,jsk_interactive_marker::GetTransformableMarkerPose::Response &res, bool for_interactive_control);
+    bool setPoseService(jsk_interactive_marker::SetTransformableMarkerPose::Request &req,jsk_interactive_marker::SetTransformableMarkerPose::Response &res, bool for_interactive_control);
     bool getColorService(jsk_interactive_marker::GetTransformableMarkerColor::Request &req,jsk_interactive_marker::GetTransformableMarkerColor::Response &res);
     bool setColorService(jsk_interactive_marker::SetTransformableMarkerColor::Request &req,jsk_interactive_marker::SetTransformableMarkerColor::Response &res);
     bool getFocusService(jsk_interactive_marker::GetTransformableMarkerFocus::Request &req,jsk_interactive_marker::GetTransformableMarkerFocus::Response &res);
@@ -83,8 +83,8 @@ namespace jsk_interactive_marker
     void SetInitialInteractiveMarkerConfig( TransformableObject* tobject );
 
     void tfTimerCallback(const ros::TimerEvent&);
-    bool setPoseWithTfTransformation(TransformableObject* tobject, geometry_msgs::PoseStamped pose_stamped, bool for_interactive_server = false);
-
+    bool setPoseWithTfTransformation(TransformableObject* tobject, geometry_msgs::PoseStamped pose_stamped, bool for_interactive_control=false);
+    
     std::string focus_object_marker_name_;
     ros::NodeHandle* n_;
 
@@ -92,10 +92,11 @@ namespace jsk_interactive_marker
 
     ros::Subscriber setcolor_sub_;
     ros::Subscriber setpose_sub_;
+    ros::Subscriber setcontrolpose_sub_;
     ros::Subscriber addpose_sub_;
     ros::Subscriber addpose_relative_sub_;
     
-    ros::Subscriber setcontrol_sub_;
+    ros::Subscriber setcontrol_relative_sub_;
     
     ros::Subscriber set_r_sub_;
     ros::Subscriber set_sm_r_sub_;
@@ -105,7 +106,9 @@ namespace jsk_interactive_marker
     ros::Subscriber set_z_sub_;
 
     ros::ServiceServer get_pose_srv_;
+    ros::ServiceServer get_control_pose_srv_;
     ros::ServiceServer set_pose_srv_;
+    ros::ServiceServer set_control_pose_srv_;
     ros::ServiceServer get_color_srv_;
     ros::ServiceServer set_color_srv_;
     ros::ServiceServer get_focus_srv_;

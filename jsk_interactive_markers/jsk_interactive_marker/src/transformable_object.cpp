@@ -101,23 +101,33 @@ visualization_msgs::InteractiveMarker TransformableObject::getInteractiveMarker(
   return int_marker;
 };
 
-void TransformableObject::setPose(geometry_msgs::Pose pose){
-  Eigen::Affine3d control_offset_eigen;
-  tf::poseMsgToEigen(control_offset_pose_, control_offset_eigen);
-  Eigen::Affine3d pose_eigen;
-  tf::poseMsgToEigen(pose, pose_eigen);
-  tf::poseEigenToMsg(pose_eigen * control_offset_eigen, pose_);
+void TransformableObject::setPose(geometry_msgs::Pose pose, bool for_interactive_control){
+  if(for_interactive_control) {
+    pose_ = pose;
+  }
+  else {
+    Eigen::Affine3d control_offset_eigen;
+    tf::poseMsgToEigen(control_offset_pose_, control_offset_eigen);
+    Eigen::Affine3d pose_eigen;
+    tf::poseMsgToEigen(pose, pose_eigen);
+    tf::poseEigenToMsg(pose_eigen * control_offset_eigen, pose_);
+  }
 }
 
-geometry_msgs::Pose TransformableObject::getPose(){
-  geometry_msgs::Pose pose;
-  Eigen::Affine3d control_offset_eigen;
-  tf::poseMsgToEigen(control_offset_pose_, control_offset_eigen);
-  Eigen::Affine3d pose_eigen;
-  tf::poseMsgToEigen(pose_, pose_eigen);
-  tf::poseEigenToMsg(pose_eigen * control_offset_eigen.inverse(), pose);
-  //return pose;
-  return pose;
+geometry_msgs::Pose TransformableObject::getPose(bool for_interactive_control){
+  if(for_interactive_control) {
+    return pose_;
+  }
+  else{
+    geometry_msgs::Pose pose;
+    Eigen::Affine3d control_offset_eigen;
+    tf::poseMsgToEigen(control_offset_pose_, control_offset_eigen);
+    Eigen::Affine3d pose_eigen;
+    tf::poseMsgToEigen(pose_, pose_eigen);
+    tf::poseEigenToMsg(pose_eigen * control_offset_eigen.inverse(), pose);
+    //return pose;
+    return pose;
+  }
 }
 
 
