@@ -16,7 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   jsk_recognition_msgs
   ${PCL_MSGS}
-  jsk_topic_tools)
+  jsk_topic_tools
+  roseus)
 find_package(orocos_kdl REQUIRED)
 find_package(TinyXML REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
