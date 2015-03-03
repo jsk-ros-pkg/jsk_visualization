@@ -6,13 +6,21 @@
 
 using namespace jsk_interactive_marker;
 
+inline geometry_msgs::Pose inverse(geometry_msgs::Pose pose){
+  Eigen::Affine3d pose_eigen;
+  tf::poseMsgToEigen(pose, pose_eigen);
+  tf::poseEigenToMsg(pose_eigen.inverse(), pose);
+  return pose;
+}
+
+
 TransformableObject::TransformableObject(){
   ROS_INFO("Init TransformableObject");
-  pose_.orientation.x = 0;
-  pose_.orientation.y = 0;
-  pose_.orientation.z = 0;
-  pose_.orientation.w = 1;
-
+  control_offset_pose_.orientation.x = 0;
+  control_offset_pose_.orientation.y = 0;
+  control_offset_pose_.orientation.z = 0;
+  control_offset_pose_.orientation.w = 1;
+  pose_ = control_offset_pose_;
   display_interactive_manipulator_ = true;
 }
 
@@ -93,13 +101,38 @@ visualization_msgs::InteractiveMarker TransformableObject::getInteractiveMarker(
   return int_marker;
 };
 
-void TransformableObject::setPose(geometry_msgs::Pose pose){
-  pose_=pose;
+void TransformableObject::setPose(geometry_msgs::Pose pose, bool for_interactive_control){
+  if(for_interactive_control) {
+    pose_ = pose;
+  }
+  else {
+    Eigen::Affine3d control_offset_eigen;
+    tf::poseMsgToEigen(control_offset_pose_, control_offset_eigen);
+    Eigen::Affine3d pose_eigen;
+    tf::poseMsgToEigen(pose, pose_eigen);
+    tf::poseEigenToMsg(pose_eigen * control_offset_eigen, pose_);
+  }
 }
+
+geometry_msgs::Pose TransformableObject::getPose(bool for_interactive_control){
+  if(for_interactive_control) {
+    return pose_;
+  }
+  else{
+    geometry_msgs::Pose pose;
+    Eigen::Affine3d control_offset_eigen;
+    tf::poseMsgToEigen(control_offset_pose_, control_offset_eigen);
+    Eigen::Affine3d pose_eigen;
+    tf::poseMsgToEigen(pose_, pose_eigen);
+    tf::poseEigenToMsg(pose_eigen * control_offset_eigen.inverse(), pose);
+    //return pose;
+    return pose;
+  }
+}
+
 
 void TransformableObject::addPose(geometry_msgs::Pose msg, bool relative){
   Eigen::Vector3d original_p(msg.position.x, msg.position.y, msg.position.z);
-
   Eigen::Quaterniond original_q;
   tf::quaternionMsgToEigen(pose_.orientation, original_q);
   Eigen::Quaterniond diff_q;
@@ -121,7 +154,7 @@ void TransformableObject::addPose(geometry_msgs::Pose msg, bool relative){
 
 void TransformableObject::publishTF(){
   tf::Transform transform;
-  tf::poseMsgToTF(pose_, transform);
+  tf::poseMsgToTF(getPose(), transform);
   br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), frame_id_, name_));
 }
 
@@ -149,6 +182,7 @@ namespace jsk_interactive_marker{
     marker_.color.g = cylinder_g_;
     marker_.color.b = cylinder_b_;
     marker_.color.a = cylinder_a_;
+    marker_.pose = control_offset_pose_;
     return marker_;
   }
 }
@@ -294,6 +328,7 @@ namespace jsk_interactive_marker{
     marker_.color.g = mesh_g_;
     marker_.color.b = mesh_b_;
     marker_.color.a = mesh_a_;
+    marker_.pose = inverse(control_offset_pose_);
     return marker_;
   }
 }
