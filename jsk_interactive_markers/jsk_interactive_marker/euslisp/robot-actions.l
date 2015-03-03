@@ -1,6 +1,5 @@
 #!/usr/bin/env roseus
 
-(ros::load-ros-manifest "jsk_pcl_ros")
 (ros::load-ros-manifest "jsk_interactive_marker")
 
 (require "models/arrow-object.l")
@@ -22,7 +21,7 @@
 (defmethod robot-actions
   (:grasp-pose-callback
    (msg)
-   (let* ((box-movement-msg (instance jsk_pcl_ros::BoundingBoxMovement :init))
+   (let* ((box-movement-msg (instance jsk_recognition_msgs::BoundingBoxMovement :init))
 	  tmp-pose
 	  )
      (send box-movement-msg :header (send msg :header))
@@ -235,7 +234,7 @@
        (ros::ros-info "sleep end for nearest bounding box")
        )
      ;;get nearest bounding box and modify grasp-handle-list
-     (let ((req (instance jsk_pcl_ros::NearestBoundingBoxRequest :init))
+     (let ((req (instance jsk_recognition_msgs::NearestBoundingBoxRequest :init))
 	   req-pose-stamped
 	   res
 	   nearest-grasp-coords)
@@ -615,7 +614,7 @@
 
    (ros::subscribe
     (format nil "~A/box_movement" *interactive-pc-nodename*)
-    jsk_pcl_ros::BoundingBoxMovement #'send self :box-movement-callback)
+    jsk_recognition_msgs::BoundingBoxMovement #'send self :box-movement-callback)
 
    (ros::subscribe
     (format nil "~A/move_model" *im-nodename*)
