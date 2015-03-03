@@ -9,7 +9,8 @@
 
   <build_depend>mk</build_depend>
   <build_depend>rosbuild</build_depend>
-
+  <build_depend>image_view2</build_depend>
+  
   <run_depend>rqt_gui</run_depend>
   <run_depend>rqt_gui_py</run_depend>
   <run_depend>rqt_plot</run_depend>
