@@ -97,6 +97,7 @@ class ImageView2Widget(QWidget):
         
         self._active_topic = None
         self.setMouseTracking(True)
+        self.label.setMouseTracking(True)
         self._dialog = ComboBoxDialog()
         self.show()
     def trigger_configuration(self):
@@ -166,15 +167,14 @@ class ImageView2Widget(QWidget):
         y_offset = (label_height - pixmap_height) / 2.0 + label_y
         return (e.x() - x_offset, e.y()- y_offset)
     def mouseMoveEvent(self, e):
-        if self.left_button_clicked:
-            msg = MouseEvent()
-            msg.header.stamp = rospy.Time.now()
-            msg.type = MouseEvent.MOUSE_MOVE
-            msg.x, msg.y = self.mousePosition(e)
-            msg.width = self.label.pixmap().width()
-            msg.height = self.label.pixmap().height()
-            if self.event_pub:
-                self.event_pub.publish(msg)
+        msg = MouseEvent()
+        msg.header.stamp = rospy.Time.now()
+        msg.type = MouseEvent.MOUSE_MOVE
+        msg.x, msg.y = self.mousePosition(e)
+        msg.width = self.label.pixmap().width()
+        msg.height = self.label.pixmap().height()
+        if self.event_pub:
+            self.event_pub.publish(msg)
     def mousePressEvent(self, e):
         msg = MouseEvent()
         msg.header.stamp = rospy.Time.now()
