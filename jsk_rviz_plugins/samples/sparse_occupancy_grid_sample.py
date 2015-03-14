@@ -25,8 +25,14 @@ while not rospy.is_shutdown():
     occupancy_grid.coefficients = [0, 0, 1, 0]
     occupancy_grid.resolution = 0.01      #1cm resolution
     occupancy_grid.cells = cells()
+    occupancy_grid2 = SimpleOccupancyGrid()
+    occupancy_grid2.header.frame_id = "map"
+    occupancy_grid2.header.stamp = now
+    occupancy_grid2.coefficients = [0, 0, 1, 1]
+    occupancy_grid2.resolution = 0.01      #1cm resolution
+    occupancy_grid2.cells = cells()
     occupancy_grid_array = SimpleOccupancyGridArray()
-    occupancy_grid_array.grids = [occupancy_grid]
+    occupancy_grid_array.grids = [occupancy_grid, occupancy_grid2]
     occupancy_grid_array.header.stamp = now
     occupancy_grid_array.header.frame_id = "map"
     p.publish(occupancy_grid_array)

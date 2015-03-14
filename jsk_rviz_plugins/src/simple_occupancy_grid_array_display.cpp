@@ -114,7 +114,7 @@ namespace jsk_rviz_plugins
       Eigen::Quaternionf rot;
       rot.setFromTwoVectors(Eigen::Vector3f::UnitZ(), normal);
       Eigen::Affine3f plane_pose_eigen
-        = Eigen::Affine3f::Identity() * rot;
+        = Eigen::Affine3f::Identity() * rot * Eigen::Translation3f(0, 0, d);
       tf::poseEigenToMsg(plane_pose_eigen, plane_pose);
       if(!context_->getFrameManager()->transform(grid.header, plane_pose,
                                                  position,
