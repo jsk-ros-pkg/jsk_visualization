@@ -36,19 +36,27 @@
 #include "simple_occupancy_grid_array_display.h"
 #include <Eigen/Geometry>
 #include <jsk_pcl_ros/pcl_conversion_util.h>
+#include <jsk_topic_tools/color_utils.h>
+#include "rviz_util.h"
 
 namespace jsk_rviz_plugins
 {
   SimpleOccupancyGridArrayDisplay::SimpleOccupancyGridArrayDisplay()
   {
+    auto_color_property_ = new rviz::BoolProperty(
+      "Auto Color", true,
+      "Auto coloring",
+      this, SLOT(updateAutoColor()));
+    
     alpha_property_ = new rviz::FloatProperty(
       "Alpha", 1.0,
       "Amount of transparency to apply to the polygon.",
-      this, SLOT( updateAlpha() ));
+      this, SLOT(updateAlpha()));
 
     alpha_property_->setMin(0.0);
     alpha_property_->setMax(1.0);
 
+    
   }
 
   SimpleOccupancyGridArrayDisplay::~SimpleOccupancyGridArrayDisplay()
@@ -61,6 +69,7 @@ namespace jsk_rviz_plugins
   {
     MFDClass::onInitialize();
     updateAlpha();
+    updateAutoColor();
   }
   
   void SimpleOccupancyGridArrayDisplay::allocateCloudsAndNodes(const size_t num)
@@ -131,7 +140,12 @@ namespace jsk_rviz_plugins
       for (size_t ci = 0; ci < grid.cells.size(); ci++) {
         const geometry_msgs::Point p = grid.cells[ci];
         rviz::PointCloud::Point point;
-        point.color = white;
+        if (auto_color_) {
+          point.color = rviz::colorMsgToOgre(jsk_topic_tools::colorCategory20(i));
+        }
+        else {
+          point.color = white;
+        }
         point.position.x = p.x;
         point.position.y = p.y;
         point.position.z = p.z;
@@ -149,6 +163,11 @@ namespace jsk_rviz_plugins
   void SimpleOccupancyGridArrayDisplay::updateAlpha()
   {
     alpha_ = alpha_property_->getFloat();
+  }
+
+  void SimpleOccupancyGridArrayDisplay::updateAutoColor()
+  {
+    auto_color_ = auto_color_property_->getBool();
   }
 
 }
