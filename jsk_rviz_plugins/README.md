@@ -13,8 +13,6 @@ You can use this rviz plugins just launch rviz.
 #### FootStep
 #### Normal
 
-##### What Is This
-
 This will show the Normal which is subcribed from topic (sensor_msgs::PointCloud2).
 The normal is assumed to have the features x,y,z,normal\_x,normal\_y,normal\_z.
 
@@ -45,6 +43,9 @@ and angular velocity is represented by 3 arrows for each axis.
 * angular color (default: `RGB(255, 0, 0)`)
 
    Color of arrows
+
+##### SimpleOccupancyGridArray
+Visualize `jsk_recognition_msgs/SimpleOccupancyGridArray`.
 
 ------
 
