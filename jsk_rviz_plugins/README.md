@@ -45,6 +45,8 @@ and angular velocity is represented by 3 arrows for each axis.
    Color of arrows
 
 ##### SimpleOccupancyGridArray
+![](images/simple_occupancy_grid_array.png)
+
 Visualize `jsk_recognition_msgs/SimpleOccupancyGridArray`.
 
 ------

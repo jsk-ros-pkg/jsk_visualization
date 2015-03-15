@@ -1,8 +1,8 @@
-// -*- mode: c++; -*-
+// -*- mode: c++ -*-
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, JSK Lab
+ *  Copyright (c) 2015, JSK Lab
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,46 +33,30 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef JSK_RVIZ_PLUGINS_SIMPLE_OCCUPANCY_GRID_ARRAY_DISPLAY_H_
-#define JSK_RVIZ_PLUGINS_SIMPLE_OCCUPANCY_GRID_ARRAY_DISPLAY_H_
 
-#include <jsk_recognition_msgs/SimpleOccupancyGridArray.h>
-#include <rviz/message_filter_display.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/bool_property.h>
-#include <rviz/ogre_helpers/shape.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/ogre_helpers/point_cloud.h>
+#ifndef JSK_RVIZ_PLUGINGS_RVIZ_UTIL_H_
+#define JSK_RVIZ_PLUGINGS_RVIZ_UTIL_H_
 
-namespace jsk_rviz_plugins
+#include <std_msgs/ColorRGBA.h>
+#include <OgreColourValue.h>
+
+
+namespace rviz
 {
-  class SimpleOccupancyGridArrayDisplay:
-    public rviz::MessageFilterDisplay<
-    jsk_recognition_msgs::SimpleOccupancyGridArray>
+  inline Ogre::ColourValue colorMsgToOgre(const std_msgs::ColorRGBA& c)
   {
-    Q_OBJECT
-  public:
-    typedef boost::shared_ptr<rviz::PointCloud> PointCloudPtr;
-    SimpleOccupancyGridArrayDisplay();
-    virtual ~SimpleOccupancyGridArrayDisplay();
-  protected:
-    virtual void onInitialize();
-    virtual void reset();
-    virtual void allocateCloudsAndNodes(const size_t num);
-    rviz::FloatProperty* alpha_property_;
-    rviz::BoolProperty* auto_color_property_;
-    double alpha_;
-    std::vector<rviz::PointCloud*> clouds_;
-    std::vector<Ogre::SceneNode*> nodes_;
-    bool auto_color_;
-  private:
-    void processMessage(
-      const jsk_recognition_msgs::SimpleOccupancyGridArray::ConstPtr& msg);
-  private Q_SLOTS:
-    void updateAlpha();
-    void updateAutoColor();
-  };
+    return Ogre::ColourValue(c.r, c.g, c.b, c.a);
+  }
 
+  inline std_msgs::ColorRGBA colorOgreToMsg(const Ogre::ColourValue& c)
+  {
+    std_msgs::ColorRGBA ret;
+    ret.r = c.r;
+    ret.g = c.g;
+    ret.b = c.b;
+    ret.a = c.a;
+    return ret;
+  }
 }
 
 #endif
