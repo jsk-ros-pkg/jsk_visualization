@@ -79,7 +79,6 @@ qt4_wrap_cpp(MOC_FILES
   src/overlay_diagnostic_display.h
   src/target_visualizer_display.h
   ${people_position_measurement_array_header}
-  src/sparse_occupancy_grid_array_display.h
   src/simple_occupancy_grid_array_display.h
   src/camera_info_display.h
   src/close_all_tool.h
@@ -120,7 +119,6 @@ set(SOURCE_FILES
   src/quiet_interactive_marker_display.cpp
   src/target_visualizer_display.cpp
   src/overlay_diagnostic_display.cpp
-  src/sparse_occupancy_grid_array_display.cpp
   src/simple_occupancy_grid_array_display.cpp
   ${people_position_measurement_array_source}
   src/overlay_utils.cpp
