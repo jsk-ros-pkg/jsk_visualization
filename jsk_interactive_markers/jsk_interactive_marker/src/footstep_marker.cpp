@@ -378,6 +378,10 @@ double FootstepMarker::projectPoseToPlane(
   ROS_INFO("---------");
 #endif
   jsk_pcl_ros::ConvexPolygon::Vertices vertices;
+  if (polygon.size() == 0) {
+    ROS_FATAL("No polygon input");
+    return DBL_MAX;
+  }
   for (size_t i = 0; i < polygon.size(); i++) {
     geometry_msgs::Point p = polygon[i].point;
     jsk_pcl_ros::ConvexPolygon::Vertex v (p.x, p.y, p.z);
