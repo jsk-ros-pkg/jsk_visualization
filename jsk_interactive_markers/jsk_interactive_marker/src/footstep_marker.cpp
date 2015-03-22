@@ -92,25 +92,31 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   
   if (use_initial_reference_) {
     while (ros::ok()) {
-      if (tf_listener_->waitForTransform(marker_frame_id_, initial_reference_frame_,
-                                         ros::Time(0.0), ros::Duration(10.0))) {
-        break;
+      try {
+        if (tf_listener_->waitForTransform(marker_frame_id_, initial_reference_frame_,
+                                           ros::Time(0.0), ros::Duration(10.0))) {
+          break;
+        }
+        ROS_INFO("waiting for transform %s => %s", marker_frame_id_.c_str(),
+                 initial_reference_frame_.c_str());
+      
+        ROS_INFO("resolved transform %s => %s", marker_frame_id_.c_str(),
+                 initial_reference_frame_.c_str());
+        tf::StampedTransform transform;
+        tf_listener_->lookupTransform(marker_frame_id_, initial_reference_frame_,
+                                      ros::Time(0), transform);
+        marker_pose_.pose.position.x = transform.getOrigin().x();
+        marker_pose_.pose.position.y = transform.getOrigin().y();
+        marker_pose_.pose.position.z = transform.getOrigin().z();
+        marker_pose_.pose.orientation.x = transform.getRotation().x();
+        marker_pose_.pose.orientation.y = transform.getRotation().y();
+        marker_pose_.pose.orientation.z = transform.getRotation().z();
+        marker_pose_.pose.orientation.w = transform.getRotation().w();
       }
-      ROS_INFO("waiting for transform %s => %s", marker_frame_id_.c_str(),
-               initial_reference_frame_.c_str());
+      catch (tf2::TransformException& e) {
+        ROS_ERROR("Failed to lookup transformation: %s", e.what());
+      }
     }
-    ROS_INFO("resolved transform %s => %s", marker_frame_id_.c_str(),
-             initial_reference_frame_.c_str());
-    tf::StampedTransform transform;
-    tf_listener_->lookupTransform(marker_frame_id_, initial_reference_frame_,
-                                  ros::Time(0), transform);
-    marker_pose_.pose.position.x = transform.getOrigin().x();
-    marker_pose_.pose.position.y = transform.getOrigin().y();
-    marker_pose_.pose.position.z = transform.getOrigin().z();
-    marker_pose_.pose.orientation.x = transform.getRotation().x();
-    marker_pose_.pose.orientation.y = transform.getRotation().y();
-    marker_pose_.pose.orientation.z = transform.getRotation().z();
-    marker_pose_.pose.orientation.w = transform.getRotation().w();
   }
 
   initializeInteractiveMarker();
@@ -122,6 +128,7 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   if (use_initial_footstep_tf_) {
     // waiting TF
     while (ros::ok()) {
+      try {
       if (tf_listener_->waitForTransform(lfoot_frame_id_, marker_frame_id_,
                                          ros::Time(0.0), ros::Duration(10.0))
           && tf_listener_->waitForTransform(rfoot_frame_id_, marker_frame_id_,
@@ -130,6 +137,10 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
       }
       ROS_INFO("waiting for transform {%s, %s} => %s", lfoot_frame_id_.c_str(),
                rfoot_frame_id_.c_str(), marker_frame_id_.c_str());
+      }
+      catch (tf2::TransformException& e) {
+        ROS_ERROR("Failed to lookup transformation: %s", e.what());
+      }
     }
     ROS_INFO("resolved transform {%s, %s} => %s", lfoot_frame_id_.c_str(),
              rfoot_frame_id_.c_str(), marker_frame_id_.c_str());
@@ -295,23 +306,28 @@ void FootstepMarker::menuCommandCB(const std_msgs::UInt8::ConstPtr& msg) {
 
 void FootstepMarker::updateInitialFootstep() {
   //ROS_INFO("updateInitialFootstep");
-  if (!use_initial_footstep_tf_) {
-    return;
-  } 
-  tf::StampedTransform lfoot_transform, rfoot_transform;
-  tf_listener_->lookupTransform(marker_frame_id_, lfoot_frame_id_, ros::Time(0.0), lfoot_transform);
-  tf_listener_->lookupTransform(marker_frame_id_, rfoot_frame_id_, ros::Time(0.0), rfoot_transform);
+  try {
+    if (!use_initial_footstep_tf_) {
+      return;
+    } 
+    tf::StampedTransform lfoot_transform, rfoot_transform;
+    tf_listener_->lookupTransform(marker_frame_id_, lfoot_frame_id_, ros::Time(0.0), lfoot_transform);
+    tf_listener_->lookupTransform(marker_frame_id_, rfoot_frame_id_, ros::Time(0.0), rfoot_transform);
 
-  // apply offset
-  // convert like tf -> eigen -> msg
-  Eigen::Affine3d le, re;
-  tf::transformTFToEigen(lfoot_transform * lleg_offset_, le); // tf -> eigen
-  tf::poseEigenToMsg(le, lleg_initial_pose_);  // eigen -> msg
-  tf::transformTFToEigen(rfoot_transform * rleg_offset_, re); // tf -> eigen
-  tf::poseEigenToMsg(re, rleg_initial_pose_);  // eigen -> msg
+    // apply offset
+    // convert like tf -> eigen -> msg
+    Eigen::Affine3d le, re;
+    tf::transformTFToEigen(lfoot_transform * lleg_offset_, le); // tf -> eigen
+    tf::poseEigenToMsg(le, lleg_initial_pose_);  // eigen -> msg
+    tf::transformTFToEigen(rfoot_transform * rleg_offset_, re); // tf -> eigen
+    tf::poseEigenToMsg(re, rleg_initial_pose_);  // eigen -> msg
   
-  // we need to move the marker
-  initializeInteractiveMarker();
+    // we need to move the marker
+    initializeInteractiveMarker();
+  }
+  catch (tf2::TransformException& e) {
+    ROS_ERROR("Failed to lookup transformation: %s", e.what());
+  }
 }
 
 void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
