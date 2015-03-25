@@ -187,8 +187,8 @@ namespace jsk_rviz_plugins
     rviz::UniformStringStream ss;
     ss << "Plotter2DDisplayObject" << count++;
     overlay_.reset(new OverlayObject(ss.str()));
-    onEnable();
     updateBufferSize();
+    onEnable();
     updateShowValue();
     updateWidth();
     updateHeight();
