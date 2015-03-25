@@ -1,4 +1,37 @@
 // -*- mode: c++ -*-
+/*********************************************************************
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2015, JSK Lab
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/o2r other materials provided
+ *     with the distribution.
+ *   * Neither the name of the JSK Lab nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *********************************************************************/
 
 #include <ros/ros.h>
 #include <interactive_markers/interactive_marker_server.h>
@@ -23,14 +56,13 @@
 #include <geometry_msgs/Polygon.h>
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Empty.h>
+#include <jsk_recognition_msgs/SimpleOccupancyGridArray.h>
 
 class FootstepMarker {
 public:
   FootstepMarker();
   virtual ~FootstepMarker();
   void updateInitialFootstep();
-  typedef message_filters::sync_policies::ExactTime< jsk_recognition_msgs::PolygonArray,
-                                                     jsk_recognition_msgs::ModelCoefficientsArray> PlaneSyncPolicy;
   typedef actionlib::SimpleActionClient<jsk_footstep_msgs::PlanFootstepsAction>
   PlanningActionClient;
   typedef actionlib::SimpleActionClient<jsk_footstep_msgs::ExecFootstepsAction>
@@ -44,8 +76,7 @@ protected:
   void menuCommandCB(const std_msgs::UInt8::ConstPtr& msg);
   void executeCB(const std_msgs::Empty::ConstPtr& msg);
   void resumeCB(const std_msgs::Empty::ConstPtr& msg);
-  void planeCB(const jsk_recognition_msgs::PolygonArray::ConstPtr& planes,
-               const jsk_recognition_msgs::ModelCoefficientsArray::ConstPtr& coefficients);
+  void planeCB(const jsk_recognition_msgs::SimpleOccupancyGridArray::ConstPtr& grid_msg);
   void planDoneCB(const actionlib::SimpleClientGoalState &state, 
                   const PlanResult::ConstPtr &result);
   void processMenuFeedback(uint8_t id);
@@ -62,15 +93,8 @@ protected:
 
   // projection to the planes
   bool projectMarkerToPlane();
-  void transformPolygon(const geometry_msgs::PolygonStamped& polygon,
-                        const std_msgs::Header& target_header,
-                        std::vector<geometry_msgs::PointStamped>& output_points);
-  double projectPoseToPlane(const std::vector<geometry_msgs::PointStamped>& polygon,
-                            const geometry_msgs::PoseStamped& point,
-                            geometry_msgs::PoseStamped& foot);
   
-  jsk_recognition_msgs::PolygonArray::ConstPtr latest_planes_;
-  jsk_recognition_msgs::ModelCoefficientsArray::ConstPtr latest_coefficients_;
+  jsk_recognition_msgs::SimpleOccupancyGridArray::ConstPtr latest_grids_;
   // read a geometry_msgs/pose from the parameter specified.
   // the format of the parameter is [x, y, z, xx, yy, zz, ww].
   // where x, y and z means position and xx, yy, zz and ww means
@@ -97,9 +121,7 @@ protected:
   ros::Subscriber menu_command_sub_;
   ros::Subscriber exec_sub_;
   ros::Subscriber resume_sub_;
-  message_filters::Subscriber<jsk_recognition_msgs::PolygonArray> polygons_sub_;
-  message_filters::Subscriber<jsk_recognition_msgs::ModelCoefficientsArray> coefficients_sub_;
-  boost::shared_ptr<message_filters::Synchronizer<PlaneSyncPolicy> >sync_;
+  ros::Subscriber grid_sub_;
   
   ros::Publisher snapped_pose_pub_;
   ros::Publisher footstep_pub_;
