@@ -438,7 +438,7 @@ bool FootstepMarker::projectMarkerToPlane()
     grids.push_back(boost::make_shared<jsk_pcl_ros::GridPlane>(
                       jsk_pcl_ros::GridPlane::fromROSMsg(
                         latest_grids_->grids[i],
-                        transform.inverse())));
+                        transform)));
   }
   //ROS_ERROR("projecting");
   double min_distance = DBL_MAX;
@@ -448,17 +448,30 @@ bool FootstepMarker::projectMarkerToPlane()
   for (size_t i = 0; i < grids.size(); i++) {
     Eigen::Affine3f projected_coords;
     grids[i]->getPolygon()->projectOnPlane(marker_coords, projected_coords);
+    
+    // Check projection is enough.
+    // if it's not enough, call projectOnPlane one more time
+    Eigen::Vector3f projected_normal = projected_coords.rotation() * Eigen::Vector3f::UnitZ();
+    Eigen::Vector3f normal = grids[i]->getPolygon()->getNormal();
+    if (projected_normal.dot(normal) < cos(0.01)) { // 0.01 radian
+      ROS_WARN("Reprojection is required");
+      Eigen::Affine3f reprojected_coords;
+      grids[i]->getPolygon()->projectOnPlane(projected_coords, reprojected_coords);
+      projected_coords = reprojected_coords;
+      
+    }
     Eigen::Vector3f projected_point(projected_coords.translation());
     if (grids[i]->isOccupiedGlobal(projected_point)) {
       double distance = (marker_coords.translation() - projected_point).norm();
-      ROS_INFO("distance at %lu is %f", i, distance);
+      //ROS_INFO("distance at %lu is %f", i, distance);
       if (distance < min_distance) {
         min_distance = distance;
         tf::poseEigenToMsg(projected_coords, min_pose.pose);
+        //ROS_INFO("z diff: %f(%f)", acos(projected_normal.dot(normal)), projected_normal.dot(normal));
       }
     }
     else {
-      ROS_INFO("not occupied at %lu", i);
+      //ROS_INFO("not occupied at %lu", i);
     }
   }
   // ROS_DEBUG_STREAM("min_distance: " << min_distance);
