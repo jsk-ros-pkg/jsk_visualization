@@ -152,6 +152,17 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   }
 
   initializeInteractiveMarker();
+
+  if (use_footstep_planner_) {
+    ROS_INFO("waiting planner server...");
+    ac_.waitForServer();
+    ROS_INFO("found planner server...");
+  }
+  if (use_footstep_controller_) {
+    ROS_INFO("waiting controller server...");
+    ac_exec_.waitForServer();
+    ROS_INFO("found controller server...");
+  }
   
   move_marker_sub_ = nh.subscribe("move_marker", 1, &FootstepMarker::moveMarkerCB, this);
   menu_command_sub_ = nh.subscribe("menu_command", 1, &FootstepMarker::menuCommandCB, this);
@@ -178,16 +189,6 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
              rfoot_frame_id_.c_str(), marker_frame_id_.c_str());
   }
 
-  if (use_footstep_planner_) {
-    ROS_INFO("waiting planner server...");
-    ac_.waitForServer();
-    ROS_INFO("found planner server...");
-  }
-  if (use_footstep_controller_) {
-    ROS_INFO("waiting controller server...");
-    ac_exec_.waitForServer();
-    ROS_INFO("found controller server...");
-  }
 }
 
 // a function to read double value from XmlRpcValue.
@@ -426,6 +427,7 @@ bool FootstepMarker::projectMarkerToPlane()
   // Convert to jsk_pcl_ros::GridPlane object
   std::vector<jsk_pcl_ros::GridPlane::Ptr> grids;
   for (size_t i = 0; i < latest_grids_->grids.size(); i++) {
+    
     tf::StampedTransform tf_transform
       = jsk_pcl_ros::lookupTransformWithDuration(
         tf_listener_.get(),
@@ -433,8 +435,16 @@ bool FootstepMarker::projectMarkerToPlane()
         latest_grids_->grids[i].header.frame_id,
         marker_pose_.header.stamp,
         ros::Duration(1.0));
+    
     Eigen::Affine3f transform;
     tf::transformTFToEigen(tf_transform, transform);
+    // ROS_INFO("transform: %s -> %s: [%f, %f, %f]",
+    //          marker_pose_.header.frame_id.c_str(),
+    //          latest_grids_->grids[i].header.frame_id.c_str(),
+    //          transform.translation()[0],
+    //          transform.translation()[1],
+    //          transform.translation()[2]);
+    
     grids.push_back(boost::make_shared<jsk_pcl_ros::GridPlane>(
                       jsk_pcl_ros::GridPlane::fromROSMsg(
                         latest_grids_->grids[i],
@@ -444,37 +454,38 @@ bool FootstepMarker::projectMarkerToPlane()
   double min_distance = DBL_MAX;
   geometry_msgs::PoseStamped min_pose;
   Eigen::Affine3f marker_coords;
+  // ROS_INFO_STREAM("marker_pose: " << marker_pose_.pose);
   tf::poseMsgToEigen(marker_pose_.pose, marker_coords);
+  Eigen::Vector3f marker_pos(marker_coords.translation());
   for (size_t i = 0; i < grids.size(); i++) {
     Eigen::Affine3f projected_coords;
     grids[i]->getPolygon()->projectOnPlane(marker_coords, projected_coords);
-    
-    // Check projection is enough.
-    // if it's not enough, call projectOnPlane one more time
     Eigen::Vector3f projected_normal = projected_coords.rotation() * Eigen::Vector3f::UnitZ();
     Eigen::Vector3f normal = grids[i]->getPolygon()->getNormal();
-    if (projected_normal.dot(normal) < cos(0.01)) { // 0.01 radian
-      ROS_WARN("Reprojection is required");
-      Eigen::Affine3f reprojected_coords;
-      grids[i]->getPolygon()->projectOnPlane(projected_coords, reprojected_coords);
-      projected_coords = reprojected_coords;
-      
-    }
     Eigen::Vector3f projected_point(projected_coords.translation());
+    Eigen::Quaternionf projected_rot(projected_coords.rotation());
+    // ROS_INFO("[FootstepMarker::projectMarkerToPlane] normal: [%f, %f, %f]",
+    //          normal[0], normal[1], normal[2]);
+    // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected_normal: [%f, %f, %f]",
+    //          projected_normal[0], projected_normal[1], projected_normal[2]);
+    // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected point: [%f, %f, %f]",
+    //          projected_point[0], projected_point[1], projected_point[2]);
+    // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected rot: [%f, %f, %f, %f]",
+    //          projected_rot.x(), projected_rot.y(), projected_rot.z(), projected_rot.w());
     if (grids[i]->isOccupiedGlobal(projected_point)) {
       double distance = (marker_coords.translation() - projected_point).norm();
-      //ROS_INFO("distance at %lu is %f", i, distance);
+      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] distance at %lu is %f", i, distance);
       if (distance < min_distance) {
         min_distance = distance;
         tf::poseEigenToMsg(projected_coords, min_pose.pose);
-        //ROS_INFO("z diff: %f(%f)", acos(projected_normal.dot(normal)), projected_normal.dot(normal));
+        // ROS_INFO("[FootstepMarker::projectMarkerToPlane] z diff: %f(%f)", acos(projected_normal.dot(normal)), projected_normal.dot(normal));
       }
     }
     else {
-      //ROS_INFO("not occupied at %lu", i);
+      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] not occupied at %lu", i);
     }
   }
-  // ROS_DEBUG_STREAM("min_distance: " << min_distance);
+  // ROS_INFO_STREAM("min_distance: " << min_distance);
   if (min_distance < 0.3) {     // smaller than 30cm
     marker_pose_.pose = min_pose.pose;
     snapped_pose_pub_.publish(min_pose);
@@ -753,11 +764,12 @@ void FootstepMarker::planeCB(
   const jsk_recognition_msgs::SimpleOccupancyGridArray::ConstPtr& grid_msg)
 {
   boost::mutex::scoped_lock lock(plane_mutex_);
+  ROS_INFO("new grid receievd");
   if (grid_msg->grids.size() > 0) {
     latest_grids_ = grid_msg;
   }
   else {
-    ROS_DEBUG_STREAM(__FUNCTION__ << " the size of the grid is 0, ignore");
+    ROS_INFO_STREAM(__FUNCTION__ << " the size of the grid is 0, ignore");
   }
 }
 
