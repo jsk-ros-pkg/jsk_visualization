@@ -4,7 +4,7 @@ from python_qt_binding.QtGui import QAction, QIcon, QMenu, QWidget, \
      QPainter, QColor, QFont, QBrush, QPen, QMessageBox, QSizePolicy, \
      QImage, QPixmap, qRgb, QComboBox, QDialog, QPushButton
 from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot, \
-     QEvent, QSize
+     QEvent, QSize, pyqtSignal, pyqtSlot
 from threading import Lock
 import rospy
 import python_qt_binding.QtCore as QtCore
@@ -70,9 +70,12 @@ class ImageView2Widget(QWidget):
     """
     cv_image = None
     pixmap = None
+    repaint_trigger = pyqtSignal()
     def __init__(self):
         super(ImageView2Widget, self).__init__()
         self.left_button_clicked = False
+        
+        self.repaint_trigger.connect(self.redraw)
         self.lock = Lock()
         self.need_to_rewrite = False
         self.bridge = CvBridge()
@@ -86,14 +89,10 @@ class ImageView2Widget(QWidget):
         vbox.addWidget(self.label)
         self.setLayout(vbox)
         
-        self._update_plot_timer = QTimer(self)
-        self._update_plot_timer.timeout.connect(self.redraw)
-        self._update_plot_timer.start(40)
-        
         self._image_topics = []
         self._update_topic_timer = QTimer(self)
         self._update_topic_timer.timeout.connect(self.updateTopics)
-        self._update_topic_timer.start(1)
+        self._update_topic_timer.start(1000)
         
         self._active_topic = None
         self.setMouseTracking(True)
@@ -126,6 +125,7 @@ class ImageView2Widget(QWidget):
                 self.cv_image = cv_image
             self.numpy_image = np.asarray(self.cv_image)
             self.need_to_rewrite = True
+            self.repaint_trigger.emit()
     def updateTopics(self):
         need_to_update = False
         for (topic, topic_type) in rospy.get_published_topics():
@@ -140,6 +140,7 @@ class ImageView2Widget(QWidget):
                 self._dialog.combo_box.addItem(topic)
             if self._active_topic:
                 self._dialog.combo_box.setCurrentIndex(self._image_topics.index(self._active_topic))
+    @pyqtSlot()
     def redraw(self):
         with self.lock:
             if not self.need_to_rewrite:
@@ -199,16 +200,6 @@ class ImageView2Widget(QWidget):
             msg.x, msg.y = self.mousePosition(e)
             if self.event_pub:
                 self.event_pub.publish(msg)
-    def eventFilter(self, widget, event):
-        if not self.pixmap:
-            return QtGui.QMainWindow.eventFilter(self, widget, event)
-        if (event.type() == QtCore.QEvent.Resize and
-            widget is self.label):
-            self.label.setPixmap(self.pixmap.scaled(
-                self.label.width(), self.label.height(),
-                QtCore.Qt.KeepAspectRatio))
-            return True
-        return QtGui.QMainWindow.eventFilter(self, widget, event)
     def save_settings(self, plugin_settings, instance_settings):
         if self._active_topic:
             instance_settings.set_value("active_topic", self._active_topic)
