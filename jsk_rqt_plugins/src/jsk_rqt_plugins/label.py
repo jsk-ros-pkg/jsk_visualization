@@ -49,7 +49,7 @@ class StringLabelWidget(QWidget):
         self._string_topics = []
         self._update_topic_timer = QTimer(self)
         self._update_topic_timer.timeout.connect(self.updateTopics)
-        self._update_topic_timer.start(1)
+        self._update_topic_timer.start(1000)
         self._active_topic = None
         self._dialog = ComboBoxDialog()
     def trigger_configuration(self):
