@@ -38,7 +38,7 @@ class DRCEnvironmentViewerWidget(QWidget):
                                                        Time, self.nextWhiteoutTimeCallback)
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
-        self._update_plot_timer.start(40)
+        self._update_plot_timer.start(1000 / 15)
     def isDisabledCallback(self, msg):
         with self.lock:
             self.is_disabled = msg.data
