@@ -49,6 +49,7 @@
 #include <jsk_pcl_ros/geo_util.h>
 #include <jsk_pcl_ros/pcl_conversion_util.h>
 #include <jsk_pcl_ros/tf_listener_singleton.h>
+#include <jsk_interactive_marker/SnapFootPrint.h>
 
 FootstepMarker::FootstepMarker():
 ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
@@ -63,6 +64,7 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   pnh.param("lfoot_frame_id", lfoot_frame_id_, std::string("lfsensor"));
   pnh.param("rfoot_frame_id", rfoot_frame_id_, std::string("rfsensor"));
   pnh.param("show_6dof_control", show_6dof_control_, true);
+  pnh.param("use_projection_service", use_projection_service_, false);
   // read lfoot_offset
   readPoseParam(pnh, "lfoot_offset", lleg_offset_);
   readPoseParam(pnh, "rfoot_offset", rleg_offset_);
@@ -420,83 +422,112 @@ void FootstepMarker::callEstimateOcclusion()
 
 bool FootstepMarker::projectMarkerToPlane()
 {
-  if (latest_grids_->grids.size() == 0) {
-    ROS_WARN("it's not valid grids");
-    return false;
-  }
-  // Convert to jsk_pcl_ros::GridPlane object
-  std::vector<jsk_pcl_ros::GridPlane::Ptr> grids;
-  for (size_t i = 0; i < latest_grids_->grids.size(); i++) {
-    
-    tf::StampedTransform tf_transform
-      = jsk_pcl_ros::lookupTransformWithDuration(
-        tf_listener_.get(),
-        marker_pose_.header.frame_id,
-        latest_grids_->grids[i].header.frame_id,
-        marker_pose_.header.stamp,
-        ros::Duration(1.0));
-    
-    Eigen::Affine3f transform;
-    tf::transformTFToEigen(tf_transform, transform);
-    // ROS_INFO("transform: %s -> %s: [%f, %f, %f]",
-    //          marker_pose_.header.frame_id.c_str(),
-    //          latest_grids_->grids[i].header.frame_id.c_str(),
-    //          transform.translation()[0],
-    //          transform.translation()[1],
-    //          transform.translation()[2]);
-    
-    grids.push_back(boost::make_shared<jsk_pcl_ros::GridPlane>(
-                      jsk_pcl_ros::GridPlane::fromROSMsg(
-                        latest_grids_->grids[i],
-                        transform)));
-  }
-  //ROS_ERROR("projecting");
-  double min_distance = DBL_MAX;
-  geometry_msgs::PoseStamped min_pose;
-  Eigen::Affine3f marker_coords;
-  // ROS_INFO_STREAM("marker_pose: " << marker_pose_.pose);
-  tf::poseMsgToEigen(marker_pose_.pose, marker_coords);
-  Eigen::Vector3f marker_pos(marker_coords.translation());
-  for (size_t i = 0; i < grids.size(); i++) {
-    Eigen::Affine3f projected_coords;
-    grids[i]->getPolygon()->projectOnPlane(marker_coords, projected_coords);
-    Eigen::Vector3f projected_normal = projected_coords.rotation() * Eigen::Vector3f::UnitZ();
-    Eigen::Vector3f normal = grids[i]->getPolygon()->getNormal();
-    Eigen::Vector3f projected_point(projected_coords.translation());
-    Eigen::Quaternionf projected_rot(projected_coords.rotation());
-    // ROS_INFO("[FootstepMarker::projectMarkerToPlane] normal: [%f, %f, %f]",
-    //          normal[0], normal[1], normal[2]);
-    // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected_normal: [%f, %f, %f]",
-    //          projected_normal[0], projected_normal[1], projected_normal[2]);
-    // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected point: [%f, %f, %f]",
-    //          projected_point[0], projected_point[1], projected_point[2]);
-    // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected rot: [%f, %f, %f, %f]",
-    //          projected_rot.x(), projected_rot.y(), projected_rot.z(), projected_rot.w());
-    if (grids[i]->isOccupiedGlobal(projected_point)) {
-      double distance = (marker_coords.translation() - projected_point).norm();
-      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] distance at %lu is %f", i, distance);
-      if (distance < min_distance) {
-        min_distance = distance;
-        tf::poseEigenToMsg(projected_coords, min_pose.pose);
-        // ROS_INFO("[FootstepMarker::projectMarkerToPlane] z diff: %f(%f)", acos(projected_normal.dot(normal)), projected_normal.dot(normal));
+  if (use_projection_service_) {
+    jsk_interactive_marker::SnapFootPrint snap;
+    snap.request.input_pose = marker_pose_;
+    if (ros::service::call("project_footprint", snap) && snap.response.success) {
+      // Resolve tf
+      geometry_msgs::PoseStamped resolved_pose;
+      tf_listener_->transformPose(marker_pose_.header.frame_id,
+                                  snap.response.snapped_pose,
+                                  resolved_pose);
+      // Check distance to project
+      Eigen::Vector3d projected_point, marker_point;
+      tf::pointMsgToEigen(marker_pose_.pose.position, marker_point);
+      tf::pointMsgToEigen(resolved_pose.pose.position, projected_point);
+      if ((projected_point - marker_point).norm() < 0.3) {
+        marker_pose_.pose = resolved_pose.pose;
+        return true;
       }
+      else {
+        return false;
+      }
+      
     }
     else {
-      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] not occupied at %lu", i);
+      ROS_WARN("Failed to snap footprint");
+      return false;
     }
   }
-  // ROS_INFO_STREAM("min_distance: " << min_distance);
-  if (min_distance < 0.3) {     // smaller than 30cm
-    marker_pose_.pose = min_pose.pose;
-    snapped_pose_pub_.publish(min_pose);
-    // server_->setPose("footstep_marker", min_pose.pose);
-    // server_->applyChanges();
-    //ROS_WARN("projected");
-    return true;
-  }
   else {
-    //ROS_WARN("not projected");
-    return false;
+    if (latest_grids_->grids.size() == 0) {
+      ROS_WARN("it's not valid grids");
+      return false;
+    }
+    // Convert to jsk_pcl_ros::GridPlane object
+    std::vector<jsk_pcl_ros::GridPlane::Ptr> grids;
+    for (size_t i = 0; i < latest_grids_->grids.size(); i++) {
+    
+      tf::StampedTransform tf_transform
+        = jsk_pcl_ros::lookupTransformWithDuration(
+          tf_listener_.get(),
+          marker_pose_.header.frame_id,
+          latest_grids_->grids[i].header.frame_id,
+          marker_pose_.header.stamp,
+          ros::Duration(1.0));
+    
+      Eigen::Affine3f transform;
+      tf::transformTFToEigen(tf_transform, transform);
+      // ROS_INFO("transform: %s -> %s: [%f, %f, %f]",
+      //          marker_pose_.header.frame_id.c_str(),
+      //          latest_grids_->grids[i].header.frame_id.c_str(),
+      //          transform.translation()[0],
+      //          transform.translation()[1],
+      //          transform.translation()[2]);
+    
+      grids.push_back(boost::make_shared<jsk_pcl_ros::GridPlane>(
+                        jsk_pcl_ros::GridPlane::fromROSMsg(
+                          latest_grids_->grids[i],
+                          transform)));
+    }
+    //ROS_ERROR("projecting");
+    double min_distance = DBL_MAX;
+    geometry_msgs::PoseStamped min_pose;
+    Eigen::Affine3f marker_coords;
+    // ROS_INFO_STREAM("marker_pose: " << marker_pose_.pose);
+    tf::poseMsgToEigen(marker_pose_.pose, marker_coords);
+    Eigen::Vector3f marker_pos(marker_coords.translation());
+    for (size_t i = 0; i < grids.size(); i++) {
+      Eigen::Affine3f projected_coords;
+      grids[i]->getPolygon()->projectOnPlane(marker_coords, projected_coords);
+      Eigen::Vector3f projected_normal = projected_coords.rotation() * Eigen::Vector3f::UnitZ();
+      Eigen::Vector3f normal = grids[i]->getPolygon()->getNormal();
+      Eigen::Vector3f projected_point(projected_coords.translation());
+      Eigen::Quaternionf projected_rot(projected_coords.rotation());
+      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] normal: [%f, %f, %f]",
+      //          normal[0], normal[1], normal[2]);
+      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected_normal: [%f, %f, %f]",
+      //          projected_normal[0], projected_normal[1], projected_normal[2]);
+      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected point: [%f, %f, %f]",
+      //          projected_point[0], projected_point[1], projected_point[2]);
+      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected rot: [%f, %f, %f, %f]",
+      //          projected_rot.x(), projected_rot.y(), projected_rot.z(), projected_rot.w());
+      if (grids[i]->isOccupiedGlobal(projected_point)) {
+        double distance = (marker_coords.translation() - projected_point).norm();
+        // ROS_INFO("[FootstepMarker::projectMarkerToPlane] distance at %lu is %f", i, distance);
+        if (distance < min_distance) {
+          min_distance = distance;
+          tf::poseEigenToMsg(projected_coords, min_pose.pose);
+          // ROS_INFO("[FootstepMarker::projectMarkerToPlane] z diff: %f(%f)", acos(projected_normal.dot(normal)), projected_normal.dot(normal));
+        }
+      }
+      else {
+        // ROS_INFO("[FootstepMarker::projectMarkerToPlane] not occupied at %lu", i);
+      }
+    }
+    // ROS_INFO_STREAM("min_distance: " << min_distance);
+    if (min_distance < 0.3) {     // smaller than 30cm
+      marker_pose_.pose = min_pose.pose;
+      snapped_pose_pub_.publish(min_pose);
+      // server_->setPose("footstep_marker", min_pose.pose);
+      // server_->applyChanges();
+      //ROS_WARN("projected");
+      return true;
+    }
+    else {
+      //ROS_WARN("not projected");
+      return false;
+    }
   }
 }
 
@@ -511,20 +542,25 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
   marker_pose_.pose = feedback->pose;
   marker_frame_id_ = feedback->header.frame_id;
   bool skip_plan = false;
-  if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP) {
-    if (use_plane_snap_) {
-      if (!latest_grids_) {
-        ROS_WARN("no grids are available yet");
-      }
-      else {
-        // do something magicalc
-        skip_plan = !projectMarkerToPlane();
+  try {
+    if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP) {
+      if (use_plane_snap_) {
+        if (!latest_grids_) {
+          ROS_WARN("no grids are available yet");
+        }
+        else {
+          // do something magicalc
+          skip_plan = !projectMarkerToPlane();
         
+        }
       }
     }
+    if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP && !skip_plan) {
+      planIfPossible();
+    }
   }
-  if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP && !skip_plan) {
-    planIfPossible();
+  catch (tf2::TransformException& e) {
+    ROS_ERROR("Failed to lookup transformation: %s", e.what());
   }
 }
 
