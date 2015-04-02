@@ -9,7 +9,8 @@ from matplotlib.colors import colorConverter
 from rqt_py_common.topic_helpers import is_slot_numeric
 from rqt_plot.rosplot import ROSData as _ROSData
 from rqt_plot.rosplot import RosPlotException
-from matplotlib.collections import PolyCollection, PathCollection, LineCollection
+from matplotlib.collections import (PolyCollection, 
+                                    PathCollection, LineCollection)
 import matplotlib
 
 import rospkg
