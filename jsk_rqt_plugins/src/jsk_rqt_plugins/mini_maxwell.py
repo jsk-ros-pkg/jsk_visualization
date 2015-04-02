@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 from rqt_gui_py.plugin import Plugin
-from python_qt_binding.QtGui import QAction, QIcon, QMenu, QWidget, \
-QPainter, QColor, QFont, QBrush, QPen
+from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
+                                     QPainter, QColor, QFont, QBrush, 
+                                     QPen)
 from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot, QEvent
 from threading import Lock
 import rospy

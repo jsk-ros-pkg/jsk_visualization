@@ -1,10 +1,13 @@
 from rqt_gui_py.plugin import Plugin
 import python_qt_binding.QtGui as QtGui
-from python_qt_binding.QtGui import QAction, QIcon, QMenu, QWidget, \
-     QPainter, QColor, QFont, QBrush, QPen, QMessageBox, QSizePolicy, \
-     QImage, QPixmap, qRgb, QComboBox, QDialog, QPushButton
-from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot, \
-     QEvent, QSize, pyqtSignal, pyqtSlot
+from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
+                                     QPainter, QColor, QFont, QBrush,
+                                     QPen, QMessageBox, QSizePolicy,
+                                     QImage, QPixmap, qRgb, QComboBox, 
+                                     QDialog, QPushButton)
+from python_qt_binding.QtCore import (Qt, QTimer, qWarning, Slot,
+                                      QEvent, QSize, pyqtSignal, 
+                                      pyqtSlot)
 from threading import Lock
 import rospy
 import python_qt_binding.QtCore as QtCore
