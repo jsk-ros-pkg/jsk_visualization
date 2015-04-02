@@ -50,12 +50,12 @@ class StatusLightWidget(QWidget):
         self._status_topics = []
         self._update_topic_timer = QTimer(self)
         self._update_topic_timer.timeout.connect(self.updateTopics)
-        self._update_topic_timer.start(1)
+        self._update_topic_timer.start(1000)
         self._active_topic = None
         self._dialog = ComboBoxDialog()
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
-        self._update_plot_timer.start(5)
+        self._update_plot_timer.start(1000 / 15)
         
     def redraw(self):
         self.update()
