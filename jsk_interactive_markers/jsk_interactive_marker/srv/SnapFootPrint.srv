@@ -1,0 +1,4 @@
+geometry_msgs/PoseStamped input_pose
+---
+bool success
+geometry_msgs/PoseStamped snapped_pose
