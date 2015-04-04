@@ -425,6 +425,10 @@ bool FootstepMarker::projectMarkerToPlane()
   if (use_projection_service_) {
     jsk_interactive_marker::SnapFootPrint snap;
     snap.request.input_pose = marker_pose_;
+    snap.request.lleg_pose.orientation.w = 1.0;
+    snap.request.rleg_pose.orientation.w = 1.0;
+    snap.request.lleg_pose.position.y = footstep_margin_ / 2.0;
+    snap.request.rleg_pose.position.y = - footstep_margin_ / 2.0;
     if (ros::service::call("project_footprint", snap) && snap.response.success) {
       // Resolve tf
       geometry_msgs::PoseStamped resolved_pose;
