@@ -131,6 +131,7 @@ namespace jsk_interactive_marker
     int torus_udiv_;
     int torus_vdiv_;
     bool display_interactive_manipulator_;
+    bool strict_tf_;
     int interactive_manipulator_orientation_;
     ros::Timer tf_timer;
   };

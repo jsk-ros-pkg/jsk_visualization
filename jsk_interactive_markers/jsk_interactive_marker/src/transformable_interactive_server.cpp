@@ -7,6 +7,7 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   n_->param("interactive_manipulator_orientation", interactive_manipulator_orientation_ , 0);
   n_->param("torus_udiv", torus_udiv_, 20);
   n_->param("torus_vdiv", torus_vdiv_, 20);
+  n_->param("strict_tf", strict_tf_, false);
   tf_listener_.reset(new tf::TransformListener);
   setpose_sub_ = n_->subscribe<geometry_msgs::PoseStamped>("set_pose", 1, boost::bind(&TransformableInteractiveServer::setPose, this, _1, false));
   setcontrolpose_sub_ = n_->subscribe<geometry_msgs::PoseStamped>("set_control_pose", 1, boost::bind(&TransformableInteractiveServer::setPose, this, _1, true));
@@ -571,8 +572,15 @@ bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableOb
 {
   try {
     geometry_msgs::PoseStamped transformed_pose_stamped;
+    ros::Time stamp;
+    if (strict_tf_) {
+      stamp = pose_stamped.header.stamp;
+    }
+    else {
+      stamp = ros::Time(0.0);
+    }
     if (tf_listener_->waitForTransform(tobject->getFrameId(),
-                                       pose_stamped.header.frame_id, pose_stamped.header.stamp, ros::Duration(1.0))) {
+                                       pose_stamped.header.frame_id, stamp, ros::Duration(1.0))) {
       tf_listener_->transformPose(tobject->getFrameId(), pose_stamped, transformed_pose_stamped);
       tobject->setPose(transformed_pose_stamped.pose, for_interactive_control);
     }
