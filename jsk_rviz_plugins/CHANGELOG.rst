@@ -2,6 +2,36 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins] Fix initialization order in Plotter2DDisplay in order  to avoid call std::vector::resize with uninitialized length
+* [jsk_rviz_plugins] Obsolate SparseOccupancyGridArray, it's replaced by SimpleOccupancyGridArray
+* [jsk_rviz_plugins] Use jsk_pcl_ros/geo_util to reconstruct 3d
+  information in SimpleOccupancyGridArrayDisplay
+* [jsk_rviz_plugins] Add image of SimpleOccupancyGridArray
+* [jsk_rviz_plugins] Support auto coloring in SimpleOccupancyGridArray
+* [jsk_rviz_plugins] Support 4th parameter of plane coefficients in SimpleOccupancyGridArrayDisplay
+* [jsk_rviz_plugins] Add SimpleOccupancyGridArrayDisplay
+* [jsk_rviz_plugins] add tmp pose array display
+* [jsk_rviz_plugins] Change plotter color from 30%
+* add_mesh_model_in_transformable_marker
+* [jsk_rviz_plugins] Do not update min/max value when re-enabling Plotter2D
+* [jsk_rviz_plugins] Change color of plotter from 50 percent of max value
+* [jsk_rviz_plugins] add showing coords option for bounding box array display
+* [jsk_rviz_plugins] Add utility script to visualize difference between to tf frame on rviz
+* [jsk_rviz_plugins] Check direction vector is non-nan in PolygonArrayDisplay
+* [jsk_pcl_ros] Fix license: WillowGarage -> JSK Lab
+* [jsk_pcl_ros] Fix install path and install headers
+* [jsk_rviz_plugins] Do not show disabled properties of OverlayText, Plotter2D and PieChart
+* [jsk_pcl_ros] Make overlay sample more faster
+* [jsk_rviz_plugins] Change color from 60 percent of maximum value in PieChartDisplay and Plotter2DDisplay
+* [jsk_rviz_plugins] Draw PieChart at the first time
+* Remove rosbuild files
+* [jsk_rviz_plugins] Update PieChartDisplay only if value changed
+* [jsk_rviz_plugins] Do not change texture size and position in processMessage
+* [jsk_rviz_plugins] Optimize PieChartDisplay, draw image in update() method instead of processMessage
+* Contributors: Ryohei Ueda, Yu Ohara, Yuto Inagaki
+
 1.0.18 (2015-01-30)
 -------------------
 * add depends to cv_bridge instaed of opencv2

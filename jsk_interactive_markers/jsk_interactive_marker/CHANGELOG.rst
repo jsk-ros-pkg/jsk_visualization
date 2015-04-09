@@ -2,6 +2,33 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_interactive_marker/transformable_object] Add ~stric_tf parameter to
+  relax timestamp soundness
+* [jsk_interactive_marker] Add transformation of lleg and rleg when
+  projecting goal footstep
+* [jsk_interactive_marker/footstep_marker] Add ~use_projection_service to
+  use other service to project footprint marker
+* [jsk_interactive_marker] Fix projection of marker coordinates onto grid
+  in footstep_marker
+* [jsk_interactive_marker] Re-project projected coords if error is not
+  small enough
+* [jsk_interative_marker] Use SimpleOccupancyGridArray to project
+  footprint marker
+* [jsk_interactive_marker] Check tf2 exception in footstep_marker
+* [jsk_interactive_marker] Check polygon to be snapped is valid or not
+* add topic for control control
+* use jsk_recognition_msgs instead of jsk_pcl_ros
+* add offset topic for interactive control
+* add configure for change control orientation mode
+* add_mesh_model_in_transformable_marker
+* suppress print in urdf_model_marker
+* set radius instead of diameter when primitive shape is cylinder
+* fix to set type correctly in getting dimenstions service
+* Remove rosbuild files
+* Contributors: Masaki Murooka, Ryohei Ueda, YuOhara, Yuki Furuta
+
 1.0.18 (2015-01-30)
 -------------------
 * add link to boost

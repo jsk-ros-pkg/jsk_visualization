@@ -2,6 +2,44 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rqt_plugins] Use parens to import a lot of symbols from modules
+* [jsk_rqt_plugins] Fix periodic duration to call updateTopics and redraw
+  in StatusLightWidget
+* [jsk_rqt_plugins] Fix periodic duration to call updateTopics in DRCEnvironmentViewerWidget
+* [jsk_rqt_plugins] Fix periodic duration to call updateTopics in StringLabelWidget
+* [jsk_rqt_plugins] Optimize image_view2_wrapper:
+  1. Use signal to tell redraw event from subscription callback
+  2. Fix periodic duration to call updateTopics
+* [jsk_rqt_plugins] Add image_view2 to build depend
+* [jsk_rqt_plugins] Support move event without clicking mouse in
+  image_view2 rqt wrapper
+* [jsk_rqt_plugins] Fix for handling right click in rqt_image_view2 wrapper
+* [jsk_rqt_plugins] Lower frequency to update StatusLight
+* [jsk_rqt_plugins] Do not redraw image if no needed in image_view2 wrapper
+* [jsk_rqt_plugins] Change message type to uint8 from int32 in Status plugin
+* [jsk_rqt_plugins] Fix typo
+* [jsk_rqt_plugins] Add simple widget to visualize status
+* [jsk_rqt_plugins] Add settings button and remove combo box from top view
+* [jsk_rqt_plugins] Do not convert invalid ROS images to OpenCV images in rqt_image_view2
+* [jsk_rqt_plugins] Update label setting of StringLabel plugin.
+  * Use larger font. font size is 14
+  * Align text to left
+  * Enable word wraping
+* [jsk_rqt_plugins] Use topic stored in perspective file in StringLabel plugin
+* [jsk_rqt_plugins] Simple widget to display std_msgs/String
+* [jsk_rqt_plugins] Add ComboBox and store setting in rqt_image_view2
+* [jsk_rqt_plugins] Fix drawing of rqt_image_view2 when size is not usual
+* [jsk_rqt_plugins] Read configuration of buttons from private parameter space
+* [jsk_rqt_plugins] Add perspective to combine rqt_image_view2 and rqt_service_button
+* [jsk_rqt_plugins] image_view2 rqt wrapper
+* [jsk_rqt_plugins] Support image for button icons in rqt_service_button
+* [jsk_rqt_plugins] Add simple rqt plugin to list buttons to call empty
+  services and configurable by yaml file
+* Remove rosbuild files
+* Contributors: Ryohei Ueda
+
 1.0.18 (2015-01-30)
 -------------------
 
