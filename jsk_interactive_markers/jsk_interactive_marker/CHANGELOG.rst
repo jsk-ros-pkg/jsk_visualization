@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.19 (2015-04-09)
+-------------------
 * [jsk_interactive_marker/transformable_object] Add ~stric_tf parameter to
   relax timestamp soundness
 * [jsk_interactive_marker] Add transformation of lleg and rleg when

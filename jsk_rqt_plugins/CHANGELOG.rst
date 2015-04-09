@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.19 (2015-04-09)
+-------------------
 * [jsk_rqt_plugins] Use parens to import a lot of symbols from modules
 * [jsk_rqt_plugins] Fix periodic duration to call updateTopics and redraw
   in StatusLightWidget
