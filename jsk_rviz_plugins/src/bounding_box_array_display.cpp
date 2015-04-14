@@ -179,6 +179,21 @@ namespace jsk_rviz_plugins
 
   void BoundingBoxArrayDisplay::processMessage(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
   {
+
+    // Check size
+    for (size_t i = 0; i < msg->boxes.size(); i++) {
+      jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
+      if (box.dimensions.x < 1.0e-9 || 
+          box.dimensions.y < 1.0e-9 ||
+          box.dimensions.z < 1.0e-9) {
+        ROS_FATAL("Size of bounding box is [%f, %f, %f]",
+                  box.dimensions.x,
+                  box.dimensions.y,
+                  box.dimensions.z);
+        return;
+      }
+    }
+
     if (!only_edge_) {
       edges_.clear();
       allocateShapes(msg->boxes.size());
