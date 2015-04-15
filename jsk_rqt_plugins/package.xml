@@ -21,6 +21,7 @@
   <run_depend>resource_retriever</run_depend>
   <run_depend>image_view2</run_depend>
   <run_depend>cv_bridge</run_depend>
+  <run_depend>python-urlgrabber</run_depend>
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml" />
   </export>
