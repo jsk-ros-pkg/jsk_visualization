@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_visualization</name>
+  <version>1.0.18</version>
+  <description>
+   <p>Metapackage that contains visualization package for jsk-ros-pkg</p>
+  </description>
+
+  <maintainer email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</maintainer>
+  <author email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</author>
+  <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
+  <author email="youhei@jsk.imi.i.u-tokyo.ac.jp">Youhei Kakiuchi</author>
+
+  <license>BSD</license>
+  <url type="website">http://ros.org/wiki/jsk_visualization</url>
+  <url type="repository">https://github.com/jsk-ros-pkg/jsk_visualization</url>
+  <url type="bugtracker">https://github.com/jsk-ros-pkg/jsk_visualization/issues</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>jsk_rqt_plugins</run_depend>
+  <run_depend>jsk_rviz_plugins</run_depend>
+  <run_depend>jsk_interactive</run_depend>
+  <run_depend>jsk_interactive_marker</run_depend>
+  <run_depend>jsk_interactive_test</run_depend>
+  <export>
+    <metapackage/>
+  </export>
+</package>
