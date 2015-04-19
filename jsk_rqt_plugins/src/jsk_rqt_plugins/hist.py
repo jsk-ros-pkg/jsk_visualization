@@ -147,7 +147,7 @@ class HistogramPlotWidget(QWidget):
         data_x, data_y = self._rosdata.next()
         if len(data_y) == 0:
             return
-        xs = data_y[-1]
+        xs = data_y[-1].histogram
         axes = self.data_plot._canvas.axes
         axes.cla()
         axes.set_xlim(xmin=0, xmax=len(xs))
