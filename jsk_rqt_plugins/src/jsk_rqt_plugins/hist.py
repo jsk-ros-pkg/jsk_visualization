@@ -1,29 +1,24 @@
 #!/usr/bin/env python
 from rqt_gui_py.plugin import Plugin
 from python_qt_binding import loadUi
-from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot
-from python_qt_binding.QtGui import QAction, QIcon, QMenu, QWidget
-from python_qt_binding.QtGui import QWidget, QVBoxLayout, QSizePolicy, QColor
+from python_qt_binding.QtCore import Qt, QTimer, Slot
+from python_qt_binding.QtGui import QIcon, QWidget
+from python_qt_binding.QtGui import QVBoxLayout, QSizePolicy
 from rqt_py_common.topic_completer import TopicCompleter
-from matplotlib.colors import colorConverter
-from rqt_py_common.topic_helpers import is_slot_numeric
 from rqt_plot.rosplot import ROSData as _ROSData
 from rqt_plot.rosplot import RosPlotException
-from matplotlib.collections import (PolyCollection, 
-                                    PathCollection, LineCollection)
-import matplotlib
 
 import rospkg
 import rospy
 
-import os, sys
+import os
+import sys
 import argparse
 
 try:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 except ImportError:
     # work around bug in dateutil
-    import sys
     import thread
     sys.modules['_thread'] = thread
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
@@ -31,7 +26,7 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as Naviga
 from matplotlib.figure import Figure
 
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 class ROSData(_ROSData):
     def _get_data(self, msg):
@@ -48,7 +43,6 @@ class ROSData(_ROSData):
             self.error = RosPlotException("[%s] value was not numeric: %s" % (self.name, val))
 
 
-
 class HistogramPlot(Plugin):
     def __init__(self, context):
         super(HistogramPlot, self).__init__(context)
@@ -56,11 +50,13 @@ class HistogramPlot(Plugin):
         self._args = self._parse_args(context.argv())
         self._widget = HistogramPlotWidget(self._args.topics)
         context.add_widget(self._widget)
+
     def _parse_args(self, argv):
         parser = argparse.ArgumentParser(prog='rqt_histogram_plot', add_help=False)
         HistogramPlot.add_arguments(parser)
         args = parser.parse_args(argv)
         return args
+
     @staticmethod
     def add_arguments(parser):
         group = parser.add_argument_group('Options for rqt_histogram plugin')
@@ -73,7 +69,8 @@ class HistogramPlot(Plugin):
         # group.add_argument('-B', '--buffer', dest='buffer', action="store",
         #     help='the length of the buffer', default=100, type=int)
         group.add_argument('topics', nargs='?', default=[], help='Topics to plot')
-        
+
+
 class HistogramPlotWidget(QWidget):
     _redraw_interval = 40
     def __init__(self, topics):
@@ -127,7 +124,7 @@ class HistogramPlotWidget(QWidget):
                 self._rosdata = ROSData(topic_name, self._start_time)
             else:
                 rospy.logwarn("%s is already subscribed", topic_name)
-        
+
     def enable_timer(self, enabled=True):
         if enabled:
             self._update_plot_timer.start(self._redraw_interval)
@@ -136,11 +133,11 @@ class HistogramPlotWidget(QWidget):
     @Slot()
     def on_clear_button_clicked(self):
         self.data_plot.clear()
-    
+
     @Slot(bool)
     def on_pause_button_clicked(self, checked):
         self.enable_timer(not checked)
-    
+
     def update_plot(self):
         if not self._rosdata:
             return
@@ -156,8 +153,10 @@ class HistogramPlotWidget(QWidget):
         for p, x in zip(pos, xs):
             axes.bar(p, x, color='r', align='center')
         self.data_plot._canvas.draw()
-        
+
+
 class MatHistogramPlot(QWidget):
+
     class Canvas(FigureCanvas):
         def __init__(self, parent=None):
             super(MatHistogramPlot.Canvas, self).__init__(Figure())
@@ -165,9 +164,11 @@ class MatHistogramPlot(QWidget):
             self.figure.tight_layout()
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.updateGeometry()
+
         def resizeEvent(self, event):
             super(MatHistogramPlot.Canvas, self).resizeEvent(event)
             self.figure.tight_layout()
+
     def __init__(self, parent=None):
         super(MatHistogramPlot, self).__init__(parent)
         self._canvas = MatHistogramPlot.Canvas()
@@ -176,8 +177,10 @@ class MatHistogramPlot(QWidget):
         vbox.addWidget(self._toolbar)
         vbox.addWidget(self._canvas)
         self.setLayout(vbox)
+
     def redraw(self):
         pass
+
     def clear(self):
         self._canvas.axes.cla()
         self._canvas.draw()
