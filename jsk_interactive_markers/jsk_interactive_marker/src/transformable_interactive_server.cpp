@@ -578,9 +578,10 @@ bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableOb
     }
     else {
       stamp = ros::Time(0.0);
+      pose_stamped.header.stamp = stamp;
     }
-    if (tf_listener_->waitForTransform(tobject->getFrameId(),
-                                       pose_stamped.header.frame_id, stamp, ros::Duration(1.0))) {
+    if (!strict_tf_ || tf_listener_->waitForTransform(tobject->getFrameId(),
+                                                      pose_stamped.header.frame_id, stamp, ros::Duration(1.0))) {
       tf_listener_->transformPose(tobject->getFrameId(), pose_stamped, transformed_pose_stamped);
       tobject->setPose(transformed_pose_stamped.pose, for_interactive_control);
     }
