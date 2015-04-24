@@ -96,22 +96,24 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   }
 
   server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
-  menu_handler_.insert( "Snap Legs",
-                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
-  menu_handler_.insert( "Reset Legs",
+  // menu_handler_.insert( "Snap Legs",
+  //                       boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  // menu_handler_.insert( "Reset Legs",
+  //                       boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert( "Look Ground",
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   menu_handler_.insert( "Execute the Plan",
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   menu_handler_.insert( "Force to replan",
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
-  menu_handler_.insert( "Estimate occlusion",
-                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  // menu_handler_.insert( "Estimate occlusion",
+  //                       boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   menu_handler_.insert( "Cancel Walk",
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   menu_handler_.insert( "Toggle 6dof marker",
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
-  menu_handler_.insert( "Resume Footstep",
-                      boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  // menu_handler_.insert( "Resume Footstep",
+  //                     boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   marker_pose_.header.frame_id = marker_frame_id_;
   marker_pose_.header.stamp = ros::Time::now();
   marker_pose_.pose.orientation.w = 1.0;
@@ -365,40 +367,37 @@ void FootstepMarker::updateInitialFootstep() {
   }
 }
 
+void FootstepMarker::lookGround()
+{
+  std_srvs::Empty empty;
+  if (ros::service::call("/lookaround_ground", empty)) {
+    ROS_INFO("Finished to look ground");
+  }
+  else {
+    ROS_ERROR("Failed to look ground");
+  }
+}
+
 void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
   switch (menu_entry_id) {
-  case 1: {                     // snapit
-    snapLegs();
-    initializeInteractiveMarker();
+  case 1: {                     // look ground
+    lookGround();
     break;
   }
-  case 2: {
-    resetLegPoses();
-    initializeInteractiveMarker();
-    break;
-  }
-  case 3: {                     // execute
+  case 2: {                     // execute
     executeCB(std_msgs::Empty::ConstPtr());
     break;
   }
-  case 4: {                     // replan
+  case 3: {                     // replan
     planIfPossible();
     break;
   }
-  case 5: {                     // estimate
-    callEstimateOcclusion();
-    break;
-  }
-  case 6: {                     // cancel walk
+  case 4: {                     // cancel walk
     cancelWalk();
     break;
   }
-  case 7: {                     // toggle 6dof marker
+  case 5: {                     // toggle 6dof marker
     show_6dof_control_ = !show_6dof_control_;
-    break;
-  }
-  case 8: {                     // resume
-    resumeCB(std_msgs::Empty::ConstPtr());
     break;
   }
   default: {
