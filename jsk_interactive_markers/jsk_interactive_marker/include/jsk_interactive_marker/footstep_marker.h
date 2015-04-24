@@ -88,6 +88,7 @@ protected:
   void cancelWalk();
   void planIfPossible();
   void resetLegPoses();
+  void lookGround();
   boost::mutex plane_mutex_;
   boost::mutex plan_run_mutex_;
 
