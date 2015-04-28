@@ -14,28 +14,28 @@ import yaml
 import os, sys
 from std_srvs.srv import Empty
 
-class ServiceButtons(Plugin):
+class ServiceRadioButtons(Plugin):
     """
     rqt class to provide multiple buttons
     """
     def __init__(self, context):
-        super(ServiceButtons, self).__init__(context)
-        self.setObjectName("ServiceButtons")
-        self._widget = ServiceButtonWidget()
+        super(ServiceRadioButtons, self).__init__(context)
+        self.setObjectName("ServiceRadioButtons")
+        self._widget = ServiceRadioButtonWidget()
         context.add_widget(self._widget)
 
-class ServiceButtonWidget(QWidget):
+class ServiceRadioButtonWidget(QWidget):
     """
     Qt widget to visualize multiple buttons
     """
     def __init__(self):
-        super(ServiceButtonWidget, self).__init__()
+        super(ServiceRadioButtonWidget, self).__init__()
         self.lock = Lock()
         # Initialize layout of the buttons from yaml file
         # The yaml file can be specified by rosparam
         layout_yaml_file = rospy.get_param(
-            "~service_button_layout_file",
-            "package://jsk_rqt_plugins/resource/service_button_layout.yaml")
+            "~service_radio_button_layout_file",
+            "package://jsk_rqt_plugins/resource/service_radio_button_layout.yaml")
         resolved_layout_yaml_file = get_filename(layout_yaml_file)[len("file://"):]
         # check file exists
         if not os.path.exists(resolved_layout_yaml_file):
@@ -78,7 +78,7 @@ class ServiceButtonWidget(QWidget):
                 if not button_data.has_key("service"):
                     self.showError("service field is missed in yaml")
                     raise Exception("service field is missed in yaml")
-                button = QtGui.QToolButton()
+                button = QtGui.QRadioButton()
                 button.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
                 if button_data.has_key("image"):
                     image_file = get_filename(button_data["image"])[len("file://"):]
@@ -92,7 +92,8 @@ class ServiceButtonWidget(QWidget):
                 if button_data.has_key("name"):
                     name = button_data['name']
                     button.setText(name)
-                button.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
+                if button_data.has_key("default_value") and button_data['default_value']:
+                    button.setChecked(True)
                 button.clicked.connect(self.buttonCallback(button_data['service']))
                 self.layout_boxes[button_data['column']].addWidget(button)
                 self.buttons.append(button)
