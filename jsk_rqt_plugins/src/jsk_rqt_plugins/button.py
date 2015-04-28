@@ -78,17 +78,21 @@ class ServiceButtonWidget(QWidget):
                 if not button_data.has_key("service"):
                     self.showError("service field is missed in yaml")
                     raise Exception("service field is missed in yaml")
-                name = button_data['name']
-                button = QtGui.QPushButton()
+                button = QtGui.QToolButton()
                 button.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
                 if button_data.has_key("image"):
                     image_file = get_filename(button_data["image"])[len("file://"):]
                     if os.path.exists(image_file):
                         icon = QtGui.QIcon(image_file)
                         button.setIcon(icon)
-                        button.setIconSize(QSize(100, 100))
-                else:
+                        if button_data.has_key("image_size"):
+                            button.setIconSize(QSize(button_data["image_size"][0], button_data["image_size"][1]))
+                        else:
+                            button.setIconSize(QSize(100, 100))
+                if button_data.has_key("name"):
+                    name = button_data['name']
                     button.setText(name)
+                button.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
                 button.clicked.connect(self.buttonCallback(button_data['service']))
                 self.layout_boxes[button_data['column']].addWidget(button)
                 self.buttons.append(button)
