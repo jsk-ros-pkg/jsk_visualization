@@ -479,7 +479,6 @@ namespace im_utils {
   }
 
   std::string getRosPathFromFullPath(std::string path){
-    std::cout << path << std::endl;
     std::string ros_package_path = "";
     FILE* fp;
     char buf[1000000];
