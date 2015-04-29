@@ -162,6 +162,7 @@ namespace jsk_rviz_plugins
       for (size_t i = arrow_objects_.size(); i < msg->polygons.size(); i++) {
         Ogre::SceneNode* scene_node = scene_node_->createChildSceneNode();
         ArrowPtr arrow (new rviz::Arrow(scene_manager_, scene_node));
+        scene_node->setVisible(false);
         arrow_objects_.push_back(arrow);
         arrow_nodes_.push_back(scene_node);
       }
