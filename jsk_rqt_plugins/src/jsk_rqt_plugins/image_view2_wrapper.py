@@ -8,10 +8,11 @@ from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
 from python_qt_binding.QtCore import (Qt, QTimer, qWarning, Slot,
                                       QEvent, QSize, pyqtSignal, 
                                       pyqtSlot)
-from threading import Lock
+from threading import Lock, Thread
 import rospy
 import python_qt_binding.QtCore as QtCore
 from std_msgs.msg import Bool, Time
+import time
 import math
 from resource_retriever import get_filename
 import yaml
@@ -93,9 +94,8 @@ class ImageView2Widget(QWidget):
         self.setLayout(vbox)
         
         self._image_topics = []
-        self._update_topic_timer = QTimer(self)
-        self._update_topic_timer.timeout.connect(self.updateTopics)
-        self._update_topic_timer.start(1000)
+        self._update_topic_thread = Thread(target=self.updateTopics)
+        self._update_topic_thread.start()
         
         self._active_topic = None
         self.setMouseTracking(True)
@@ -133,16 +133,19 @@ class ImageView2Widget(QWidget):
         need_to_update = False
         for (topic, topic_type) in rospy.get_published_topics():
             if topic_type == "sensor_msgs/Image":
-                if not topic in self._image_topics:
-                    self._image_topics.append(topic)
-                    need_to_update = True
+                with self.lock:
+                    if not topic in self._image_topics:
+                        self._image_topics.append(topic)
+                        need_to_update = True
         if need_to_update:
-            self._image_topics = sorted(self._image_topics)
-            self._dialog.combo_box.clear()
-            for topic in self._image_topics:
-                self._dialog.combo_box.addItem(topic)
-            if self._active_topic:
-                self._dialog.combo_box.setCurrentIndex(self._image_topics.index(self._active_topic))
+            with self.lock:
+                self._image_topics = sorted(self._image_topics)
+                self._dialog.combo_box.clear()
+                for topic in self._image_topics:
+                    self._dialog.combo_box.addItem(topic)
+                if self._active_topic:
+                    self._dialog.combo_box.setCurrentIndex(self._image_topics.index(self._active_topic))
+        time.sleep(1)
     @pyqtSlot()
     def redraw(self):
         with self.lock:
