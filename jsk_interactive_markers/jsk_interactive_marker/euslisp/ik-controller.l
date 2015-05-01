@@ -4,6 +4,8 @@
 (ros::load-ros-manifest "move_base_msgs")
 
 (ros::load-ros-manifest "moveit_msgs")
+(ros::load-ros-manifest "jsk_recognition_msgs")
+(ros::load-ros-manifest "jsk_footstep_msgs")
 (ros::load-ros-manifest "jsk_pcl_ros")
 (ros::load-ros-manifest "jsk_interactive_marker")
 (ros::load-ros-manifest "jsk_rviz_plugins")

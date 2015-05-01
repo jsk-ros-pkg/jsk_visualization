@@ -1,11 +1,11 @@
 r_hand:
-  - urdf_file: "package://hrpsys_gazebo_tutorials/robot_models/HRP3HAND_R/HRP3HAND_R.urdf"
+  - urdf_file: "package://hrpsys_ros_bridge_tutorials/models/HRP3HAND_R.urdf"
     pose:
         position: {x: -0.1245, y: -0.0392, z: 0.0042}
         orientation: {x: 0.0, y: -0.707107, z: 0.0, w: 0.707107}
 
 l_hand:
-  - urdf_file: "package://hrpsys_gazebo_tutorials/robot_models/HRP3HAND_L/HRP3HAND_L.urdf"
+  - urdf_file: "package://hrpsys_ros_bridge_tutorials/models/HRP3HAND_L.urdf"
     pose:
         position: {x: -0.1245, y: 0.0392, z: 0.0042}
         orientation: {x: 0.0, y: -0.707107, z: 0.0, w: 0.707107}
