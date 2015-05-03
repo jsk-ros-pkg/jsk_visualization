@@ -163,6 +163,11 @@ namespace jsk_rviz_plugins
     }
   }
 
+  void PictogramObject::setSpeed(double speed)
+  {
+    speed_ = speed;
+  }
+
   void PictogramObject::setPose(const geometry_msgs::Pose& pose,
                                 const std::string& frame_id)
   {
@@ -210,7 +215,7 @@ namespace jsk_rviz_plugins
                  frame_id_.c_str());
       return;
     }
-    
+
     if (action_ == jsk_rviz_plugins::Pictogram::ADD) {
       setPosition(position);
       setOrientation(quaternion);
@@ -230,7 +235,7 @@ namespace jsk_rviz_plugins
       }
       time_ = time_ + ros::WallDuration(wall_dt);
       // time_ -> theta
-      Ogre::Radian theta(M_PI * 2 * fmod(time_.toSec(), 1.0));
+      Ogre::Radian theta(M_PI * 2 * fmod(time_.toSec() * speed_, 1.0));
       
       Ogre::Quaternion offset;
       offset.FromAngleAxis(theta, axis);
@@ -312,8 +317,8 @@ namespace jsk_rviz_plugins
       font.setPointSize(32);
       font.setBold(true);
       painter.setFont(font);
-      painter.drawText(0, 0, 512, 128,
-		       Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
+      painter.drawText(0, 0, 128, 128,
+		       Qt::TextWordWrap | Qt::AlignHCenter | Qt::AlignVCenter,
 		       text_.c_str());
       painter.end();
     }
@@ -379,6 +384,7 @@ namespace jsk_rviz_plugins
     // initial setting
     pictogram_->setColor(QColor(25, 255, 240));
     pictogram_->setAlpha(1.0);
+    pictogram_->setSpeed(1.0);
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   }
 
@@ -425,6 +431,8 @@ namespace jsk_rviz_plugins
     pictogram_->setText(msg->character);
     pictogram_->setMode(msg->mode);
     pictogram_->setTTL(msg->ttl);
+    if (msg->speed)
+      pictogram_->setSpeed(msg->speed);
   }
 
   void PictogramDisplay::update(float wall_dt, float ros_dt)
