@@ -81,6 +81,8 @@ namespace jsk_rviz_plugins
     virtual void start();
     virtual void setContext(rviz::DisplayContext* context);
     virtual void setAction(uint8_t action);
+    virtual void setMode(uint8_t mode);
+    virtual void setTTL(double ttl);
   protected:
     virtual void updatePose(float dt);
     virtual void updateColor();
@@ -92,6 +94,8 @@ namespace jsk_rviz_plugins
     std::string frame_id_;
     rviz::DisplayContext* context_;
     ros::WallTime time_;
+    double ttl_;
+    uint8_t mode_;
   private:
     
   };

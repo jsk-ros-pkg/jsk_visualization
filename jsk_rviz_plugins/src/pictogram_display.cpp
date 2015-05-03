@@ -154,8 +154,7 @@ namespace jsk_rviz_plugins
   {
     time_ = ros::WallTime::now();
   }
-    
-  
+
   void PictogramObject::setSize(double size)
   {
     if (size_ != size) {
@@ -176,13 +175,23 @@ namespace jsk_rviz_plugins
     context_ = context;
   }
 
+  void PictogramObject::setMode(uint8_t mode)
+  {
+    mode_ = mode;
+  }
+
+  void PictogramObject::setTTL(double ttl)
+  {
+    ttl_ = ttl;
+  }
+
   void PictogramObject::setAction(uint8_t type)
   {
     action_ = type;
     if (action_ == jsk_rviz_plugins::Pictogram::DELETE) {
       setEnable(false);
     }
-    else if (action_ == jsk_rviz_plugins::Pictogram::JUMP_ONCE) {
+    else{
       start();
     }
   }
@@ -252,6 +261,13 @@ namespace jsk_rviz_plugins
       }
       setOrientation(quaternion);
     }
+
+    double exceeded_time;
+    if( ttl_ && (exceeded_time = (ros::WallTime::now() - time_).toSec()) > ttl_) {
+      setAlpha( std::max(1.0 - 1.0 * (ros::WallTime::now() - (time_ + ros::WallDuration(ttl_))).toSec() / 5.0, 0.0) );
+      if( 1.0 - 1.0 * (ros::WallTime::now() - (time_ + ros::WallDuration(ttl_))).toSec() / 3.0 < 0)
+	setAction(jsk_rviz_plugins::Pictogram::DELETE);
+    }
   }
   
   void PictogramObject::update(float wall_dt, float ros_dt)
@@ -277,7 +293,7 @@ namespace jsk_rviz_plugins
     QColor foreground = rviz::ogreToQt(color_);
     painter.setPen(QPen(foreground, 5, Qt::SolidLine));
     
-    if (isCharacterSupported(text_)) {
+    if (isCharacterSupported(text_) && mode_ == jsk_rviz_plugins::Pictogram::PICTOGRAM_MODE) {
       QFont font = getFont(text_);
       QString pictogram_text = lookupPictogramText(text_);
       if (isEntypo(text_)) {
@@ -290,6 +306,15 @@ namespace jsk_rviz_plugins
       painter.drawText(0, 0, 128, 128,
                        Qt::AlignHCenter | Qt::AlignVCenter,
                        pictogram_text);
+      painter.end();
+    }else if( mode_ == jsk_rviz_plugins::Pictogram::STRING_MODE){
+      QFont font("Arial");
+      font.setPointSize(32);
+      font.setBold(true);
+      painter.setFont(font);
+      painter.drawText(0, 0, 512, 128,
+		       Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
+		       text_.c_str());
       painter.end();
     }
     else {
@@ -376,7 +401,7 @@ namespace jsk_rviz_plugins
   void PictogramDisplay::processMessage(const jsk_rviz_plugins::Pictogram::ConstPtr& msg)
   {
     boost::mutex::scoped_lock (mutex_);
-    
+
     pictogram_->setEnable(isEnabled());
     if (!isEnabled()) {
       return;
@@ -398,6 +423,8 @@ namespace jsk_rviz_plugins
     pictogram_->setAlpha(msg->color.a);
     pictogram_->setPose(msg->pose, msg->header.frame_id);
     pictogram_->setText(msg->character);
+    pictogram_->setMode(msg->mode);
+    pictogram_->setTTL(msg->ttl);
   }
 
   void PictogramDisplay::update(float wall_dt, float ros_dt)

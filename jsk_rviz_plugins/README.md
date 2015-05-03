@@ -140,6 +140,8 @@ You need to use `jsk_rviz_plugins/Pictogram` message to use it.
 
 You can find mapping with `character` and icons at [here](http://fortawesome.github.io/Font-Awesome/icons/) and [here](http://entypo.com/characters/).
 
+If you set STRING_MODE, you can show the string popups.
+
 ### Panels
 #### CancelAction
 ![CancelAction](images/cancel_action.png)
