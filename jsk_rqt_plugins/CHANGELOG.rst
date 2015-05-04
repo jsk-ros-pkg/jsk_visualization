@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.20 (2015-05-04)
+-------------------
 * [jsk_rqt_plugins/iamge_view2_wrapper] Use thread to update image topic
   list isntead of QTimer not to hung up rqt_gui
 * use button general class for push button and radio button. enable to set parameter name to set layout

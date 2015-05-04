@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.20 (2015-05-04)
+-------------------
 * [jsk_rviz_plugins] add rotate speed to pictogram
 * [jsk_rviz_plugins] add String PopupMode for Pictogram
 * [jsk_rviz_plugins] Make arrow nodes invisible as default in PolygonArrayDisplay not to show normal if no needed

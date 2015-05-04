@@ -2,8 +2,8 @@
 Changelog for package jsk_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.20 (2015-05-04)
+-------------------
 * [jsk_visualization] Add jsk_visualization meta package
 * Contributors: Ryohei Ueda
 

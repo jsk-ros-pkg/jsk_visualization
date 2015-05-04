@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.20 (2015-05-04)
+-------------------
 * update furutaructive system. add load-ros-manifest. fix hand model path
 * [jsk_interactive_marker/urdf_control_marker] Transform pose respected to fixed_frame_id
   when urdf_control_marker is moved by topic interface
