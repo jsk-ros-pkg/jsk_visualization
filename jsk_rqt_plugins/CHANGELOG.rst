@@ -2,6 +2,16 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rqt_plugins/iamge_view2_wrapper] Use thread to update image topic
+  list isntead of QTimer not to hung up rqt_gui
+* use button general class for push button and radio button. enable to set parameter name to set layout
+* add radio button plugin
+* display label and icon in button
+* [jsk_rqt_plugins] Add python-urlgrabber dependency
+* Contributors: Masaki Murooka, Ryohei Ueda
+
 1.0.19 (2015-04-09)
 -------------------
 * [jsk_rqt_plugins] Use parens to import a lot of symbols from modules

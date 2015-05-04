@@ -2,6 +2,14 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins] add rotate speed to pictogram
+* [jsk_rviz_plugins] add String PopupMode for Pictogram
+* [jsk_rviz_plugins] Make arrow nodes invisible as default in PolygonArrayDisplay not to show normal if no needed
+* [jsk_rviz_plugins] Check size of BoundingBox
+* Contributors: Ryohei Ueda, Yuto Inagaki
+
 1.0.19 (2015-04-09)
 -------------------
 * [jsk_rviz_plugins] Fix initialization order in Plotter2DDisplay in order  to avoid call std::vector::resize with uninitialized length

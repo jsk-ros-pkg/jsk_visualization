@@ -2,6 +2,16 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update furutaructive system. add load-ros-manifest. fix hand model path
+* [jsk_interactive_marker/urdf_control_marker] Transform pose respected to fixed_frame_id
+  when urdf_control_marker is moved by topic interface
+* [jsk_interactive_marker] Supress messages while loading urdf mesh
+* [jsk_interactive_marker] Add look ground menu to footstep_marker
+* [jsk_interactive_marker] Fix timestamp handling in transformable object when ~strict_tf:=false
+* Contributors: Masaki Murooka, Ryohei Ueda
+
 1.0.19 (2015-04-09)
 -------------------
 * [jsk_interactive_marker/transformable_object] Add ~stric_tf parameter to
