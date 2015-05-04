@@ -16,5 +16,5 @@ uint8 mode
 string character
 float64 size
 float64 ttl
-
+float64 speed
 std_msgs/ColorRGBA color

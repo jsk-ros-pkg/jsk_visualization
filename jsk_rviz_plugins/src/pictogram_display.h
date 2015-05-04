@@ -76,6 +76,7 @@ namespace jsk_rviz_plugins
     virtual void setAlpha(double alpha);
     virtual void setColor(QColor color);
     virtual void setSize(double size);
+    virtual void setSpeed(double speed);
     virtual void setPose(const geometry_msgs::Pose& pose,
                          const std::string& frame_id);
     virtual void start();
@@ -95,6 +96,7 @@ namespace jsk_rviz_plugins
     rviz::DisplayContext* context_;
     ros::WallTime time_;
     double ttl_;
+    double speed_;
     uint8_t mode_;
   private:
     

@@ -123,6 +123,9 @@ namespace jsk_rviz_plugins
       pictogram->setPose(msg->pictograms[i].pose,
                          msg->pictograms[i].header.frame_id);
       pictogram->setText(msg->pictograms[i].character);
+      pictogram->setMode(msg->pictograms[i].mode);
+      pictogram->setTTL(msg->pictograms[i].ttl);
+      pictogram->setSpeed(msg->pictograms[i].speed);
     }
   }
 
