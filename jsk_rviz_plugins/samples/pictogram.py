@@ -853,7 +853,9 @@ while not rospy.is_shutdown():
     msg.pose.orientation.x = 0
     msg.pose.orientation.y = -0.7
     msg.pose.orientation.z = 0
-    msg.size = 0.5
+    msg.mode = Pictogram.PICTOGRAM_MODE
+    # msg.ttl = 5.0
+    msg.size = 1
     msg.color.r = 25 / 255.0
     msg.color.g = 255 / 255.0
     msg.color.b = 240 / 255.0

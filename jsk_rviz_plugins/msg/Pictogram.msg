@@ -9,7 +9,12 @@ uint8 JUMP=5
 uint8 JUMP_ONCE=6
 uint8 action
 
+uint8 PICTOGRAM_MODE=0 
+uint8 STRING_MODE=1
+
+uint8 mode
 string character
 float64 size
+float64 ttl
 
 std_msgs/ColorRGBA color
