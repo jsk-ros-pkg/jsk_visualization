@@ -100,8 +100,8 @@ class ServiceButtonGeneralWidget(QWidget):
                 self.layout = QtGui.QVBoxLayout()
                 self.layout_boxes = [QtGui.QHBoxLayout()
                                      for i in range(max_column_index + 1)]
-            for layout in self.layout_boxes:
-                self.layout.addLayout(layout)
+            self.button_groups = [QtGui.QGroupBox()
+                                 for i in range(max_column_index + 1)]
             for button_data in yaml_data:
                 # check if all the field is available
                 if not button_data.has_key("name"):
@@ -134,8 +134,11 @@ class ServiceButtonGeneralWidget(QWidget):
                     if button_data.has_key("default_value") and button_data['default_value']:
                         button.setChecked(True)
                 self.layout_boxes[button_data['column']].addWidget(button)
-
                 self.buttons.append(button)
+            for i in range(len(self.button_groups)):
+                self.button_groups[i].setLayout(self.layout_boxes[i])
+            for group in self.button_groups:
+                self.layout.addWidget(group)
             self.setLayout(self.layout)
     def buttonCallback(self, service_name):
         """
