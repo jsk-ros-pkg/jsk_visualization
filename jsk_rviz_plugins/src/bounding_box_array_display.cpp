@@ -339,9 +339,27 @@ namespace jsk_rviz_plugins
                              {0, 1, 0},
                              {0, 0, 1}};
         for (int j = 0; j < 3; j++) {
-          Ogre::Vector3 scale(box.dimensions.x,
-                              box.dimensions.y,
-                              box.dimensions.z);
+          // check radius diraction
+          Ogre::Vector3 scale;
+          if (color[j][0] == 1) {
+            scale = Ogre::Vector3(
+              box.dimensions.x,
+              std::min(box.dimensions.y, box.dimensions.z),
+              std::min(box.dimensions.y, box.dimensions.z));
+          }
+          if (color[j][1] == 1) {
+            scale = Ogre::Vector3(
+              box.dimensions.y,
+              std::min(box.dimensions.x, box.dimensions.z),
+              std::min(box.dimensions.x, box.dimensions.z));
+          }
+          if (color[j][2] == 1) {
+            scale = Ogre::Vector3(
+              box.dimensions.z,
+              std::min(box.dimensions.x, box.dimensions.y),
+              std::min(box.dimensions.x, box.dimensions.y));
+          }
+          
           Ogre::Vector3 direction(color[j][0], color[j][1], color[j][2]);
           Ogre::Vector3 pos(box.pose.position.x,
                             box.pose.position.y,
