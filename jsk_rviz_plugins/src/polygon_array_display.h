@@ -52,7 +52,8 @@
 namespace jsk_rviz_plugins
 {
   
-  class PolygonArrayDisplay : public rviz::MessageFilterDisplay<jsk_recognition_msgs::PolygonArray>
+  class PolygonArrayDisplay:
+    public rviz::MessageFilterDisplay<jsk_recognition_msgs::PolygonArray>
   {
     Q_OBJECT
   public:
@@ -62,15 +63,20 @@ namespace jsk_rviz_plugins
   protected:
     virtual void onInitialize();
     virtual void reset();
-    virtual void updateSceneNodes(const jsk_recognition_msgs::PolygonArray::ConstPtr& msg);
+    virtual void updateSceneNodes(
+      const jsk_recognition_msgs::PolygonArray::ConstPtr& msg);
     virtual void allocateMaterials(int num);
     virtual void updateLines(int num);
     virtual Ogre::ColourValue getColor(size_t index);
-    virtual void processLine(const size_t i, const geometry_msgs::PolygonStamped& polygon);
-    virtual void processPolygon(const size_t i, const geometry_msgs::PolygonStamped& polygon);
-    virtual void processNormal(const size_t i, const geometry_msgs::PolygonStamped& polygon);
+    virtual void processLine(
+      const size_t i, const geometry_msgs::PolygonStamped& polygon);
+    virtual void processPolygon(
+      const size_t i, const geometry_msgs::PolygonStamped& polygon);
+    virtual void processNormal(
+      const size_t i, const geometry_msgs::PolygonStamped& polygon);
     virtual void processPolygonMaterial(const size_t i);
-    virtual void processMessage(const jsk_recognition_msgs::PolygonArray::ConstPtr& msg);
+    virtual void processMessage(
+      const jsk_recognition_msgs::PolygonArray::ConstPtr& msg);
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::BoolProperty* only_border_property_;
