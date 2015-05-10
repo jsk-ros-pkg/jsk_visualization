@@ -186,10 +186,9 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void BoundingBoxArrayDisplay::processMessage(
+  bool BoundingBoxArrayDisplay::isValid(
     const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
   {
-
     // Check size
     for (size_t i = 0; i < msg->boxes.size(); i++) {
       jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
@@ -203,190 +202,220 @@ namespace jsk_rviz_plugins
                   box.dimensions.x,
                   box.dimensions.y,
                   box.dimensions.z);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void BoundingBoxArrayDisplay::showBoxes(
+    const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+  {
+    edges_.clear();
+    allocateShapes(msg->boxes.size());
+    for (size_t i = 0; i < msg->boxes.size(); i++) {
+      jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
+      ShapePtr shape = shapes_[i];
+      Ogre::Vector3 position;
+      Ogre::Quaternion quaternion;
+      if(!context_->getFrameManager()->transform(box.header, box.pose,
+                                                 position,
+                                                 quaternion)) {
+        ROS_ERROR( "Error transforming pose"
+                   "'%s' from frame '%s' to frame '%s'",
+                   qPrintable( getName() ), box.header.frame_id.c_str(),
+                   qPrintable( fixed_frame_ ));
+        return;                 // return?
+      }
+      shape->setPosition(position);
+      shape->setOrientation(quaternion);
+      Ogre::Vector3 dimensions;
+      dimensions[0] = box.dimensions.x;
+      dimensions[1] = box.dimensions.y;
+      dimensions[2] = box.dimensions.z;
+      shape->setScale(dimensions);
+      QColor color = getColor(i);
+      shape->setColor(color.red() / 255.0,
+                      color.green() / 255.0,
+                      color.blue() / 255.0,
+                      alpha_);
+    }
+  }
+
+  void BoundingBoxArrayDisplay::showEdges(
+    const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+  {
+    shapes_.clear();
+    allocateBillboardLines(msg->boxes.size());
+    for (size_t i = 0; i < msg->boxes.size(); i++) {
+      jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
+      geometry_msgs::Vector3 dimensions = box.dimensions;
+      
+      BillboardLinePtr edge = edges_[i];
+      edge->clear();
+      Ogre::Vector3 position;
+      Ogre::Quaternion quaternion;
+      if(!context_->getFrameManager()->transform(box.header, box.pose,
+                                                 position,
+                                                 quaternion)) {
+        ROS_ERROR( "Error transforming pose"
+                   "'%s' from frame '%s' to frame '%s'",
+                   qPrintable( getName() ), box.header.frame_id.c_str(),
+                   qPrintable( fixed_frame_ ));
+        return;                 // return?
+      }
+      edge->setPosition(position);
+      edge->setOrientation(quaternion);
+
+      edge->setMaxPointsPerLine(2);
+      edge->setNumLines(12);
+      edge->setLineWidth(line_width_);
+      QColor color = getColor(i);
+      edge->setColor(color.red() / 255.0,
+                     color.green() / 255.0,
+                     color.blue() / 255.0,
+                     alpha_);
+
+
+      
+      Ogre::Vector3 A, B, C, D, E, F, G, H;
+      A[0] = dimensions.x / 2.0;
+      A[1] = dimensions.y / 2.0;
+      A[2] = dimensions.z / 2.0;
+      B[0] = - dimensions.x / 2.0;
+      B[1] = dimensions.y / 2.0;
+      B[2] = dimensions.z / 2.0;
+      C[0] = - dimensions.x / 2.0;
+      C[1] = - dimensions.y / 2.0;
+      C[2] = dimensions.z / 2.0;
+      D[0] = dimensions.x / 2.0;
+      D[1] = - dimensions.y / 2.0;
+      D[2] = dimensions.z / 2.0;
+
+      E[0] = dimensions.x / 2.0;
+      E[1] = dimensions.y / 2.0;
+      E[2] = - dimensions.z / 2.0;
+      F[0] = - dimensions.x / 2.0;
+      F[1] = dimensions.y / 2.0;
+      F[2] = - dimensions.z / 2.0;
+      G[0] = - dimensions.x / 2.0;
+      G[1] = - dimensions.y / 2.0;
+      G[2] = - dimensions.z / 2.0;
+      H[0] = dimensions.x / 2.0;
+      H[1] = - dimensions.y / 2.0;
+      H[2] = - dimensions.z / 2.0;
+      
+      edge->addPoint(A); edge->addPoint(B); edge->newLine();
+      edge->addPoint(B); edge->addPoint(C); edge->newLine();
+      edge->addPoint(C); edge->addPoint(D); edge->newLine();
+      edge->addPoint(D); edge->addPoint(A); edge->newLine();
+      edge->addPoint(E); edge->addPoint(F); edge->newLine();
+      edge->addPoint(F); edge->addPoint(G); edge->newLine();
+      edge->addPoint(G); edge->addPoint(H); edge->newLine();
+      edge->addPoint(H); edge->addPoint(E); edge->newLine();
+      edge->addPoint(A); edge->addPoint(E); edge->newLine();
+      edge->addPoint(B); edge->addPoint(F); edge->newLine();
+      edge->addPoint(C); edge->addPoint(G); edge->newLine();
+      edge->addPoint(D); edge->addPoint(H);
+    }
+  }
+
+  void BoundingBoxArrayDisplay::showCoords(
+    const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+  {
+    allocateCoords(msg->boxes.size());
+    for (size_t i = 0; i < msg->boxes.size(); i++) {
+      jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
+      std::vector<ArrowPtr> coord = coords_objects_[i];
+
+      Ogre::SceneNode* scene_node = coords_nodes_[i];
+      scene_node->setVisible(true);
+      Ogre::Vector3 position;
+      Ogre::Quaternion orientation;
+      if(!context_->getFrameManager()->getTransform(
+           box.header, position, orientation)) {
+        ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
+                  box.header.frame_id.c_str(), qPrintable(fixed_frame_));
         return;
       }
+      scene_node->setPosition(position);
+      scene_node->setOrientation(orientation); // scene node is at frame pose
+
+      float color[3][3] = {{1, 0, 0},
+                           {0, 1, 0},
+                           {0, 0, 1}};
+      for (int j = 0; j < 3; j++) {
+        // check radius diraction
+        Ogre::Vector3 scale;
+        if (color[j][0] == 1) {
+          scale = Ogre::Vector3(
+            box.dimensions.x,
+            std::min(box.dimensions.y, box.dimensions.z),
+            std::min(box.dimensions.y, box.dimensions.z));
+        }
+        if (color[j][1] == 1) {
+          scale = Ogre::Vector3(
+            box.dimensions.y,
+            std::min(box.dimensions.x, box.dimensions.z),
+            std::min(box.dimensions.x, box.dimensions.z));
+        }
+        if (color[j][2] == 1) {
+          scale = Ogre::Vector3(
+            box.dimensions.z,
+            std::min(box.dimensions.x, box.dimensions.y),
+            std::min(box.dimensions.x, box.dimensions.y));
+        }
+          
+        Ogre::Vector3 direction(color[j][0], color[j][1], color[j][2]);
+        Ogre::Vector3 pos(box.pose.position.x,
+                          box.pose.position.y,
+                          box.pose.position.z);
+        Ogre::Quaternion qua(box.pose.orientation.w,
+                             box.pose.orientation.x,
+                             box.pose.orientation.y,
+                             box.pose.orientation.z);
+        direction = qua * direction;
+        Ogre::ColourValue rgba;
+        rgba.a = 1;
+        rgba.r = color[j][0];
+        rgba.g = color[j][1];
+        rgba.b = color[j][2];
+
+        ArrowPtr arrow = coords_objects_[i][j];
+        arrow->setPosition(pos);
+        arrow->setDirection(direction);
+        arrow->setScale(scale);
+        arrow->setColor(rgba);
+      }
+    }
+  }
+
+  void BoundingBoxArrayDisplay::hideCoords()
+  {
+    for (size_t i = 0; i < coords_nodes_.size(); i++) {
+      coords_nodes_[i]->setVisible(false);
+    }
+  }
+  
+  void BoundingBoxArrayDisplay::processMessage(
+    const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+  {
+    if (!isValid(msg)) {
+      return;
     }
 
     if (!only_edge_) {
-      edges_.clear();
-      allocateShapes(msg->boxes.size());
-      for (size_t i = 0; i < msg->boxes.size(); i++) {
-        jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
-        ShapePtr shape = shapes_[i];
-        Ogre::Vector3 position;
-        Ogre::Quaternion quaternion;
-        if(!context_->getFrameManager()->transform(box.header, box.pose,
-                                                   position,
-                                                   quaternion))
-        {
-          ROS_ERROR( "Error transforming pose"
-                     "'%s' from frame '%s' to frame '%s'",
-                     qPrintable( getName() ), box.header.frame_id.c_str(),
-                     qPrintable( fixed_frame_ ));
-          return;                 // return?
-        }
-        shape->setPosition(position);
-        shape->setOrientation(quaternion);
-        Ogre::Vector3 dimensions;
-        dimensions[0] = box.dimensions.x;
-        dimensions[1] = box.dimensions.y;
-        dimensions[2] = box.dimensions.z;
-        shape->setScale(dimensions);
-        QColor color = getColor(i);
-        shape->setColor(color.red() / 255.0,
-                        color.green() / 255.0,
-                        color.blue() / 255.0,
-                        alpha_);
-      }
+      showBoxes(msg);
     }
     else {
-      shapes_.clear();
-      allocateBillboardLines(msg->boxes.size());
-      for (size_t i = 0; i < msg->boxes.size(); i++) {
-        jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
-        geometry_msgs::Vector3 dimensions = box.dimensions;
-      
-        BillboardLinePtr edge = edges_[i];
-        edge->clear();
-        Ogre::Vector3 position;
-        Ogre::Quaternion quaternion;
-        if(!context_->getFrameManager()->transform(box.header, box.pose,
-                                                   position,
-                                                   quaternion))
-        {
-          ROS_ERROR( "Error transforming pose"
-                     "'%s' from frame '%s' to frame '%s'",
-                     qPrintable( getName() ), box.header.frame_id.c_str(),
-                     qPrintable( fixed_frame_ ));
-          return;                 // return?
-        }
-        edge->setPosition(position);
-        edge->setOrientation(quaternion);
-
-        edge->setMaxPointsPerLine(2);
-        edge->setNumLines(12);
-        edge->setLineWidth(line_width_);
-        QColor color = getColor(i);
-        edge->setColor(color.red() / 255.0,
-                       color.green() / 255.0,
-                       color.blue() / 255.0,
-                       alpha_);
-
-
-      
-        Ogre::Vector3 A, B, C, D, E, F, G, H;
-        A[0] = dimensions.x / 2.0;
-        A[1] = dimensions.y / 2.0;
-        A[2] = dimensions.z / 2.0;
-        B[0] = - dimensions.x / 2.0;
-        B[1] = dimensions.y / 2.0;
-        B[2] = dimensions.z / 2.0;
-        C[0] = - dimensions.x / 2.0;
-        C[1] = - dimensions.y / 2.0;
-        C[2] = dimensions.z / 2.0;
-        D[0] = dimensions.x / 2.0;
-        D[1] = - dimensions.y / 2.0;
-        D[2] = dimensions.z / 2.0;
-
-        E[0] = dimensions.x / 2.0;
-        E[1] = dimensions.y / 2.0;
-        E[2] = - dimensions.z / 2.0;
-        F[0] = - dimensions.x / 2.0;
-        F[1] = dimensions.y / 2.0;
-        F[2] = - dimensions.z / 2.0;
-        G[0] = - dimensions.x / 2.0;
-        G[1] = - dimensions.y / 2.0;
-        G[2] = - dimensions.z / 2.0;
-        H[0] = dimensions.x / 2.0;
-        H[1] = - dimensions.y / 2.0;
-        H[2] = - dimensions.z / 2.0;
-      
-        edge->addPoint(A); edge->addPoint(B); edge->newLine();
-        edge->addPoint(B); edge->addPoint(C); edge->newLine();
-        edge->addPoint(C); edge->addPoint(D); edge->newLine();
-        edge->addPoint(D); edge->addPoint(A); edge->newLine();
-        edge->addPoint(E); edge->addPoint(F); edge->newLine();
-        edge->addPoint(F); edge->addPoint(G); edge->newLine();
-        edge->addPoint(G); edge->addPoint(H); edge->newLine();
-        edge->addPoint(H); edge->addPoint(E); edge->newLine();
-        edge->addPoint(A); edge->addPoint(E); edge->newLine();
-        edge->addPoint(B); edge->addPoint(F); edge->newLine();
-        edge->addPoint(C); edge->addPoint(G); edge->newLine();
-        edge->addPoint(D); edge->addPoint(H);
-      }
+      showEdges(msg);
     }
 
     if (show_coords_) {
-      allocateCoords(msg->boxes.size());
-      for (size_t i = 0; i < msg->boxes.size(); i++) {
-        jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
-        std::vector<ArrowPtr> coord = coords_objects_[i];
-
-        Ogre::SceneNode* scene_node = coords_nodes_[i];
-        scene_node->setVisible(true);
-        Ogre::Vector3 position;
-        Ogre::Quaternion orientation;
-        if(!context_->getFrameManager()->getTransform(
-             box.header, position, orientation)) {
-          ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
-                    box.header.frame_id.c_str(), qPrintable(fixed_frame_));
-          return;
-        }
-        scene_node->setPosition(position);
-        scene_node->setOrientation(orientation); // scene node is at frame pose
-
-        float color[3][3] = {{1, 0, 0},
-                             {0, 1, 0},
-                             {0, 0, 1}};
-        for (int j = 0; j < 3; j++) {
-          // check radius diraction
-          Ogre::Vector3 scale;
-          if (color[j][0] == 1) {
-            scale = Ogre::Vector3(
-              box.dimensions.x,
-              std::min(box.dimensions.y, box.dimensions.z),
-              std::min(box.dimensions.y, box.dimensions.z));
-          }
-          if (color[j][1] == 1) {
-            scale = Ogre::Vector3(
-              box.dimensions.y,
-              std::min(box.dimensions.x, box.dimensions.z),
-              std::min(box.dimensions.x, box.dimensions.z));
-          }
-          if (color[j][2] == 1) {
-            scale = Ogre::Vector3(
-              box.dimensions.z,
-              std::min(box.dimensions.x, box.dimensions.y),
-              std::min(box.dimensions.x, box.dimensions.y));
-          }
-          
-          Ogre::Vector3 direction(color[j][0], color[j][1], color[j][2]);
-          Ogre::Vector3 pos(box.pose.position.x,
-                            box.pose.position.y,
-                            box.pose.position.z);
-          Ogre::Quaternion qua(box.pose.orientation.w,
-                               box.pose.orientation.x,
-                               box.pose.orientation.y,
-                               box.pose.orientation.z);
-          direction = qua * direction;
-          Ogre::ColourValue rgba;
-          rgba.a = 1;
-          rgba.r = color[j][0];
-          rgba.g = color[j][1];
-          rgba.b = color[j][2];
-
-          ArrowPtr arrow = coords_objects_[i][j];
-          arrow->setPosition(pos);
-          arrow->setDirection(direction);
-          arrow->setScale(scale);
-          arrow->setColor(rgba);
-        }
-      }
+      showCoords(msg);
     }
     else {
-      for (size_t i = 0; i < coords_nodes_.size(); i++) {
-        coords_nodes_[i]->setVisible(false);
-      }
+      hideCoords();
     }
   }
 }
