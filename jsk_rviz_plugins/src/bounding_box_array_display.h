@@ -48,7 +48,8 @@
 
 namespace jsk_rviz_plugins
 {
-  class BoundingBoxArrayDisplay: public rviz::MessageFilterDisplay<jsk_recognition_msgs::BoundingBoxArray>
+  class BoundingBoxArrayDisplay:
+    public rviz::MessageFilterDisplay<jsk_recognition_msgs::BoundingBoxArray>
   {
     Q_OBJECT
   public:
@@ -88,7 +89,8 @@ namespace jsk_rviz_plugins
     void updateLineWidth();
     void updateShowCoords();
   private:
-    void processMessage(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
+    void processMessage(
+      const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
   };
 
 }
