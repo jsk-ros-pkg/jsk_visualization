@@ -103,37 +103,69 @@ namespace jsk_rviz_plugins
   void BoundingBoxArrayDisplay::updateLineWidth()
   {
     line_width_ = line_width_property_->getFloat();
+    if (latest_msg_) {
+      processMessage(latest_msg_);
+    }
   }
   
   void BoundingBoxArrayDisplay::updateColor()
   {
     color_ = color_property_->getColor();
+    if (latest_msg_) {
+      processMessage(latest_msg_);
+    }
   }
 
   void BoundingBoxArrayDisplay::updateAlpha()
   {
     alpha_ = alpha_property_->getFloat();
+    if (latest_msg_) {
+      processMessage(latest_msg_);
+    }
   }
 
   void BoundingBoxArrayDisplay::updateOnlyEdge()
   {
     only_edge_ = only_edge_property_->getBool();
+    // Imediately apply attribute
+    if (latest_msg_) {
+      if (only_edge_) {
+        showEdges(latest_msg_);
+      }
+      else {
+        showBoxes(latest_msg_);
+      }
+    }
   }
 
   void BoundingBoxArrayDisplay::updateAutoColor()
   {
     auto_color_ = auto_color_property_->getBool();
+    if (latest_msg_) {
+      processMessage(latest_msg_);
+    }
   }
 
   void BoundingBoxArrayDisplay::updateShowCoords()
   {
     show_coords_ = show_coords_property_->getBool();
+    // Immediately apply show_coords attribute
+    if (!show_coords_) {
+      hideCoords();
+    }
+    else if (show_coords_ && latest_msg_) {
+      showCoords(latest_msg_);
+    }
   }
 
   void BoundingBoxArrayDisplay::reset()
   {
     MFDClass::reset();
     shapes_.clear();
+    edges_.clear();
+    coords_nodes_.clear();
+    coords_objects_.clear();
+    latest_msg_.reset();
   }
 
   void BoundingBoxArrayDisplay::allocateShapes(int num)
@@ -403,7 +435,9 @@ namespace jsk_rviz_plugins
     if (!isValid(msg)) {
       return;
     }
-
+    // Store latest message
+    latest_msg_ = msg;
+    
     if (!only_edge_) {
       showBoxes(msg);
     }
