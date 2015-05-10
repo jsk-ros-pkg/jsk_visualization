@@ -196,7 +196,10 @@ namespace jsk_rviz_plugins
       jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
       if (box.dimensions.x < 1.0e-9 || 
           box.dimensions.y < 1.0e-9 ||
-          box.dimensions.z < 1.0e-9) {
+          box.dimensions.z < 1.0e-9 ||
+          std::isnan(box.dimensions.x) ||
+          std::isnan(box.dimensions.y) ||
+          std::isnan(box.dimensions.z)) {
         ROS_FATAL("Size of bounding box is [%f, %f, %f]",
                   box.dimensions.x,
                   box.dimensions.y,
