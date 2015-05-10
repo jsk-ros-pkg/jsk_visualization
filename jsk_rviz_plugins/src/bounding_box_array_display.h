@@ -91,6 +91,8 @@ namespace jsk_rviz_plugins
     std::vector<BillboardLinePtr> edges_;
     std::vector<Ogre::SceneNode*> coords_nodes_;
     std::vector<std::vector<ArrowPtr> > coords_objects_;
+
+    jsk_recognition_msgs::BoundingBoxArray::ConstPtr latest_msg_;
   private Q_SLOTS:
     void updateColor();
     void updateAlpha();
