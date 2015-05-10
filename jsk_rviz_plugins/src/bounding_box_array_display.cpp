@@ -173,7 +173,7 @@ namespace jsk_rviz_plugins
       for (size_t i = coords_objects_.size(); i < num; i++) {
         Ogre::SceneNode* scene_node = scene_node_->createChildSceneNode();
         std::vector<ArrowPtr> coord;
-        for(int i = 0; i < 3; i++){
+        for (int i = 0; i < 3; i++) {
           ArrowPtr arrow (new rviz::Arrow(scene_manager_, scene_node));
           coord.push_back(arrow);
         }
@@ -181,8 +181,7 @@ namespace jsk_rviz_plugins
         coords_objects_.push_back(coord);
       }
     }
-    else if (num < coords_objects_.size())
-    {
+    else if (num < coords_objects_.size()) {
       coords_objects_.resize(num);
     }
   }
@@ -317,7 +316,7 @@ namespace jsk_rviz_plugins
       }
     }
 
-    if(show_coords_) {
+    if (show_coords_) {
       allocateCoords(msg->boxes.size());
       for (size_t i = 0; i < msg->boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
@@ -339,7 +338,7 @@ namespace jsk_rviz_plugins
         float color[3][3] = {{1, 0, 0},
                              {0, 1, 0},
                              {0, 0, 1}};
-        for(int j = 0; j < 3; j++){
+        for (int j = 0; j < 3; j++) {
           Ogre::Vector3 scale(box.dimensions.x,
                               box.dimensions.y,
                               box.dimensions.z);
@@ -366,7 +365,7 @@ namespace jsk_rviz_plugins
         }
       }
     }
-    else{
+    else {
       for (size_t i = 0; i < coords_nodes_.size(); i++) {
         coords_nodes_[i]->setVisible(false);
       }
