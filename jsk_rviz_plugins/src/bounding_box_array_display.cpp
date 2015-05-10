@@ -38,24 +38,30 @@ namespace jsk_rviz_plugins
 {  
   BoundingBoxArrayDisplay::BoundingBoxArrayDisplay()
   {
-    color_property_ = new rviz::ColorProperty("color", QColor(25, 255, 0),
-                                              "color to draw the bounding boxes",
-                                              this, SLOT(updateColor()));
-    alpha_property_ = new rviz::FloatProperty("alpha", 0.8,
-                                              "alpha value to draw the bounding boxes",
-                                              this, SLOT(updateAlpha()));
-    only_edge_property_ = new rviz::BoolProperty("only edge", false,
-                                                 "show only the edges of the boxes",
-                                                 this, SLOT(updateOnlyEdge()));
-    line_width_property_ = new rviz::FloatProperty("line width", 0.005,
-                                                   "line width of the edges",
-                                                   this, SLOT(updateLineWidth()));
-    auto_color_property_ = new rviz::BoolProperty("auto color", false,
-                                                  "change the color of the boxes automatically",
-                                                  this, SLOT(updateAutoColor()));
-    show_coords_property_ = new rviz::BoolProperty("show coords", true,
-                                                   "show coordinate of bounding box",
-                                                   this, SLOT(updateShowCoords()));
+    color_property_ = new rviz::ColorProperty(
+      "color", QColor(25, 255, 0),
+      "color to draw the bounding boxes",
+      this, SLOT(updateColor()));
+    alpha_property_ = new rviz::FloatProperty(
+      "alpha", 0.8,
+      "alpha value to draw the bounding boxes",
+      this, SLOT(updateAlpha()));
+    only_edge_property_ = new rviz::BoolProperty(
+      "only edge", false,
+      "show only the edges of the boxes",
+      this, SLOT(updateOnlyEdge()));
+    line_width_property_ = new rviz::FloatProperty(
+      "line width", 0.005,
+      "line width of the edges",
+      this, SLOT(updateLineWidth()));
+    auto_color_property_ = new rviz::BoolProperty(
+      "auto color", false,
+      "change the color of the boxes automatically",
+      this, SLOT(updateAutoColor()));
+    show_coords_property_ = new rviz::BoolProperty(
+      "show coords", true,
+      "show coordinate of bounding box",
+      this, SLOT(updateShowCoords()));
   }
 
   BoundingBoxArrayDisplay::~BoundingBoxArrayDisplay()
@@ -71,7 +77,9 @@ namespace jsk_rviz_plugins
   {
     if (auto_color_) {
       std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(index);
-      return QColor(ros_color.r * 255.0, ros_color.g * 255.0, ros_color.b * 255.0,
+      return QColor(ros_color.r * 255.0,
+                    ros_color.g * 255.0,
+                    ros_color.b * 255.0,
                     ros_color.a * 255.0);
     }
     else {
@@ -132,8 +140,9 @@ namespace jsk_rviz_plugins
   {
     if (num > shapes_.size()) {
       for (size_t i = shapes_.size(); i < num; i++) {
-        ShapePtr shape (new rviz::Shape(rviz::Shape::Cube, context_->getSceneManager(),
-                                        scene_node_));
+        ShapePtr shape (new rviz::Shape(
+                          rviz::Shape::Cube, context_->getSceneManager(),
+                          scene_node_));
         shapes_.push_back(shape);
       }
     }
@@ -147,7 +156,8 @@ namespace jsk_rviz_plugins
   {
     if (num > edges_.size()) {
       for (size_t i = edges_.size(); i < num; i++) {
-        BillboardLinePtr line(new rviz::BillboardLine(context_->getSceneManager(), scene_node_));
+        BillboardLinePtr line(new rviz::BillboardLine(
+                                context_->getSceneManager(), scene_node_));
         edges_.push_back(line);
       }
     }
@@ -177,7 +187,8 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void BoundingBoxArrayDisplay::processMessage(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+  void BoundingBoxArrayDisplay::processMessage(
+    const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
   {
 
     // Check size
@@ -206,7 +217,8 @@ namespace jsk_rviz_plugins
                                                    position,
                                                    quaternion))
         {
-          ROS_ERROR( "Error transforming pose '%s' from frame '%s' to frame '%s'",
+          ROS_ERROR( "Error transforming pose"
+                     "'%s' from frame '%s' to frame '%s'",
                      qPrintable( getName() ), box.header.frame_id.c_str(),
                      qPrintable( fixed_frame_ ));
           return;                 // return?
@@ -240,7 +252,8 @@ namespace jsk_rviz_plugins
                                                    position,
                                                    quaternion))
         {
-          ROS_ERROR( "Error transforming pose '%s' from frame '%s' to frame '%s'",
+          ROS_ERROR( "Error transforming pose"
+                     "'%s' from frame '%s' to frame '%s'",
                      qPrintable( getName() ), box.header.frame_id.c_str(),
                      qPrintable( fixed_frame_ ));
           return;                 // return?
@@ -301,7 +314,7 @@ namespace jsk_rviz_plugins
       }
     }
 
-    if(show_coords_){
+    if(show_coords_) {
       allocateCoords(msg->boxes.size());
       for (size_t i = 0; i < msg->boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
@@ -311,7 +324,8 @@ namespace jsk_rviz_plugins
         scene_node->setVisible(true);
         Ogre::Vector3 position;
         Ogre::Quaternion orientation;
-        if(!context_->getFrameManager()->getTransform(box.header, position, orientation)) {
+        if(!context_->getFrameManager()->getTransform(
+             box.header, position, orientation)) {
           ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
                     box.header.frame_id.c_str(), qPrintable(fixed_frame_));
           return;
@@ -323,15 +337,17 @@ namespace jsk_rviz_plugins
                              {0, 1, 0},
                              {0, 0, 1}};
         for(int j = 0; j < 3; j++){
-          Ogre::Vector3 scale(box.dimensions.x, box.dimensions.y, box.dimensions.z);
+          Ogre::Vector3 scale(box.dimensions.x,
+                              box.dimensions.y,
+                              box.dimensions.z);
           Ogre::Vector3 direction(color[j][0], color[j][1], color[j][2]);
-          Ogre::Vector3 pos(box.pose.position.x,box.pose.position.y,box.pose.position.z);
-          Ogre::Quaternion qua(
-                               box.pose.orientation.w,
+          Ogre::Vector3 pos(box.pose.position.x,
+                            box.pose.position.y,
+                            box.pose.position.z);
+          Ogre::Quaternion qua(box.pose.orientation.w,
                                box.pose.orientation.x,
                                box.pose.orientation.y,
-                               box.pose.orientation.z
-                               );
+                               box.pose.orientation.z);
           direction = qua * direction;
           Ogre::ColourValue rgba;
           rgba.a = 1;
@@ -356,4 +372,5 @@ namespace jsk_rviz_plugins
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::BoundingBoxArrayDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(
+  jsk_rviz_plugins::BoundingBoxArrayDisplay, rviz::Display)
