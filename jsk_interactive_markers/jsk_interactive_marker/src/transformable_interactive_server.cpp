@@ -201,6 +201,7 @@ bool TransformableInteractiveServer::setPoseService(jsk_interactive_marker::SetT
     tobject = transformable_objects_map_[focus_object_marker_name_];
   }else{
     if (transformable_objects_map_.find(req.target_name) == transformable_objects_map_.end()) { return true; }
+    focus_object_marker_name_ = req.target_name;
     tobject = transformable_objects_map_[req.target_name];
   }
   if(setPoseWithTfTransformation(tobject, req.pose_stamped, for_interactive_control)){
