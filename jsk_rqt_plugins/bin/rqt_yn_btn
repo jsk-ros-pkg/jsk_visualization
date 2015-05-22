@@ -2,8 +2,12 @@
 
 import sys
 
-from jsk_rqt_plugins.yes_no_button import YesNoButton
 from rqt_gui.main import Main
+try:
+    from jsk_rqt_plugins.yes_no_button import YesNoButton
+except:
+    import roslib; roslib.load_manifest('jsk_rqt_plugins')
+    from jsk_rqt_plugins.yes_no_button import YesNoButton
 
 
 plugin = 'YesNoButton'
