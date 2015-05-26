@@ -50,6 +50,7 @@
 #include <jsk_pcl_ros/pcl_conversion_util.h>
 #include <jsk_pcl_ros/tf_listener_singleton.h>
 #include <jsk_interactive_marker/SnapFootPrint.h>
+#include <jsk_interactive_marker/SnapFootPrintInput.h>
 
 FootstepMarker::FootstepMarker():
 ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
@@ -65,6 +66,10 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   pnh.param("rfoot_frame_id", rfoot_frame_id_, std::string("rfsensor"));
   pnh.param("show_6dof_control", show_6dof_control_, true);
   pnh.param("use_projection_service", use_projection_service_, false);
+  pnh.param("use_projection_topic", use_projection_topic_, false);
+  if (use_projection_topic_) {
+    project_footprint_pub_ = pnh.advertise<jsk_interactive_marker::SnapFootPrintInput>("project_footprint", 1);
+  }
   // read lfoot_offset
   readPoseParam(pnh, "lfoot_offset", lleg_offset_);
   readPoseParam(pnh, "rfoot_offset", rleg_offset_);
@@ -192,7 +197,10 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
     ROS_INFO("resolved transform {%s, %s} => %s", lfoot_frame_id_.c_str(),
              rfoot_frame_id_.c_str(), marker_frame_id_.c_str());
   }
-
+  if (use_projection_topic_) {
+    projection_sub_ = pnh.subscribe("projected_pose", 1,
+                                    &FootstepMarker::projectionCallback, this);
+  }
 }
 
 // a function to read double value from XmlRpcValue.
@@ -445,12 +453,21 @@ bool FootstepMarker::projectMarkerToPlane()
       else {
         return false;
       }
-      
     }
     else {
       ROS_WARN("Failed to snap footprint");
       return false;
     }
+  }
+  else if (use_projection_topic_) {
+    jsk_interactive_marker::SnapFootPrintInput msg;
+    msg.input_pose = marker_pose_;
+    msg.lleg_pose.orientation.w = 1.0;
+    msg.rleg_pose.orientation.w = 1.0;
+    msg.lleg_pose.position.y = footstep_margin_ / 2.0;
+    msg.rleg_pose.position.y = - footstep_margin_ / 2.0;
+    project_footprint_pub_.publish(msg);
+    return true;                // true...?
   }
   else {
     if (latest_grids_->grids.size() == 0) {
@@ -579,6 +596,21 @@ void FootstepMarker::resumeFootstep() {
   jsk_footstep_msgs::ExecFootstepsGoal goal;
   goal.strategy = jsk_footstep_msgs::ExecFootstepsGoal::RESUME;
   ac_exec_.sendGoal(goal);
+}
+
+void FootstepMarker::projectionCallback(const geometry_msgs::PoseStamped& pose)
+{
+  geometry_msgs::PoseStamped resolved_pose;
+  tf_listener_->transformPose(marker_pose_.header.frame_id,
+                              pose,
+                              resolved_pose);
+  // Check distance to project
+  Eigen::Vector3d projected_point, marker_point;
+  tf::pointMsgToEigen(marker_pose_.pose.position, marker_point);
+  tf::pointMsgToEigen(resolved_pose.pose.position, projected_point);
+  if ((projected_point - marker_point).norm() < 0.3) {
+    marker_pose_.pose = resolved_pose.pose;
+  }
 }
 
 void FootstepMarker::executeFootstep() {
