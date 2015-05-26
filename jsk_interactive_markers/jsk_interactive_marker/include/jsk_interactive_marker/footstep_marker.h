@@ -108,6 +108,8 @@ protected:
   void executeFootstep();
   void resumeFootstep();
 
+  void projectionCallback(const geometry_msgs::PoseStamped& pose);
+
   visualization_msgs::Marker makeFootstepMarker(geometry_msgs::Pose pose);
   
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
@@ -123,7 +125,8 @@ protected:
   ros::Subscriber exec_sub_;
   ros::Subscriber resume_sub_;
   ros::Subscriber grid_sub_;
-  
+  ros::Subscriber projection_sub_;
+  ros::Publisher project_footprint_pub_;
   ros::Publisher snapped_pose_pub_;
   ros::Publisher footstep_pub_;
   ros::ServiceClient snapit_client_;
@@ -132,6 +135,7 @@ protected:
   PlanningActionClient ac_;
   ExecuteActionClient ac_exec_;
   bool use_projection_service_;
+  bool use_projection_topic_;
   bool show_6dof_control_;
   bool use_footstep_planner_;
   bool use_footstep_controller_;
