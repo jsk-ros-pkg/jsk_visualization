@@ -90,12 +90,14 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   pnh.param("use_footstep_controller", use_footstep_controller_, true);
   pnh.param("use_initial_footstep_tf", use_initial_footstep_tf_, true);
   pnh.param("wait_snapit_server", wait_snapit_server_, false);
+  bool nowait = true;
+  pnh.param("no_wait", nowait, true);
   pnh.param("frame_id", marker_frame_id_, std::string("/map"));
   footstep_pub_ = nh.advertise<jsk_footstep_msgs::FootstepArray>("footstep_from_marker", 1);
   snapit_client_ = nh.serviceClient<jsk_pcl_ros::CallSnapIt>("snapit");
   snapped_pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("snapped_pose", 1);
   estimate_occlusion_client_ = nh.serviceClient<std_srvs::Empty>("require_estimation");
-  if (wait_snapit_server_) {
+  if (!nowait && wait_snapit_server_) {
     snapit_client_.waitForExistence();
   }
   
@@ -575,7 +577,7 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
   try {
     if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP) {
       if (use_plane_snap_) {
-        if (!latest_grids_) {
+        if (!use_projection_topic_ && !latest_grids_) {
           ROS_WARN("no grids are available yet");
         }
         else {
@@ -586,7 +588,7 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
       }
     }
     if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP && !skip_plan) {
-      planIfPossible();
+      //planIfPossible();
     }
   }
   catch (tf2::TransformException& e) {
