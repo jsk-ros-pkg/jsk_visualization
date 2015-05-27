@@ -67,6 +67,7 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   pnh.param("show_6dof_control", show_6dof_control_, true);
   pnh.param("use_projection_service", use_projection_service_, false);
   pnh.param("use_projection_topic", use_projection_topic_, false);
+  pnh.param("always_planning", always_planning_, true);
   if (use_projection_topic_) {
     project_footprint_pub_ = pnh.advertise<jsk_interactive_marker::SnapFootPrintInput>("project_footprint", 1);
   }
@@ -588,7 +589,7 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
       }
     }
     if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP && !skip_plan) {
-      //planIfPossible();
+      if (always_planning_) planIfPossible();
     }
   }
   catch (tf2::TransformException& e) {
