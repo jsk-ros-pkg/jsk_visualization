@@ -56,7 +56,7 @@
 
 FootstepMarker::FootstepMarker():
 ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
-  plan_run_(false) {
+plan_run_(false), lleg_first_(true) {
   // read parameters
   tf_listener_.reset(new tf::TransformListener);
   ros::NodeHandle pnh("~");
@@ -137,6 +137,10 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
   menu_handler_.insert("Straight Heuristic",
                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   menu_handler_.insert("Stepcost Heuristic**",
+                       boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert("LLeg First",
+                       boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert("RLeg First",
                        boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   marker_pose_.header.frame_id = marker_frame_id_;
   marker_pose_.header.stamp = ros::Time::now();
@@ -435,6 +439,14 @@ void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
     changePlannerHeuristic(":stepcost-heuristic**");
     break;
   }
+  case 8: {                     // toggle 6dof marker
+    lleg_first_ = true;
+    break;
+  }
+  case 9: {                     // toggle 6dof marker
+    lleg_first_ = false;
+    break;
+  }
     
   default: {
     break;
@@ -706,11 +718,18 @@ void FootstepMarker::planIfPossible() {
     jsk_footstep_msgs::Footstep initial_left;
     initial_left.leg = jsk_footstep_msgs::Footstep::LEFT;
     initial_left.pose = lleg_initial_pose_;
-    initial_footstep.footsteps.push_back(initial_left);
+    
     jsk_footstep_msgs::Footstep initial_right;
     initial_right.leg = jsk_footstep_msgs::Footstep::RIGHT;
     initial_right.pose = rleg_initial_pose_;
-    initial_footstep.footsteps.push_back(initial_right);
+    if (lleg_first_) {
+      initial_footstep.footsteps.push_back(initial_left);
+      initial_footstep.footsteps.push_back(initial_right);
+    }
+    else {
+      initial_footstep.footsteps.push_back(initial_right);
+      initial_footstep.footsteps.push_back(initial_left);
+    }
     goal.initial_footstep = initial_footstep;
     ac_.sendGoal(goal, boost::bind(&FootstepMarker::planDoneCB, this, _1, _2));
   }
