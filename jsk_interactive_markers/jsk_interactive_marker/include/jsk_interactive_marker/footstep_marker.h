@@ -146,6 +146,7 @@ protected:
   bool use_initial_footstep_tf_;
   bool use_initial_reference_;
   bool always_planning_;
+  bool lleg_first_;
   std::string initial_reference_frame_;
   geometry_msgs::Pose lleg_pose_;
   geometry_msgs::Pose rleg_pose_;
