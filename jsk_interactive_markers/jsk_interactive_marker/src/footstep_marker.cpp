@@ -51,6 +51,8 @@
 #include <jsk_pcl_ros/tf_listener_singleton.h>
 #include <jsk_interactive_marker/SnapFootPrint.h>
 #include <jsk_interactive_marker/SnapFootPrintInput.h>
+#include <jsk_interactive_marker/SetHeuristic.h>
+#include <jsk_topic_tools/log_utils.h>
 
 FootstepMarker::FootstepMarker():
 ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
@@ -129,6 +131,10 @@ ac_("footstep_planner", true), ac_exec_("footstep_controller", true),
                         boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   // menu_handler_.insert( "Resume Footstep",
   //                     boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert("Straight Heuristic",
+                       boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
+  menu_handler_.insert("Stepcost Heuristic**",
+                       boost::bind(&FootstepMarker::menuFeedbackCB, this, _1));
   marker_pose_.header.frame_id = marker_frame_id_;
   marker_pose_.header.stamp = ros::Time::now();
   marker_pose_.pose.orientation.w = 1.0;
@@ -418,9 +424,30 @@ void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
     show_6dof_control_ = !show_6dof_control_;
     break;
   }
+  case 6: {                     // toggle 6dof marker
+    changePlannerHeuristic(":straight-heuristic");
+    break;
+  }
+  case 7: {                     // toggle 6dof marker
+    changePlannerHeuristic(":stepcost-heuristic**");
+    break;
+  }
+    
   default: {
     break;
   }
+  }
+}
+
+void FootstepMarker::changePlannerHeuristic(const std::string& heuristic)
+{
+  jsk_interactive_marker::SetHeuristic heuristic_req;
+  heuristic_req.request.heuristic = heuristic;
+  if (!ros::service::call("/footstep_planner/set_heuristic", heuristic_req)) {
+    JSK_ROS_ERROR("failed to set heuristic");
+  }
+  else {
+    JSK_ROS_INFO("Success to set heuristic: %s", heuristic.c_str());
   }
 }
 
