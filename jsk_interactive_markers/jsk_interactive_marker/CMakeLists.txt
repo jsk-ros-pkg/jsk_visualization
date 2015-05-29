@@ -28,7 +28,8 @@ add_message_files(
 )
 add_service_files(DIRECTORY srv
   FILES MarkerSetPose.srv SetPose.srv GetJointState.srv GetType.srv SetMarkerDimensions.srv GetMarkerDimensions.srv GetTransformableMarkerPose.srv SetTransformableMarkerPose.srv GetTransformableMarkerColor.srv SetTransformableMarkerColor.srv GetTransformableMarkerFocus.srv SetTransformableMarkerFocus.srv GetTransformableMarkerExistence.srv IndexRequest.srv
-  SnapFootPrint.srv)
+  SnapFootPrint.srv
+  SetHeuristic.srv)
 
 generate_dynamic_reconfigure_options(
   cfg/InteractivePointCloud.cfg

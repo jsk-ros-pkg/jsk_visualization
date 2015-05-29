@@ -84,6 +84,7 @@ protected:
   void snapLegs();
   geometry_msgs::Pose computeLegTransformation(uint8_t leg);
   geometry_msgs::Pose getFootstepPose(bool leftp);
+  void changePlannerHeuristic(const std::string& heuristic);
   void callEstimateOcclusion();
   void cancelWalk();
   void planIfPossible();
