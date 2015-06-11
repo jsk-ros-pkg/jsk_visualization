@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.21 (2015-06-11)
+-------------------
 * [jsk_interactive_marker] Add menu to select rleg or lleg as the first step
 * [jsk_interactive_marker] Add menu to set heuristic
 * [jsk_interactive_marker] Add ~always_planning parameter to footstep_marker

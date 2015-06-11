@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.21 (2015-06-11)
+-------------------
 * [jsk_rqt_plugins] Add sign for configuration button in the README image of rqt_service_button
 * [jsk_rqt_plugins] catch import error and use roslib in rqt_yn_btn
 * [jsk_rqt_plugins] Add README for rqt_service_button

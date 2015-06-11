@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.21 (2015-06-11)
+-------------------
 * [jsk_rviz_plugins/PolygonArrayDisplay] Cleanup codes to be within 80 columns
 * [jsk_rviz_plugins/BoundingBoxArray] Immediately apply change of attributes
 * [jsk_rviz_plugins/BoundingBoxArray] Refactor codes by splitting processMessages into several functions
