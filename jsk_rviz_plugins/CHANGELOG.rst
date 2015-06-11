@@ -2,6 +2,17 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins/PolygonArrayDisplay] Cleanup codes to be within 80 columns
+* [jsk_rviz_plugins/BoundingBoxArray] Immediately apply change of attributes
+* [jsk_rviz_plugins/BoundingBoxArray] Refactor codes by splitting processMessages into several functions
+* [jsk_rviz_plugins/BoundingBoxArray] Use symmetrical radius for coordinates arrow
+* [jsk_rviz_plugins/BoundingBoxArray] Fix coding style around if/else/for
+* [jsk_rviz_plugins/BoundingBoxArray] Check if the size of box is nan
+* [jsk_rviz_plugins/BoundingBoxArray] Fix indent to be within 80 columns
+* Contributors: Ryohei Ueda
+
 1.0.20 (2015-05-04)
 -------------------
 * [jsk_rviz_plugins] add rotate speed to pictogram

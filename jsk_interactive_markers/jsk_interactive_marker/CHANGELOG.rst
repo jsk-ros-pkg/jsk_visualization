@@ -2,6 +2,18 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_interactive_marker] Add menu to select rleg or lleg as the first step
+* [jsk_interactive_marker] Add menu to set heuristic
+* [jsk_interactive_marker] Add ~always_planning parameter to footstep_marker
+* [jsk_interactive_marker] Fix for terrain task
+* [jsk_interactive_marker] Add topic interface to footstep_marker
+* [jsk_interactive_marker] Decide footstep margin from robot name
+* [jsk_interactive_marker] enable to change mesh marker control size
+* [jsk_interactive_marker] add changing focus marker name line
+* Contributors: Ryohei Ueda, Yu Ohara
+
 1.0.20 (2015-05-04)
 -------------------
 * update furutaructive system. add load-ros-manifest. fix hand model path
