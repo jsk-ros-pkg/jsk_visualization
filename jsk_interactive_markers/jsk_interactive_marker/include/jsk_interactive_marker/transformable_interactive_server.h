@@ -123,8 +123,9 @@ namespace jsk_interactive_marker
     boost::shared_ptr <dynamic_reconfigure::Server<InteractiveSettingConfig> > config_srv_;
 
     ros::Subscriber setrad_sub_;
-    ros::Publisher focus_text_pub_;
-    ros::Publisher focus_pose_pub_;
+    ros::Publisher focus_name_text_pub_;
+    ros::Publisher focus_pose_text_pub_;
+    ros::Publisher pose_pub_;
     interactive_markers::InteractiveMarkerServer* server_;
     map<string, TransformableObject*> transformable_objects_map_;
     boost::shared_ptr<tf::TransformListener> tf_listener_;
