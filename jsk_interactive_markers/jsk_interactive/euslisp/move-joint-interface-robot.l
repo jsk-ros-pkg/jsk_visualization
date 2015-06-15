@@ -12,12 +12,10 @@
 
 (cond
  ((equal (string-upcase *robot-name*) "PR2")
-  (setq *robot-name* "PR2")
   ;;use moveit
   (load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
-  (pr2-init)
+  (init-robot-from-name *robot-name*)
   (send *ri* :set-moveit-environment (instance moveit-environment :init))
-  (setq *robot* *pr2*)
   )
  ((equal (string-upcase *robot-name*) "HRP2JSKNT")
   (setq *robot-name* "hrp2jsknt")
@@ -40,8 +38,7 @@
  ((equal (string-upcase *robot-name*) "BAXTER")
   (setq *robot-name* "baxter")
   (load "package://baxtereus/baxter-interface.l")
-  (baxter-init)
-  (setq *robot* *baxter*)
+  (init-robot-from-name *robot-name*)
   )
  ((equal (string-upcase *robot-name*) "STARO")
   (setq *robot-name* "staro")
