@@ -26,8 +26,9 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   
   setrad_sub_ = n_->subscribe("set_radius", 1, &TransformableInteractiveServer::setRadius, this);
 
-  focus_text_pub_ = n_->advertise<jsk_rviz_plugins::OverlayText>("focus_marker_name", 1);
-  focus_pose_pub_ = n_->advertise<jsk_rviz_plugins::OverlayText>("focus_marker_pose", 1);
+  focus_name_text_pub_ = n_->advertise<jsk_rviz_plugins::OverlayText>("focus_marker_name_text", 1);
+  focus_pose_text_pub_ = n_->advertise<jsk_rviz_plugins::OverlayText>("focus_marker_pose_text", 1);
+  pose_pub_ = n_->advertise<geometry_msgs::PoseStamped>("pose", 1);
 
   get_pose_srv_ = n_->advertiseService<jsk_interactive_marker::GetTransformableMarkerPose::Request, jsk_interactive_marker::GetTransformableMarkerPose::Response>("get_pose", boost::bind(&TransformableInteractiveServer::getPoseService, this, _1, _2, false));
   get_control_pose_srv_ = n_->advertiseService<jsk_interactive_marker::GetTransformableMarkerPose::Request, jsk_interactive_marker::GetTransformableMarkerPose::Response>("get_control_pose", boost::bind(&TransformableInteractiveServer::getPoseService, this, _1, _2, true));
@@ -93,8 +94,11 @@ void TransformableInteractiveServer::processFeedback(
         input_pose_stamped.header = feedback->header;
         input_pose_stamped.pose = feedback->pose;
         setPoseWithTfTransformation(tobject, input_pose_stamped, true);
-      }else
+      }else{
         ROS_ERROR("Invalid ObjectId Request Received %s", feedback->marker_name.c_str());
+      }
+      focusTextPublish();
+      focusPosePublish();
       break;
     }
 }
@@ -461,7 +465,7 @@ void TransformableInteractiveServer::focusTextPublish(){
   focus_text.fg_color.a = 1;
   focus_text.line_width = 1;
   focus_text.text_size = 30;
-  focus_text_pub_.publish(focus_text);
+  focus_name_text_pub_.publish(focus_text);
 }
 
 void TransformableInteractiveServer::focusPosePublish(){
@@ -490,7 +494,7 @@ void TransformableInteractiveServer::focusPosePublish(){
   focus_pose.fg_color.a = 1;
   focus_pose.line_width = 1;
   focus_pose.text_size = 15;
-  focus_pose_pub_.publish(focus_pose);
+  focus_pose_text_pub_.publish(focus_pose);
 }
 
 void TransformableInteractiveServer::insertNewBox(std::string frame_id, std::string name, std::string description)
@@ -585,6 +589,8 @@ bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableOb
                                                       pose_stamped.header.frame_id, stamp, ros::Duration(1.0))) {
       tf_listener_->transformPose(tobject->getFrameId(), pose_stamped, transformed_pose_stamped);
       tobject->setPose(transformed_pose_stamped.pose, for_interactive_control);
+      transformed_pose_stamped.pose=tobject->getPose(true);
+      pose_pub_.publish(transformed_pose_stamped);
     }
     else {
       ROS_ERROR("failed to lookup transform %s -> %s", tobject->getFrameId().c_str(), 
