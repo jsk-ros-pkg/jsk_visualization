@@ -169,17 +169,35 @@ namespace jsk_rviz_plugins
     cv_bridge::CvImagePtr cv_ptr;
     try
     {
-      cv_ptr = cv_bridge::toCvCopy(msg_, sensor_msgs::image_encodings::RGB8);
-      cv::Mat mat = cv_ptr->image;
-      ScopedPixelBuffer buffer = overlay_->getBuffer();
-      QImage Hud = buffer.getQImage(*overlay_);
-      for (int i = 0; i < overlay_->getTextureWidth(); i++) {
-        for (int j = 0; j < overlay_->getTextureHeight(); j++) {
-          QColor color(mat.data[j * mat.step + i * mat.elemSize() + 0],
-                       mat.data[j * mat.step + i * mat.elemSize() + 1],
-                       mat.data[j * mat.step + i * mat.elemSize() + 2],
-                       alpha_ * 255.0);
-          Hud.setPixel(i, j, color.rgba());
+      if (msg_->encoding == sensor_msgs::image_encodings::RGBA8 ||
+          msg_->encoding == sensor_msgs::image_encodings::BGRA8) {
+        cv_ptr = cv_bridge::toCvCopy(msg_, sensor_msgs::image_encodings::RGBA8);
+        cv::Mat mat = cv_ptr->image;
+        ScopedPixelBuffer buffer = overlay_->getBuffer();
+        QImage Hud = buffer.getQImage(*overlay_);
+        for (int i = 0; i < overlay_->getTextureWidth(); i++) {
+          for (int j = 0; j < overlay_->getTextureHeight(); j++) {
+            QColor color(mat.data[j * mat.step + i * mat.elemSize() + 0],
+                         mat.data[j * mat.step + i * mat.elemSize() + 1],
+                         mat.data[j * mat.step + i * mat.elemSize() + 2],
+                         mat.data[j * mat.step + i * mat.elemSize() + 3]);
+            Hud.setPixel(i, j, color.rgba());
+          }
+        }
+      }
+      else {
+        cv_ptr = cv_bridge::toCvCopy(msg_, sensor_msgs::image_encodings::RGB8);
+        cv::Mat mat = cv_ptr->image;
+        ScopedPixelBuffer buffer = overlay_->getBuffer();
+        QImage Hud = buffer.getQImage(*overlay_);
+        for (int i = 0; i < overlay_->getTextureWidth(); i++) {
+          for (int j = 0; j < overlay_->getTextureHeight(); j++) {
+            QColor color(mat.data[j * mat.step + i * mat.elemSize() + 0],
+                         mat.data[j * mat.step + i * mat.elemSize() + 1],
+                         mat.data[j * mat.step + i * mat.elemSize() + 2],
+                         alpha_ * 255.0);
+            Hud.setPixel(i, j, color.rgba());
+          }
         }
       }
     }
