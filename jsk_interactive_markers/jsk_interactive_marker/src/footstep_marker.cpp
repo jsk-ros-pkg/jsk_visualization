@@ -77,17 +77,7 @@ plan_run_(false), lleg_first_(true) {
   readPoseParam(pnh, "lfoot_offset", lleg_offset_);
   readPoseParam(pnh, "rfoot_offset", rleg_offset_);
   
-  //pnh.param("footstep_margin", footstep_margin_, 0.2);
-  char* ROBOT_NAME = getenv("ROBOT");
-  if (strcmp(ROBOT_NAME, "HRP2JSK") == 0 ||
-      strcmp(ROBOT_NAME, "HRP2JSKNT") == 0 ||
-      strcmp(ROBOT_NAME, "HRP2JSKNTS") == 0) {
-    footstep_margin_ = 0.21;
-  }
-  else if (strcmp(ROBOT_NAME, "JAXON") == 0 ||
-           strcmp(ROBOT_NAME, "JAXON_RED") == 0) {
-    footstep_margin_ = 0.2;
-  }
+  pnh.param("footstep_margin", footstep_margin_, 0.2);
   pnh.param("use_footstep_planner", use_footstep_planner_, true);
   pnh.param("use_plane_snap", use_plane_snap_, true);
   pnh.param("use_footstep_controller", use_footstep_controller_, true);
