@@ -125,10 +125,24 @@ catkin_package(
 install(DIRECTORY launch euslisp urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   PATTERN ".svn" EXCLUDE)
-install(TARGETS footstep_marker door_foot triangle_foot point_cloud_config_marker urdf_model_marker interactive_marker_interface
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+install(TARGETS
+  interactive_marker_interface
+  camera_info_publisher
+  urdf_model_marker
+  urdf_control_marker
+  point_cloud_config_marker
+  triangle_foot
+  door_foot
+  footstep_marker
+  marker_6dof
+  world2yaml
+  bounding_box_marker
+  interactive_point_cloud
+  pointcloud_cropper
+  transformable_server_sample
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 
 # copy *.rviz.default to *.rviz
