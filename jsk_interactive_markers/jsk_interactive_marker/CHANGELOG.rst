@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.22 (2015-06-24)
+-------------------
 * [jsk_interactive_marker] Install binaries
 * [jsk_interactive_marker/footstep_marker] Enable ~footstep_margin parameter again
 * always publish pose of transformable model

@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.22 (2015-06-24)
+-------------------
 * [jsk_rviz_plugins/OverlayImage] Support alpha channel if image_encoding
   is BGRA8 or RGBA8
 * Contributors: Ryohei Ueda
