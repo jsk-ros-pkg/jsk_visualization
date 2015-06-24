@@ -2,6 +2,13 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_interactive_marker] Install binaries
+* [jsk_interactive_marker/footstep_marker] Enable ~footstep_margin parameter again
+* always publish pose of transformable model
+* Contributors: Ryohei Ueda, Masaki Murooka
+
 1.0.21 (2015-06-11)
 -------------------
 * [jsk_interactive_marker] Add menu to select rleg or lleg as the first step

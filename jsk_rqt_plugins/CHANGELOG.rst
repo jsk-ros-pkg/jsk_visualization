@@ -2,6 +2,9 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.21 (2015-06-11)
 -------------------
 * [jsk_rqt_plugins] Add sign for configuration button in the README image of rqt_service_button
