@@ -214,11 +214,13 @@ void PoseArrayDisplay::processMessage( const geometry_msgs::PoseArray::ConstPtr&
       Ogre::SceneNode* scene_node = coords_nodes_[i];
       scene_node->setVisible(true);
 
-      Ogre::Vector3 position;
-      Ogre::Quaternion orientation;
-      if(!context_->getFrameManager()->transform(msg->header, pose, position, orientation)) {
-        return;
-      }
+      Ogre::Vector3 position( msg->poses[i].position.x,
+                              msg->poses[i].position.y,
+                              msg->poses[i].position.z );
+      Ogre::Quaternion orientation( msg->poses[i].orientation.w,
+                                    msg->poses[i].orientation.x,
+                                    msg->poses[i].orientation.y,
+                                    msg->poses[i].orientation.z );
       scene_node->setPosition(position);
       scene_node->setOrientation(orientation); // scene node is at frame pose
     }
