@@ -134,10 +134,14 @@ void PoseArrayDisplay::allocateCoords(int num)
       coords_objects_.push_back(axes);
     }
   }
-  else if (num < coords_objects_.size())
-    {
-      coords_objects_.resize(num);
+  else if (num < coords_objects_.size()) {
+    for (int i = coords_objects_.size() - 1; num <= i; i--) {
+      delete coords_objects_[i];
+      scene_manager_->destroySceneNode(coords_nodes_[i]);
     }
+    coords_objects_.resize(num);
+    coords_nodes_.resize(num);
+  }
 }
 
 
@@ -236,6 +240,10 @@ void PoseArrayDisplay::reset()
   {
     manual_object_->clear();
   }
+  if ( coords_objects_.size() > 0 ) {
+    allocateCoords(0);
+  }
+  
 }
 
 } // namespace rviz
