@@ -2,6 +2,11 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_interactive_marker] Install include directory and library
+* Contributors: Ryohei Ueda
+
 1.0.22 (2015-06-24)
 -------------------
 * [jsk_interactive_marker] Install binaries
@@ -56,7 +61,7 @@ Changelog for package jsk_interactive_marker
 * set radius instead of diameter when primitive shape is cylinder
 * fix to set type correctly in getting dimenstions service
 * Remove rosbuild files
-* Contributors: Masaki Murooka, Ryohei Ueda, YuOhara, Yuki Furuta
+* Contributors: Masaki Murooka, Ryohei Ueda, Yu Ohara, Yuki Furuta
 
 1.0.18 (2015-01-30)
 -------------------

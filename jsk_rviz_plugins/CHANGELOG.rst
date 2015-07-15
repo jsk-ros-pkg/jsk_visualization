@@ -2,6 +2,12 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins/PoseArray] Clear pose array if checkbox is unchecked
+* fix coords bug
+* Contributors: Ryohei Ueda, Yu Ohara
+
 1.0.22 (2015-06-24)
 -------------------
 * [jsk_rviz_plugins/OverlayImage] Support alpha channel if image_encoding
