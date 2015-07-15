@@ -15,7 +15,10 @@ import yaml
 import os, sys
 
 from std_msgs.msg import String
-from image_view2_wrapper import ComboBoxDialog
+
+from .hist import ROSData
+from .button_general import LineEditDialog
+
 
 class StringLabel(Plugin):
     """
@@ -52,10 +55,29 @@ class StringLabelWidget(QWidget):
         self._update_topic_timer.timeout.connect(self.updateTopics)
         self._update_topic_timer.start(1000)
         self._active_topic = None
-        self._dialog = ComboBoxDialog()
+        # to update label visualization
+        self._dialog = LineEditDialog()
+        self._rosdata = None
+        self._start_time = rospy.get_time()
+        self._update_label_timer = QTimer(self)
+        self._update_label_timer.timeout.connect(self.updateLabel)
+        self._update_label_timer.start(40)
     def trigger_configuration(self):
         self._dialog.exec_()
-        self.setupSubscriber(self._string_topics[self._dialog.number])
+        self.setupSubscriber(self._dialog.value)
+    def updateLabel(self):
+        if not self._rosdata:
+            return
+        _, data_y = self._rosdata.next()
+        if len(data_y) == 0:
+            return
+        latest = data_y[-1]  # get latest data
+        # supports std_msgs/String as well as string data nested in rosmsg
+        if type(latest) == String:
+            self.string = latest.data
+        else:
+            self.string = latest
+        self.label.setText(self.string)
     def updateTopics(self):
         need_to_update = False
         for (topic, topic_type) in rospy.get_published_topics():
@@ -74,16 +96,17 @@ class StringLabelWidget(QWidget):
                     self._dialog.combo_box.addItem(self._active_topic)
                 self._dialog.combo_box.setCurrentIndex(self._string_topics.index(self._active_topic))
     def setupSubscriber(self, topic):
-        if self.string_sub:
-            self.string_sub.unregister()
-        self.string_sub = rospy.Subscriber(topic, String,
-                                           self.stringCallback)
+        if not self._rosdata:
+            self._rosdata = ROSData(topic, self._start_time)
+        else:
+            if self._rosdata != topic:
+                self._rosdata.close()
+                self._rosdata = ROSData(topic, self._start_time)
+            else:
+                rospy.logwarn("%s is already subscribed", topic)
         self._active_topic = topic
     def onActivated(self, number):
         self.setupSubscriber(self._string_topics[number])
-    def stringCallback(self, msg):
-        self.string = msg.data
-        self.label.setText(self.string)
     def save_settings(self, plugin_settings, instance_settings):
         if self._active_topic:
             instance_settings.set_value("active_topic", self._active_topic)
