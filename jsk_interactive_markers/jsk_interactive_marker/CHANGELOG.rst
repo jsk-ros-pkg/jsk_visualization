@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.23 (2015-07-15)
+-------------------
 * [jsk_interactive_marker] Install include directory and library
 * Contributors: Ryohei Ueda
 

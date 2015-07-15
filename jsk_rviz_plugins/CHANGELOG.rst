@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.23 (2015-07-15)
+-------------------
 * [jsk_rviz_plugins/PoseArray] Clear pose array if checkbox is unchecked
 * fix coords bug
 * Contributors: Ryohei Ueda, Yu Ohara
