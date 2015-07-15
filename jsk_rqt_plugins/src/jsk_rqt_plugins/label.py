@@ -7,6 +7,7 @@ from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
 from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot, QEvent, QSize
 from threading import Lock
 import rospy
+import rqt_plot
 import python_qt_binding.QtCore as QtCore
 from std_msgs.msg import Bool, Time
 import math
@@ -68,7 +69,11 @@ class StringLabelWidget(QWidget):
     def updateLabel(self):
         if not self._rosdata:
             return
-        _, data_y = self._rosdata.next()
+        try:
+            _, data_y = self._rosdata.next()
+        except rqt_plot.rosplot.RosPlotException, e:
+            self._rosdata = None
+            return
         if len(data_y) == 0:
             return
         latest = data_y[-1]  # get latest data
@@ -77,7 +82,10 @@ class StringLabelWidget(QWidget):
             self.string = latest.data
         else:
             self.string = latest
-        self.label.setText(self.string)
+        try:
+            self.label.setText(self.string)
+        except TypeError, e:
+            rospy.logwarn(e)
     def updateTopics(self):
         need_to_update = False
         for (topic, topic_type) in rospy.get_published_topics():
