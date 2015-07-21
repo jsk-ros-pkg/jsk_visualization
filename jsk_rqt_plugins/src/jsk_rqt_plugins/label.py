@@ -7,6 +7,7 @@ from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
 from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot, QEvent, QSize
 from threading import Lock
 import rospy
+import roslib
 import rqt_plot
 import python_qt_binding.QtCore as QtCore
 from std_msgs.msg import Bool, Time
@@ -89,7 +90,8 @@ class StringLabelWidget(QWidget):
     def updateTopics(self):
         need_to_update = False
         for (topic, topic_type) in rospy.get_published_topics():
-            if topic_type == "std_msgs/String":
+            data_class = roslib.message.get_message_class(topic_type)
+            if 'string' in data_class._slot_types:
                 if not topic in self._string_topics:
                     self._string_topics.append(topic)
                     need_to_update = True
