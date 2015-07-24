@@ -74,6 +74,7 @@ namespace jsk_rviz_plugins
     boost::shared_ptr<image_transport::ImageTransport> it_;
     image_transport::Subscriber sub_;
     sensor_msgs::Image::ConstPtr msg_;
+    bool is_msg_available_;
     bool require_update_;
 
     virtual void redraw();
