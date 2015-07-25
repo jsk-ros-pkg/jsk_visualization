@@ -489,6 +489,8 @@ bool FootstepMarker::projectMarkerToPlane()
       tf::pointMsgToEigen(marker_pose_.pose.position, marker_point);
       tf::pointMsgToEigen(resolved_pose.pose.position, projected_point);
       if ((projected_point - marker_point).norm() < 0.3) {
+        server_->setPose("footstep_marker", resolved_pose.pose);
+        server_->applyChanges();
         marker_pose_.pose = resolved_pose.pose;
         return true;
       }
@@ -581,8 +583,8 @@ bool FootstepMarker::projectMarkerToPlane()
     if (min_distance < 0.3) {     // smaller than 30cm
       marker_pose_.pose = min_pose.pose;
       snapped_pose_pub_.publish(min_pose);
-      // server_->setPose("footstep_marker", min_pose.pose);
-      // server_->applyChanges();
+      server_->setPose("footstep_marker", min_pose.pose);
+      server_->applyChanges();
       //ROS_WARN("projected");
       return true;
     }
@@ -607,14 +609,7 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
   try {
     if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP) {
       if (use_plane_snap_) {
-        if (!use_projection_topic_ && !latest_grids_) {
-          ROS_WARN("no grids are available yet");
-        }
-        else {
-          // do something magicalc
-          skip_plan = !projectMarkerToPlane();
-        
-        }
+        skip_plan = !projectMarkerToPlane();
       }
     }
     if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP && !skip_plan) {
