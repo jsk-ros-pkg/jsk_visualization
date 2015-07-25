@@ -690,9 +690,15 @@ void FootstepMarker::planIfPossible() {
     jsk_footstep_msgs::Footstep goal_left;
     goal_left.leg = jsk_footstep_msgs::Footstep::LEFT;
     goal_left.pose = getFootstepPose(true);
+    goal_left.dimensions.x = foot_size_x_;
+    goal_left.dimensions.y = foot_size_y_;
+    goal_left.dimensions.z = foot_size_z_;
     jsk_footstep_msgs::Footstep goal_right;
     goal_right.pose = getFootstepPose(false);
     goal_right.leg = jsk_footstep_msgs::Footstep::RIGHT;
+    goal_right.dimensions.x = foot_size_x_;
+    goal_right.dimensions.y = foot_size_y_;
+    goal_right.dimensions.z = foot_size_z_;
     goal_footstep.footsteps.push_back(goal_left);
     goal_footstep.footsteps.push_back(goal_right);
     goal.goal_footstep = goal_footstep;
@@ -703,10 +709,16 @@ void FootstepMarker::planIfPossible() {
     jsk_footstep_msgs::Footstep initial_left;
     initial_left.leg = jsk_footstep_msgs::Footstep::LEFT;
     initial_left.pose = lleg_initial_pose_;
+    initial_left.dimensions.x = foot_size_x_;
+    initial_left.dimensions.y = foot_size_y_;
+    initial_left.dimensions.z = foot_size_z_;
     
     jsk_footstep_msgs::Footstep initial_right;
     initial_right.leg = jsk_footstep_msgs::Footstep::RIGHT;
     initial_right.pose = rleg_initial_pose_;
+    initial_right.dimensions.x = foot_size_x_;
+    initial_right.dimensions.y = foot_size_y_;
+    initial_right.dimensions.z = foot_size_z_;
     if (lleg_first_) {
       initial_footstep.footsteps.push_back(initial_left);
       initial_footstep.footsteps.push_back(initial_right);
