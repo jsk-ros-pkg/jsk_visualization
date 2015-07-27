@@ -236,6 +236,19 @@ void UrdfControlMarker::makeControlMarker( bool fixed )
   server_->setCallback(int_marker.name, boost::bind( &UrdfControlMarker::processFeedback, this, _1));
   marker_menu_.apply(*server_, int_marker.name);
   server_->applyChanges();
+  if (use_dynamic_tf_) {
+    /* First initialize dynamic tf as identity */
+    dynamic_tf_publisher::SetDynamicTF SetTf;
+    SetTf.request.freq = 20;
+    SetTf.request.cur_tf.header.frame_id = fixed_frame_id_;
+    SetTf.request.cur_tf.header.stamp = ros::Time::now();
+    SetTf.request.cur_tf.child_frame_id = marker_frame_id_;
+    geometry_msgs::Transform transform;
+    transform.rotation.w = 1.0;
+    SetTf.request.cur_tf.transform = transform;
+    dynamic_tf_publisher_client_.call(SetTf);
+
+  }
 }
 
 int main(int argc, char** argv)
