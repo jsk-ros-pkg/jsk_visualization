@@ -77,8 +77,8 @@ UrdfControlMarker::UrdfControlMarker() : nh_(), pnh_("~"){
 
   //dynamic_tf_publisher
   if (use_dynamic_tf_) {
-    ros::service::waitForService("set_dynamic_tf", -1);
     dynamic_tf_publisher_client_ = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf", true);
+    dynamic_tf_publisher_client_.waitForExistence();
   }
   pub_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("pose", 1);
   pub_selected_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("selected_pose", 1);
