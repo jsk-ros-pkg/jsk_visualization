@@ -25,6 +25,11 @@ Plug the depth sensor which could be launched by openni.launch and execute below
 roslaunch jsk_rviz_plugins normal_sample.launch
 ```
 
+#### TFTrajectory
+![](images/tf_trajectory.png)
+
+Visualize trajectory of a tf frame.
+
 #### [TwistStamped](http://youtu.be/Q-I5Vx_4VHk)
 ![](images/twist_stamped.png)
 
