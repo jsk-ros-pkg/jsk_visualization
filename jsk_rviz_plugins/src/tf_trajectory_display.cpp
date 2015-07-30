@@ -75,6 +75,7 @@ namespace jsk_rviz_plugins
     updateFrame();
     updateDuration();
     updateColor();
+    updateLineWidth();
   }
 
   void TFTrajectoryDisplay::updateFrame()
