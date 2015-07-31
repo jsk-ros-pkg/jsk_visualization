@@ -493,6 +493,7 @@ bool FootstepMarker::projectMarkerToPlane()
       tf::pointMsgToEigen(resolved_pose.pose.position, projected_point);
       if ((projected_point - marker_point).norm() < 0.3) {
         server_->setPose("footstep_marker", resolved_pose.pose);
+        snapped_pose_pub_.publish(resolved_pose);
         server_->applyChanges();
         marker_pose_.pose = resolved_pose.pose;
         return true;
@@ -650,6 +651,7 @@ void FootstepMarker::projectionCallback(const geometry_msgs::PoseStamped& pose)
   tf::pointMsgToEigen(resolved_pose.pose.position, projected_point);
   if ((projected_point - marker_point).norm() < 0.3) {
     marker_pose_.pose = resolved_pose.pose;
+    snapped_pose_pub_.publish(resolved_pose);
   }
 }
 
@@ -907,7 +909,6 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "footstep_marker");
   FootstepMarker marker;
   ros::Rate r(10.0);
-  
   while (ros::ok()) {
     ros::spinOnce();
     marker.updateInitialFootstep();
