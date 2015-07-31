@@ -100,9 +100,11 @@ plan_run_(false), lleg_first_(true) {
   
   if (pnh.getParam("initial_reference_frame", initial_reference_frame_)) {
     use_initial_reference_ = true;
+    JSK_ROS_INFO_STREAM("initial_reference_frame: " << initial_reference_frame_);
   }
   else {
     use_initial_reference_ = false;
+    JSK_ROS_INFO("initial_reference_frame is not specified ");
   }
 
   server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
@@ -147,13 +149,13 @@ plan_run_(false), lleg_first_(true) {
   if (use_initial_reference_) {
     while (ros::ok()) {
       try {
-        if (tf_listener_->waitForTransform(marker_frame_id_, initial_reference_frame_,
-                                           ros::Time(0.0), ros::Duration(10.0))) {
-          break;
+        if (!tf_listener_->waitForTransform(marker_frame_id_, initial_reference_frame_,
+                                            ros::Time(0.0), ros::Duration(10.0))) {
+          ROS_INFO_THROTTLE(1.0,
+                            "waiting for transform %s => %s", marker_frame_id_.c_str(),
+                            initial_reference_frame_.c_str());
+          continue;
         }
-        ROS_INFO("waiting for transform %s => %s", marker_frame_id_.c_str(),
-                 initial_reference_frame_.c_str());
-      
         ROS_INFO("resolved transform %s => %s", marker_frame_id_.c_str(),
                  initial_reference_frame_.c_str());
         tf::StampedTransform transform;
@@ -166,6 +168,7 @@ plan_run_(false), lleg_first_(true) {
         marker_pose_.pose.orientation.y = transform.getRotation().y();
         marker_pose_.pose.orientation.z = transform.getRotation().z();
         marker_pose_.pose.orientation.w = transform.getRotation().w();
+        break;
       }
       catch (tf2::TransformException& e) {
         ROS_ERROR("Failed to lookup transformation: %s", e.what());
