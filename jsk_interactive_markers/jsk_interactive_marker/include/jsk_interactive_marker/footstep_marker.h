@@ -129,6 +129,7 @@ protected:
   ros::Subscriber projection_sub_;
   ros::Publisher project_footprint_pub_;
   ros::Publisher snapped_pose_pub_;
+  ros::Publisher current_pose_pub_;
   ros::Publisher footstep_pub_;
   ros::ServiceClient snapit_client_;
   ros::ServiceClient estimate_occlusion_client_;

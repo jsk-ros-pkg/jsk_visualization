@@ -89,6 +89,7 @@ plan_run_(false), lleg_first_(true) {
   footstep_pub_ = nh.advertise<jsk_footstep_msgs::FootstepArray>("footstep_from_marker", 1);
   snapit_client_ = nh.serviceClient<jsk_pcl_ros::CallSnapIt>("snapit");
   snapped_pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("snapped_pose", 1);
+  current_pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("current_pose", 1);
   estimate_occlusion_client_ = nh.serviceClient<std_srvs::Empty>("require_estimation");
   if (!nowait && wait_snapit_server_) {
     snapit_client_.waitForExistence();
@@ -494,6 +495,7 @@ bool FootstepMarker::projectMarkerToPlane()
       if ((projected_point - marker_point).norm() < 0.3) {
         server_->setPose("footstep_marker", resolved_pose.pose);
         snapped_pose_pub_.publish(resolved_pose);
+        current_pose_pub_.publish(resolved_pose);
         server_->applyChanges();
         marker_pose_.pose = resolved_pose.pose;
         return true;
@@ -587,6 +589,7 @@ bool FootstepMarker::projectMarkerToPlane()
     if (min_distance < 0.3) {     // smaller than 30cm
       marker_pose_.pose = min_pose.pose;
       snapped_pose_pub_.publish(min_pose);
+      current_pose_pub_.publish(min_pose);
       server_->setPose("footstep_marker", min_pose.pose);
       server_->applyChanges();
       //ROS_WARN("projected");
@@ -610,6 +613,8 @@ void FootstepMarker::processFeedbackCB(const visualization_msgs::InteractiveMark
   marker_pose_.pose = feedback->pose;
   marker_frame_id_ = feedback->header.frame_id;
   bool skip_plan = false;
+  geometry_msgs::PoseStamped input_pose;
+  current_pose_pub_.publish(marker_pose_);
   try {
     if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP) {
       if (use_plane_snap_) {
@@ -652,6 +657,7 @@ void FootstepMarker::projectionCallback(const geometry_msgs::PoseStamped& pose)
   if ((projected_point - marker_point).norm() < 0.3) {
     marker_pose_.pose = resolved_pose.pose;
     snapped_pose_pub_.publish(resolved_pose);
+    current_pose_pub_.publish(resolved_pose);
   }
 }
 
