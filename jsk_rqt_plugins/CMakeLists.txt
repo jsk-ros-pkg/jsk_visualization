@@ -20,3 +20,6 @@ install(PROGRAMS bin/rqt_3d_plot bin/rqt_histogram_plot bin/rqt_yn_btn
 install(DIRECTORY resource
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
+if (CATKIN_ENABLE_TESTING)
+  catkin_add_nosetests(test)
+endif()

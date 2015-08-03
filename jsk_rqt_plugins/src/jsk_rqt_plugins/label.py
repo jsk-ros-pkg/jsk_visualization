@@ -18,6 +18,7 @@ import os, sys
 
 from std_msgs.msg import String
 
+from .util import get_slot_type_field_names
 from .hist import ROSData
 from .button_general import LineEditDialog
 
@@ -90,10 +91,12 @@ class StringLabelWidget(QWidget):
     def updateTopics(self):
         need_to_update = False
         for (topic, topic_type) in rospy.get_published_topics():
-            data_class = roslib.message.get_message_class(topic_type)
-            if 'string' in data_class._slot_types:
-                if not topic in self._string_topics:
-                    self._string_topics.append(topic)
+            msg = roslib.message.get_message_class(topic_type)
+            field_names = get_slot_type_field_names(msg, slot_type='string')
+            for field in field_names:
+                string_topic = topic + field
+                if string_topic not in self._string_topics:
+                    self._string_topics.append(string_topic)
                     need_to_update = True
         if need_to_update:
             self._string_topics = sorted(self._string_topics)
