@@ -38,6 +38,7 @@
 
 #include <jsk_recognition_msgs/PolygonArray.h>
 #include <jsk_recognition_msgs/ModelCoefficientsArray.h>
+#include <jsk_interactive_marker/FootstepMarkerConfig.h>
 
 #include <interactive_markers/menu_handler.h>
 #include <jsk_interactive_marker/SetPose.h>
@@ -57,9 +58,11 @@
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Empty.h>
 #include <jsk_recognition_msgs/SimpleOccupancyGridArray.h>
+#include <dynamic_reconfigure/server.h>
 
 class FootstepMarker {
 public:
+  typedef jsk_interactive_marker::FootstepMarkerConfig Config;
   FootstepMarker();
   virtual ~FootstepMarker();
   void updateInitialFootstep();
@@ -76,7 +79,6 @@ protected:
   void menuCommandCB(const std_msgs::UInt8::ConstPtr& msg);
   void executeCB(const std_msgs::Empty::ConstPtr& msg);
   void resumeCB(const std_msgs::Empty::ConstPtr& msg);
-  void planeCB(const jsk_recognition_msgs::SimpleOccupancyGridArray::ConstPtr& grid_msg);
   void planDoneCB(const actionlib::SimpleClientGoalState &state, 
                   const PlanResult::ConstPtr &result);
   void processMenuFeedback(uint8_t id);
@@ -90,9 +92,10 @@ protected:
   void planIfPossible();
   void resetLegPoses();
   void lookGround();
+  void configCallback(Config& config, uint32_t level);
   boost::mutex plane_mutex_;
   boost::mutex plan_run_mutex_;
-
+  boost::shared_ptr<dynamic_reconfigure::Server<Config> > srv_;
   // projection to the planes
   bool projectMarkerToPlane();
   
@@ -125,7 +128,6 @@ protected:
   ros::Subscriber menu_command_sub_;
   ros::Subscriber exec_sub_;
   ros::Subscriber resume_sub_;
-  ros::Subscriber grid_sub_;
   ros::Subscriber projection_sub_;
   ros::Publisher project_footprint_pub_;
   ros::Publisher snapped_pose_pub_;
@@ -141,8 +143,8 @@ protected:
   bool show_6dof_control_;
   bool use_footstep_planner_;
   bool use_footstep_controller_;
-  bool use_plane_snap_;
   bool plan_run_;
+  bool use_plane_snap_;
   bool wait_snapit_server_;
   bool use_initial_footstep_tf_;
   bool use_initial_reference_;

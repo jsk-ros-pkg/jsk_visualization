@@ -32,6 +32,7 @@ add_service_files(DIRECTORY srv
   SetHeuristic.srv)
 
 generate_dynamic_reconfigure_options(
+  cfg/FootstepMarker.cfg
   cfg/InteractivePointCloud.cfg
   cfg/PointCloudCropper.cfg
   cfg/CameraInfoPublisher.cfg
