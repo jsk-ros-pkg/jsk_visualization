@@ -4,178 +4,160 @@
 #include "robot_command_interface.h"
 #include "ros/time.h"
 #include <ros/package.h>
+#include <boost/format.hpp>
+#include <exception>
+#include <std_srvs/Empty.h>
 
-#include "ui_robot_command_interface.h"
-
-using namespace rviz;
 namespace jsk_rviz_plugins
 {
+
+  // Exception class
+  class RobotCommandParseException: public std::runtime_error
+  {
+  public:
+    RobotCommandParseException(const std::string& text): std::runtime_error(text) {}
+  };
+
   RobotCommandInterfaceAction::RobotCommandInterfaceAction( QWidget* parent )
     : rviz::Panel( parent )
   {
-    ui_ = new Ui::RobotCommandInterface();
-    ui_->setupUi(this);
-    ui_->verticalLayout->setAlignment(Qt::AlignLeft);
-
+    resource_retriever::Retriever r;
+    signal_mapper_ = new QSignalMapper(this);
     ros::NodeHandle nh("~");
-    std::string reset_pose_button_icon_name,
-      reset_manip_pose_button_icon_name,
-      init_pose_button_icon_name,
-      hand_reset_pose_button_icon_name,
-      hand_hook_pose_button_icon_name,
-      hand_grasp_pose_button_icon_name,
-      hrpsys_start_abc_button_icon_name,
-      hrpsys_start_st_button_icon_name,
-      hrpsys_start_imp_button_icon_name,
-      hrpsys_start_imp_for_drill_button_icon_name,
-      hrpsys_stop_abc_button_icon_name,
-      hrpsys_stop_st_button_icon_name,
-      hrpsys_stop_imp_button_icon_name;
-    nh.param<std::string>("/reset_pose_icon", reset_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/reset-pose.jpg"));
-    nh.param<std::string>("/reset_manip_pose_icon", reset_manip_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/reset-manip-pose.jpg"));
-    nh.param<std::string>("/init_pose_icon", init_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/init-pose.jpg"));
-    nh.param<std::string>("/hand_reset_pose_icon", hand_reset_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/hand-reset-pose.jpg"));
-    nh.param<std::string>("/hand_hook_pose_icon", hand_hook_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/hand-hook-pose.jpg"));
-    nh.param<std::string>("/hand_grasp_pose_icon", hand_grasp_pose_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/hand-grasp-pose.jpg"));
-    nh.param<std::string>("/start_abc_icon", hrpsys_start_abc_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-abc.png"));
-    nh.param<std::string>("/start_st_icon", hrpsys_start_st_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-st.png"));
-    nh.param<std::string>("/start_imp_icon", hrpsys_start_imp_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-imp.png"));
-    nh.param<std::string>("/start_imp_for_drill_icon", hrpsys_start_imp_for_drill_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/start-imp-for-drill.png"));
-    nh.param<std::string>("/stop_abc_icon", hrpsys_stop_abc_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-abc.png"));
-    nh.param<std::string>("/stop_st_icon", hrpsys_stop_st_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-st.png"));
-    nh.param<std::string>("/stop_imp_icon", hrpsys_stop_imp_button_icon_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/stop-imp.png"));
+    QHBoxLayout* layout = new QHBoxLayout();
+    // Parse yaml file from parameter
+    if (nh.hasParam("robot_command_buttons")) {
+      try {
+        XmlRpc::XmlRpcValue robot_command_buttons_xmlrpc;
+        nh.param("robot_command_buttons", robot_command_buttons_xmlrpc, robot_command_buttons_xmlrpc);
+        if (robot_command_buttons_xmlrpc.getType() != XmlRpc::XmlRpcValue::TypeArray) {
+          throw RobotCommandParseException("~robot_comamnd_buttons should be an array");
+        }
+        else {
+          for (size_t i = 0; i < robot_command_buttons_xmlrpc.size(); i++) {
+            XmlRpc::XmlRpcValue button_xmlrpc = robot_command_buttons_xmlrpc[i];
+            if (button_xmlrpc.getType() != XmlRpc::XmlRpcValue::TypeStruct) {
+              throw RobotCommandParseException("element of ~robot_comamnd_buttons should be an struct");
+            }
+            else {
+              std::string name;
+              QToolButton* button = new QToolButton();
+              //button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+              button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    ui_->reset_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->reset_pose_button->setIcon(QIcon(QPixmap(QString(reset_pose_button_icon_name.c_str()))));
-    ui_->reset_manip_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->reset_manip_pose_button->setIcon(QIcon(QPixmap(QString(reset_manip_pose_button_icon_name.c_str()))));
-    ui_->init_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->init_pose_button->setIcon(QIcon(QPixmap(QString(init_pose_button_icon_name.c_str()))));
-    ui_->hand_reset_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hand_reset_pose_button->setIcon(QIcon(QPixmap(QString(hand_reset_pose_button_icon_name.c_str()))));
-    ui_->hand_hook_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hand_hook_pose_button->setIcon(QIcon(QPixmap(QString(hand_hook_pose_button_icon_name.c_str()))));
-    ui_->hand_grasp_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hand_grasp_pose_button->setIcon(QIcon(QPixmap(QString(hand_grasp_pose_button_icon_name.c_str()))));
-    ui_->hrpsys_start_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_start_abc_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_abc_button_icon_name.c_str()))));
-    ui_->hrpsys_start_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_start_st_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_st_button_icon_name.c_str()))));
-    ui_->hrpsys_start_imp_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_start_imp_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_imp_button_icon_name.c_str()))));
-    ui_->hrpsys_start_imp_for_drill_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_start_imp_for_drill_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_imp_for_drill_button_icon_name.c_str()))));
-    ui_->hrpsys_stop_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_abc_button->setIcon(QIcon(QPixmap(QString(hrpsys_stop_abc_button_icon_name.c_str()))));
-    ui_->hrpsys_stop_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_st_button->setIcon(QIcon(QPixmap(QString(hrpsys_stop_st_button_icon_name.c_str()))));
-    ui_->hrpsys_stop_imp_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_imp_button->setIcon(QIcon(QPixmap(QString(hrpsys_stop_imp_button_icon_name.c_str()))));
-
-    connect( ui_->reset_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestResetPose()));
-    connect( ui_->reset_manip_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestManipPose()));
-    connect( ui_->init_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestInitPose()));
-
-    connect( ui_->hand_reset_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestResetGripperPose()));
-    connect( ui_->hand_hook_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestHookGrippePose()));
-    connect( ui_->hand_grasp_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestGraspGrippePose()));
-
-    connect( ui_->hrpsys_start_abc_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartABC()));
-    connect( ui_->hrpsys_start_st_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartST()));
-    connect( ui_->hrpsys_start_imp_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartIMP()));
-    connect( ui_->hrpsys_start_imp_for_drill_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartIMPforDrill()));
-
-    connect( ui_->hrpsys_stop_abc_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopABC ()));
-    connect( ui_->hrpsys_stop_st_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopST()));
-    connect( ui_->hrpsys_stop_imp_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopIMP()));
+              if (button_xmlrpc.hasMember("name")) {
+                name = (std::string)button_xmlrpc["name"];
+              }
+              else {
+                throw RobotCommandParseException("element of ~robot_comamnd_buttons should have name field");
+              }
+              button->setText(QString(name.c_str()));
+              if (button_xmlrpc.hasMember("icon")) {
+                // TODO: resolve path
+                std::string icon;
+                icon = (std::string)button_xmlrpc["icon"];
+                if (icon.find("package://") == 0) {
+                  icon.erase(0, strlen("package://"));
+                  size_t package_end = icon.find("/");
+                  std::string package = icon.substr(0, package_end);
+                  icon.erase(0, package_end);
+                  std::string package_path;
+                  package_path = ros::package::getPath(package);
+                  icon = package_path + icon;
+                }
+                button->setIcon(QIcon(QPixmap(QString(icon.c_str()))));
+                button->setIconSize(QSize(100, 100));
+                button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+              }
+              std::string type;
+              if (button_xmlrpc.hasMember("type")) {
+                type = (std::string)button_xmlrpc["type"];
+              }
+              if (type == "euscommand") {
+                if (button_xmlrpc.hasMember("command")) {
+                  euscommand_mapping_[i] = (std::string)button_xmlrpc["command"];
+                  button->setToolTip(euscommand_mapping_[i].c_str());
+                }
+                else {
+                  throw RobotCommandParseException("type: euscommand requires command field");
+                }
+              }
+              else if (type == "emptysrv") {
+                if (button_xmlrpc.hasMember("srv")) {
+                  emptyservice_mapping_[i] = (std::string)button_xmlrpc["srv"];
+                  button->setToolTip(emptyservice_mapping_[i].c_str());
+                }
+                else {
+                  throw RobotCommandParseException("type: emptysrv requires srv field");
+                }
+              }
+              else {
+                throw RobotCommandParseException("type field is required");
+              }
+              // connect
+              connect(button, SIGNAL(clicked()), signal_mapper_, SLOT(map()));
+              signal_mapper_->setMapping(button, i);
+              layout->addWidget(button);
+            }
+          }
+        }
+      }
+      catch (RobotCommandParseException& e) {
+        popupDialog((boost::format("Malformed ~robot_command_buttons parameter.\n"
+                                  "%s\n"
+                                  "See package://jsk_rviz_plugins/config/default_robot_command.yaml")
+                     % e.what()).str().c_str());
+      }
+    }
+    else {
+      popupDialog("You need to specify ~robot_command_buttons parameter.\n"
+                  "See package://jsk_rviz_plugins/launch/robot_command_interface_sample.launch");
+    }
+    layout->addStretch();
+    connect(signal_mapper_, SIGNAL(mapped(int)), this, SLOT(buttonCallback(int)));
+    // QToolButton* button = new QToolButton();
+    
+    // // button->setPopupMode(QToolButton::MenuButtonPopup);
+    // button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    // button->setIcon(QIcon(QPixmap(QString("/home/garaemon/ros/hydro/src/jsk-ros-pkg/jsk_visualization/jsk_rviz_plugins/icons/stop-imp.png"))));
+    
+    // button->setText("Hello worpld");
+    // layout->addWidget(button);
+    this->setLayout(layout);
   }
 
-  void RobotCommandInterfaceAction::callRequestResetPose(){
-    std::string command("(send *ri* :angle-vector (send *robot* :reset-pose) 5000))");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestManipPose(){
-    std::string command("(send *ri* :angle-vector (send *robot* :reset-manip-pose) 5000)");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestInitPose(){
-    std::string command("(send *ri* :angle-vector (send *robot* :init-pose) 5000)");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestResetGripperPose(){
-    std::string command("(progn (send *robot* :hand :arms :reset-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestHookGrippePose(){
-    std::string command("(progn (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestGraspGrippePose(){
-    std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestStartABC(){
-    std::string command("(send *ri* :start-auto-balancer)");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestStartST(){
-    std::string command("(send *ri* :start-st)");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestStartIMP(){
-    std::string command("(send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestStartIMPforDrill(){
-    std::string command("(send *ri* :start-impedance :rarm :force-gain #f(1 0 0) :moment-gain #f(0 0 0) :k-p 600 :d-p 60)");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestStopABC(){
-    std::string command("(send *ri* :stop-auto-balancer)");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestStopST(){
-    std::string command("(send *ri* :stop-st)");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestStopIMP(){
-    std::string command("(send *ri* :stop-impedance :arms)");
-    callRequestEusCommand(command);
-  };
-
-  void RobotCommandInterfaceAction::callRequestEusCommand(std::string command){
+  bool RobotCommandInterfaceAction::callRequestEusCommand(const std::string& command){
     ros::ServiceClient client = nh_.serviceClient<jsk_rviz_plugins::EusCommand>("/eus_command", true);
     jsk_rviz_plugins::EusCommand srv;
     srv.request.command = command;
-    if(client.call(srv))
-      {
-        ROS_INFO("Call Success");
+    return client.call(srv);
+  }
+
+  void RobotCommandInterfaceAction::buttonCallback(int i)
+  {
+    ROS_INFO("buttonCallback(%d)", i);
+    if (euscommand_mapping_.find(i) != euscommand_mapping_.end()) {
+      if(!callRequestEusCommand(euscommand_mapping_[i])) {
+        popupDialog((boost::format("Failed to call %s") % euscommand_mapping_[i]).str().c_str());
       }
-    else{
-      ROS_ERROR("Service call FAIL");
-    };
+    }
+    else if (emptyservice_mapping_.find(i) != emptyservice_mapping_.end()) {
+      std_srvs::Empty emp;
+      if (!ros::service::call(emptyservice_mapping_[i], emp)) {
+        popupDialog((boost::format("Failed to call %s") % emptyservice_mapping_[i]).str().c_str());
+      }
+    }
+    else {
+      popupDialog((boost::format("Failed to find corresponding command for %d") % i).str().c_str());
+    }
   }
 
-  void RobotCommandInterfaceAction::save( rviz::Config config ) const
+  void RobotCommandInterfaceAction::popupDialog(const std::string& text)
   {
-    rviz::Panel::save( config );
-  }
-
-  void RobotCommandInterfaceAction::load( const rviz::Config& config )
-  {
-    rviz::Panel::load( config );
+    QMessageBox msg_box;
+    msg_box.setText("Unexpected error");
+    msg_box.setText(QString(text.c_str()));
+    msg_box.exec();
   }
 }
 

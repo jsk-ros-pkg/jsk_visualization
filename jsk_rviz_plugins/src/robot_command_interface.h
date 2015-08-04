@@ -5,11 +5,7 @@
 #include <rviz/panel.h>
 #include <QtGui>
 #include <jsk_rviz_plugins/EusCommand.h>
-
-namespace Ui
-{
-  class RobotCommandInterface;
-}
+#include <resource_retriever/retriever.h>
 
 namespace jsk_rviz_plugins
 {
@@ -19,34 +15,17 @@ namespace jsk_rviz_plugins
     public:
     RobotCommandInterfaceAction( QWidget* parent = 0 );
 
-    virtual void load( const rviz::Config& config );
-    virtual void save( rviz::Config config ) const;
-
   protected Q_SLOTS:
-
-    void callRequestResetPose();
-    void callRequestManipPose();
-    void callRequestInitPose();
-
-    void callRequestResetGripperPose();
-    void callRequestHookGrippePose();
-    void callRequestGraspGrippePose();
-
-    void callRequestStartABC();
-    void callRequestStartST();
-    void callRequestStartIMP();
-    void callRequestStartIMPforDrill();
-
-    void callRequestStopABC();
-    void callRequestStopST();
-    void callRequestStopIMP();
-
-    void callRequestEusCommand(std::string command);
-
+    bool callRequestEusCommand(const std::string& command);
+    void buttonCallback(int i);
   protected:
+    void popupDialog(const std::string& text);
     // The ROS node handle.
     ros::NodeHandle nh_;
-    Ui::RobotCommandInterface *ui_;
+    QSignalMapper* signal_mapper_;
+    std::map<int, std::string> euscommand_mapping_;
+    std::map<int, std::string> emptyservice_mapping_;
+    //std::vector<QToolButton*> buttons_;
   };
 
 }
