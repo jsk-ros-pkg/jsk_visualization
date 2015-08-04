@@ -61,25 +61,29 @@ plan_run_(false), lleg_first_(true) {
   tf_listener_.reset(new tf::TransformListener);
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
+  srv_ = boost::make_shared <dynamic_reconfigure::Server<Config> > (pnh);
+  typename dynamic_reconfigure::Server<Config>::CallbackType f =
+    boost::bind (&FootstepMarker::configCallback, this, _1, _2);
+  srv_->setCallback (f);
   pnh.param("foot_size_x", foot_size_x_, 0.247);
   pnh.param("foot_size_y", foot_size_y_, 0.135);
   pnh.param("foot_size_z", foot_size_z_, 0.01);
   pnh.param("lfoot_frame_id", lfoot_frame_id_, std::string("lfsensor"));
   pnh.param("rfoot_frame_id", rfoot_frame_id_, std::string("rfsensor"));
   pnh.param("show_6dof_control", show_6dof_control_, true);
-  pnh.param("use_projection_service", use_projection_service_, false);
-  pnh.param("use_projection_topic", use_projection_topic_, false);
+  // pnh.param("use_projection_service", use_projection_service_, false);
+  // pnh.param("use_projection_topic", use_projection_topic_, false);
   pnh.param("always_planning", always_planning_, true);
-  if (use_projection_topic_) {
+  // if (use_projection_topic_) {
     project_footprint_pub_ = pnh.advertise<jsk_interactive_marker::SnapFootPrintInput>("project_footprint", 1);
-  }
+  // }
   // read lfoot_offset
   readPoseParam(pnh, "lfoot_offset", lleg_offset_);
   readPoseParam(pnh, "rfoot_offset", rleg_offset_);
   
   pnh.param("footstep_margin", footstep_margin_, 0.2);
   pnh.param("use_footstep_planner", use_footstep_planner_, true);
-  pnh.param("use_plane_snap", use_plane_snap_, true);
+
   pnh.param("use_footstep_controller", use_footstep_controller_, true);
   pnh.param("use_initial_footstep_tf", use_initial_footstep_tf_, true);
   pnh.param("wait_snapit_server", wait_snapit_server_, false);
@@ -93,10 +97,6 @@ plan_run_(false), lleg_first_(true) {
   estimate_occlusion_client_ = nh.serviceClient<std_srvs::Empty>("require_estimation");
   if (!nowait && wait_snapit_server_) {
     snapit_client_.waitForExistence();
-  }
-  
-  if (use_plane_snap_) {
-    grid_sub_ = pnh.subscribe("grid_arrays", 1, &FootstepMarker::planeCB, this);
   }
   
   if (pnh.getParam("initial_reference_frame", initial_reference_frame_)) {
@@ -214,10 +214,18 @@ plan_run_(false), lleg_first_(true) {
     ROS_INFO("resolved transform {%s, %s} => %s", lfoot_frame_id_.c_str(),
              rfoot_frame_id_.c_str(), marker_frame_id_.c_str());
   }
-  if (use_projection_topic_) {
+  // if (use_projection_topic_) {
     projection_sub_ = pnh.subscribe("projected_pose", 1,
                                     &FootstepMarker::projectionCallback, this);
-  }
+  // }
+}
+
+void FootstepMarker::configCallback(Config& config, uint32_t level)
+{
+  boost::mutex::scoped_lock lock(plane_mutex_);
+  use_projection_topic_ = config.use_projection_topic;
+  use_projection_service_ = config.use_projection_service;
+  use_plane_snap_ = config.use_plane_snap;
 }
 
 // a function to read double value from XmlRpcValue.
@@ -519,87 +527,6 @@ bool FootstepMarker::projectMarkerToPlane()
     project_footprint_pub_.publish(msg);
     return true;                // true...?
   }
-  else {
-    if (latest_grids_->grids.size() == 0) {
-      ROS_WARN("it's not valid grids");
-      return false;
-    }
-    // Convert to jsk_pcl_ros::GridPlane object
-    std::vector<jsk_pcl_ros::GridPlane::Ptr> grids;
-    for (size_t i = 0; i < latest_grids_->grids.size(); i++) {
-    
-      tf::StampedTransform tf_transform
-        = jsk_pcl_ros::lookupTransformWithDuration(
-          tf_listener_.get(),
-          marker_pose_.header.frame_id,
-          latest_grids_->grids[i].header.frame_id,
-          marker_pose_.header.stamp,
-          ros::Duration(1.0));
-    
-      Eigen::Affine3f transform;
-      tf::transformTFToEigen(tf_transform, transform);
-      // ROS_INFO("transform: %s -> %s: [%f, %f, %f]",
-      //          marker_pose_.header.frame_id.c_str(),
-      //          latest_grids_->grids[i].header.frame_id.c_str(),
-      //          transform.translation()[0],
-      //          transform.translation()[1],
-      //          transform.translation()[2]);
-    
-      grids.push_back(boost::make_shared<jsk_pcl_ros::GridPlane>(
-                        jsk_pcl_ros::GridPlane::fromROSMsg(
-                          latest_grids_->grids[i],
-                          transform)));
-    }
-    //ROS_ERROR("projecting");
-    double min_distance = DBL_MAX;
-    geometry_msgs::PoseStamped min_pose;
-    Eigen::Affine3f marker_coords;
-    // ROS_INFO_STREAM("marker_pose: " << marker_pose_.pose);
-    tf::poseMsgToEigen(marker_pose_.pose, marker_coords);
-    Eigen::Vector3f marker_pos(marker_coords.translation());
-    for (size_t i = 0; i < grids.size(); i++) {
-      Eigen::Affine3f projected_coords;
-      grids[i]->getPolygon()->projectOnPlane(marker_coords, projected_coords);
-      Eigen::Vector3f projected_normal = projected_coords.rotation() * Eigen::Vector3f::UnitZ();
-      Eigen::Vector3f normal = grids[i]->getPolygon()->getNormal();
-      Eigen::Vector3f projected_point(projected_coords.translation());
-      Eigen::Quaternionf projected_rot(projected_coords.rotation());
-      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] normal: [%f, %f, %f]",
-      //          normal[0], normal[1], normal[2]);
-      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected_normal: [%f, %f, %f]",
-      //          projected_normal[0], projected_normal[1], projected_normal[2]);
-      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected point: [%f, %f, %f]",
-      //          projected_point[0], projected_point[1], projected_point[2]);
-      // ROS_INFO("[FootstepMarker::projectMarkerToPlane] projected rot: [%f, %f, %f, %f]",
-      //          projected_rot.x(), projected_rot.y(), projected_rot.z(), projected_rot.w());
-      if (grids[i]->isOccupiedGlobal(projected_point)) {
-        double distance = (marker_coords.translation() - projected_point).norm();
-        // ROS_INFO("[FootstepMarker::projectMarkerToPlane] distance at %lu is %f", i, distance);
-        if (distance < min_distance) {
-          min_distance = distance;
-          tf::poseEigenToMsg(projected_coords, min_pose.pose);
-          // ROS_INFO("[FootstepMarker::projectMarkerToPlane] z diff: %f(%f)", acos(projected_normal.dot(normal)), projected_normal.dot(normal));
-        }
-      }
-      else {
-        // ROS_INFO("[FootstepMarker::projectMarkerToPlane] not occupied at %lu", i);
-      }
-    }
-    // ROS_INFO_STREAM("min_distance: " << min_distance);
-    if (min_distance < 0.3) {     // smaller than 30cm
-      marker_pose_.pose = min_pose.pose;
-      snapped_pose_pub_.publish(min_pose);
-      current_pose_pub_.publish(min_pose);
-      server_->setPose("footstep_marker", min_pose.pose);
-      server_->applyChanges();
-      //ROS_WARN("projected");
-      return true;
-    }
-    else {
-      //ROS_WARN("not projected");
-      return false;
-    }
-  }
 }
 
 void FootstepMarker::menuFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
@@ -794,15 +721,10 @@ void FootstepMarker::moveMarkerCB(const geometry_msgs::PoseStamped::ConstPtr& ms
   marker_pose_ = transformed_pose;
   bool skip_plan = false;
   if (use_plane_snap_) {
-    if (!latest_grids_) {
-      ROS_WARN("no planes are available yet");
-    }
-    else {
-      // do something magicalc
-      skip_plan = !projectMarkerToPlane();
-      if (skip_plan) {
-        marker_pose_ = prev_pose;
-      }
+    // do something magicalc
+    skip_plan = !projectMarkerToPlane();
+    if (skip_plan) {
+      marker_pose_ = prev_pose;
     }
   }
   
@@ -896,19 +818,6 @@ void FootstepMarker::initializeInteractiveMarker() {
 }
 
 FootstepMarker::~FootstepMarker() {
-}
-
-void FootstepMarker::planeCB(
-  const jsk_recognition_msgs::SimpleOccupancyGridArray::ConstPtr& grid_msg)
-{
-  boost::mutex::scoped_lock lock(plane_mutex_);
-  ROS_INFO("new grid receievd");
-  if (grid_msg->grids.size() > 0) {
-    latest_grids_ = grid_msg;
-  }
-  else {
-    ROS_INFO_STREAM(__FUNCTION__ << " the size of the grid is 0, ignore");
-  }
 }
 
 int main(int argc, char** argv) {
