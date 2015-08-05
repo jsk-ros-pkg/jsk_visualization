@@ -51,9 +51,6 @@ add_definitions(-DQT_NO_KEYWORDS -g)
 #include(${wxWidgets_USE_FILE})
 #include_directories( ${wxWidgets_INCLUDE_DIRS} )
 
-qt4_wrap_ui(UIC_FILES
-  config/robot_command_interface.ui
-  )
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 #set(SOURCE_FILES src/ambient_sound_display.cpp src/ambient_sound_visual.cpp)
