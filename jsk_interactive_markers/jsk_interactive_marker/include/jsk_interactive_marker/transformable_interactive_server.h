@@ -76,6 +76,10 @@ namespace jsk_interactive_marker
     bool getExistenceService(jsk_interactive_marker::GetTransformableMarkerExistence::Request &req,jsk_interactive_marker::GetTransformableMarkerExistence::Response &res);
     bool setDimensionsService(jsk_interactive_marker::SetMarkerDimensions::Request &req,jsk_interactive_marker::SetMarkerDimensions::Response &res);
     bool getDimensionsService(jsk_interactive_marker::GetMarkerDimensions::Request &req,jsk_interactive_marker::GetMarkerDimensions::Response &res);
+    bool hideService(std_srvs::Empty::Request& req,
+                     std_srvs::Empty::Response& res);
+    bool showService(std_srvs::Empty::Request& req,
+                     std_srvs::Empty::Response& res);
     void publishMarkerDimensions();
 
     bool requestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate::Request &req,jsk_rviz_plugins::RequestMarkerOperate::Response &res);
@@ -104,7 +108,9 @@ namespace jsk_interactive_marker
     ros::Subscriber set_x_sub_;
     ros::Subscriber set_y_sub_;
     ros::Subscriber set_z_sub_;
-
+    
+    ros::ServiceServer hide_srv_;
+    ros::ServiceServer show_srv_;
     ros::ServiceServer get_pose_srv_;
     ros::ServiceServer get_control_pose_srv_;
     ros::ServiceServer set_pose_srv_;

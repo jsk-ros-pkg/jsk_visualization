@@ -24,6 +24,11 @@ TransformableObject::TransformableObject(){
   display_interactive_manipulator_ = true;
 }
 
+void TransformableObject::setDisplayInteractiveManipulator(bool v)
+{
+  display_interactive_manipulator_ = v;
+}
+
 void TransformableObject::setInteractiveMarkerSetting(InteractiveSettingConfig config){
   display_interactive_manipulator_ = config.display_interactive_manipulator;
   interactive_manipulator_orientation_ = config.interactive_manipulator_orientation;
