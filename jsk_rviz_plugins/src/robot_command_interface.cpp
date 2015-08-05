@@ -66,7 +66,7 @@ namespace jsk_rviz_plugins
                   icon = package_path + icon;
                 }
                 button->setIcon(QIcon(QPixmap(QString(icon.c_str()))));
-                button->setIconSize(QSize(100, 100));
+                button->setIconSize(QSize(80, 80));
                 button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
               }
               std::string type;
