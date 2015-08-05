@@ -42,6 +42,8 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   get_exist_srv_ = n_->advertiseService("get_existence", &TransformableInteractiveServer::getExistenceService, this);
   set_dimensions_srv =  n_->advertiseService("set_dimensions", &TransformableInteractiveServer::setDimensionsService, this);
   get_dimensions_srv =  n_->advertiseService("get_dimensions", &TransformableInteractiveServer::getDimensionsService, this);
+  hide_srv_ = n_->advertiseService("hide", &TransformableInteractiveServer::hideService, this);
+  show_srv_ = n_->advertiseService("show", &TransformableInteractiveServer::showService, this);
   marker_dimensions_pub_ = n_->advertise<jsk_interactive_marker::MarkerDimensions>("marker_dimensions", 1);
   request_marker_operate_srv_ = n_->advertiseService("request_marker_operate", &TransformableInteractiveServer::requestMarkerOperateService, this);
 
@@ -335,6 +337,31 @@ bool TransformableInteractiveServer::getDimensionsService(jsk_interactive_marker
   return true;
 }
 
+bool TransformableInteractiveServer::hideService(std_srvs::Empty::Request& req,
+                                                 std_srvs::Empty::Response& res)
+{
+  for (std::map<string, TransformableObject* >::iterator itpairstri = transformable_objects_map_.begin(); 
+       itpairstri != transformable_objects_map_.end();
+       ++itpairstri) {
+    TransformableObject* tobject = itpairstri->second;
+    tobject->setDisplayInteractiveManipulator(false);
+    updateTransformableObject(tobject);
+  }
+  return true;
+}
+
+bool TransformableInteractiveServer::showService(std_srvs::Empty::Request& req,
+                                                 std_srvs::Empty::Response& res)
+{
+  for (std::map<string, TransformableObject* >::iterator itpairstri = transformable_objects_map_.begin();
+       itpairstri != transformable_objects_map_.end(); 
+       ++itpairstri) {
+    TransformableObject* tobject = itpairstri->second;
+    tobject->setDisplayInteractiveManipulator(true);
+    updateTransformableObject(tobject);
+  }
+  return true;
+}
 void TransformableInteractiveServer::publishMarkerDimensions()
 {
   TransformableObject* tobject;

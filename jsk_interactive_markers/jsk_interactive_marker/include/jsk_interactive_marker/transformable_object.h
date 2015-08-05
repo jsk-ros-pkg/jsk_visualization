@@ -43,6 +43,7 @@ namespace jsk_interactive_marker {
     void publishTF();
     std::string getFrameId() { return frame_id_; }
     geometry_msgs::Pose getPose(bool for_interactive_control=false);
+    void setDisplayInteractiveManipulator(bool v);
     void setInteractiveMarkerSetting(InteractiveSettingConfig config);
     virtual bool setRadius(std_msgs::Float32 recieve_val){return false;};
     virtual bool setSmallRadius(std_msgs::Float32 recieve_val){return false;};
