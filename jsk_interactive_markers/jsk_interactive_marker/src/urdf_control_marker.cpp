@@ -23,7 +23,9 @@ public:
   void show_marker_cb ( const std_msgs::BoolConstPtr &msg);
   void markerUpdate ( std_msgs::Header header, geometry_msgs::Pose pose);
   void publish_pose_cb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
-
+  void callDynamicTf(const std_msgs::Header& header,
+                     const std::string& child_frame,
+                     const geometry_msgs::Transform& pose);
 private:
   bool use_dynamic_tf_, move_2d_;
   tf::TransformListener tf_listener_;
@@ -128,19 +130,31 @@ void UrdfControlMarker::processFeedback( const visualization_msgs::InteractiveMa
   markerUpdate( feedback->header, feedback->pose);
 }
 
+void UrdfControlMarker::callDynamicTf(
+  const std_msgs::Header& header,
+  const std::string& child_frame,
+  const geometry_msgs::Transform& transform)
+{
+  dynamic_tf_publisher::SetDynamicTF SetTf;
+  SetTf.request.freq = 20;
+  SetTf.request.cur_tf.header = header;
+  SetTf.request.cur_tf.child_frame_id = child_frame;
+  SetTf.request.cur_tf.transform = transform;
+  if (!dynamic_tf_publisher_client_.call(SetTf)) {
+    ROS_ERROR("Failed to call dynamic_tf: %s => %s",
+              header.frame_id.c_str(),
+              child_frame.c_str());
+  }
+}
+
 void UrdfControlMarker::markerUpdate ( std_msgs::Header header, geometry_msgs::Pose pose){
   if (use_dynamic_tf_){
-    dynamic_tf_publisher::SetDynamicTF SetTf;
-    SetTf.request.freq = 20;
-    SetTf.request.cur_tf.header = header;
-    SetTf.request.cur_tf.child_frame_id = marker_frame_id_;
     geometry_msgs::Transform transform;
     transform.translation.x = pose.position.x;
     transform.translation.y = pose.position.y;
     transform.translation.z = pose.position.z;
     transform.rotation = pose.orientation;
-    SetTf.request.cur_tf.transform = transform;
-    dynamic_tf_publisher_client_.call(SetTf);
+    callDynamicTf(header, marker_frame_id_, transform);
   }
   geometry_msgs::PoseStamped ps;
   ps.header = header;
@@ -238,16 +252,12 @@ void UrdfControlMarker::makeControlMarker( bool fixed )
   server_->applyChanges();
   if (use_dynamic_tf_) {
     /* First initialize dynamic tf as identity */
-    dynamic_tf_publisher::SetDynamicTF SetTf;
-    SetTf.request.freq = 20;
-    SetTf.request.cur_tf.header.frame_id = fixed_frame_id_;
-    SetTf.request.cur_tf.header.stamp = ros::Time::now();
-    SetTf.request.cur_tf.child_frame_id = marker_frame_id_;
+    std_msgs::Header header;
+    header.frame_id = fixed_frame_id_;
+    header.stamp = ros::Time::now();
     geometry_msgs::Transform transform;
     transform.rotation.w = 1.0;
-    SetTf.request.cur_tf.transform = transform;
-    dynamic_tf_publisher_client_.call(SetTf);
-
+    callDynamicTf(header, marker_frame_id_, transform);
   }
 }
 
