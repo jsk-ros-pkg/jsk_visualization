@@ -132,10 +132,12 @@ namespace jsk_rviz_plugins
     Ogre::Quaternion orientation;
     if(!context_->getFrameManager()->getTransform(
          header, position, orientation)) {
-      ROS_ERROR("Error transforming from frame '%s' to frame '%s'",
-                header.frame_id.c_str(), fixed_frame_id.c_str());
+      setStatus(rviz::StatusProperty::Error, "transformation",
+                (boost::format("Failed transforming from frame '%s' to frame '%s'")
+                 % header.frame_id.c_str() % fixed_frame_id.c_str()).str().c_str());
       return;
     }
+    setStatus(rviz::StatusProperty::Ok, "transformation", "Ok");
     geometry_msgs::PointStamped new_point;
     new_point.header.stamp = now;
     new_point.point.x = position[0];
