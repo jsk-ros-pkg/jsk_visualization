@@ -731,6 +731,7 @@ void FootstepMarker::moveMarkerCB(const geometry_msgs::PoseStamped::ConstPtr& ms
   // need to solve TF
   server_->setPose("footstep_marker", transformed_pose.pose);
   server_->applyChanges();
+  current_pose_pub_.publish(marker_pose_);
   if (!skip_plan) {
     planIfPossible();
   }
