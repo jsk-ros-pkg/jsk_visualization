@@ -25,7 +25,8 @@ public:
   void publish_pose_cb( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void callDynamicTf(const std_msgs::Header& header,
                      const std::string& child_frame,
-                     const geometry_msgs::Transform& pose);
+                     const geometry_msgs::Transform& pose,
+                     bool until_success = false);
 private:
   bool use_dynamic_tf_, move_2d_;
   tf::TransformListener tf_listener_;
@@ -133,17 +134,31 @@ void UrdfControlMarker::processFeedback( const visualization_msgs::InteractiveMa
 void UrdfControlMarker::callDynamicTf(
   const std_msgs::Header& header,
   const std::string& child_frame,
-  const geometry_msgs::Transform& transform)
+  const geometry_msgs::Transform& transform,
+  bool until_success)
 {
   dynamic_tf_publisher::SetDynamicTF SetTf;
   SetTf.request.freq = 20;
   SetTf.request.cur_tf.header = header;
   SetTf.request.cur_tf.child_frame_id = child_frame;
   SetTf.request.cur_tf.transform = transform;
-  if (!dynamic_tf_publisher_client_.call(SetTf)) {
-    ROS_ERROR("Failed to call dynamic_tf: %s => %s",
-              header.frame_id.c_str(),
-              child_frame.c_str());
+  ros::Rate r(1);
+  while (true) {
+    if (!dynamic_tf_publisher_client_.call(SetTf)) {
+      ROS_ERROR("Failed to call dynamic_tf: %s => %s",
+                header.frame_id.c_str(),
+                child_frame.c_str());
+      // Re-create connection to service server
+      dynamic_tf_publisher_client_ = nh_.serviceClient<dynamic_tf_publisher::SetDynamicTF>("set_dynamic_tf", true);
+      dynamic_tf_publisher_client_.waitForExistence();
+      if (!until_success) {
+        break;
+      }
+    }
+    else {
+      break;
+    }
+    r.sleep();
   }
 }
 
@@ -257,7 +272,7 @@ void UrdfControlMarker::makeControlMarker( bool fixed )
     header.stamp = ros::Time::now();
     geometry_msgs::Transform transform;
     transform.rotation.w = 1.0;
-    callDynamicTf(header, marker_frame_id_, transform);
+    callDynamicTf(header, marker_frame_id_, transform, true);
   }
 }
 
