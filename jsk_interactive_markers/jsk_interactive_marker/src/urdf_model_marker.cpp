@@ -220,6 +220,10 @@ void UrdfModelMarker::setRootPose ( geometry_msgs::PoseStamped ps ){
 
 
 void UrdfModelMarker::resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg, bool update_root){
+  boost::mutex::scoped_lock lock(joint_states_mutex_);
+  if (is_joint_states_locked_) {
+    return;
+  }
   jsk_topic_tools::ScopedTimer timer = reset_joint_states_check_time_acc_.scopedTimer();
   setJointState(model->getRoot(), msg);
   republishJointState(*msg);
@@ -1136,7 +1140,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 UrdfModelMarker::UrdfModelMarker ()
 {}
 
-UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, string model_file, string frame_id, geometry_msgs::PoseStamped root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, vector<string> fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index,  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, string model_file, string frame_id, geometry_msgs::PoseStamped root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, vector<string> fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index,  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true), is_joint_states_locked_(false) {
   diagnostic_updater_.reset(new diagnostic_updater::Updater);
   diagnostic_updater_->setHardwareID(ros::this_node::getName());
   diagnostic_updater_->add("Modeling Stats", boost::bind(&UrdfModelMarker::updateDiagnostic, this, _1));
@@ -1224,6 +1228,12 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
       mode_ = "model";
     }
   }
+  serv_lock_joint_states_ = pnh_.advertiseService("lock_joint_states",
+                                                  &UrdfModelMarker::lockJointStates,
+                                                  this);
+  serv_unlock_joint_states_ = pnh_.advertiseService("unlock_joint_states",
+                                                    &UrdfModelMarker::unlockJointStates,
+                                                    this);
 
   if(mode_ == "registration"){
     model_menu_.insert( "Registration",
@@ -1327,6 +1337,22 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
   pose.orientation.w = 1.0;
   //callSetDynamicTf(parent_frame_id, frame_id, Pose2Transform(pose));
   return;
+}
+
+bool UrdfModelMarker::lockJointStates(std_srvs::EmptyRequest& req,
+                                      std_srvs::EmptyRequest& res)
+{
+  boost::mutex::scoped_lock lock(joint_states_mutex_);
+  is_joint_states_locked_ = true;
+  return true;
+}
+
+bool UrdfModelMarker::unlockJointStates(std_srvs::EmptyRequest& req,
+                                      std_srvs::EmptyRequest& res)
+{
+  boost::mutex::scoped_lock lock(joint_states_mutex_);
+  is_joint_states_locked_ = false;
+  return true;
 }
 
 

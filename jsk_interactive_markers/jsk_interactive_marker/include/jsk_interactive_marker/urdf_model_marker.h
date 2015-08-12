@@ -115,7 +115,10 @@ class UrdfModelMarker {
   void setRootPose( geometry_msgs::PoseStamped ps);
   void resetJointStatesCB( const sensor_msgs::JointStateConstPtr &msg, bool update_root);
   void updateDiagnostic(diagnostic_updater::DiagnosticStatusWrapper &stat);
-
+  bool lockJointStates(std_srvs::EmptyRequest& req,
+                       std_srvs::EmptyRequest& res);
+  bool unlockJointStates(std_srvs::EmptyRequest& req,
+                         std_srvs::EmptyRequest& res);
 
  protected:
   ros::NodeHandle nh_;
@@ -149,7 +152,10 @@ class UrdfModelMarker {
   ros::ServiceServer serv_set_;
   ros::ServiceServer serv_markers_set_;
   ros::ServiceServer serv_markers_del_;
-
+  ros::ServiceServer serv_lock_joint_states_;
+  ros::ServiceServer serv_unlock_joint_states_;
+  boost::mutex joint_states_mutex_;
+  bool is_joint_states_locked_;
   interactive_markers::MenuHandler model_menu_;
 
   tf::TransformListener tfl_;
