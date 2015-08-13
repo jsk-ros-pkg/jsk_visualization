@@ -16,6 +16,8 @@ import matplotlib
 import rospkg
 import rospy
 
+from jsk_recognition_msgs.msg import HistogramWithRange, HistogramWithRangeBin
+
 import os, sys
 import argparse
 
@@ -94,7 +96,6 @@ class HistogramPlotWidget(QWidget):
         self._update_plot_timer.start(self._redraw_interval)
     @Slot('QDropEvent*')
     def dropEvent(self, event):
-        print "hello"
         if event.mimeData().hasText():
             topic_name = str(event.mimeData().text())
         else:
@@ -137,16 +138,24 @@ class HistogramPlotWidget(QWidget):
         if not self._rosdata:
             return
         data_x, data_y = self._rosdata.next()
+
         if len(data_y) == 0:
             return
-        xs = data_y[-1]
         axes = self.data_plot._canvas.axes
         axes.cla()
-        axes.set_xlim(xmin=0, xmax=len(xs))
-        pos = np.arange(len(xs))
+        if self._rosdata.sub.data_class is HistogramWithRange:
+            xs = [y.count for y in data_y[-1].bins]
+            pos = [y.min_value for y in data_y[-1].bins]
+            widths = [y.max_value - y.min_value for y in data_y[-1].bins]
+            axes.set_xlim(xmin=pos[0], xmax=pos[-1] + widths[-1])
+        else:
+            xs = data_y[-1]
+            pos = np.arange(len(xs))
+            widths = [1] * len(xs)
+            axes.set_xlim(xmin=0, xmax=len(xs))
         #axes.xticks(range(5))
-        for p, x in zip(pos, xs):
-            axes.bar(p, x, color='r', align='center')
+        for p, x, w in zip(pos, xs, widths):
+            axes.bar(p, x, color='r', align='center', width=w)
         self.data_plot._canvas.draw()
         
 class MatHistogramPlot(QWidget):
