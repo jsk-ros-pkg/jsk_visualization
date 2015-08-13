@@ -12,7 +12,7 @@ from rqt_plot.rosplot import RosPlotException
 from matplotlib.collections import (PolyCollection, 
                                     PathCollection, LineCollection)
 import matplotlib
-
+import matplotlib.patches as mpatches
 import rospkg
 import rospy
 
@@ -111,6 +111,7 @@ class HistogramPlotWidget(QWidget):
         self.subscribe_topic(str(self.topic_edit.text()))
 
     def subscribe_topic(self, topic_name):
+        self.topic_with_field_name = topic_name
         if not self._rosdata:
             self._rosdata = ROSData(topic_name, self._start_time)
         else:
@@ -156,6 +157,7 @@ class HistogramPlotWidget(QWidget):
         #axes.xticks(range(5))
         for p, x, w in zip(pos, xs, widths):
             axes.bar(p, x, color='r', align='center', width=w)
+        axes.legend([self.topic_with_field_name], prop={'size': '8'})
         self.data_plot._canvas.draw()
         
 class MatHistogramPlot(QWidget):
