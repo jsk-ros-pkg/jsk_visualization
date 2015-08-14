@@ -64,14 +64,6 @@ class HistogramPlot(Plugin):
     @staticmethod
     def add_arguments(parser):
         group = parser.add_argument_group('Options for rqt_histogram plugin')
-        # group.add_argument('-P', '--pause', action='store_true', dest='start_paused',
-        #     help='Start in paused state')
-        # group.add_argument('-L', '--line', action='store_true', dest='show_line',
-        #     help='Show lines rather than polygon representation')
-        # group.add_argument('--no-legend', action='store_true', dest='no_legend',
-        #     help='do not show legend')
-        # group.add_argument('-B', '--buffer', dest='buffer', action="store",
-        #     help='the length of the buffer', default=100, type=int)
         group.add_argument('topics', nargs='?', default=[], help='Topics to plot')
         
 class HistogramPlotWidget(QWidget):
