@@ -41,11 +41,13 @@
 #include <rviz/properties/float_property.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/shape.h>
+
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
+#include <rviz/properties/enum_property.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/arrow.h>
 
@@ -80,11 +82,12 @@ namespace jsk_rviz_plugins
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::BoolProperty* only_border_property_;
-    rviz::BoolProperty* auto_coloring_property_;
+    // rviz::BoolProperty* auto_coloring_property_;
+    rviz::EnumProperty* coloring_property_;
     rviz::BoolProperty* show_normal_property_;
     rviz::FloatProperty* normal_length_property_;
     bool only_border_;
-    bool auto_coloring_;
+    std::string coloring_method_;
     bool show_normal_;
     double normal_length_;
     std::vector<Ogre::ManualObject*> manual_objects_;
@@ -94,7 +97,7 @@ namespace jsk_rviz_plugins
     std::vector<Ogre::MaterialPtr> materials_;
     std::vector<rviz::BillboardLine*> lines_;
   private Q_SLOTS:
-    void updateAutoColoring();
+    void updateColoring();
     void updateOnlyBorder();
     void updateShowNormal();
     void updateNormalLength();
