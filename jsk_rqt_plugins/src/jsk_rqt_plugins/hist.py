@@ -15,7 +15,10 @@ import matplotlib
 import matplotlib.patches as mpatches
 import rospkg
 import rospy
-
+from cStringIO import StringIO
+import cv2
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
 from jsk_recognition_msgs.msg import HistogramWithRange, HistogramWithRangeBin
 
 import os, sys
@@ -77,6 +80,7 @@ class HistogramPlotWidget(QWidget):
         ui_file = os.path.join(rp.get_path('jsk_rqt_plugins'), 
                                'resource', 'plot_histogram.ui')
         loadUi(ui_file, self)
+        self.cv_bridge = CvBridge()
         self.subscribe_topic_button.setIcon(QIcon.fromTheme('add'))
         self.pause_button.setIcon(QIcon.fromTheme('media-playback-pause'))
         self.clear_button.setIcon(QIcon.fromTheme('edit-clear'))
@@ -112,6 +116,7 @@ class HistogramPlotWidget(QWidget):
 
     def subscribe_topic(self, topic_name):
         self.topic_with_field_name = topic_name
+        self.pub_image = rospy.Publisher(topic_name + "/histogram_image", Image)
         if not self._rosdata:
             self._rosdata = ROSData(topic_name, self._start_time)
         else:
@@ -159,7 +164,12 @@ class HistogramPlotWidget(QWidget):
             axes.bar(p, x, color='r', align='center', width=w)
         axes.legend([self.topic_with_field_name], prop={'size': '8'})
         self.data_plot._canvas.draw()
-        
+        buffer = StringIO()
+        self.data_plot._canvas.figure.savefig(buffer, format="png")
+        buffer.seek(0)
+        img_array = np.asarray(bytearray(buffer.read()), dtype=np.uint8)
+        img = cv2.imdecode(img_array, cv2.CV_LOAD_IMAGE_COLOR)
+        self.pub_image.publish(self.cv_bridge.cv2_to_imgmsg(img, "bgr8"))
 class MatHistogramPlot(QWidget):
     class Canvas(FigureCanvas):
         def __init__(self, parent=None):
