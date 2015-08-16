@@ -43,10 +43,13 @@ namespace jsk_rviz_plugins
 {
   PolygonArrayDisplay::PolygonArrayDisplay()
   {
-    auto_coloring_property_ = new rviz::BoolProperty(
-      "auto color", true,
-      "automatically change the color of the polygons",
-      this, SLOT(updateAutoColoring()));
+    coloring_property_ = new rviz::EnumProperty(
+      "coloring", "Auto",
+      "coloring method",
+      this, SLOT(updateColoring()));
+    coloring_property_->addOption("Auto", 0);
+    coloring_property_->addOption("Flat color", 1);
+    
     color_property_ = new rviz::ColorProperty(
       "Color", QColor(25, 255, 0),
       "Color to draw the polygons.",
@@ -78,7 +81,7 @@ namespace jsk_rviz_plugins
     delete alpha_property_;
     delete color_property_;
     delete only_border_property_;
-    delete auto_coloring_property_;
+    delete coloring_property_;
     delete show_normal_property_;
     delete normal_length_property_;
     for (size_t i = 0; i < lines_.size(); i++) {
@@ -100,7 +103,7 @@ namespace jsk_rviz_plugins
   {
     MFDClass::onInitialize();
     updateOnlyBorder();
-    updateAutoColoring();
+    updateColoring();
     updateShowNormal();
     updateNormalLength();
   }
@@ -208,14 +211,14 @@ namespace jsk_rviz_plugins
   Ogre::ColourValue PolygonArrayDisplay::getColor(size_t index)
   {
     Ogre::ColourValue color;
-    if (auto_coloring_) {
+    if (coloring_method_ == "auto") {
       std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(index);
       color.r = ros_color.r;
       color.g = ros_color.g;
       color.b = ros_color.b;
       color.a = ros_color.a;
     }
-    else {
+    else if (coloring_method_ == "flat") {
       color = rviz::qtToOgre(color_property_->getColor());
     }
     color.a = alpha_property_->getFloat();
@@ -420,9 +423,16 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void PolygonArrayDisplay::updateAutoColoring()
+  void PolygonArrayDisplay::updateColoring()
   {
-    auto_coloring_ = auto_coloring_property_->getBool();
+    if (coloring_property_->getOptionInt() == 0) {
+      coloring_method_ = "auto";
+      color_property_->hide();
+    }
+    else if (coloring_property_->getOptionInt() == 1) {
+      coloring_method_ = "flat";
+      color_property_->show();
+    }
   }
 
   void PolygonArrayDisplay::updateOnlyBorder()
