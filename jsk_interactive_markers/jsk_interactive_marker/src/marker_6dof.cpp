@@ -58,6 +58,13 @@ public:
     pnh.param("object_g", object_g_, 1.0);
     pnh.param("object_b", object_b_, 1.0);
     pnh.param("object_a", object_a_, 1.0);
+    double initial_x, initial_y, initial_z;
+    pnh.param("initial_x", initial_x, 0.0);
+    pnh.param("initial_y", initial_y, 0.0);
+    pnh.param("initial_z", initial_z, 0.0);
+    latest_pose_.pose.position.x = initial_x;
+    latest_pose_.pose.position.y = initial_y;
+    latest_pose_.pose.position.z = initial_z;
     pnh.param("line_width", line_width_, 0.007);
     if (publish_tf_) {
       tf_broadcaster_.reset(new tf::TransformBroadcaster);
