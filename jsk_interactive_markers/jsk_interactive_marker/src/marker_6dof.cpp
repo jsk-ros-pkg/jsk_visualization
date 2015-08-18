@@ -42,32 +42,31 @@
 
 class Marker6DOF {
 public:
-Marker6DOF(): show_6dof_circle_(true) {
-  ros::NodeHandle nh, pnh("~");
-  pnh.param("frame_id", frame_id_, std::string("/map"));
-  pnh.param("object_type", object_type_, std::string("sphere"));
-  pnh.param("object_x", object_x_, 1.0);
-  pnh.param("object_y", object_y_, 1.0);
-  pnh.param("object_z", object_z_, 1.0);
-  pnh.param("object_r", object_r_, 1.0);
-  pnh.param("object_g", object_g_, 1.0);
-  pnh.param("object_b", object_b_, 1.0);
-  pnh.param("object_a", object_a_, 1.0);
-  pnh.param("line_width", line_width_, 0.007);
-  latest_pose_.header.frame_id = frame_id_;
-  latest_pose_.pose.orientation.w = 1.0;
-  pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("pose", 1);
-  pose_stamped_sub_ = pnh.subscribe("move_marker", 1, &Marker6DOF::moveMarkerCB, this);
+  Marker6DOF(): show_6dof_circle_(true) {
+    ros::NodeHandle nh, pnh("~");
+    pnh.param("frame_id", frame_id_, std::string("/map"));
+    pnh.param("object_type", object_type_, std::string("sphere"));
+    pnh.param("object_x", object_x_, 1.0);
+    pnh.param("object_y", object_y_, 1.0);
+    pnh.param("object_z", object_z_, 1.0);
+    pnh.param("object_r", object_r_, 1.0);
+    pnh.param("object_g", object_g_, 1.0);
+    pnh.param("object_b", object_b_, 1.0);
+    pnh.param("object_a", object_a_, 1.0);
+    pnh.param("line_width", line_width_, 0.007);
+    latest_pose_.header.frame_id = frame_id_;
+    latest_pose_.pose.orientation.w = 1.0;
+    pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("pose", 1);
+    pose_stamped_sub_ = pnh.subscribe("move_marker", 1, &Marker6DOF::moveMarkerCB, this);
   
-  circle_menu_entry_
-    = menu_handler_.insert("Toggle 6DOF Circle",
-                           boost::bind(&Marker6DOF::menuFeedbackCB, this, _1));
-  menu_handler_.setCheckState(circle_menu_entry_,
-                              interactive_markers::MenuHandler::CHECKED);
-  server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
-  initializeInteractiveMarker();
-}
-  virtual ~Marker6DOF() {};
+    circle_menu_entry_
+      = menu_handler_.insert("Toggle 6DOF Circle",
+                             boost::bind(&Marker6DOF::menuFeedbackCB, this, _1));
+    menu_handler_.setCheckState(circle_menu_entry_,
+                                interactive_markers::MenuHandler::CHECKED);
+    server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
+    initializeInteractiveMarker();
+  }
   
 protected:
   void moveMarkerCB(const geometry_msgs::PoseStamped::ConstPtr& msg) {
