@@ -6,6 +6,9 @@ python:
 compiler:
   - gcc
 notifications:
+  email:
+    on_success: always
+    on_failure: always
   slack: jsk-robotics:Av7tc8wj3IWkLYvlTzHE7x2g
 env:
   - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=true
@@ -14,7 +17,3 @@ matrix:
 before_script:
   - export ROS_PARALLEL_JOBS="-j1 -l1"
 script: source .travis/travis.sh
-notifications:
-  email:
-    on_success: always
-    on_failure: always
