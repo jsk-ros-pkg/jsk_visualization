@@ -37,14 +37,19 @@
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/tools.h>
 #include <interactive_markers/menu_handler.h>
-
+#include <tf/transform_broadcaster.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <tf_conversions/tf_eigen.h>
 
 class Marker6DOF {
 public:
   Marker6DOF(): show_6dof_circle_(true) {
     ros::NodeHandle nh, pnh("~");
     pnh.param("frame_id", frame_id_, std::string("/map"));
+    pnh.param("publish_tf", publish_tf_, false);
+    pnh.param("tf_frame", tf_frame_, std::string("object"));
+    double tf_duration;
+    pnh.param("tf_duration", tf_duration, 0.1);
     pnh.param("object_type", object_type_, std::string("sphere"));
     pnh.param("object_x", object_x_, 1.0);
     pnh.param("object_y", object_y_, 1.0);
@@ -54,6 +59,9 @@ public:
     pnh.param("object_b", object_b_, 1.0);
     pnh.param("object_a", object_a_, 1.0);
     pnh.param("line_width", line_width_, 0.007);
+    if (publish_tf_) {
+      tf_broadcaster_.reset(new tf::TransformBroadcaster);
+    }
     latest_pose_.header.frame_id = frame_id_;
     latest_pose_.pose.orientation.w = 1.0;
     pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("pose", 1);
@@ -66,10 +74,14 @@ public:
                                 interactive_markers::MenuHandler::CHECKED);
     server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
     initializeInteractiveMarker();
+    if (publish_tf_) {
+      timer_ = nh.createTimer(ros::Duration(tf_duration), boost::bind(&Marker6DOF::timerCallback, this, _1));
+    }
   }
   
 protected:
   void moveMarkerCB(const geometry_msgs::PoseStamped::ConstPtr& msg) {
+    boost::mutex::scoped_lock lock(mutex_);
     pose_pub_.publish(msg);
     server_->setPose("marker", msg->pose, msg->header);
     latest_pose_ = geometry_msgs::PoseStamped(*msg);
@@ -211,8 +223,18 @@ protected:
     menu_handler_.apply(*server_, "marker");
     server_->applyChanges();
   }
+
+  void publishTF(const geometry_msgs::PoseStamped& pose) {
+    tf::Transform transform;
+    tf::poseMsgToTF(pose.pose, transform);
+    tf_broadcaster_->sendTransform(tf::StampedTransform(
+                                     transform, pose.header.stamp,
+                                     frame_id_,
+                                     tf_frame_));
+  }
   
   void processFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
+    boost::mutex::scoped_lock lock(mutex_);
     geometry_msgs::PoseStamped pose;
     pose.header = feedback->header;
     pose.pose = feedback->pose;
@@ -232,6 +254,13 @@ protected:
     }
     initializeInteractiveMarker(); // ok...?
   }
+
+  void timerCallback(const ros::TimerEvent& e) {
+    boost::mutex::scoped_lock lock(mutex_);
+    geometry_msgs::PoseStamped pose = latest_pose_;
+    pose.header.stamp = e.current_real;
+    publishTF(pose);
+  }
   
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   interactive_markers::MenuHandler menu_handler_;
@@ -248,6 +277,11 @@ protected:
   double object_a_;
   double line_width_;
   bool show_6dof_circle_;
+  bool publish_tf_;
+  std::string tf_frame_;
+  ros::Timer timer_;
+  boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster_;
+  boost::mutex mutex_;
   interactive_markers::MenuHandler::EntryHandle circle_menu_entry_;
   geometry_msgs::PoseStamped latest_pose_;
 };
