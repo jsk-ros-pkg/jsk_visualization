@@ -121,6 +121,7 @@ namespace jsk_rviz_plugins
     MFDClass::reset();
     shapes_.clear();
     line_->clear();
+    allocateTexts(0);
   }
 
   bool FootstepDisplay::validateFloats( const jsk_footstep_msgs::FootstepArray& msg )
@@ -182,17 +183,16 @@ namespace jsk_rviz_plugins
         text->setVisible(false);
         text->setTextAlignment(rviz::MovableText::H_CENTER,
                                rviz::MovableText::V_ABOVE);
-        text->setCaption("hello world");
         node->attachObject(text);
         texts_.push_back(text);
         text_nodes_.push_back(node);
       }
     }
     else if (num < texts_.size()) {
-      for (size_t i = texts_.size() - 1; i >= num; i--) {
+      for (int i = texts_.size() - 1; i >= (int)num; i--) {
         Ogre::SceneNode* node = text_nodes_[i];
-        node->removeAndDestroyAllChildren();
         node->detachAllObjects();
+        node->removeAndDestroyAllChildren();
         scene_manager_->destroySceneNode(node);
       }
       text_nodes_.resize(num);
