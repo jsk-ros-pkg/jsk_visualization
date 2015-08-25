@@ -12,6 +12,8 @@ counter = 0
 while not rospy.is_shutdown():
   box_a = BoundingBox()
   box_b = BoundingBox()
+  box_a.label = 2
+  box_b.label = 5
   box_arr = BoundingBoxArray()
   now = rospy.Time.now()
   box_a.header.stamp = now
@@ -33,8 +35,11 @@ while not rospy.is_shutdown():
   box_a.dimensions.x = 1
   box_a.dimensions.y = 1
   box_a.dimensions.z = 1
+  box_a.value = (counter % 100) / 100.0
+  box_b.value = 1 - (counter % 100) / 100.0
   box_arr.boxes.append(box_a)
   box_arr.boxes.append(box_b)
   pub.publish(box_arr)
   r.sleep()
   counter = counter + 1
+  
