@@ -40,6 +40,7 @@
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf_conversions/tf_eigen.h>
+#include <jsk_topic_tools/rosparam_utils.h>
 
 class Marker6DOF {
 public:
@@ -65,12 +66,22 @@ public:
     latest_pose_.pose.position.x = initial_x;
     latest_pose_.pose.position.y = initial_y;
     latest_pose_.pose.position.z = initial_z;
+    std::vector<double> initial_orientation;
+    if (jsk_topic_tools::readVectorParameter(pnh, "initial_orientation", initial_orientation)) {
+      latest_pose_.pose.orientation.x = initial_orientation[0];
+      latest_pose_.pose.orientation.y = initial_orientation[1];
+      latest_pose_.pose.orientation.z = initial_orientation[2];
+      latest_pose_.pose.orientation.w = initial_orientation[3];
+    }
+    else {
+      latest_pose_.pose.orientation.w = 1.0;
+    }
     pnh.param("line_width", line_width_, 0.007);
     if (publish_tf_) {
       tf_broadcaster_.reset(new tf::TransformBroadcaster);
     }
     latest_pose_.header.frame_id = frame_id_;
-    latest_pose_.pose.orientation.w = 1.0;
+    
     pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("pose", 1);
     pose_stamped_sub_ = pnh.subscribe("move_marker", 1, &Marker6DOF::moveMarkerCB, this);
   
