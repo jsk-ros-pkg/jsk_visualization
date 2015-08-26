@@ -80,7 +80,9 @@ namespace jsk_rviz_plugins
 
   QColor BoundingBoxArrayDisplay::getColor(
     size_t index,
-    const jsk_recognition_msgs::BoundingBox& box)
+    const jsk_recognition_msgs::BoundingBox& box,
+    double min_value,
+    double max_value)
   {
     if (coloring_method_ == "auto") {
       std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(index);
@@ -100,11 +102,16 @@ namespace jsk_rviz_plugins
                     ros_color.a * 255.0);
     }
     else if (coloring_method_ == "value") {
-      std_msgs::ColorRGBA ros_color = jsk_topic_tools::heatColor(box.value);
-      return QColor(ros_color.r * 255.0,
-                    ros_color.g * 255.0,
-                    ros_color.b * 255.0,
-                    ros_color.a * 255.0);
+      if (min_value != max_value) {
+        std_msgs::ColorRGBA ros_color = jsk_topic_tools::heatColor((box.value - min_value) / (max_value - min_value));
+        return QColor(ros_color.r * 255.0,
+                      ros_color.g * 255.0,
+                      ros_color.b * 255.0,
+                      ros_color.a * 255.0);
+      }
+      else {
+        return QColor(255.0, 255.0, 255.0, 255.0);
+      }
     }
   }
   
@@ -288,6 +295,12 @@ namespace jsk_rviz_plugins
   {
     edges_.clear();
     allocateShapes(msg->boxes.size());
+    float min_value = DBL_MAX;
+    float max_value = -DBL_MAX;
+    for (size_t i = 0; i < msg->boxes.size(); i++) {
+      min_value = std::min(min_value, msg->boxes[i].value);
+      max_value = std::max(max_value, msg->boxes[i].value);
+    }
     for (size_t i = 0; i < msg->boxes.size(); i++) {
       jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
       ShapePtr shape = shapes_[i];
@@ -309,7 +322,7 @@ namespace jsk_rviz_plugins
       dimensions[1] = box.dimensions.y;
       dimensions[2] = box.dimensions.z;
       shape->setScale(dimensions);
-      QColor color = getColor(i, box);
+      QColor color = getColor(i, box, min_value, max_value);
       shape->setColor(color.red() / 255.0,
                       color.green() / 255.0,
                       color.blue() / 255.0,
@@ -322,6 +335,13 @@ namespace jsk_rviz_plugins
   {
     shapes_.clear();
     allocateBillboardLines(msg->boxes.size());
+    float min_value = DBL_MAX;
+    float max_value = -DBL_MAX;
+    for (size_t i = 0; i < msg->boxes.size(); i++) {
+      min_value = std::min(min_value, msg->boxes[i].value);
+      max_value = std::max(max_value, msg->boxes[i].value);
+    }
+
     for (size_t i = 0; i < msg->boxes.size(); i++) {
       jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
       geometry_msgs::Vector3 dimensions = box.dimensions;
@@ -345,7 +365,7 @@ namespace jsk_rviz_plugins
       edge->setMaxPointsPerLine(2);
       edge->setNumLines(12);
       edge->setLineWidth(line_width_);
-      QColor color = getColor(i, box);
+      QColor color = getColor(i, box, min_value, max_value);
       edge->setColor(color.red() / 255.0,
                      color.green() / 255.0,
                      color.blue() / 255.0,

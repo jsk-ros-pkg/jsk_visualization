@@ -66,7 +66,8 @@ namespace jsk_rviz_plugins
     void allocateBillboardLines(int num);
     void allocateCoords(int num);
     QColor getColor(size_t index,
-                    const jsk_recognition_msgs::BoundingBox& box);
+                    const jsk_recognition_msgs::BoundingBox& box,
+                    double min_value, double max_value);
     virtual bool isValid(
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
     virtual void hideCoords();
