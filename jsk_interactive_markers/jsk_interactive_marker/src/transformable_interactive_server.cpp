@@ -28,7 +28,9 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
 
   focus_name_text_pub_ = n_->advertise<jsk_rviz_plugins::OverlayText>("focus_marker_name_text", 1);
   focus_pose_text_pub_ = n_->advertise<jsk_rviz_plugins::OverlayText>("focus_marker_pose_text", 1);
+  focus_object_marker_name_pub_ = n_->advertise<std_msgs::String>("focus_object_marker_name", 1);
   pose_pub_ = n_->advertise<geometry_msgs::PoseStamped>("pose", 1);
+  pose_with_name_pub_ = n_->advertise<jsk_interactive_marker::PoseStampedWithName>("pose_with_name", 1);
 
   get_pose_srv_ = n_->advertiseService<jsk_interactive_marker::GetTransformableMarkerPose::Request, jsk_interactive_marker::GetTransformableMarkerPose::Response>("get_pose", boost::bind(&TransformableInteractiveServer::getPoseService, this, _1, _2, false));
   get_control_pose_srv_ = n_->advertiseService<jsk_interactive_marker::GetTransformableMarkerPose::Request, jsk_interactive_marker::GetTransformableMarkerPose::Response>("get_control_pose", boost::bind(&TransformableInteractiveServer::getPoseService, this, _1, _2, true));
@@ -87,6 +89,7 @@ void TransformableInteractiveServer::processFeedback(
       focus_object_marker_name_ = feedback->marker_name;
       focusTextPublish();
       focusPosePublish();
+      focusObjectMarkerNamePublish();
       break;
 
     case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
@@ -101,6 +104,7 @@ void TransformableInteractiveServer::processFeedback(
       }
       focusTextPublish();
       focusPosePublish();
+      focusObjectMarkerNamePublish();
       break;
     }
 }
@@ -259,6 +263,7 @@ bool TransformableInteractiveServer::setFocusService(jsk_interactive_marker::Set
   focus_object_marker_name_ = req.target_name;
   focusTextPublish();
   focusPosePublish();
+  focusObjectMarkerNamePublish();
   return true;
 }
 
@@ -524,6 +529,12 @@ void TransformableInteractiveServer::focusPosePublish(){
   focus_pose_text_pub_.publish(focus_pose);
 }
 
+void TransformableInteractiveServer::focusObjectMarkerNamePublish(){
+  std_msgs::String msg;
+  msg.data = focus_object_marker_name_;
+  focus_object_marker_name_pub_.publish(msg);
+}
+
 void TransformableInteractiveServer::insertNewBox(std::string frame_id, std::string name, std::string description)
 {
   TransformableBox* transformable_box = new TransformableBox(0.45, 0.45, 0.45, 0.5, 0.5, 0.5, 1.0, frame_id, name, description);
@@ -559,6 +570,7 @@ void TransformableInteractiveServer::insertNewObject( TransformableObject* tobje
   focus_object_marker_name_ = name;
   focusTextPublish();
   focusPosePublish();
+  focusObjectMarkerNamePublish();
 }
 
 void TransformableInteractiveServer::SetInitialInteractiveMarkerConfig( TransformableObject* tobject )
@@ -576,6 +588,7 @@ void TransformableInteractiveServer::eraseObject( std::string name )
     focus_object_marker_name_ = "";
     focusTextPublish();
     focusPosePublish();
+    focusObjectMarkerNamePublish();
   }
   delete transformable_objects_map_[name];
   transformable_objects_map_.erase(name);
@@ -604,6 +617,7 @@ bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableOb
 {
   try {
     geometry_msgs::PoseStamped transformed_pose_stamped;
+    jsk_interactive_marker::PoseStampedWithName transformed_pose_stamped_with_name;
     ros::Time stamp;
     if (strict_tf_) {
       stamp = pose_stamped.header.stamp;
@@ -618,6 +632,10 @@ bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableOb
       tobject->setPose(transformed_pose_stamped.pose, for_interactive_control);
       transformed_pose_stamped.pose=tobject->getPose(true);
       pose_pub_.publish(transformed_pose_stamped);
+      transformed_pose_stamped_with_name.pose = transformed_pose_stamped;
+      transformed_pose_stamped_with_name.name = tobject->name_;
+      //transformed_pose_stamped_with_name.name = focus_object_marker_name_;
+      pose_with_name_pub_.publish(transformed_pose_stamped_with_name);
     }
     else {
       ROS_ERROR("failed to lookup transform %s -> %s", tobject->getFrameId().c_str(), 
