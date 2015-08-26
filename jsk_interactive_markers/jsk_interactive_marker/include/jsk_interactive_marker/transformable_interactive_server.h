@@ -5,6 +5,7 @@
 #include <interactive_markers/interactive_marker_server.h>
 #include <jsk_interactive_marker/transformable_object.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/String.h>
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <map>
@@ -63,6 +64,7 @@ namespace jsk_interactive_marker
     void run();
     void focusTextPublish();
     void focusPosePublish();
+    void focusObjectMarkerNamePublish();
 
     void updateTransformableObject(TransformableObject* tobject);
 
@@ -131,6 +133,7 @@ namespace jsk_interactive_marker
     ros::Subscriber setrad_sub_;
     ros::Publisher focus_name_text_pub_;
     ros::Publisher focus_pose_text_pub_;
+    ros::Publisher focus_object_marker_name_pub_;
     ros::Publisher pose_pub_;
     interactive_markers::InteractiveMarkerServer* server_;
     map<string, TransformableObject*> transformable_objects_map_;
