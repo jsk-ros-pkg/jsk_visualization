@@ -30,6 +30,7 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   focus_pose_text_pub_ = n_->advertise<jsk_rviz_plugins::OverlayText>("focus_marker_pose_text", 1);
   focus_object_marker_name_pub_ = n_->advertise<std_msgs::String>("focus_object_marker_name", 1);
   pose_pub_ = n_->advertise<geometry_msgs::PoseStamped>("pose", 1);
+  pose_with_name_pub_ = n_->advertise<jsk_interactive_marker::PoseStampedWithName>("pose_with_name", 1);
 
   get_pose_srv_ = n_->advertiseService<jsk_interactive_marker::GetTransformableMarkerPose::Request, jsk_interactive_marker::GetTransformableMarkerPose::Response>("get_pose", boost::bind(&TransformableInteractiveServer::getPoseService, this, _1, _2, false));
   get_control_pose_srv_ = n_->advertiseService<jsk_interactive_marker::GetTransformableMarkerPose::Request, jsk_interactive_marker::GetTransformableMarkerPose::Response>("get_control_pose", boost::bind(&TransformableInteractiveServer::getPoseService, this, _1, _2, true));
@@ -616,6 +617,7 @@ bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableOb
 {
   try {
     geometry_msgs::PoseStamped transformed_pose_stamped;
+    jsk_interactive_marker::PoseStampedWithName transformed_pose_stamped_with_name;
     ros::Time stamp;
     if (strict_tf_) {
       stamp = pose_stamped.header.stamp;
@@ -630,6 +632,10 @@ bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableOb
       tobject->setPose(transformed_pose_stamped.pose, for_interactive_control);
       transformed_pose_stamped.pose=tobject->getPose(true);
       pose_pub_.publish(transformed_pose_stamped);
+      transformed_pose_stamped_with_name.pose = transformed_pose_stamped;
+      transformed_pose_stamped_with_name.name = tobject->name_;
+      //transformed_pose_stamped_with_name.name = focus_object_marker_name_;
+      pose_with_name_pub_.publish(transformed_pose_stamped_with_name);
     }
     else {
       ROS_ERROR("failed to lookup transform %s -> %s", tobject->getFrameId().c_str(), 

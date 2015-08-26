@@ -26,6 +26,7 @@
 #include <jsk_interactive_marker/GetType.h>
 #include <jsk_interactive_marker/GetTransformableMarkerExistence.h>
 #include <jsk_interactive_marker/MarkerDimensions.h>
+#include <jsk_interactive_marker/PoseStampedWithName.h>
 
 using namespace std;
 
@@ -135,6 +136,7 @@ namespace jsk_interactive_marker
     ros::Publisher focus_pose_text_pub_;
     ros::Publisher focus_object_marker_name_pub_;
     ros::Publisher pose_pub_;
+    ros::Publisher pose_with_name_pub_;
     interactive_markers::InteractiveMarkerServer* server_;
     map<string, TransformableObject*> transformable_objects_map_;
     boost::shared_ptr<tf::TransformListener> tf_listener_;
