@@ -40,6 +40,7 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/enum_property.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/billboard_line.h>
@@ -64,7 +65,8 @@ namespace jsk_rviz_plugins
     void allocateShapes(int num);
     void allocateBillboardLines(int num);
     void allocateCoords(int num);
-    QColor getColor(size_t index);
+    QColor getColor(size_t index,
+                    const jsk_recognition_msgs::BoundingBox& box);
     virtual bool isValid(
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
     virtual void hideCoords();
@@ -74,18 +76,18 @@ namespace jsk_rviz_plugins
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
     virtual void showBoxes(
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
-    
+
+    rviz::EnumProperty* coloring_property_;
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::BoolProperty* only_edge_property_;
     rviz::FloatProperty* line_width_property_;
-    rviz::BoolProperty* auto_color_property_;
     rviz::BoolProperty* show_coords_property_;
     QColor color_;
     double alpha_;
     bool only_edge_;
-    bool auto_color_;
     bool show_coords_;
+    std::string coloring_method_;
     double line_width_;
     std::vector<ShapePtr> shapes_;
     std::vector<BillboardLinePtr> edges_;
@@ -97,7 +99,7 @@ namespace jsk_rviz_plugins
     void updateColor();
     void updateAlpha();
     void updateOnlyEdge();
-    void updateAutoColor();
+    void updateColoring();
     void updateLineWidth();
     void updateShowCoords();
   private:

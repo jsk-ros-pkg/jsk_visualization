@@ -38,6 +38,15 @@ namespace jsk_rviz_plugins
 {  
   BoundingBoxArrayDisplay::BoundingBoxArrayDisplay()
   {
+    coloring_property_ = new rviz::EnumProperty(
+      "coloring", "Auto",
+      "coloring method",
+      this, SLOT(updateColoring()));
+    coloring_property_->addOption("Auto", 0);
+    coloring_property_->addOption("Flat color", 1);
+    coloring_property_->addOption("Label", 2);
+    coloring_property_->addOption("Value", 3);
+    
     color_property_ = new rviz::ColorProperty(
       "color", QColor(25, 255, 0),
       "color to draw the bounding boxes",
@@ -54,10 +63,6 @@ namespace jsk_rviz_plugins
       "line width", 0.005,
       "line width of the edges",
       this, SLOT(updateLineWidth()));
-    auto_color_property_ = new rviz::BoolProperty(
-      "auto color", false,
-      "change the color of the boxes automatically",
-      this, SLOT(updateAutoColor()));
     show_coords_property_ = new rviz::BoolProperty(
       "show coords", true,
       "show coordinate of bounding box",
@@ -69,21 +74,37 @@ namespace jsk_rviz_plugins
     delete color_property_;
     delete alpha_property_;
     delete only_edge_property_;
-    delete auto_color_property_;
+    delete coloring_property_;
     delete show_coords_property_;
   }
 
-  QColor BoundingBoxArrayDisplay::getColor(size_t index)
+  QColor BoundingBoxArrayDisplay::getColor(
+    size_t index,
+    const jsk_recognition_msgs::BoundingBox& box)
   {
-    if (auto_color_) {
+    if (coloring_method_ == "auto") {
       std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(index);
       return QColor(ros_color.r * 255.0,
                     ros_color.g * 255.0,
                     ros_color.b * 255.0,
                     ros_color.a * 255.0);
     }
-    else {
+    else if (coloring_method_ == "flat") {
       return color_;
+    }
+    else if (coloring_method_ == "label") {
+      std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(box.label);
+      return QColor(ros_color.r * 255.0,
+                    ros_color.g * 255.0,
+                    ros_color.b * 255.0,
+                    ros_color.a * 255.0);
+    }
+    else if (coloring_method_ == "value") {
+      std_msgs::ColorRGBA ros_color = jsk_topic_tools::heatColor(box.value);
+      return QColor(ros_color.r * 255.0,
+                    ros_color.g * 255.0,
+                    ros_color.b * 255.0,
+                    ros_color.a * 255.0);
     }
   }
   
@@ -95,7 +116,7 @@ namespace jsk_rviz_plugins
     updateColor();
     updateAlpha();
     updateOnlyEdge();
-    updateAutoColor();
+    updateColoring();
     updateLineWidth();
     updateShowCoords();
   }
@@ -127,6 +148,12 @@ namespace jsk_rviz_plugins
   void BoundingBoxArrayDisplay::updateOnlyEdge()
   {
     only_edge_ = only_edge_property_->getBool();
+    if (only_edge_) {
+      line_width_property_->show();
+    }
+    else {
+      line_width_property_->hide();;
+    }
     // Imediately apply attribute
     if (latest_msg_) {
       if (only_edge_) {
@@ -138,14 +165,30 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void BoundingBoxArrayDisplay::updateAutoColor()
+  void BoundingBoxArrayDisplay::updateColoring()
   {
-    auto_color_ = auto_color_property_->getBool();
+    if (coloring_property_->getOptionInt() == 0) {
+      coloring_method_ = "auto";
+      color_property_->hide();
+    }
+    else if (coloring_property_->getOptionInt() == 1) {
+      coloring_method_ = "flat";
+      color_property_->show();
+    }
+    else if (coloring_property_->getOptionInt() == 2) {
+      coloring_method_ = "label";
+      color_property_->hide();
+    }
+    else if (coloring_property_->getOptionInt() == 3) {
+      coloring_method_ = "value";
+      color_property_->hide();
+    }
+    
     if (latest_msg_) {
       processMessage(latest_msg_);
     }
   }
-
+  
   void BoundingBoxArrayDisplay::updateShowCoords()
   {
     show_coords_ = show_coords_property_->getBool();
@@ -266,7 +309,7 @@ namespace jsk_rviz_plugins
       dimensions[1] = box.dimensions.y;
       dimensions[2] = box.dimensions.z;
       shape->setScale(dimensions);
-      QColor color = getColor(i);
+      QColor color = getColor(i, box);
       shape->setColor(color.red() / 255.0,
                       color.green() / 255.0,
                       color.blue() / 255.0,
@@ -302,7 +345,7 @@ namespace jsk_rviz_plugins
       edge->setMaxPointsPerLine(2);
       edge->setNumLines(12);
       edge->setLineWidth(line_width_);
-      QColor color = getColor(i);
+      QColor color = getColor(i, box);
       edge->setColor(color.red() / 255.0,
                      color.green() / 255.0,
                      color.blue() / 255.0,
