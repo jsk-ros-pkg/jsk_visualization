@@ -351,7 +351,6 @@ void UrdfModelMarker::resetRootForVisualization(){
   if(fixed_link_.size() > 0 && (mode_ == "visualization" || mode_ == "robot")){
     string marker_name =  tf_prefix_ + model->getRoot()->name;
     tf::StampedTransform st_offset;
-
     bool first_offset = true;
     for(int i=0; i<fixed_link_.size(); i++){
       std::string link = fixed_link_[i];
@@ -361,9 +360,11 @@ void UrdfModelMarker::resetRootForVisualization(){
         const std::string target_frame = tf_prefix_ + model->getRoot()->name;
         try{
           tf::StampedTransform st_link_offset;
+          ros::Time now = ros::Time(0);
+          tfl_.waitForTransform(target_frame, source_frame, now, ros::Duration(5.0));
           tfl_.lookupTransform(target_frame, source_frame,
-                               ros::Time(0), st_link_offset);
-            
+                               now, st_link_offset);
+
           if(first_offset){
             st_offset.setRotation(st_link_offset.getRotation());
             st_offset.setOrigin(st_link_offset.getOrigin());
