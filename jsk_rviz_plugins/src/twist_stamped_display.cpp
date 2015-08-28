@@ -161,6 +161,7 @@ namespace jsk_rviz_plugins
     const double start_theta = 20;
     const double end_theta = 340;
     circle->setMaxPointsPerLine((end_theta - start_theta) / step + 1); // +1?
+    circle->setLineWidth(r * angular_scale_ / 2 * 0.1);
     for (double theta = start_theta; theta < end_theta; theta += step) {
       double rad = theta / 180 * M_PI;
       Ogre::Vector3 p = ux * cos(rad) * r * angular_scale_ + uy * sin(rad) * r * angular_scale_;
