@@ -107,6 +107,22 @@
     </qtgui>
 
   </class>
+  <class name="Plot2D" type="jsk_rqt_plugins.plot_2d.Plot2D" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A plugin visualizing data in 2d
+    </description>
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>HistogramPlot</label>
+      <icon type="theme">utilities-system-monitor</icon>
+      <statustip>A plugin visualizing 2d data</statustip>
+    </qtgui>
+
+  </class>
   <class name="YesNoButton" type="jsk_rqt_plugins.yes_no_button.YesNoButton" base_class_type="rqt_gui_py::Plugin">
     <description>Simple yes or no button with service call.</description>
     <qtgui>
