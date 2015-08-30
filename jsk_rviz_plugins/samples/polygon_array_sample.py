@@ -5,6 +5,7 @@ from jsk_recognition_msgs.msg import PolygonArray
 from geometry_msgs.msg import Polygon, PolygonStamped, Point32
 from std_msgs.msg import Header
 from math import sin, cos, pi
+import numpy as np
 def SquarePolygon(header):
     p = PolygonStamped()
     p.header = header
@@ -62,4 +63,6 @@ if __name__ == "__main__":
                         RectanglePolygon(header),
                         CirclePolygon(header),
                         StarPolygon(header)]
+        msg.labels = [0, 1, 2, 3]
+        msg.likelihood = [np.random.ranf(), np.random.ranf(), np.random.ranf(), np.random.ranf()]
         pub.publish(msg)
