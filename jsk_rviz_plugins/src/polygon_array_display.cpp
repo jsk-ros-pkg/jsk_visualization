@@ -49,7 +49,8 @@ namespace jsk_rviz_plugins
       this, SLOT(updateColoring()));
     coloring_property_->addOption("Auto", 0);
     coloring_property_->addOption("Flat color", 1);
-    
+    coloring_property_->addOption("Liekelihood", 2);
+    coloring_property_->addOption("Label", 3);
     color_property_ = new rviz::ColorProperty(
       "Color", QColor(25, 255, 0),
       "Color to draw the polygons.",
@@ -221,6 +222,36 @@ namespace jsk_rviz_plugins
     else if (coloring_method_ == "flat") {
       color = rviz::qtToOgre(color_property_->getColor());
     }
+    else if (coloring_method_ == "likelihood") {
+      if (latest_msg_->likelihood.size() < index) {
+        setStatus(rviz::StatusProperty::Error,
+                  "Topic",
+                  "Message does not have lieklihood fields");
+      }
+      else {
+        std_msgs::ColorRGBA ros_color
+          = jsk_topic_tools::heatColor(latest_msg_->likelihood[index]);
+        color.r = ros_color.r;
+        color.g = ros_color.g;
+        color.b = ros_color.b;
+        color.a = ros_color.a;
+      }
+    }
+    else if (coloring_method_ == "label") {
+      if (latest_msg_->labels.size() < index) {
+        setStatus(rviz::StatusProperty::Error,
+                  "Topic",
+                  "Message does not have lebels fields");
+      }
+      else {
+        std_msgs::ColorRGBA ros_color
+          = jsk_topic_tools::colorCategory20(latest_msg_->labels[index]);
+        color.r = ros_color.r;
+        color.g = ros_color.g;
+        color.b = ros_color.b;
+        color.a = ros_color.a;
+      }
+    }
     color.a = alpha_property_->getFloat();
     return color;
   }
@@ -387,11 +418,14 @@ namespace jsk_rviz_plugins
                 "(nans or infs)");
       return;
     }
+    setStatus(rviz::StatusProperty::Ok,
+              "Topic",
+              "ok");
+    latest_msg_ = msg;
     // create nodes and manual objects
     updateSceneNodes(msg);
     allocateMaterials(msg->polygons.size());
     updateLines(msg->polygons.size());
-    
     if (only_border_) {
       // use line_
       for (size_t i = 0; i < manual_objects_.size(); i++) {
@@ -432,6 +466,14 @@ namespace jsk_rviz_plugins
     else if (coloring_property_->getOptionInt() == 1) {
       coloring_method_ = "flat";
       color_property_->show();
+    }
+    else if (coloring_property_->getOptionInt() == 2) {
+      coloring_method_ = "likelihood";
+      color_property_->hide();
+    }
+    else if (coloring_property_->getOptionInt() == 3) {
+      coloring_method_ = "label";
+      color_property_->hide();
     }
   }
 

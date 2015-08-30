@@ -90,6 +90,7 @@ namespace jsk_rviz_plugins
     std::string coloring_method_;
     bool show_normal_;
     double normal_length_;
+    jsk_recognition_msgs::PolygonArray::ConstPtr latest_msg_;
     std::vector<Ogre::ManualObject*> manual_objects_;
     std::vector<Ogre::SceneNode*> scene_nodes_;
     std::vector<Ogre::SceneNode*> arrow_nodes_;
