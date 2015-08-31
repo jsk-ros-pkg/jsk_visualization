@@ -20,7 +20,7 @@ import cv2
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from jsk_recognition_msgs.msg import PlotData
-
+import numpy as np
 import os, sys
 import argparse
 
@@ -60,6 +60,8 @@ class Plot2D(Plugin):
         self.setObjectName('Plot2D')
         self._args = self._parse_args(context.argv())
         self._widget = Plot2DWidget(self._args.topics)
+        self._widget.is_line = self._args.line
+        self._widget.fit_line = self._args.fit_line
         context.add_widget(self._widget)
     def _parse_args(self, argv):
         parser = argparse.ArgumentParser(prog='rqt_histogram_plot', add_help=False)
@@ -70,7 +72,8 @@ class Plot2D(Plugin):
     def add_arguments(parser):
         group = parser.add_argument_group('Options for rqt_histogram plugin')
         group.add_argument('topics', nargs='?', default=[], help='Topics to plot')
-        
+        group.add_argument('--line', action="store_true", help="Plot with lines instead of scatter")
+        group.add_argument('--fit-line', action="store_true", help="Plot line with least-square fitting")
 class Plot2DWidget(QWidget):
     _redraw_interval = 40
     def __init__(self, topics):
@@ -150,8 +153,20 @@ class Plot2DWidget(QWidget):
         axes = self.data_plot._canvas.axes
         axes.cla()
         # matplotlib
-        #axes.plot(data_y[-1].xs, data_y[-1].ys)
-        axes.scatter(data_y[-1].xs, data_y[-1].ys)
+        if self.is_line:
+            axes.plot(data_y[-1].xs, data_y[-1].ys)
+        else:
+            axes.scatter(data_y[-1].xs, data_y[-1].ys)
+
+        # line fitting
+        if self.fit_line:
+            X = np.array(data_y[-1].xs)
+            Y = np.array(data_y[-1].ys)
+            A = np.array([X,np.ones(len(X))])
+            A = A.T
+            a,b = np.linalg.lstsq(A,Y)[0]
+            axes.plot(X,(a*X+b),"g--")
+        
         axes.grid()
         axes.legend([self.topic_with_field_name], prop={'size': '8'})
         
