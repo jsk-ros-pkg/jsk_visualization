@@ -152,7 +152,7 @@ class Plot2DWidget(QWidget):
         # matplotlib
         #axes.plot(data_y[-1].xs, data_y[-1].ys)
         axes.scatter(data_y[-1].xs, data_y[-1].ys)
-        
+        axes.grid()
         axes.legend([self.topic_with_field_name], prop={'size': '8'})
         
         self.data_plot._canvas.draw()
