@@ -62,6 +62,10 @@ class Plot2D(Plugin):
         self._widget = Plot2DWidget(self._args.topics)
         self._widget.is_line = self._args.line
         self._widget.fit_line = self._args.fit_line
+        self._widget.xtitle = self._args.xtitle
+        self._widget.ytitle = self._args.ytitle
+        self._widget.no_legend = self._args.no_legend
+        self._widget.sort_x = self._args.sort_x
         context.add_widget(self._widget)
     def _parse_args(self, argv):
         parser = argparse.ArgumentParser(prog='rqt_histogram_plot', add_help=False)
@@ -74,6 +78,10 @@ class Plot2D(Plugin):
         group.add_argument('topics', nargs='?', default=[], help='Topics to plot')
         group.add_argument('--line', action="store_true", help="Plot with lines instead of scatter")
         group.add_argument('--fit-line', action="store_true", help="Plot line with least-square fitting")
+        group.add_argument('--xtitle', help="Title in X axis")
+        group.add_argument('--ytitle', help="Title in Y axis")
+        group.add_argument('--no-legend', action="store_true")
+        group.add_argument('--sort-x', action="store_true")
 class Plot2DWidget(QWidget):
     _redraw_interval = 40
     def __init__(self, topics):
@@ -153,11 +161,19 @@ class Plot2DWidget(QWidget):
         axes = self.data_plot._canvas.axes
         axes.cla()
         # matplotlib
+        # concatenate x and y in order to sort
+        concatenated_data = zip(data_y[-1].xs, data_y[-1].ys)
+        if self.sort_x:
+            concatenated_data.sort(key=lambda x: x[0])
+        xs = [d[0] for d in concatenated_data]
+        ys = [d[1] for d in concatenated_data]
         if self.is_line:
-            axes.plot(data_y[-1].xs, data_y[-1].ys)
+            axes.plot(xs, ys)
         else:
-            axes.scatter(data_y[-1].xs, data_y[-1].ys)
-
+            axes.scatter(xs, ys)
+        # set limit
+        axes.set_xlim(min(xs), max(xs))
+        axes.set_ylim(min(ys), max(ys))
         # line fitting
         if self.fit_line:
             X = np.array(data_y[-1].xs)
@@ -168,8 +184,12 @@ class Plot2DWidget(QWidget):
             axes.plot(X,(a*X+b),"g--")
         
         axes.grid()
-        axes.legend([self.topic_with_field_name], prop={'size': '8'})
-        
+        if not self.no_legend:
+            axes.legend([self.topic_with_field_name], prop={'size': '8'})
+        if self.xtitle:
+            axes.set_xlabel(self.xtitle)
+        if self.ytitle:
+            axes.set_ylabel(self.ytitle)
         self.data_plot._canvas.draw()
         buffer = StringIO()
         self.data_plot._canvas.figure.savefig(buffer, format="png")
