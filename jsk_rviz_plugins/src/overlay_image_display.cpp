@@ -175,7 +175,12 @@ namespace jsk_rviz_plugins
     cv_bridge::CvImagePtr cv_ptr;
     try
     {
-      if (msg_->encoding == sensor_msgs::image_encodings::RGBA8 ||
+      if (msg_->width == 0 || msg_->height == 0) {
+        // image width/height and texture width/height should be same
+        // but they are not when input image width/height is 0
+        return;
+      }
+      else if (msg_->encoding == sensor_msgs::image_encodings::RGBA8 ||
           msg_->encoding == sensor_msgs::image_encodings::BGRA8) {
         cv_ptr = cv_bridge::toCvCopy(msg_, sensor_msgs::image_encodings::RGBA8);
         cv::Mat mat = cv_ptr->image;
