@@ -59,8 +59,6 @@ namespace jsk_rviz_plugins
   {
     delete linear_color_property_;
     delete angular_color_property_;
-    delete linear_color_property_;
-    delete angular_color_property_;
   }
 
   void TwistStampedDisplay::onInitialize()
