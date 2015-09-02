@@ -9,6 +9,8 @@ def get_slot_type_field_names(msg, slot_type, field_name=None, found=None):
         field_name = ''
     if found is None:
         found = []
+    if msg is None:
+        return []
 
     for slot, slot_t in zip(msg.__slots__, msg._slot_types):
         deeper_field_name = field_name + '/' + slot
