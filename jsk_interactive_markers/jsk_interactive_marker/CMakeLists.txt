@@ -120,7 +120,7 @@ generate_messages(
 
 catkin_package(
     DEPENDS TinyXML
-    CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib jsk_rviz_plugins
+    CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib jsk_rviz_plugins jsk_recognition_msgs
     INCLUDE_DIRS include # TODO include
     LIBRARIES jsk_interactive_marker # TODO
 )
