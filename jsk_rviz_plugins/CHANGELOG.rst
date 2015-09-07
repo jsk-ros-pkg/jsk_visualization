@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.24 (2015-09-08)
+-------------------
 * [jsk_rviz_plugins/PolygonArrayDisplay] Fix compilation error because of
   the latest jsk_recongition_utils changes
 * [jsk_rqt_plugins/TwistStamped] Fix duplicated delete

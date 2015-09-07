@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.24 (2015-09-08)
+-------------------
 * add jsk_recognition_msgs to catkin_package(CATKIN_DEPEND)
 * add wait for trans to avoid tf nan error
 * [jsk_interactive_markers/marker_6dof] Add ~initial_orientation parameter

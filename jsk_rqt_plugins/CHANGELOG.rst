@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.24 (2015-09-08)
+-------------------
 * Fix get_slot_type_field_names for None msg
 * [jsk_rqt_plugins] Add more plot options for rqt_2d_plot
 * [jsk_rqt_plugins/rqt_2d_plot] Add sample
