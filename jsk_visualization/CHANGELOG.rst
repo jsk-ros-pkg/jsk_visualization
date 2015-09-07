@@ -2,6 +2,9 @@
 Changelog for package jsk_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.23 (2015-07-15)
 -------------------
 

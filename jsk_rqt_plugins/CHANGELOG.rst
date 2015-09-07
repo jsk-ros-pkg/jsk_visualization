@@ -2,6 +2,30 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix get_slot_type_field_names for None msg
+* [jsk_rqt_plugins] Add more plot options for rqt_2d_plot
+* [jsk_rqt_plugins/rqt_2d_plot] Add sample
+* [jsk_rqt_plugins/plot_2d] Show grid
+* [jsk_rqt_plugins] Add script to plot data as scatter
+* [jsk_rqt_plugins] Add util to get slot field
+* [jsk_rqt_plugins] Depends on rqt_image_view
+* [jsk_rqt_plugins/rqt_histogram_plot] Publish rendered image from
+  rqt_histogram_plot.
+  In order to overlay the image on rviz
+* [jsk_rqt_plugins] Update README about rqt_histogram_plot
+* [jsk_rqt_plugins/rqt_histogram_plot] Support legend
+* [jsk_rqt_plugins/histogram_plot] Support
+  jsk_recognition_msgs/HistogramWithRange message to specify
+  x-axis values
+* [jsk_rqt_plugins] Remove unused comments
+* [jsk_rqt_plugins][rqt_string_label] Display more candidates which has string field
+* [jsk_rqt_plugins] Catch error for unexpected message type
+* [jsk_rqt_plugins] rqt_string_label supports nested string as well as std_msgs/String
+* [jsk_rqt_plugins][button_general.py] Make combo_box shared
+* Contributors: Kentaro Wada, Ryohei Ueda
+
 1.0.23 (2015-07-15)
 -------------------
 

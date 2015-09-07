@@ -2,6 +2,45 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add jsk_recognition_msgs to catkin_package(CATKIN_DEPEND)
+* add wait for trans to avoid tf nan error
+* [jsk_interactive_markers/marker_6dof] Add ~initial_orientation parameter
+* publish pose with focused marker name in transformable_interactive_server
+* publish name of focused marker
+* [jsk_interactive_markers/marker_6dof] Remove axis marker when remove
+  6dof circle
+* [jsk_interactive_marker/marker_6dof] Add ~initial_x,y,z parameters to
+  specify initial position of the marker
+* [jsk_interactive_marker/marker_6dof] Add ~publish_tf parameter to
+  publish tf frame at the position of interactive marker.
+* [jsk_interactive_marker/marker_6dof] Fix indent
+* [jsk_interactive_marker] Add ~lock_joint_states and ~unlock_joint_states to furutaractive marker
+  not to move joint angles of the model even if reset_joint_states is called
+* [jsk_interactive_marker/footstep_marker] Publish current pose even if the marker is move via topic
+* [jsk_interactive_marker/urdf_control_marker] Call dynamic_tf untili success if it failed
+* [jsk_interactive_marker] Print error message if dynamic_tf is failed
+  in urdf_control_marker
+* [jsk_interactive_marker] Add hide/show empty service to transformable interactive server
+* [jsk_interactive_marker/footstep_marker] Add dynamic reconfirue API to toggle projection to pointcloud
+* [jsk_interactive_marker/footstep_marker] Always publish current pose of marker
+* [jsk_interactive_marker/footstep_marker] Publish snapped pose even if service and topic API
+  is used
+* [jsk_interactive_marker/footstep_marker] Fix initialization of marker pose
+* [jsk_interactive_marker] Use ros::ServiceClient::waitForExistence
+  instead of ros::service::waitForService in order to wait
+  dynamic_tf_publisher. Use different API leads potential bugs
+* [jsk_interactive_marker/urdf_model_marker] Fix furutaractive when it fails to lookup tf transformation.
+  1) use JSK_ROS_INFO, JSK_ROS_ERROR to output debug message
+  2) Fix handling of tf lookup exception not to ignore addChildLinkNames
+* [jsk_interactive_marker/urdf_control_marker] Visualize furutaractive marker without clicking urdf_control_marker by
+  calling dynamic_tf in constructor
+* [jsk_interactive_marker/footstep_marker] Set size of footsteps correctly
+* [jsk_interactive_marker/footstep_marker] Fix projection of footprint
+  when service interface is used
+* Contributors: JSK Lab Member, Kei Okada, MasakiMurooka, Ryohei Ueda
+
 1.0.23 (2015-07-15)
 -------------------
 * [jsk_interactive_marker] Install include directory and library

@@ -2,6 +2,32 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins/PolygonArrayDisplay] Fix compilation error because of
+  the latest jsk_recongition_utils changes
+* [jsk_rqt_plugins/TwistStamped] Fix duplicated delete
+* [jsk_rviz_plugins] Allow width/height 0 image (fix segfault)
+* [jsk_rviz_plugins/PolygonArray] Coloring by labels and likelihood fields
+  of jsk_recognition_msgs/PolygonArray
+* [jsk_rviz_plugins/TwistStamped] Decide circle thickness according to
+  radius of circle
+* [jsk_rviz_plugins/BoundingBoxArray] Normalize value color gradation
+* [jsk_rviz_plugins/BoundingBoxArray] Update coloring method to support
+  coloring by values and labels.
+* [jsk_rviz_plugins] Remove footstep texts from rviz when reset the plugin
+* [jsk_rqt_plugins] Add sample launch for PolygonArray
+* [jsk_rviz_plugins/PolygonArray] Use enum property to choose coloring method
+* [jsk_rviz_plugins/TfTrajectory] Use status property to show error rather than
+  ROS_ERROR
+* [jsk_rviz_plugins/RobotCommandInterface] Use smaller icon size
+* [jsk_rviz_plugins] Use ~robot_command_buttons parameter to configure RobotCommandInterfaceAction
+* [jsk_rviz_plugins/TFTrajectory] Initialize line width
+* [jsk_rviz_plugins/TFTrajectory] Add movie link to README
+* [jsk_rviz_plugins] A rviz plugin to visualize tf trajectory as path
+* [jsk_rviz_plugins][OverlayImage] Automatically setup size with negative val
+* Contributors: Kentaro Wada, Ryohei Ueda
+
 1.0.23 (2015-07-15)
 -------------------
 * [jsk_rviz_plugins/PoseArray] Clear pose array if checkbox is unchecked
