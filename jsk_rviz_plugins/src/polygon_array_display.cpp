@@ -39,7 +39,7 @@
 #include "rviz/properties/parse_color.h"
 #include <rviz/validate_floats.h>
 #include <jsk_topic_tools/color_utils.h>
-#include <jsk_pcl_ros/geo_util.h>
+#include <jsk_recognition_utils/geo/polygon.h>
 
 namespace jsk_rviz_plugins
 {
@@ -333,9 +333,9 @@ namespace jsk_rviz_plugins
       manual_object->clear();
       manual_object->setVisible(true);
       
-      jsk_pcl_ros::Polygon geo_polygon
-        = jsk_pcl_ros::Polygon::fromROSMsg(polygon.polygon);
-      std::vector<jsk_pcl_ros::Polygon::Ptr>
+      jsk_recognition_utils::Polygon geo_polygon
+        = jsk_recognition_utils::Polygon::fromROSMsg(polygon.polygon);
+      std::vector<jsk_recognition_utils::Polygon::Ptr>
         triangles = geo_polygon.decomposeToTriangles();
         
       uint32_t num_points = 0;
@@ -347,7 +347,7 @@ namespace jsk_rviz_plugins
         manual_object->begin(
           materials_[i]->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
         for (size_t ii = 0; ii < triangles.size(); ii++) {
-          jsk_pcl_ros::Polygon::Ptr triangle = triangles[ii];
+          jsk_recognition_utils::Polygon::Ptr triangle = triangles[ii];
           size_t num_vertices = triangle->getNumVertices();
           for (size_t j = 0; j < num_vertices; j++) {
             Eigen::Vector3f v = triangle->getVertex(j);
@@ -379,9 +379,9 @@ namespace jsk_rviz_plugins
     }
     scene_node->setPosition(position);
     scene_node->setOrientation(orientation); // scene node is at frame pose
-    jsk_pcl_ros::Polygon geo_polygon
-      = jsk_pcl_ros::Polygon::fromROSMsg(polygon.polygon);
-    jsk_pcl_ros::Vertices vertices
+    jsk_recognition_utils::Polygon geo_polygon
+      = jsk_recognition_utils::Polygon::fromROSMsg(polygon.polygon);
+    jsk_recognition_utils::Vertices vertices
       = geo_polygon.getVertices();
     Eigen::Vector3f centroid(0, 0, 0); // should be replaced by centroid method
     if (vertices.size() == 0) {

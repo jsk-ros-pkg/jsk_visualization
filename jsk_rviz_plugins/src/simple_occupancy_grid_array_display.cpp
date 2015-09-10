@@ -35,10 +35,10 @@
 #define BOOST_PARAMETER_MAX_ARITY 7
 #include "simple_occupancy_grid_array_display.h"
 #include <Eigen/Geometry>
-#include <jsk_pcl_ros/pcl_conversion_util.h>
+#include <jsk_recognition_utils/pcl_conversion_util.h>
 #include <jsk_topic_tools/color_utils.h>
 #include "rviz_util.h"
-#include <jsk_pcl_ros/geo_util.h>
+#include <jsk_recognition_utils/geo/plane.h>
 
 namespace jsk_rviz_plugins
 {
@@ -119,7 +119,7 @@ namespace jsk_rviz_plugins
       
       // coefficients
       geometry_msgs::Pose plane_pose;
-      jsk_pcl_ros::Plane::Ptr plane(new jsk_pcl_ros::Plane(grid.coefficients));
+      jsk_recognition_utils::Plane::Ptr plane(new jsk_recognition_utils::Plane(grid.coefficients));
       Eigen::Affine3f plane_pose_eigen = plane->coordinates();
       tf::poseEigenToMsg(plane_pose_eigen, plane_pose);
       if(!context_->getFrameManager()->transform(grid.header, plane_pose,

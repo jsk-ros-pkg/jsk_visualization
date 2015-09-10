@@ -17,7 +17,7 @@
   <build_depend>rviz</build_depend>
   <build_depend>jsk_hark_msgs</build_depend>
   <build_depend>jsk_footstep_msgs</build_depend>
-  <build_depend>jsk_pcl_ros</build_depend>
+  <build_depend>jsk_recognition_utils</build_depend>
   <build_depend>wxwidgets</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>std_msgs</build_depend>
@@ -26,7 +26,7 @@
   <run_depend>rviz</run_depend>
   <run_depend>jsk_hark_msgs</run_depend>
   <run_depend>jsk_footstep_msgs</run_depend>
-  <run_depend>jsk_pcl_ros</run_depend>
+  <run_depend>jsk_recognition_utils</run_depend>
   <run_depend>wxwidgets</run_depend>
   <run_depend>message_generation</run_depend>
   <run_depend>std_msgs</run_depend>
