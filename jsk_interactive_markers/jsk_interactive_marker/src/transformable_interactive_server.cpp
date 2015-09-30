@@ -56,6 +56,12 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
 
   tf_timer = n_->createTimer(ros::Duration(0.05), &TransformableInteractiveServer::tfTimerCallback, this);
 
+  // initialize yaml-menu-handler
+  std::string yaml_filename;
+  std::string default_filename;
+  n_->param("yaml_filename", yaml_filename, std::string(""));
+  yaml_menu_handler_ptr_ = boost::make_shared <YamlMenuHandler> (n_, yaml_filename);
+
   server_ = new interactive_markers::InteractiveMarkerServer("simple_marker");
 }
 
@@ -86,6 +92,7 @@ void TransformableInteractiveServer::processFeedback(
   switch ( feedback->event_type )
     {
     case visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN:
+    case visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT:
       focus_object_marker_name_ = feedback->marker_name;
       focusTextPublish();
       focusPosePublish();
@@ -565,6 +572,7 @@ void TransformableInteractiveServer::insertNewObject( TransformableObject* tobje
   visualization_msgs::InteractiveMarker int_marker = tobject->getInteractiveMarker();
   transformable_objects_map_[name] = tobject;
   server_->insert(int_marker, boost::bind( &TransformableInteractiveServer::processFeedback,this, _1));
+  yaml_menu_handler_ptr_->applyMenu(server_, name);
   server_->applyChanges();
 
   focus_object_marker_name_ = name;

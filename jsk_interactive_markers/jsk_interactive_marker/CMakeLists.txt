@@ -107,11 +107,12 @@ add_dependencies(pointcloud_cropper ${PROJECT_NAME}_generate_messages_cpp ${PROJ
 
 add_executable(transformable_server_sample
   src/transformable_object.cpp
+  src/yaml_menu_handler.cpp
   src/transformable_interactive_server.cpp
   src/transformable_server_sample.cpp
 )
 
-target_link_libraries(transformable_server_sample ${catkin_LIBRARIES} jsk_interactive_marker)
+target_link_libraries(transformable_server_sample ${catkin_LIBRARIES} jsk_interactive_marker yaml-cpp)
 add_dependencies(transformable_server_sample ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 generate_messages(
@@ -124,6 +125,13 @@ catkin_package(
     INCLUDE_DIRS include # TODO include
     LIBRARIES jsk_interactive_marker # TODO
 )
+
+find_package(PkgConfig)
+pkg_check_modules(yaml_cpp yaml-cpp REQUIRED)
+if(${yaml_cpp_VERSION} VERSION_LESS "0.5.0")
+## indigo yaml-cpp : 0.5.0 /  hydro yaml-cpp : 0.3.0 
+  add_definitions("-DUSE_OLD_YAML")
+endif()
 
 
 install(DIRECTORY launch euslisp urdf
