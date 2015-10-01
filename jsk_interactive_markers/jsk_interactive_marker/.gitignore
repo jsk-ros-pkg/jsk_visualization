@@ -2,3 +2,5 @@ bin
 build
 msg_gen
 srv_gen
+
+config/robot_actions_sample.rviz
