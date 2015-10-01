@@ -178,6 +178,7 @@ void TransformableInteractiveServer::updateTransformableObject(TransformableObje
 {
   visualization_msgs::InteractiveMarker int_marker = tobject->getInteractiveMarker();
   server_->insert(int_marker, boost::bind( &TransformableInteractiveServer::processFeedback,this, _1));
+  yaml_menu_handler_ptr_->applyMenu(server_, focus_object_marker_name_);
   server_->applyChanges();
 }
 
@@ -188,6 +189,7 @@ void TransformableInteractiveServer::setPose(const geometry_msgs::PoseStampedCon
   std_msgs::Header header = msg_ptr->header;
   header.frame_id = tobject->getFrameId();
   server_->setPose(focus_object_marker_name_, tobject->pose_, header);
+  yaml_menu_handler_ptr_->applyMenu(server_, focus_object_marker_name_);
   server_->applyChanges();
 }
 
@@ -225,6 +227,7 @@ bool TransformableInteractiveServer::setPoseService(jsk_interactive_marker::SetT
     std_msgs::Header header = req.pose_stamped.header;
     header.frame_id = tobject->getFrameId();
     server_->setPose(focus_object_marker_name_, tobject->pose_, header);
+    yaml_menu_handler_ptr_->applyMenu(server_, focus_object_marker_name_);
     server_->applyChanges();
   }
   return true;
@@ -484,6 +487,7 @@ void TransformableInteractiveServer::setControlRelativePose(geometry_msgs::Pose 
   header.frame_id = tobject->getFrameId();
   header.stamp = ros::Time::now();
   server_->setPose(focus_object_marker_name_, tobject->pose_, header);
+  yaml_menu_handler_ptr_->applyMenu(server_, focus_object_marker_name_);
   server_->applyChanges();
 }
 

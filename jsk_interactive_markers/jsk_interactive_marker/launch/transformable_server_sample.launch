@@ -3,7 +3,7 @@
 
   <param name="torus_udiv" value="100"/>
   <param name="torus_vdiv" value="100"/>
-  <node pkg="jsk_interactive_marker" type="transformable_server_sample" name="server_sample" output="screen" launch-prefix="xterm -e gdb --args">
+  <node pkg="jsk_interactive_marker" type="transformable_server_sample" name="server_sample" output="screen">
     <param name="display_interactive_manipulator" value="false"/>
     <param name="yaml_filename" value="$(find jsk_interactive_marker)/config/default_menu.yaml" />
   </node>
