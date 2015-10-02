@@ -87,14 +87,6 @@ namespace jsk_rviz_plugins
     }
     else {
       file_name_ = file_name_property_->getStdString();
-      int access_result = access(file_name_.c_str(), W_OK);
-      ROS_INFO("access_result to %s: %d", file_name_.c_str(), access_result);
-      if (access_result) {
-        setStatus(rviz::StatusProperty::Error, "File", "NOT Writable");
-      }
-      else {
-        setStatus(rviz::StatusProperty::Ok, "File", "Writable");
-      }
     }
   }
 
