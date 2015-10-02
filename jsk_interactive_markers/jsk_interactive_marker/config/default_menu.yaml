@@ -1,0 +1,6 @@
+- text: "[robot]ik"
+  topic: "/solve_ik"
+- text: "[robot]send"
+  topic: "/send_to_robot"
+- text: "[object]reverse"
+  topic: "/reverse_object"
