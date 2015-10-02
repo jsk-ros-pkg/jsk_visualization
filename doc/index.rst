@@ -15,4 +15,5 @@ This repository contains following ros packages:
 .. toctree::
    :maxdepth: 1
 
+   jsk_rviz_plugins/index
    jsk_rqt_plugins/index
