@@ -20,3 +20,9 @@ You can use this rviz plugins just launch rviz.
    :caption: panels
 
    ./panels/*
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :caption: tools
+
+   ./tools/*
