@@ -40,6 +40,7 @@
 #include <rviz/display.h>
 #include <rviz/render_panel.h>
 #include <QImage>
+#include <boost/filesystem.hpp>
 
 namespace jsk_rviz_plugins
 {
@@ -87,13 +88,32 @@ namespace jsk_rviz_plugins
     }
     else {
       file_name_ = file_name_property_->getStdString();
-      int access_result = access(file_name_.c_str(), W_OK);
-      ROS_INFO("access_result to %s: %d", file_name_.c_str(), access_result);
-      if (access_result) {
-        setStatus(rviz::StatusProperty::Error, "File", "NOT Writable");
+      int exists_check = access(file_name_.c_str(), F_OK);
+      if (exists_check == 0) {
+        int access_result = access(file_name_.c_str(), W_OK);
+        ROS_INFO("access_result to %s: %d", file_name_.c_str(), access_result);
+        if (access_result != 0) {
+          setStatus(rviz::StatusProperty::Error, "File", "NOT Writable");
+        }
+        else {
+          setStatus(rviz::StatusProperty::Ok, "File", "Writable");
+        }
       }
-      else {
-        setStatus(rviz::StatusProperty::Ok, "File", "Writable");
+      else {                    // do not exists, check directory permission
+        ROS_INFO("%s do not exists", file_name_.c_str());
+        boost::filesystem::path pathname(file_name_);
+        std::string dirname  = pathname.parent_path().string();
+        if (dirname.length() == 0) { // Special case for without path
+          dirname = ".";
+        }
+        ROS_INFO("dirname: %s", dirname.c_str());
+        int directory_access_result = access(dirname.c_str(), W_OK);
+        if (directory_access_result != 0) {
+          setStatus(rviz::StatusProperty::Error, "File", "NOT Writable (direcotry)");
+        }
+        else {
+          setStatus(rviz::StatusProperty::Ok, "File", "Writable");
+        }
       }
     }
   }
