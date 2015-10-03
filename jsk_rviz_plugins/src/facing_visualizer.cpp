@@ -565,7 +565,7 @@ namespace jsk_rviz_plugins
   void SimpleCircleFacingVisualizer::updateText()
   {
     msg_->setCaption(text_);
-    msg_->setCharacterHeight(std::max(0.2 * size_, minimum_font_size));
+    msg_->setCharacterHeight(std::max(0.15 * size_, minimum_font_size));
   }
 
   void SimpleCircleFacingVisualizer::setText(std::string text)
@@ -648,8 +648,8 @@ namespace jsk_rviz_plugins
         double theta = M_PI * 2.0 / text.length() * ci + theta_offset;
         painter.save();
         QFont font("DejaVu Sans Mono");
-        font.setPointSize(10);
-        font.setBold(true);
+        font.setPointSize(8);
+        font.setBold(false);
         painter.setFont(font);
         painter.translate(cx + r * cos(theta),
                           cy + r * sin(theta));
