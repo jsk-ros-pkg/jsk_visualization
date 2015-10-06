@@ -28,6 +28,11 @@ language = 'en'
 
 exclude_patterns = ['_build', 'venv']
 
+this_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, this_dir)
+import add_img_tables_to_index
+add_img_tables_to_index.main(exclude_patterns)
+
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
 #default_role = None
