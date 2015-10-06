@@ -1,7 +1,7 @@
 # PolygonArray
 ![PolygonArray](images/polygon_array.png)
 
-Visualize `jsk_recognition_msgs/PolygonArray` message
+Visualize [`jsk_recognition_msgs/PolygonArray`](http://docs.ros.org/indigo/api/jsk_recognition_msgs/html/msg/PolygonArray.html) message
 
 ## Properties
 * `Topic`
