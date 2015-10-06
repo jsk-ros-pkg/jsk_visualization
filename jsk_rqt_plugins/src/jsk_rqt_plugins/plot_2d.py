@@ -21,6 +21,7 @@ from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from jsk_recognition_msgs.msg import PlotData
 import numpy as np
+from sklearn import linear_model, datasets
 import os, sys
 import argparse
 
@@ -62,6 +63,8 @@ class Plot2D(Plugin):
         self._widget = Plot2DWidget(self._args.topics)
         self._widget.is_line = self._args.line
         self._widget.fit_line = self._args.fit_line
+        self._widget.fit_line_ransac = self._args.fit_line_ransac
+        self._widget.fit_line_ransac_outlier = self._args.fit_line_ransac_outlier
         self._widget.xtitle = self._args.xtitle
         self._widget.ytitle = self._args.ytitle
         self._widget.no_legend = self._args.no_legend
@@ -78,6 +81,8 @@ class Plot2D(Plugin):
         group.add_argument('topics', nargs='?', default=[], help='Topics to plot')
         group.add_argument('--line', action="store_true", help="Plot with lines instead of scatter")
         group.add_argument('--fit-line', action="store_true", help="Plot line with least-square fitting")
+        group.add_argument('--fit-line-ransac', action="store_true", help="Plot line with RANSAC")
+        group.add_argument('--fit-line-ransac-outlier', type=float, default=0.1, help="Plot line with RANSAC")
         group.add_argument('--xtitle', help="Title in X axis")
         group.add_argument('--ytitle', help="Title in Y axis")
         group.add_argument('--no-legend', action="store_true")
@@ -168,7 +173,7 @@ class Plot2DWidget(QWidget):
         xs = [d[0] for d in concatenated_data]
         ys = [d[1] for d in concatenated_data]
         if self.is_line:
-            axes.plot(xs, ys)
+            axes.plot(xs, ys, label=self.topic_with_field_name)
         else:
             axes.scatter(xs, ys)
         # set limit
@@ -181,11 +186,21 @@ class Plot2DWidget(QWidget):
             A = np.array([X,np.ones(len(X))])
             A = A.T
             a,b = np.linalg.lstsq(A,Y)[0]
-            axes.plot(X,(a*X+b),"g--")
-        
-        axes.grid()
+            axes.plot(X,(a*X+b),"g--", label="{0} x + {1}".format(a, b))
+        if self.fit_line_ransac:
+            model_ransac = linear_model.RANSACRegressor(linear_model.LinearRegression(), min_samples=2,
+                                                        residual_threshold=self.fit_line_ransac_outlier)
+            X = np.array(data_y[-1].xs).reshape((len(data_y[-1].xs), 1))
+            Y = np.array(data_y[-1].ys)
+            model_ransac.fit(X, Y)
+            line_X = X
+            line_y_ransac = model_ransac.predict(line_X)
+            axes.plot(line_X, line_y_ransac, "r--",
+                      label="{0} x + {1}".format(model_ransac.estimator_.coef_[0][0],
+                                                 model_ransac.estimator_.intercept_[0]))
         if not self.no_legend:
-            axes.legend([self.topic_with_field_name], prop={'size': '8'})
+            axes.legend(prop={'size': '8'})
+        axes.grid()
         if self.xtitle:
             axes.set_xlabel(self.xtitle)
         if self.ytitle:
