@@ -17,3 +17,4 @@ This repository contains following ros packages:
 
    jsk_rviz_plugins/index
    jsk_rqt_plugins/index
+   tips/index
