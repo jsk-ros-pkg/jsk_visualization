@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.25 (2015-10-10)
+-------------------
 * change service -> topic
 * add right click config with yaml
 * [jsk_interactive_markers] Ignore rvizconfig generated at build time

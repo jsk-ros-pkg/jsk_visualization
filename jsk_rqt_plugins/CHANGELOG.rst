@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.25 (2015-10-10)
+-------------------
 * [jsk_rqt_plugins] Fit line to date by ransac
 * [jsk_rqt_plugins] Move README to sphinx + readthedocs
 * Contributors: Kentaro Wada, Ryohei Ueda

@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.25 (2015-10-10)
+-------------------
 * [jsk_rviz_plugins] Fix font size of PeoplePositionMeasurementArray
 * [jsk_rviz_plugins] Add script for diagnostics sample
 * [jsk_rviz_plugins] Compile PeoplePositionMeasurementArrayDisplay
