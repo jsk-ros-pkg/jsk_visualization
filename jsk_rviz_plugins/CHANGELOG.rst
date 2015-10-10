@@ -2,6 +2,18 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins] Fix font size of PeoplePositionMeasurementArray
+* [jsk_rviz_plugins] Add script for diagnostics sample
+* [jsk_rviz_plugins] Compile PeoplePositionMeasurementArrayDisplay
+* [jsk_rviz_plugins/VideoCapture] Check file permission to write correctly
+* [jsk_rviz_plugins] Use readthedocs to document
+* [jsk_rviz_plugins] Add index page for sphinx + readthedocs
+* [jsk_rviz_plugins] Use jsk_recognition_utils instead of jsk_pcl_ros to
+  speed up compilation
+* Contributors: Kentaro Wada, Ryohei Ueda
+
 1.0.24 (2015-09-08)
 -------------------
 * [jsk_rviz_plugins/PolygonArrayDisplay] Fix compilation error because of

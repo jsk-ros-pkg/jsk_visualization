@@ -2,6 +2,13 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* change service -> topic
+* add right click config with yaml
+* [jsk_interactive_markers] Ignore rvizconfig generated at build time
+* Contributors: Kentaro Wada, Yu Ohara
+
 1.0.24 (2015-09-08)
 -------------------
 * add jsk_recognition_msgs to catkin_package(CATKIN_DEPEND)

@@ -2,6 +2,12 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rqt_plugins] Fit line to date by ransac
+* [jsk_rqt_plugins] Move README to sphinx + readthedocs
+* Contributors: Kentaro Wada, Ryohei Ueda
+
 1.0.24 (2015-09-08)
 -------------------
 * Fix get_slot_type_field_names for None msg
