@@ -14,8 +14,8 @@ namespace jsk_rviz_plugins
     AmbientSoundVisual::AmbientSoundVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ): /*{{{*/
         width_ (0.1),
         scale_ (1.0),
-        bias_ (10),
-        grad_ (0.1)
+        bias_ (28),
+        grad_ (0.4)
     {
         scene_manager_ = scene_manager;
 
