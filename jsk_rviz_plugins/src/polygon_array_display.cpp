@@ -225,7 +225,8 @@ namespace jsk_rviz_plugins
       color = rviz::qtToOgre(color_property_->getColor());
     }
     else if (coloring_method_ == "likelihood") {
-      if (latest_msg_->likelihood.size() < index) {
+      if (latest_msg_->likelihood.size() == 0 ||
+          latest_msg_->likelihood.size() < index) {
         setStatus(rviz::StatusProperty::Error,
                   "Topic",
                   "Message does not have lieklihood fields");
@@ -240,7 +241,8 @@ namespace jsk_rviz_plugins
       }
     }
     else if (coloring_method_ == "label") {
-      if (latest_msg_->labels.size() < index) {
+      if (latest_msg_->labels.size() == 0 ||
+          latest_msg_->labels.size() < index) {
         setStatus(rviz::StatusProperty::Error,
                   "Topic",
                   "Message does not have lebels fields");
