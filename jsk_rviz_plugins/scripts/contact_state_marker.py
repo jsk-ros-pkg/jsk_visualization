@@ -11,6 +11,14 @@ from visualization_msgs.msg import Marker, MarkerArray
 from xml.dom.minidom import parse, parseString
 from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
+from jsk_rviz_plugins.cfg import ContactStateMarkerConfig
+from dynamic_reconfigure.server import Server
+
+g_config = None
+def config_callback(config, level):
+    global g_config
+    g_config = config
+    return config
 
 def find_mesh(link_name):
     "find mesh file from specified link_name"
@@ -43,19 +51,26 @@ def callback(msgs):
         marker.header.frame_id = msg.header.frame_id
         marker.header.stamp = rospy.Time.now()
         marker.type = Marker.MESH_RESOURCE
-        marker.color.a = alpha
-        marker.color.r = rgb[0]
-        marker.color.g = rgb[1]
-        marker.color.b = rgb[2]
-        marker.scale.x = scale
-        marker.scale.y = scale
-        marker.scale.z = scale
+        if msg.state.state == ContactState.ON:
+            marker.color.a = g_config.on_alpha
+            marker.color.r = g_config.on_red
+            marker.color.g = g_config.on_green
+            marker.color.b = g_config.on_blue
+        elif msg.state.state == ContactState.OFF:
+            marker.color.a = g_config.off_alpha
+            marker.color.r = g_config.off_red
+            marker.color.g = g_config.off_green
+            marker.color.b = g_config.off_blue
+        marker.scale.x = g_config.marker_scale
+        marker.scale.y = g_config.marker_scale
+        marker.scale.z = g_config.marker_scale
         marker.pose = offset
         marker.mesh_resource = mesh_file
         marker.frame_locked = True
         marker.id = i
         if msg.state.state == ContactState.OFF:
-            marker.action = Marker.DELETE
+            if not g_config.visualize_off:
+                marker.action = Marker.DELETE
         marker_array.markers.append(marker)
     pub.publish(marker_array)
 
@@ -70,7 +85,7 @@ if __name__ == "__main__":
     # because urdf_parser_py cannot read PR2 urdf
     doc = parseString(robot_description)
     g_links = doc.getElementsByTagName('link')
-    
+    srv = Server(ContactStateMarkerConfig, config_callback)
     pub = rospy.Publisher('~marker', MarkerArray)
     sub = rospy.Subscriber("~input", ContactStatesStamped, callback)
     rospy.spin()
