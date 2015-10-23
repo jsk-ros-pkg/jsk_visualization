@@ -57,6 +57,7 @@
 #include <geometry_msgs/Polygon.h>
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Empty.h>
+#include <std_srvs/Empty.h>
 #include <jsk_recognition_msgs/SimpleOccupancyGridArray.h>
 #include <dynamic_reconfigure/server.h>
 
@@ -93,6 +94,7 @@ protected:
   void resetLegPoses();
   void lookGround();
   void configCallback(Config& config, uint32_t level);
+  bool forceToReplan(std_srvs::Empty::Request& req, std_srvs::Empty::Request& res);
   boost::mutex plane_mutex_;
   boost::mutex plan_run_mutex_;
   boost::shared_ptr<dynamic_reconfigure::Server<Config> > srv_;
@@ -135,6 +137,7 @@ protected:
   ros::Publisher footstep_pub_;
   ros::ServiceClient snapit_client_;
   ros::ServiceClient estimate_occlusion_client_;
+  ros::ServiceServer plan_if_possible_srv_;
   boost::shared_ptr<tf::TransformListener> tf_listener_;
   PlanningActionClient ac_;
   ExecuteActionClient ac_exec_;

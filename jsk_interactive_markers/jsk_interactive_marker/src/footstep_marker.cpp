@@ -194,6 +194,7 @@ plan_run_(false), lleg_first_(true) {
   menu_command_sub_ = nh.subscribe("menu_command", 1, &FootstepMarker::menuCommandCB, this);
   exec_sub_ = pnh.subscribe("execute", 1, &FootstepMarker::executeCB, this);
   resume_sub_ = pnh.subscribe("resume", 1, &FootstepMarker::resumeCB, this);
+  plan_if_possible_srv_ = pnh.advertiseService("force_to_replan", &FootstepMarker::forceToReplan, this);
   if (use_initial_footstep_tf_) {
     // waiting TF
     while (ros::ok()) {
@@ -409,6 +410,12 @@ void FootstepMarker::lookGround()
   else {
     ROS_ERROR("Failed to look ground");
   }
+}
+
+bool FootstepMarker::forceToReplan(std_srvs::Empty::Request& req, std_srvs::Empty::Request& res)
+{
+  planIfPossible();
+  return true;
 }
 
 void FootstepMarker::processMenuFeedback(uint8_t menu_entry_id) {
