@@ -13,6 +13,7 @@ from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
 from jsk_rviz_plugins.cfg import ContactStateMarkerConfig
 from dynamic_reconfigure.server import Server
+from urdf_parser_py.urdf import URDF
 
 g_config = None
 def config_callback(config, level):
@@ -22,6 +23,7 @@ def config_callback(config, level):
 
 def find_mesh(link_name):
     "find mesh file from specified link_name"
+    global g_config
     for link in g_links:
         if link_name == link.getAttribute('name'):
             visual = link.getElementsByTagName('visual').item(0)
@@ -44,11 +46,19 @@ def find_mesh(link_name):
 
 def callback(msgs):
     "msgs = ContactStatesStamped"
+    global g_config
+    if g_config.use_parent_link:
+        urdf_robot = URDF.from_parameter_server()
     marker_array = MarkerArray()
     for msg, i in zip(msgs.states, range(len(msgs.states))):
         marker = Marker()
-        mesh_file, offset = find_mesh(msg.header.frame_id)
-        marker.header.frame_id = msg.header.frame_id
+        link_name = msg.header.frame_id
+        if g_config.use_parent_link:
+            # lookup parent link
+            chain = urdf_robot.get_chain(urdf_robot.get_root(), link_name)
+            link_name = chain[-3]
+        mesh_file, offset = find_mesh(link_name)
+        marker.header.frame_id = link_name
         marker.header.stamp = rospy.Time.now()
         marker.type = Marker.MESH_RESOURCE
         if msg.state.state == ContactState.ON:
