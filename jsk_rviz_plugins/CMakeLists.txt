@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   view_controller_msgs
   roseus
   geometry_msgs
+  dynamic_reconfigure
   jsk_recognition_msgs)
 
 add_message_files(FILES
@@ -23,6 +24,8 @@ add_service_files(FILES
   RequestMarkerOperate.srv EusCommand.srv
   Screenshot.srv
   )
+generate_dynamic_reconfigure_options(
+  cfg/ContactStateMarker.cfg)
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 catkin_package(
