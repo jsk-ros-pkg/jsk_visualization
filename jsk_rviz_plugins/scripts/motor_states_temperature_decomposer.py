@@ -65,18 +65,18 @@ def jointStatesCallback(msg):
         # lookup effort limit
         candidate_joints = [j for j in robot_model.joints if j.name == name]
         if candidate_joints:
-            limit = candidate_joints[0].limit.effort
-            if limit == 0:
-                rospy.logwarn("%s effort limit is 0" % (name))
+            if candidate_joints[0].limit:
+                limit = candidate_joints[0].limit.effort
             else:
+                limit = 0
+            if limit != 0:
                 g_effort_publishers[name].publish(Float32(abs(val/limit)))
 
 if __name__ == "__main__":
     rospy.init_node("motor_state_temperature_decomposer")
     robot_model = URDF.from_xml_string(rospy.get_param("/robot_description"))
     g_text_publisher = rospy.Publisher("max_temparature_text", OverlayText)
-    s = rospy.Subscriber("/motor_states", MotorStates, motorStatesCallback)
-    s_joint_states = rospy.Subscriber("/joint_states", JointState, jointStatesCallback)
+    s = rospy.Subscriber("/motor_states", MotorStates, motorStatesCallback, queue_size=1)
+    s_joint_states = rospy.Subscriber("/joint_states", JointState, jointStatesCallback, queue_size=1)
     #s = rospy.Subscriber("joint_states", MotorStates, motorStatesCallback)
     rospy.spin()
-    
