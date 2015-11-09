@@ -14,7 +14,6 @@ from jsk_rqt_plugins.srv import YesNo, YesNoResponse
 class YesNoButtonWidget(QWidget):
     def __init__(self):
         super(YesNoButtonWidget, self).__init__()
-        rospy.Service('rqt_yn_btn', YesNo, self._handle_yn_btn)
         rp = rospkg.RosPack()
         ui_file = os.path.join(rp.get_path('jsk_rqt_plugins'),
             'resource', 'yes_no_button.ui')
@@ -25,6 +24,7 @@ class YesNoButtonWidget(QWidget):
         self.yes_button.setEnabled(False)
         self.no_button.setEnabled(False)
         self.yes = None
+        rospy.Service('rqt_yn_btn', YesNo, self._handle_yn_btn)
 
     def _clicked_yes_button(self):
         """Handle events of being clicked yes button."""
