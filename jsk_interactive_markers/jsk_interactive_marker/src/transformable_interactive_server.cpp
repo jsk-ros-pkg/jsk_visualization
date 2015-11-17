@@ -589,6 +589,7 @@ void TransformableInteractiveServer::SetInitialInteractiveMarkerConfig( Transfor
 {
   InteractiveSettingConfig config;
   config.display_interactive_manipulator = display_interactive_manipulator_;
+  config.interactive_manipulator_orientation = interactive_manipulator_orientation_;
   tobject->setInteractiveMarkerSetting(config);
 }
 
