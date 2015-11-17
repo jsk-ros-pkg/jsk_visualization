@@ -3,6 +3,7 @@
 import sys
 import os
 import shlex
+import xml.etree.ElementTree
 
 from recommonmark.parser import CommonMarkParser
 
@@ -22,9 +23,14 @@ master_doc = 'index'
 project = u'jsk_visualization'
 copyright = u'2015, JSK Lab'
 author = u'Ryohei Ueda, Kei Okada, Youhei Kakiuchi'
-version = '1.0'
-release = '1.0'
 language = 'en'
+
+# get version from package.xml of metapackage
+this_dir = os.path.dirname(os.path.abspath(__file__))
+package_xml = os.path.join(this_dir, '../jsk_visualization/package.xml')
+xml_tree = xml.etree.ElementTree.parse(package_xml).getroot()
+version = xml_tree.find('version').text
+release = version
 
 exclude_patterns = ['_build', 'venv']
 
