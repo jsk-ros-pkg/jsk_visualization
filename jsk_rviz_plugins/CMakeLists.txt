@@ -38,6 +38,7 @@ catkin_package(
 
 
 set(ROS_BUILD_TYPE Release)
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")
 
 include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
