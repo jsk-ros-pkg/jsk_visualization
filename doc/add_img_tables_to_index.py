@@ -13,6 +13,10 @@ def rst_image_table_data(url_prefix, img_files):
     blocks = []
     for i, img_file in enumerate(img_files):
         title, _ = os.path.splitext(img_file)
+        doc_candidates = [os.path.join(url_prefix, title + ext)
+                          for ext in ['.rst', '.md']]
+        if not any(map(os.path.exists, doc_candidates)):
+            continue
         img_file = os.path.join(url_prefix, 'images', img_file)
         label_name = hashlib.sha1(title).hexdigest()[:8]
         labels.append('''\
