@@ -2,6 +2,24 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins] Install icons
+* [jsk_rviz_plugins] add landing_time_detector to display early landing/taking-off
+* [jsk_rviz_plugins/motor_states_temparature_decomposer] Decrease cpu load
+  by queue_size=1.
+  Fix for joints which does not have limit attribute.
+* [jsk_rviz_plugins] Add ~parent_link parameter for contact_state_publisher
+* [jsk_rviz_plugins] Add dynamic_reconfigure API to ContactStateMarker
+* [jsk_rviz_plugins] Check size of likelihood and labels of PolygonArray
+* [jsk_rviz_plugins/contact_state_marker.py] Support origin attribute of
+  visual tag
+* [jsk_rviz_plugins] update ambient sound visual paramter
+* [jsk_rviz_plugins] contact_state_marker.py to visualize hrpsys_ros_bridge/ContactStatesStamped
+* [jsk_rviz_plugins] Add script to publish marker of a robot link with
+  specified color
+* Contributors: Eisoku Kuroiwa, Kentaro Wada, Ryohei Ueda, Yuto Inagaki
+
 1.0.25 (2015-10-10)
 -------------------
 * [jsk_rviz_plugins] Fix font size of PeoplePositionMeasurementArray

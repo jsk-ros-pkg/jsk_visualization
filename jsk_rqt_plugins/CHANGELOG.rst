@@ -2,6 +2,11 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rqt_plugins] Advertise service after initialized
+* Contributors: Kentaro Wada
+
 1.0.25 (2015-10-10)
 -------------------
 * [jsk_rqt_plugins] Fit line to date by ransac
