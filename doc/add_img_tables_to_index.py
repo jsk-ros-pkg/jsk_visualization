@@ -1,9 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Script to add image table with link to document
+to index file of sphinx documentation.
 
+Usage::
+
+    # in conf.py for sphinx doc
+    exclude_patterns = ['_build', 'venv']
+    import add_img_tables_to_index
+    add_img_tables_to_index.main(exclude_patterns)
+"""
+
+import hashlib
 import os
 import sys
-import hashlib
+
+
+__copyright__ = '2015, JSK Lab'
+__author__ = 'Kentaro Wada <www.kentaro.wada@gmail.com>'
+__version__ = '0.1'
 
 
 def rst_image_table_data(url_prefix, img_files):
