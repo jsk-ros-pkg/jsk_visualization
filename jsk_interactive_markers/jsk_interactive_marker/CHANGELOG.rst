@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.26 (2015-12-03)
+-------------------
 * [jsk_interactive_marker] add initialization for marker control
 * [jsk_interactive_marker] Add ~force_to_replan service interface to
   footstep marker

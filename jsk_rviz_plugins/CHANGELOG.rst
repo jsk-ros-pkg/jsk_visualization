@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.26 (2015-12-03)
+-------------------
 * [jsk_rviz_plugins] Install icons
 * [jsk_rviz_plugins] add landing_time_detector to display early landing/taking-off
 * [jsk_rviz_plugins/motor_states_temparature_decomposer] Decrease cpu load
