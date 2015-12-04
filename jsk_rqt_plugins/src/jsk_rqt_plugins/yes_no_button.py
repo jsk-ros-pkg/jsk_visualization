@@ -3,6 +3,7 @@
 import os
 import rospy
 import rospkg
+import rosservice
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
@@ -24,7 +25,11 @@ class YesNoButtonWidget(QWidget):
         self.yes_button.setEnabled(False)
         self.no_button.setEnabled(False)
         self.yes = None
-        rospy.Service('rqt_yn_btn', YesNo, self._handle_yn_btn)
+        service_name = rospy.get_namespace() + 'rqt_yn_btn'
+        if service_name in rosservice.get_service_list():
+            rospy.logwarn('{} is already advertised'.format(service_name))
+            return
+        self.srv = rospy.Service('rqt_yn_btn', YesNo, self._handle_yn_btn)
 
     def _clicked_yes_button(self):
         """Handle events of being clicked yes button."""
@@ -45,6 +50,9 @@ class YesNoButtonWidget(QWidget):
         self.yes_button.setEnabled(False)
         self.no_button.setEnabled(False)
         return YesNoResponse(yes=self.yes)
+
+    def __del__(self):
+        self.srv.shutdown()
 
 
 class YesNoButton(Plugin):
