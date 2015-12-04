@@ -28,13 +28,13 @@ namespace jsk_rviz_plugins
 
   public Q_SLOTS:
 
-    void setTopic( const QString& topic );
+    void setTopic( const QString& topic ) {}
 
   protected Q_SLOTS:
 
-    void updateTopic();
+    void updateTopic() {};
 
-    void commandPlay();
+    void commandPlay() {};
     void recordClick();
 
     void addTopicList(std::string topic_name);

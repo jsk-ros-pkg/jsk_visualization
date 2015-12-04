@@ -27,11 +27,11 @@ Q_OBJECT
 
       public Q_SLOTS:
 
-      void setTopic( const QString& topic );
+      void setTopic( const QString& topic ) {};
 
       protected Q_SLOTS:
 
-      void updateTopic();
+      void updateTopic() {};
 
       void sendTopic();
       void addTopic();

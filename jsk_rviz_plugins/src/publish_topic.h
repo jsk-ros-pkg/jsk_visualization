@@ -25,7 +25,7 @@ Q_OBJECT
 
       protected Q_SLOTS:
 
-      void sendVel();
+      void sendVel() {}
 
       void updateTopic();
 
