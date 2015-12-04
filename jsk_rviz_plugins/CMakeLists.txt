@@ -38,7 +38,6 @@ catkin_package(
 
 
 set(ROS_BUILD_TYPE Release)
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")
 
 include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
@@ -148,6 +147,9 @@ set(SOURCE_FILES
 add_library(jsk_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(jsk_rviz_plugins jsk_hark_msgs_gencpp ${PROJECT_NAME}_gencpp)
+
+set_target_properties(jsk_rviz_plugins
+  PROPERTIES LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")
 
 install(FILES plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
