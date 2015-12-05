@@ -264,7 +264,15 @@ namespace jsk_rviz_plugins
       }
     }
     else if (num < coords_objects_.size()) {
+      for (size_t i = num; i < coords_objects_.size(); i++) {
+        // coords_nodes_[i];
+        // coords_objects_[i][0]->setVisible(false);
+        // coords_objects_[i][1]->setVisible(false);
+        // coords_objects_[i][2]->setVisible(false);
+        coords_nodes_[i]->setVisible(false);
+      }
       coords_objects_.resize(num);
+      coords_nodes_.resize(num);
     }
   }
 
@@ -305,18 +313,23 @@ namespace jsk_rviz_plugins
       jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
       ShapePtr shape = shapes_[i];
       Ogre::Vector3 position;
-      Ogre::Quaternion quaternion;
-      if(!context_->getFrameManager()->transform(box.header, box.pose,
-                                                 position,
-                                                 quaternion)) {
-        ROS_ERROR( "Error transforming pose"
-                   "'%s' from frame '%s' to frame '%s'",
-                   qPrintable( getName() ), box.header.frame_id.c_str(),
-                   qPrintable( fixed_frame_ ));
-        return;                 // return?
+      Ogre::Quaternion orientation;
+      if(!context_->getFrameManager()->transform(
+           box.header, box.pose, position, orientation)) {
+        ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
+                 box.header.frame_id.c_str(), qPrintable(fixed_frame_));
+        return;
       }
+
+      // Ogre::Vector3 p(box.pose.position.x,
+      //                 box.pose.position.y,
+      //                 box.pose.position.z);
+      // Ogre::Quaternion q(box.pose.orientation.w,
+      //                    box.pose.orientation.x,
+      //                    box.pose.orientation.y,
+      //                    box.pose.orientation.z);
       shape->setPosition(position);
-      shape->setOrientation(quaternion);
+      shape->setOrientation(orientation);
       Ogre::Vector3 dimensions;
       dimensions[0] = box.dimensions.x;
       dimensions[1] = box.dimensions.y;
