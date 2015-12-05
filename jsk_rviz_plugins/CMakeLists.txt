@@ -17,6 +17,13 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   dynamic_reconfigure
   jsk_recognition_msgs)
 
+# Use ccache if installed to make it fast to generate object files
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+endif(CCACHE_FOUND)
+
 add_message_files(FILES
   OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg ObjectFitCommand.msg
   Pictogram.msg PictogramArray.msg RecordCommand.msg)
