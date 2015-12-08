@@ -2,6 +2,11 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rqt_plugins] Avoid already advertised error for rqt_yn_btn
+* Contributors: Kentaro Wada
+
 1.0.26 (2015-12-03)
 -------------------
 * [jsk_rqt_plugins] Advertise service after initialized

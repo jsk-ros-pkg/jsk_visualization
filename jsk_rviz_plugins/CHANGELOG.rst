@@ -2,6 +2,17 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins/BoundingBoxArray] Fix coords orientation.
+  closes `#528 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/528>`_
+* Use ccache to make it faster to generate object file
+* [jsk_rviz_plugins] Empty function implementation for undefined methods
+* [jsk_rviz_plugins] Use set_target_properties to set linker flags only
+  for libjsk_rviz_plugins.so
+* Use gcc -z defs to check undefined symbols in shared objects
+* Contributors: Kentaro Wada, Ryohei Ueda
+
 1.0.26 (2015-12-03)
 -------------------
 * [jsk_rviz_plugins] Install icons
