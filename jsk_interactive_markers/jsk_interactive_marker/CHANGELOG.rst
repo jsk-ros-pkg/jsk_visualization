@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.27 (2015-12-08)
+-------------------
 * Use ccache to make it faster to generate object file
 * Contributors: Kentaro Wada
 

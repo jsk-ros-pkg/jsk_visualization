@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.27 (2015-12-08)
+-------------------
 * [jsk_rviz_plugins/BoundingBoxArray] Fix coords orientation.
   closes `#528 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/528>`_
 * Use ccache to make it faster to generate object file

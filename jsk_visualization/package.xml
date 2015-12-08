@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_visualization</name>
-  <version>1.0.26</version>
+  <version>1.0.27</version>
   <description>
    <p>Metapackage that contains visualization package for jsk-ros-pkg</p>
   </description>

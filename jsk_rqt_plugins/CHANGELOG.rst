@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.27 (2015-12-08)
+-------------------
 * [jsk_rqt_plugins] Avoid already advertised error for rqt_yn_btn
 * Contributors: Kentaro Wada
 
