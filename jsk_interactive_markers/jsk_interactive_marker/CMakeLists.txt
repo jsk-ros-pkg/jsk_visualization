@@ -105,6 +105,10 @@ add_executable(bounding_box_marker src/bounding_box_marker.cpp)
 target_link_libraries(bounding_box_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
 add_dependencies(bounding_box_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
+add_executable(polygon_marker src/polygon_marker.cpp)
+target_link_libraries(polygon_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
+add_dependencies(polygon_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+
 add_executable(interactive_point_cloud src/interactive_point_cloud_node.cpp src/interactive_point_cloud.cpp)
 target_link_libraries(interactive_point_cloud ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
 add_dependencies(interactive_point_cloud ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
@@ -138,7 +142,7 @@ catkin_package(
 find_package(PkgConfig)
 pkg_check_modules(yaml_cpp yaml-cpp REQUIRED)
 if(${yaml_cpp_VERSION} VERSION_LESS "0.5.0")
-## indigo yaml-cpp : 0.5.0 /  hydro yaml-cpp : 0.3.0 
+## indigo yaml-cpp : 0.5.0 /  hydro yaml-cpp : 0.3.0
   add_definitions("-DUSE_OLD_YAML")
 endif()
 
@@ -163,6 +167,7 @@ install(TARGETS
   marker_6dof
   world2yaml
   bounding_box_marker
+  polygon_marker
   interactive_point_cloud
   pointcloud_cropper
   transformable_server_sample
