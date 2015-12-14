@@ -123,7 +123,7 @@ namespace jsk_rviz_plugins
   void TorusArrayDisplay::reset()
   {
     MFDClass::reset();
-    shapes_.clear();
+    allocateShapes(0);
   }
 
   void TorusArrayDisplay::allocateShapes(int num)
@@ -151,6 +151,8 @@ namespace jsk_rviz_plugins
       for (size_t i = num; i < arrow_objects_.size(); i++) {
         arrow_nodes_[i]->setVisible(false);
       }
+      arrow_objects_.resize(num);
+      arrow_nodes_.resize(num);
     }
   }
 
