@@ -7,7 +7,7 @@ one polygon out of multiple polygons represented in [`jsk_recognition_msgs/Polyg
 ![](images/polygon_marker.png)
 
 ## Subscribing Topics
-* `~polygon_marker` (`jsk_recognition_msgs/PolygonArray`)
+* `~polygon_array` (`jsk_recognition_msgs/PolygonArray`)
 
   Input polygons
 
