@@ -337,7 +337,7 @@ void UrdfModelMarker::resetRobotBase(){
     tf::StampedTransform transform;
     geometry_msgs::TransformStamped ts_msg;
     tfl_.lookupTransform(frame_id_, model->getRoot()->name,
-			 ros::Time(0), transform);
+                         ros::Time(0), transform);
     tf::transformStampedTFToMsg(transform, ts_msg);
 
     root_pose_ = Transform2Pose(ts_msg.transform);
@@ -477,30 +477,30 @@ void UrdfModelMarker::hideMarkerCB( const visualization_msgs::InteractiveMarkerF
 void UrdfModelMarker::hideAllMarkerCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
   map<string, linkProperty>::iterator it = linkMarkerMap.begin();
   while( it != linkMarkerMap.end() )
-    {
-      (*it).second.displayMoveMarker = false;
-      ++it;
-    }
+  {
+    (*it).second.displayMoveMarker = false;
+    ++it;
+  }
   addChildLinkNames(model->getRoot(), true, false);
 }
 
 void UrdfModelMarker::hideModelMarkerCB( const std_msgs::EmptyConstPtr &msg){
   map<string, linkProperty>::iterator it = linkMarkerMap.begin();
   while( it != linkMarkerMap.end() )
-    {
-      (*it).second.displayModelMarker = false;
-      ++it;
-    }
+  {
+    (*it).second.displayModelMarker = false;
+    ++it;
+  }
   addChildLinkNames(model->getRoot(), true, false);
 }
 
 void UrdfModelMarker::showModelMarkerCB( const std_msgs::EmptyConstPtr &msg){
   map<string, linkProperty>::iterator it = linkMarkerMap.begin();
   while( it != linkMarkerMap.end() )
-    {
-      (*it).second.displayModelMarker = true;
-      ++it;
-    }
+  {
+    (*it).second.displayModelMarker = true;
+    ++it;
+  }
   addChildLinkNames(model->getRoot(), true, false);
 
 }
@@ -568,7 +568,7 @@ visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerCont
 }
 
 visualization_msgs::InteractiveMarkerControl UrdfModelMarker::makeMeshMarkerControl(const std::string &mesh_resource,
-										    const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale, const std_msgs::ColorRGBA &color)
+                                                                                    const geometry_msgs::PoseStamped &stamped, geometry_msgs::Vector3 scale, const std_msgs::ColorRGBA &color)
 {
   return makeMeshMarkerControl(mesh_resource, stamped, scale, color, true);
 }
@@ -655,83 +655,83 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link)
     switch(parent_joint->type){
     case Joint::REVOLUTE:
     case Joint::CONTINUOUS:
-      {
-	linkProperty *link_property = &linkMarkerMap[link_frame_name_];
-	tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
-	tf::poseMsgToKDL (link_property->pose, presentFrame);
-	rot = initialFrame.M.Inverse() * presentFrame.M;
-	jointAngle = rot.GetRotAngle(rotVec);
-	jointVec = KDL::Vector(link_property->joint_axis.x,
-			       link_property->joint_axis.y,
-			       link_property->joint_axis.z);
-	if( KDL::dot(rotVec,jointVec) < 0){
-	  jointAngle = - jointAngle;
-	}
-	if(link_property->joint_angle > M_PI/2 && jointAngle < -M_PI/2){
-	  link_property->rotation_count += 1;
-	}else if(link_property->joint_angle < -M_PI/2 && jointAngle > M_PI/2){
-	  link_property->rotation_count -= 1;
-	}
-	link_property->joint_angle = jointAngle;
-	jointAngleAllRange = jointAngle + link_property->rotation_count * M_PI * 2;
-
-	if(parent_joint->type == Joint::REVOLUTE && parent_joint->limits != NULL){
-	  bool changeMarkerAngle = false;
-	  if(jointAngleAllRange < parent_joint->limits->lower){
-	    jointAngleAllRange = parent_joint->limits->lower + 0.001;
-	    changeMarkerAngle = true;
-	  }
-	  if(jointAngleAllRange > parent_joint->limits->upper){
-	    jointAngleAllRange = parent_joint->limits->upper - 0.001;
-	    changeMarkerAngle = true;
-	  }
-
-	  if(changeMarkerAngle){
-	    setJointAngle(link, jointAngleAllRange);
-	  }
-	}
-
-	joint_state_.position.push_back(jointAngleAllRange);
-	joint_state_.name.push_back(parent_joint->name);
-	break;
+    {
+      linkProperty *link_property = &linkMarkerMap[link_frame_name_];
+      tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
+      tf::poseMsgToKDL (link_property->pose, presentFrame);
+      rot = initialFrame.M.Inverse() * presentFrame.M;
+      jointAngle = rot.GetRotAngle(rotVec);
+      jointVec = KDL::Vector(link_property->joint_axis.x,
+                             link_property->joint_axis.y,
+                             link_property->joint_axis.z);
+      if( KDL::dot(rotVec,jointVec) < 0){
+        jointAngle = - jointAngle;
       }
+      if(link_property->joint_angle > M_PI/2 && jointAngle < -M_PI/2){
+        link_property->rotation_count += 1;
+      }else if(link_property->joint_angle < -M_PI/2 && jointAngle > M_PI/2){
+        link_property->rotation_count -= 1;
+      }
+      link_property->joint_angle = jointAngle;
+      jointAngleAllRange = jointAngle + link_property->rotation_count * M_PI * 2;
+
+      if(parent_joint->type == Joint::REVOLUTE && parent_joint->limits != NULL){
+        bool changeMarkerAngle = false;
+        if(jointAngleAllRange < parent_joint->limits->lower){
+          jointAngleAllRange = parent_joint->limits->lower + 0.001;
+          changeMarkerAngle = true;
+        }
+        if(jointAngleAllRange > parent_joint->limits->upper){
+          jointAngleAllRange = parent_joint->limits->upper - 0.001;
+          changeMarkerAngle = true;
+        }
+
+        if(changeMarkerAngle){
+          setJointAngle(link, jointAngleAllRange);
+        }
+      }
+
+      joint_state_.position.push_back(jointAngleAllRange);
+      joint_state_.name.push_back(parent_joint->name);
+      break;
+    }
     case Joint::PRISMATIC:
-      {
-	KDL::Vector pos;
-	linkProperty *link_property = &linkMarkerMap[link_frame_name_];
-	tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
-	tf::poseMsgToKDL (link_property->pose, presentFrame);
+    {
+      KDL::Vector pos;
+      linkProperty *link_property = &linkMarkerMap[link_frame_name_];
+      tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
+      tf::poseMsgToKDL (link_property->pose, presentFrame);
 
-	pos = presentFrame.p - initialFrame.p;
+      pos = presentFrame.p - initialFrame.p;
 
-	jointVec = KDL::Vector(link_property->joint_axis.x,
-			       link_property->joint_axis.y,
-			       link_property->joint_axis.z);
-	jointVec = jointVec / jointVec.Norm(); // normalize vector
-	jointAngle = KDL::dot(jointVec, pos);
+      jointVec = KDL::Vector(link_property->joint_axis.x,
+                             link_property->joint_axis.y,
+                             link_property->joint_axis.z);
+      jointVec = jointVec / jointVec.Norm(); // normalize vector
+      jointAngle = KDL::dot(jointVec, pos);
 
-	link_property->joint_angle = jointAngle;
-	jointAngleAllRange = jointAngle;
+      link_property->joint_angle = jointAngle;
+      jointAngleAllRange = jointAngle;
 
-	if(parent_joint->type == Joint::PRISMATIC && parent_joint->limits != NULL){
-	  bool changeMarkerAngle = false;
-	  if(jointAngleAllRange < parent_joint->limits->lower){
-	    jointAngleAllRange = parent_joint->limits->lower + 0.003;
-	    changeMarkerAngle = true;
-	  }
-	  if(jointAngleAllRange > parent_joint->limits->upper){
-	    jointAngleAllRange = parent_joint->limits->upper - 0.003;
-	    changeMarkerAngle = true;
-	  }
-	  if(changeMarkerAngle){
-	    setJointAngle(link, jointAngleAllRange);
-	  }
-	}
-
-	joint_state_.position.push_back(jointAngleAllRange);
-	joint_state_.name.push_back(parent_joint->name);
-	break;
+      if(parent_joint->type == Joint::PRISMATIC && parent_joint->limits != NULL){
+        bool changeMarkerAngle = false;
+        if(jointAngleAllRange < parent_joint->limits->lower){
+          jointAngleAllRange = parent_joint->limits->lower + 0.003;
+          changeMarkerAngle = true;
+        }
+        if(jointAngleAllRange > parent_joint->limits->upper){
+          jointAngleAllRange = parent_joint->limits->upper - 0.003;
+          changeMarkerAngle = true;
+        }
+        if(changeMarkerAngle){
+          setJointAngle(link, jointAngleAllRange);
+        }
       }
+
+      joint_state_.position.push_back(jointAngleAllRange);
+      joint_state_.name.push_back(parent_joint->name);
+      break;
+    }
     case Joint::FIXED:
       break;
     default:
@@ -767,44 +767,44 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
   switch(parent_joint->type){
   case Joint::REVOLUTE:
   case Joint::CONTINUOUS:
-    {
-      if(joint_angle > M_PI){
-	rotation_count = (int)((joint_angle + M_PI) / (M_PI * 2));
-	joint_angle -= rotation_count * M_PI * 2;
-      }else if(joint_angle < -M_PI){
-	rotation_count = (int)((- joint_angle + M_PI) / (M_PI * 2));
-	joint_angle -= rotation_count * M_PI * 2;
-      }
-      linkProperty *link_property = &linkMarkerMap[link_frame_name_];
-      link_property->joint_angle = joint_angle;
-      link_property->rotation_count = rotation_count;
-
-      tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
-      tf::poseMsgToKDL (link_property->initial_pose, presentFrame);
-      jointVec = KDL::Vector(link_property->joint_axis.x,
-			     link_property->joint_axis.y,
-			     link_property->joint_axis.z);
-
-      presentFrame.M = KDL::Rotation::Rot(jointVec, joint_angle) * initialFrame.M;
-      tf::poseKDLToMsg(presentFrame, link_property->pose);
-
-      break;
+  {
+    if(joint_angle > M_PI){
+      rotation_count = (int)((joint_angle + M_PI) / (M_PI * 2));
+      joint_angle -= rotation_count * M_PI * 2;
+    }else if(joint_angle < -M_PI){
+      rotation_count = (int)((- joint_angle + M_PI) / (M_PI * 2));
+      joint_angle -= rotation_count * M_PI * 2;
     }
+    linkProperty *link_property = &linkMarkerMap[link_frame_name_];
+    link_property->joint_angle = joint_angle;
+    link_property->rotation_count = rotation_count;
+
+    tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
+    tf::poseMsgToKDL (link_property->initial_pose, presentFrame);
+    jointVec = KDL::Vector(link_property->joint_axis.x,
+                           link_property->joint_axis.y,
+                           link_property->joint_axis.z);
+
+    presentFrame.M = KDL::Rotation::Rot(jointVec, joint_angle) * initialFrame.M;
+    tf::poseKDLToMsg(presentFrame, link_property->pose);
+
+    break;
+  }
   case Joint::PRISMATIC:
-    {
-      linkProperty *link_property = &linkMarkerMap[link_frame_name_];
-      link_property->joint_angle = joint_angle;
-      link_property->rotation_count = rotation_count;
-      tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
-      tf::poseMsgToKDL (link_property->initial_pose, presentFrame);
-      jointVec = KDL::Vector(link_property->joint_axis.x,
-			     link_property->joint_axis.y,
-			     link_property->joint_axis.z);
-      jointVec = jointVec / jointVec.Norm(); // normalize vector
-      presentFrame.p = joint_angle * jointVec + initialFrame.p;
-      tf::poseKDLToMsg(presentFrame, link_property->pose);
-      break;
-    }
+  {
+    linkProperty *link_property = &linkMarkerMap[link_frame_name_];
+    link_property->joint_angle = joint_angle;
+    link_property->rotation_count = rotation_count;
+    tf::poseMsgToKDL (link_property->initial_pose, initialFrame);
+    tf::poseMsgToKDL (link_property->initial_pose, presentFrame);
+    jointVec = KDL::Vector(link_property->joint_axis.x,
+                           link_property->joint_axis.y,
+                           link_property->joint_axis.z);
+    jointVec = jointVec / jointVec.Norm(); // normalize vector
+    presentFrame.p = joint_angle * jointVec + initialFrame.p;
+    tf::poseKDLToMsg(presentFrame, link_property->pose);
+    break;
+  }
   default:
     break;
   }
@@ -834,27 +834,27 @@ void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const se
     case Joint::REVOLUTE:
     case Joint::CONTINUOUS:
       for(int i=0; i< js->name.size(); i++){
-	if(js->name[i] == parent_joint->name){
-	  jointAngle = js->position[i];
-	  changeAngle = true;
-	  break;
-	}
+        if(js->name[i] == parent_joint->name){
+          jointAngle = js->position[i];
+          changeAngle = true;
+          break;
+        }
       }
       if(!changeAngle){
-	break;
+        break;
       }
       setJointAngle(link, jointAngle);
       break;
     case Joint::PRISMATIC:
       for(int i=0; i< js->name.size(); i++){
-	if(js->name[i] == parent_joint->name){
-	  jointAngle = js->position[i];
-	  changeAngle = true;
-	  break;
-	}
+        if(js->name[i] == parent_joint->name){
+          jointAngle = js->position[i];
+          changeAngle = true;
+          break;
+        }
       }
       if(!changeAngle){
-	break;
+        break;
       }
       setJointAngle(link, jointAngle);
       break;
@@ -990,20 +990,20 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     }else{
       switch(color_index %3){
       case 0:
-	color.r = (double)0xFF / 0xFF;
-	color.g = (double)0xC3 / 0xFF;
-	color.b = (double)0x00 / 0xFF;
-	break;
+        color.r = (double)0xFF / 0xFF;
+        color.g = (double)0xC3 / 0xFF;
+        color.b = (double)0x00 / 0xFF;
+        break;
       case 1:
-	color.r = (double)0x58 / 0xFF;
-	color.g = (double)0x0E / 0xFF;
-	color.b = (double)0xAD / 0xFF;
-	break;
+        color.r = (double)0x58 / 0xFF;
+        color.g = (double)0x0E / 0xFF;
+        color.b = (double)0xAD / 0xFF;
+        break;
       case 2:
-	color.r = (double)0x0C / 0xFF;
-	color.g = (double)0x5A / 0xFF;
-	color.b = (double)0xA6 / 0xFF;
-	break;
+        color.r = (double)0x0C / 0xFF;
+        color.g = (double)0x5A / 0xFF;
+        color.b = (double)0xA6 / 0xFF;
+        break;
       }
       color.a = 1.0;
     }
@@ -1018,102 +1018,102 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     for(int i=0; i<visual_array.size(); i++){
       boost::shared_ptr<Visual> link_visual = visual_array[i];
       if(link_visual.get() != NULL && link_visual->geometry.get() != NULL){
-	visualization_msgs::InteractiveMarkerControl meshControl;
-	if(link_visual->geometry->type == Geometry::MESH){
-	  boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link_visual->geometry);
-	  string model_mesh_ = mesh->filename;
-	  if(linkMarkerMap[link_frame_name_].mesh_file == ""){
-	    model_mesh_ = getRosPathFromModelPath(model_mesh_);
-	    linkMarkerMap[link_frame_name_].mesh_file = model_mesh_;
-	  }else{
-	    model_mesh_ = linkMarkerMap[link_frame_name_].mesh_file;
-	  }
-	  ps.pose = UrdfPose2Pose(link_visual->origin);
+        visualization_msgs::InteractiveMarkerControl meshControl;
+        if(link_visual->geometry->type == Geometry::MESH){
+          boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link_visual->geometry);
+          string model_mesh_ = mesh->filename;
+          if(linkMarkerMap[link_frame_name_].mesh_file == ""){
+            model_mesh_ = getRosPathFromModelPath(model_mesh_);
+            linkMarkerMap[link_frame_name_].mesh_file = model_mesh_;
+          }else{
+            model_mesh_ = linkMarkerMap[link_frame_name_].mesh_file;
+          }
+          ps.pose = UrdfPose2Pose(link_visual->origin);
           ROS_DEBUG_STREAM("mesh_file:" << model_mesh_);
-	  geometry_msgs::Vector3 mesh_scale;
-	  mesh_scale.x = mesh->scale.x;
-	  mesh_scale.y = mesh->scale.y;
-	  mesh_scale.z = mesh->scale.z;
+          geometry_msgs::Vector3 mesh_scale;
+          mesh_scale.x = mesh->scale.x;
+          mesh_scale.y = mesh->scale.y;
+          mesh_scale.z = mesh->scale.z;
           JSK_ROS_INFO("make mesh marker from %s", model_mesh_.c_str());
-	  if(use_color){
-	    meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale, color);
-	  }else{
-	    meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale);
-	  }
-	}else if(link_visual->geometry->type == Geometry::CYLINDER){
-	  boost::shared_ptr<const Cylinder> cylinder = boost::static_pointer_cast<const Cylinder>(link_visual->geometry);
-	  ps.pose = UrdfPose2Pose(link_visual->origin);
-	  double length = cylinder->length;
-	  double radius = cylinder->radius;
+          if(use_color){
+            meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale, color);
+          }else{
+            meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale);
+          }
+        }else if(link_visual->geometry->type == Geometry::CYLINDER){
+          boost::shared_ptr<const Cylinder> cylinder = boost::static_pointer_cast<const Cylinder>(link_visual->geometry);
+          ps.pose = UrdfPose2Pose(link_visual->origin);
+          double length = cylinder->length;
+          double radius = cylinder->radius;
           JSK_ROS_INFO_STREAM("cylinder " << link->name << ", length =  " << length << ", radius " << radius );
-	  if(use_color){
-	    meshControl = makeCylinderMarkerControl(ps, length, radius, color, true);
-	  }else{
-	    meshControl = makeCylinderMarkerControl(ps, length, radius, color, true);
-	  }
-	}else if(link_visual->geometry->type == Geometry::BOX){
-	  boost::shared_ptr<const Box> box = boost::static_pointer_cast<const Box>(link_visual->geometry);
-	  ps.pose = UrdfPose2Pose(link_visual->origin);
-	  Vector3 dim = box->dim;
+          if(use_color){
+            meshControl = makeCylinderMarkerControl(ps, length, radius, color, true);
+          }else{
+            meshControl = makeCylinderMarkerControl(ps, length, radius, color, true);
+          }
+        }else if(link_visual->geometry->type == Geometry::BOX){
+          boost::shared_ptr<const Box> box = boost::static_pointer_cast<const Box>(link_visual->geometry);
+          ps.pose = UrdfPose2Pose(link_visual->origin);
+          Vector3 dim = box->dim;
           JSK_ROS_INFO_STREAM("box " << link->name << ", dim =  " << dim.x << ", " << dim.y << ", " << dim.z);
-	  if(use_color){
-	    meshControl = makeBoxMarkerControl(ps, dim, color, true);
-	  }else{
-	    meshControl = makeBoxMarkerControl(ps, dim, color, true);
-	  }
-	}else if(link_visual->geometry->type == Geometry::SPHERE){
-	  boost::shared_ptr<const Sphere> sphere = boost::static_pointer_cast<const Sphere>(link_visual->geometry);
-	  ps.pose = UrdfPose2Pose(link_visual->origin);
-	  double rad = sphere->radius;
-	  if(use_color){
-	    meshControl = makeSphereMarkerControl(ps, rad, color, true);
-	  }else{
-	    meshControl = makeSphereMarkerControl(ps, rad, color, true);
-	  }
-	}
-	int_marker.controls.push_back( meshControl );
+          if(use_color){
+            meshControl = makeBoxMarkerControl(ps, dim, color, true);
+          }else{
+            meshControl = makeBoxMarkerControl(ps, dim, color, true);
+          }
+        }else if(link_visual->geometry->type == Geometry::SPHERE){
+          boost::shared_ptr<const Sphere> sphere = boost::static_pointer_cast<const Sphere>(link_visual->geometry);
+          ps.pose = UrdfPose2Pose(link_visual->origin);
+          double rad = sphere->radius;
+          if(use_color){
+            meshControl = makeSphereMarkerControl(ps, rad, color, true);
+          }else{
+            meshControl = makeSphereMarkerControl(ps, rad, color, true);
+          }
+        }
+        int_marker.controls.push_back( meshControl );
 
-	server_->insert(int_marker);
-	server_->setCallback( int_marker.name,
-			      boost::bind( &UrdfModelMarker::proc_feedback, this, _1, parent_link_frame_name_, link_frame_name_) );
+        server_->insert(int_marker);
+        server_->setCallback( int_marker.name,
+                              boost::bind( &UrdfModelMarker::proc_feedback, this, _1, parent_link_frame_name_, link_frame_name_) );
 
-	model_menu_.apply(*server_, link_frame_name_);
+        model_menu_.apply(*server_, link_frame_name_);
 
       }else{
-	boost::shared_ptr<Joint> parent_joint = link->parent_joint;
-	if(parent_joint != NULL){
-	  if(parent_joint->type==Joint::REVOLUTE || parent_joint->type==Joint::REVOLUTE){
-	    addInvisibleMeshMarkerControl(int_marker, link, color);
-	    server_->insert(int_marker);
-	    server_->setCallback( int_marker.name,
-				  boost::bind( &UrdfModelMarker::proc_feedback, this, _1, parent_link_frame_name_, link_frame_name_) );
-	    model_menu_.apply(*server_, link_frame_name_);
-	  }
-	}
+        boost::shared_ptr<Joint> parent_joint = link->parent_joint;
+        if(parent_joint != NULL){
+          if(parent_joint->type==Joint::REVOLUTE || parent_joint->type==Joint::REVOLUTE){
+            addInvisibleMeshMarkerControl(int_marker, link, color);
+            server_->insert(int_marker);
+            server_->setCallback( int_marker.name,
+                                  boost::bind( &UrdfModelMarker::proc_feedback, this, _1, parent_link_frame_name_, link_frame_name_) );
+            model_menu_.apply(*server_, link_frame_name_);
+          }
+        }
       }
     }
     if(!robot_mode_){
       //add Grasp Point Marker
       if(linkMarkerMap[link_frame_name_].gp.displayGraspPoint){
-	visualization_msgs::InteractiveMarker grasp_int_marker;
-	double grasp_scale_factor = 1.02;
-	string grasp_link_frame_name_ = tf_prefix_ + link->name + "/grasp";
-	string grasp_parent_link_frame_name_ = tf_prefix_ + link->name;
+        visualization_msgs::InteractiveMarker grasp_int_marker;
+        double grasp_scale_factor = 1.02;
+        string grasp_link_frame_name_ = tf_prefix_ + link->name + "/grasp";
+        string grasp_parent_link_frame_name_ = tf_prefix_ + link->name;
 
-	geometry_msgs::PoseStamped grasp_ps;
-	grasp_ps.pose = linkMarkerMap[link_frame_name_].gp.pose;
-	grasp_ps.header.frame_id =  grasp_parent_link_frame_name_;
+        geometry_msgs::PoseStamped grasp_ps;
+        grasp_ps.pose = linkMarkerMap[link_frame_name_].gp.pose;
+        grasp_ps.header.frame_id =  grasp_parent_link_frame_name_;
 
-	grasp_int_marker.header = grasp_ps.header;
-	grasp_int_marker.name = grasp_link_frame_name_;
-	grasp_int_marker.scale = grasp_scale_factor;
-	grasp_int_marker.pose = grasp_ps.pose;
+        grasp_int_marker.header = grasp_ps.header;
+        grasp_int_marker.name = grasp_link_frame_name_;
+        grasp_int_marker.scale = grasp_scale_factor;
+        grasp_int_marker.pose = grasp_ps.pose;
 
-	addGraspPointControl(grasp_int_marker, link_frame_name_);
+        addGraspPointControl(grasp_int_marker, link_frame_name_);
 
-	server_->insert(grasp_int_marker);
-	server_->setCallback( grasp_int_marker.name,
-			      boost::bind( &UrdfModelMarker::graspPoint_feedback, this, _1, link_frame_name_));
+        server_->insert(grasp_int_marker);
+        server_->setCallback( grasp_int_marker.name,
+                              boost::bind( &UrdfModelMarker::graspPoint_feedback, this, _1, link_frame_name_));
 
       }
     }
@@ -1238,55 +1238,55 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
 
   if(mode_ == "registration"){
     model_menu_.insert( "Registration",
-			boost::bind( &UrdfModelMarker::registrationCB, this, _1) );
+                        boost::bind( &UrdfModelMarker::registrationCB, this, _1) );
   }else if(mode_ == "visualization"){
 
   }else if(mode_ == "robot"){
     interactive_markers::MenuHandler::EntryHandle sub_menu_move_;
     sub_menu_move_ = model_menu_.insert( "Move" );
     model_menu_.insert( sub_menu_move_, "Joint",
-			boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
+                        boost::bind( &UrdfModelMarker::jointMoveCB, this, _1) );
     model_menu_.insert( sub_menu_move_, "Base",
-			boost::bind( &UrdfModelMarker::publishMarkerMenu, this, _1, jsk_interactive_marker::MarkerMenu::MOVE) );
+                        boost::bind( &UrdfModelMarker::publishMarkerMenu, this, _1, jsk_interactive_marker::MarkerMenu::MOVE) );
 
     interactive_markers::MenuHandler::EntryHandle sub_menu_reset_;
     sub_menu_reset_ = model_menu_.insert( "Reset Marker Pose" );
     model_menu_.insert( sub_menu_reset_, "Joint",
-			boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
+                        boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
     model_menu_.insert( sub_menu_reset_, "Base",
-			boost::bind( &UrdfModelMarker::resetBaseMarkerCB, this, _1) );
+                        boost::bind( &UrdfModelMarker::resetBaseMarkerCB, this, _1) );
 
 
     interactive_markers::MenuHandler::EntryHandle sub_menu_pose_;
     sub_menu_pose_ = model_menu_.insert( "Special Pose" );
 
     model_menu_.insert( sub_menu_pose_, "Stand Pose",
-			boost::bind( &UrdfModelMarker::publishMarkerMenu, this, _1, 100) );
+                        boost::bind( &UrdfModelMarker::publishMarkerMenu, this, _1, 100) );
 
     model_menu_.insert( sub_menu_pose_, "Manip Pose",
-			boost::bind( &UrdfModelMarker::publishMarkerMenu, this, _1, 101) );
+                        boost::bind( &UrdfModelMarker::publishMarkerMenu, this, _1, 101) );
 
     //model_menu_.insert( "Reset Marker Pose",
     //boost::bind( &UrdfModelMarker::resetMarkerCB, this, _1) );
 
 
     model_menu_.insert( "Hide Marker" ,
-			boost::bind( &UrdfModelMarker::hideMarkerCB, this, _1) );
+                        boost::bind( &UrdfModelMarker::hideMarkerCB, this, _1) );
     model_menu_.insert( "Hide All Marker" ,
-			boost::bind( &UrdfModelMarker::hideAllMarkerCB, this, _1) );
+                        boost::bind( &UrdfModelMarker::hideAllMarkerCB, this, _1) );
 
 
   }else if(mode_ == "model"){
     model_menu_.insert( "Grasp Point",
-			boost::bind( &UrdfModelMarker::graspPointCB, this, _1 ) );
+                        boost::bind( &UrdfModelMarker::graspPointCB, this, _1 ) );
     model_menu_.insert( "Move",
-			boost::bind( &UrdfModelMarker::moveCB, this, _1 ) );
+                        boost::bind( &UrdfModelMarker::moveCB, this, _1 ) );
     model_menu_.insert( "Set as present pose",
-			boost::bind( &UrdfModelMarker::setPoseCB, this, _1 ) );
+                        boost::bind( &UrdfModelMarker::setPoseCB, this, _1 ) );
     model_menu_.insert( "Hide Marker" ,
-			boost::bind( &UrdfModelMarker::hideMarkerCB, this, _1) );
+                        boost::bind( &UrdfModelMarker::hideMarkerCB, this, _1) );
     model_menu_.insert( "Hide All Marker" ,
-			boost::bind( &UrdfModelMarker::hideAllMarkerCB, this, _1) );
+                        boost::bind( &UrdfModelMarker::hideAllMarkerCB, this, _1) );
   }
 
   // get the entire file
@@ -1303,11 +1303,11 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
     try{
       std::fstream xml_file(model_file_.c_str(), std::fstream::in);
       while ( xml_file.good() )
-	{
-	  std::string line;
-	  std::getline( xml_file, line);
-	  xml_string += (line + "\n");
-	}
+      {
+        std::string line;
+        std::getline( xml_file, line);
+        xml_string += (line + "\n");
+      }
       xml_file.close();
       JSK_ROS_INFO_STREAM("finish loading model_file: " << model_file_);
     }catch(...){
@@ -1349,7 +1349,7 @@ bool UrdfModelMarker::lockJointStates(std_srvs::EmptyRequest& req,
 }
 
 bool UrdfModelMarker::unlockJointStates(std_srvs::EmptyRequest& req,
-                                      std_srvs::EmptyRequest& res)
+                                        std_srvs::EmptyRequest& res)
 {
   boost::mutex::scoped_lock lock(joint_states_mutex_);
   is_joint_states_locked_ = false;
@@ -1358,26 +1358,26 @@ bool UrdfModelMarker::unlockJointStates(std_srvs::EmptyRequest& req,
 
 
 void UrdfModelMarker::updateDiagnostic(
-				       diagnostic_updater::DiagnosticStatusWrapper &stat)
+  diagnostic_updater::DiagnosticStatusWrapper &stat)
 {
   boost::mutex::scoped_lock(mutex_);
   stat.summary(diagnostic_msgs::DiagnosticStatus::OK, "UrdfModelMarker running");
   stat.add("Time to set dynamic tf (Avg.)",
-	   dynamic_tf_check_time_acc_.mean());
+           dynamic_tf_check_time_acc_.mean());
   stat.add("Time to set dynamic tf (Max)",
-	   dynamic_tf_check_time_acc_.max());
+           dynamic_tf_check_time_acc_.max());
   stat.add("Time to set dynamic tf (Min)",
-	   dynamic_tf_check_time_acc_.min());
+           dynamic_tf_check_time_acc_.min());
   stat.add("Time to set dynamic tf (Var.)",
-	   dynamic_tf_check_time_acc_.variance());
+           dynamic_tf_check_time_acc_.variance());
 
   stat.add("Time to set joint states (Avg.)",
-	   reset_joint_states_check_time_acc_.mean());
+           reset_joint_states_check_time_acc_.mean());
   stat.add("Time to set joint states (Max)",
-	   reset_joint_states_check_time_acc_.max());
+           reset_joint_states_check_time_acc_.max());
   stat.add("Time to set joint states (Min)",
-	   reset_joint_states_check_time_acc_.min());
+           reset_joint_states_check_time_acc_.min());
   stat.add("Time to set joint states (Var.)",
-	   reset_joint_states_check_time_acc_.variance());
+           reset_joint_states_check_time_acc_.variance());
 
 }
