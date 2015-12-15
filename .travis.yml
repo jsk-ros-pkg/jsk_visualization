@@ -11,7 +11,7 @@ notifications:
     on_failure: always
   slack: jsk-robotics:Av7tc8wj3IWkLYvlTzHE7x2g
 env:
-  - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=true export ROS_PARALLEL_JOBS="-j1 -l1"
+  - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false export ROS_PARALLEL_JOBS="-j8" USE_JENKINS="true"
   - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true export ROS_PARALLEL_JOBS="-j8"
 script:
   - source .travis/travis.sh
