@@ -37,6 +37,9 @@ And you can choose font, this text is now rendered by '%s'
 You can specify background color and foreground color separatelly.
 
 Of course, the text is not needed to be fixed, see the counter: %d.
+
+You can change text color like <span style="color: red;">this</span>
+by using <span style="font-style: italic;">css</style>.
   """ % (rate, text.font, counter)
   text.fg_color = ColorRGBA(25 / 255.0, 1.0, 240.0 / 255.0, 1.0)
   text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.2)
