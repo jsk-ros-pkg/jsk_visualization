@@ -39,6 +39,9 @@
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreHardwarePixelBuffer.h>
 #include <QPainter>
+#include <QStaticText>
+#include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 
 namespace jsk_rviz_plugins
 {
@@ -224,10 +227,17 @@ namespace jsk_rviz_plugins
         painter.setFont(font);
       }
       if (text_.length() > 0) {
-        //painter.drawText(0, 0, w, h, Qt::TextWordWrap | Qt::AlignLeft,
-        painter.drawText(0, 0, w, h,
-                         Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
-                         text_.c_str());
+        // painter.drawText(0, 0, w, h,
+        //                  Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
+        //                  text_.c_str());
+        std::string color_wrapped_text
+          = (boost::format("<span style=\"color: rgba(%2%, %3%, %4%, %5%)\">%1%</span>")
+             % text_ % fg_color_.red() % fg_color_.green() % fg_color_.blue() %
+             fg_color_.alpha()).str();
+        QStaticText static_text(
+          boost::algorithm::replace_all_copy(color_wrapped_text, "\n", "<br >").c_str());
+        static_text.setTextWidth(w);
+        painter.drawStaticText(0, 0, static_text);
       }
       painter.end();
     }
