@@ -10,6 +10,7 @@
 #include <kdl/frames_io.hpp>
 #include <tf_conversions/tf_kdl.h>
 #include <jsk_topic_tools/log_utils.h>
+#include <boost/filesystem.hpp>
 
 using namespace urdf;
 using namespace std;
@@ -1327,15 +1328,20 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
     model_file_ = getFilePathFromRosPath(model_file_);
     model_file_ = getFullPathFromModelPath(model_file_);
     try {
-      std::fstream xml_file(model_file_.c_str(), std::fstream::in);
-      while (xml_file.good())
-      {
-        std::string line;
-        std::getline(xml_file, line);
-        xml_string += (line + "\n");
+      if (!boost::filesystem::exists(model_file_.c_str())) {
+        JSK_ROS_ERROR("%s does not exists", model_file_.c_str());
       }
-      xml_file.close();
-      JSK_ROS_INFO_STREAM("finish loading model_file: " << model_file_);
+      else {
+        std::fstream xml_file(model_file_.c_str(), std::fstream::in);
+        while (xml_file.good())
+        {
+          std::string line;
+          std::getline(xml_file, line);
+          xml_string += (line + "\n");
+        }
+        xml_file.close();
+        JSK_ROS_INFO_STREAM("finish loading model_file: " << model_file_);
+      }
     }
     catch (...) {
       JSK_ROS_ERROR("model or mesh not found: %s", model_file_.c_str());
