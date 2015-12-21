@@ -64,7 +64,7 @@ namespace jsk_rviz_plugins
       "line width of the edges",
       this, SLOT(updateLineWidth()));
     show_coords_property_ = new rviz::BoolProperty(
-      "show coords", true,
+      "show coords", false,
       "show coordinate of bounding box",
       this, SLOT(updateShowCoords()));
   }

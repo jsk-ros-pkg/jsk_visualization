@@ -123,12 +123,12 @@ namespace jsk_rviz_plugins
   void TorusArrayDisplay::reset()
   {
     MFDClass::reset();
-    shapes_.clear();
+    allocateShapes(0);
   }
-
-  void TorusArrayDisplay::allocateShapes(int num)
+  
+  void TorusArrayDisplay::allocateShapes(const size_t num) 
   {
-    if (num > shapes_.size()) {
+     if (num > shapes_.size()) {
       for (size_t i = shapes_.size(); i < num; i++) {
         ShapePtr shape (new rviz::MeshShape(context_->getSceneManager()));
         shapes_.push_back(shape);
@@ -151,7 +151,20 @@ namespace jsk_rviz_plugins
       for (size_t i = num; i < arrow_objects_.size(); i++) {
         arrow_nodes_[i]->setVisible(false);
       }
+      arrow_objects_.resize(num);
+      arrow_nodes_.resize(num);
     }
+  }
+
+  void TorusArrayDisplay::allocateShapes(const jsk_recognition_msgs::TorusArray::ConstPtr& msg)
+  {
+    size_t num = 0;
+    for (size_t i = 0; i < msg->toruses.size(); i++) {
+      if (!msg->toruses[i].failure) {
+        ++num;
+      }
+    }
+    allocateShapes(num);
   }
 
   void
@@ -238,9 +251,12 @@ namespace jsk_rviz_plugins
 
   void TorusArrayDisplay::processMessage(const jsk_recognition_msgs::TorusArray::ConstPtr& msg)
   {
-    allocateShapes(msg->toruses.size());
+    allocateShapes(msg);
     for (size_t i = 0; i < msg->toruses.size(); i++) {
       jsk_recognition_msgs::Torus torus = msg->toruses[i];
+      if (torus.failure) {
+        continue;
+      }
       ShapePtr shape = shapes_[i];
 
       Ogre::Vector3 position;
