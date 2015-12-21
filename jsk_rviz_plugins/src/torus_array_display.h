@@ -66,6 +66,7 @@ namespace jsk_rviz_plugins
     virtual void onInitialize();
     virtual void reset();
     void allocateShapes(const jsk_recognition_msgs::TorusArray::ConstPtr& msg);
+    void allocateShapes(const size_t num);
     QColor getColor(size_t index);
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;

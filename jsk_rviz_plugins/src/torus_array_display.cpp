@@ -125,17 +125,10 @@ namespace jsk_rviz_plugins
     MFDClass::reset();
     allocateShapes(0);
   }
-
-  void TorusArrayDisplay::allocateShapes(const jsk_recognition_msgs::TorusArray::ConstPtr& msg)
+  
+  void TorusArrayDisplay::allocateShapes(const size_t num) 
   {
-    size_t num = 0;
-    for (size_t i = 0; i < msg->toruses.size(); i++) {
-      if (!msg->toruses[i].failure) {
-        ++num;
-      }
-    }
-    
-    if (num > shapes_.size()) {
+     if (num > shapes_.size()) {
       for (size_t i = shapes_.size(); i < num; i++) {
         ShapePtr shape (new rviz::MeshShape(context_->getSceneManager()));
         shapes_.push_back(shape);
@@ -161,6 +154,17 @@ namespace jsk_rviz_plugins
       arrow_objects_.resize(num);
       arrow_nodes_.resize(num);
     }
+  }
+
+  void TorusArrayDisplay::allocateShapes(const jsk_recognition_msgs::TorusArray::ConstPtr& msg)
+  {
+    size_t num = 0;
+    for (size_t i = 0; i < msg->toruses.size(); i++) {
+      if (!msg->toruses[i].failure) {
+        ++num;
+      }
+    }
+    allocateShapes(num);
   }
 
   void
