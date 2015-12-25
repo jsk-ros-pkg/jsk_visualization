@@ -18,6 +18,7 @@ endif()
 
 
 find_package(catkin REQUIRED COMPONENTS
+  message_generation
   cmake_modules jsk_pcl_ros jsk_footstep_msgs geometry_msgs visualization_msgs
   dynamic_reconfigure jsk_rviz_plugins
   interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions
@@ -134,7 +135,7 @@ generate_messages(
 
 catkin_package(
     DEPENDS TinyXML
-    CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib jsk_rviz_plugins jsk_recognition_msgs
+    CATKIN_DEPENDS  geometry_msgs jsk_footstep_msgs tf_conversions actionlib jsk_rviz_plugins jsk_recognition_msgs message_runtime
     INCLUDE_DIRS include # TODO include
     LIBRARIES jsk_interactive_marker # TODO
 )
