@@ -31,8 +31,10 @@ add_service_files(FILES
   RequestMarkerOperate.srv EusCommand.srv
   Screenshot.srv
   )
+catkin_python_setup()
 generate_dynamic_reconfigure_options(
-  cfg/ContactStateMarker.cfg)
+  cfg/ContactStateMarker.cfg
+  cfg/OverlayTextInterface.cfg)
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 catkin_package(
