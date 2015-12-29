@@ -19,7 +19,7 @@ from cStringIO import StringIO
 import cv2
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
-from jsk_recognition_msgs.msg import PlotData
+from jsk_recognition_msgs.msg import PlotData, PlotDataArray
 import numpy as np
 from sklearn import linear_model, datasets
 import os, sys
@@ -53,8 +53,16 @@ class ROSData(_ROSData):
         except TypeError:
             self.error = RosPlotException("[%s] value was not numeric: %s" % (self.name, val))
 
+def add_list(xss):
+    """
+    xss = [[0, 1, 2, ...], [0, 1, 2, ...], ...]
+    """
+    ret = []
+    for xs in xss:
+        ret.extend(xs)
+    return ret
 
-
+    
 class Plot2D(Plugin):
     def __init__(self, context):
         super(Plot2D, self).__init__(context)
@@ -88,7 +96,7 @@ class Plot2D(Plugin):
         group.add_argument('--no-legend', action="store_true")
         group.add_argument('--sort-x', action="store_true")
 class Plot2DWidget(QWidget):
-    _redraw_interval = 40
+    _redraw_interval = 10
     def __init__(self, topics):
         super(Plot2DWidget, self).__init__()
         self.setObjectName('Plot2DWidget')
@@ -124,15 +132,16 @@ class Plot2DWidget(QWidget):
         self.subscribe_topic(topic_name)
     @Slot()
     def on_topic_edit_returnPressed(self):
+        "callback function when form is entered"
         if self.subscribe_topic_button.isEnabled():
             self.subscribe_topic(str(self.topic_edit.text()))
     @Slot()
     def on_subscribe_topic_button_clicked(self):
         self.subscribe_topic(str(self.topic_edit.text()))
-
     def subscribe_topic(self, topic_name):
+        rospy.loginfo("subscribe topic")
         self.topic_with_field_name = topic_name
-        self.pub_image = rospy.Publisher(topic_name + "/histogram_image", Image)
+        self.pub_image = rospy.Publisher(topic_name + "/plot_image", Image)
         if not self._rosdata:
             self._rosdata = ROSData(topic_name, self._start_time)
         else:
@@ -155,51 +164,71 @@ class Plot2DWidget(QWidget):
     @Slot(bool)
     def on_pause_button_clicked(self, checked):
         self.enable_timer(not checked)
-    
-    def update_plot(self):
-        if not self._rosdata:
-            return
-        data_x, data_y = self._rosdata.next()
-
-        if len(data_y) == 0:
-            return
-        axes = self.data_plot._canvas.axes
-        axes.cla()
-        # matplotlib
-        # concatenate x and y in order to sort
-        concatenated_data = zip(data_y[-1].xs, data_y[-1].ys)
+    def plot_one(self, msg, axes):
+        concatenated_data = zip(msg.xs, msg.ys)
         if self.sort_x:
             concatenated_data.sort(key=lambda x: x[0])
         xs = [d[0] for d in concatenated_data]
         ys = [d[1] for d in concatenated_data]
-        if self.is_line:
-            axes.plot(xs, ys, label=self.topic_with_field_name)
+        if self.is_line or msg.type is PlotData.LINE:
+            axes.plot(xs, ys,
+                      label=msg.label or self.topic_with_field_name)
         else:
-            axes.scatter(xs, ys)
-        # set limit
-        axes.set_xlim(min(xs), max(xs))
-        axes.set_ylim(min(ys), max(ys))
-        # line fitting
-        if self.fit_line:
-            X = np.array(data_y[-1].xs)
-            Y = np.array(data_y[-1].ys)
+            axes.scatter(xs, ys,
+                         label=msg.label or self.topic_with_field_name)
+        if msg.fit_line or self.fit_line:
+            X = np.array(msg.xs)
+            Y = np.array(msg.ys)
             A = np.array([X,np.ones(len(X))])
             A = A.T
             a,b = np.linalg.lstsq(A,Y)[0]
             axes.plot(X,(a*X+b),"g--", label="{0} x + {1}".format(a, b))
-        if self.fit_line_ransac:
-            model_ransac = linear_model.RANSACRegressor(linear_model.LinearRegression(), min_samples=2,
-                                                        residual_threshold=self.fit_line_ransac_outlier)
-            X = np.array(data_y[-1].xs).reshape((len(data_y[-1].xs), 1))
-            Y = np.array(data_y[-1].ys)
+        if msg.fit_line_ransac or self.fit_line_ransac:
+            model_ransac = linear_model.RANSACRegressor(
+                linear_model.LinearRegression(), min_samples=2,
+                residual_threshold=self.fit_line_ransac_outlier)
+            X = np.array(msg.xs).reshape((len(msg.xs), 1))
+            Y = np.array(msg.ys)
             model_ransac.fit(X, Y)
             line_X = X
             line_y_ransac = model_ransac.predict(line_X)
             axes.plot(line_X, line_y_ransac, "r--",
                       label="{0} x + {1}".format(model_ransac.estimator_.coef_[0][0],
                                                  model_ransac.estimator_.intercept_[0]))
+
+    def update_plot(self):
+        if not self._rosdata:
+            return
+        try:
+            data_x, data_y = self._rosdata.next()
+        except RosPlotException, e:
+            rospy.logerr("Exception in subscribing topic")
+            rospy.logerr(e.message)
+            return
+        if len(data_y) == 0:
+            return
+        axes = self.data_plot._canvas.axes
+        axes.cla()
+        # matplotlib
+        # concatenate x and y in order to sort
+        latest_msg = data_y[-1]
+        if isinstance(latest_msg, PlotData):
+            data = [latest_msg]
+            legend_size = 8
+        elif isinstance(latest_msg, PlotDataArray):
+            data = latest_msg.data
+            legend_size = latest_msg.legend_font_size or 8
+        else:
+            rospy.logerr("Topic should be jsk_recognition_msgs/PlotData or jsk_recognition_msgs/PlotDataArray")
+        for d in data:
+            self.plot_one(d, axes)
+        xs = add_list([d.xs for d in data])
+        ys = add_list([d.ys for d in data])
+        axes.set_xlim(min(xs), max(xs))
+        axes.set_ylim(min(ys), max(ys))
+        # line fitting
         if not self.no_legend:
-            axes.legend(prop={'size': '8'})
+            axes.legend(prop={'size': legend_size})
         axes.grid()
         if self.xtitle:
             axes.set_xlabel(self.xtitle)
