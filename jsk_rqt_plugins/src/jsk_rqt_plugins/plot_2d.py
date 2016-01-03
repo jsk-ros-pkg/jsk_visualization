@@ -212,22 +212,42 @@ class Plot2DWidget(QWidget):
         # matplotlib
         # concatenate x and y in order to sort
         latest_msg = data_y[-1]
+        min_x = None
+        max_x = None
+        min_y = None
+        max_y = None
         if isinstance(latest_msg, PlotData):
             data = [latest_msg]
             legend_size = 8
+            no_legend = False
         elif isinstance(latest_msg, PlotDataArray):
             data = latest_msg.data
             legend_size = latest_msg.legend_font_size or 8
+            no_legend = latest_msg.no_legend
+            if latest_msg.min_x != latest_msg.max_x:
+                min_x = latest_msg.min_x
+                max_x = latest_msg.max_x
+            if latest_msg.min_y != latest_msg.max_y:
+                min_y = latest_msg.min_y
+                max_y = latest_msg.max_y
         else:
             rospy.logerr("Topic should be jsk_recognition_msgs/PlotData or jsk_recognition_msgs/PlotDataArray")
         for d in data:
             self.plot_one(d, axes)
         xs = add_list([d.xs for d in data])
         ys = add_list([d.ys for d in data])
-        axes.set_xlim(min(xs), max(xs))
-        axes.set_ylim(min(ys), max(ys))
+        if min_x is None:
+            min_x = min(xs)
+        if max_x is None:
+            max_x = max(xs)
+        if min_y is None:
+            min_y = min(ys)
+        if max_y is None:
+            max_y = max(ys)
+        axes.set_xlim(min_x, max_x)
+        axes.set_ylim(min_y, max_y)
         # line fitting
-        if not self.no_legend:
+        if not no_legend and not self.no_legend:
             axes.legend(prop={'size': legend_size})
         axes.grid()
         if self.xtitle:
