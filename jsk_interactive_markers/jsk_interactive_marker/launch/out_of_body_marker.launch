@@ -2,10 +2,15 @@
   <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="true" />
   <arg name="default_frame_id" default="odom_on_ground" />
   <arg name="robot_marker_frame_id" default="robot_marker_root" />
+  <arg name="use_default_robot_model_config" default="true" />
+  <arg name="robot_model_config" default="$(find jsk_interactive_marker)/config/biped_urdf_model_marker.yaml" />
+  <arg name="ROBOT_DESCRIPTION" default="/robot_description" />
 
   <!-- robot marker using /robot_description -->
   <node pkg="jsk_interactive_marker" type="urdf_model_marker" name="jsk_model_marker_interface" clear_params="true">
-    <rosparam param="model_config" subst_value="true">
+    <remap from="/robot_description" to="$(arg ROBOT_DESCRIPTION)" />
+    <param name="use_dynamic_tf" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
+    <rosparam param="model_config" subst_value="true" if="$(arg use_default_robot_model_config)">
       - name: "robot"
         frame-id: "$(arg robot_marker_frame_id)"
         robot: false
@@ -16,7 +21,7 @@
           - lleg_end_coords
           - rleg_end_coords
     </rosparam>
-    <param name="use_dynamic_tf" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
+    <rosparam command="load" param="model_config" file="$(arg robot_model_config)" unless="$(arg use_default_robot_model_config)"/>
   </node>
 
   <!-- control marker to move robot marker -->

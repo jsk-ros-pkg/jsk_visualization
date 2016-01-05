@@ -1,0 +1,9 @@
+- name: "robot"
+  frame-id: robot_marker_root
+  robot: false
+  mode: "visualization"
+  use_robot_description: true
+  scale: 1.0
+  fixed_link:
+    - lleg_end_coords
+    - rleg_end_coords
