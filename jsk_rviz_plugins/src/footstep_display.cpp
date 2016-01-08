@@ -226,11 +226,17 @@ namespace jsk_rviz_plugins
         shape->setColor(color.r, color.g, color.b, alpha_);
       }
       else {
-        if (footstep.leg == jsk_footstep_msgs::Footstep::LEFT) {
+        if (footstep.leg == jsk_footstep_msgs::Footstep::LLEG) {
           shape->setColor(0, 1, 0, alpha_);
         }
-        else if (footstep.leg == jsk_footstep_msgs::Footstep::RIGHT) {
+        else if (footstep.leg == jsk_footstep_msgs::Footstep::RLEG) {
           shape->setColor(1, 0, 0, alpha_);
+        }
+        else if (footstep.leg == jsk_footstep_msgs::Footstep::LARM) {
+          shape->setColor(0, 1, 1, alpha_);
+        }
+        else if (footstep.leg == jsk_footstep_msgs::Footstep::RARM) {
+          shape->setColor(1, 0, 1, alpha_);
         }
         else {
           shape->setColor(1, 1, 1, alpha_);
@@ -320,11 +326,17 @@ namespace jsk_rviz_plugins
       }
       shape->setScale(scale);      
       // update the size of text
-      if (footstep.leg == jsk_footstep_msgs::Footstep::LEFT) {
-        text->setCaption("L");
+      if (footstep.leg == jsk_footstep_msgs::Footstep::LLEG) {
+        text->setCaption("LLEG");
       }
-      else if (footstep.leg == jsk_footstep_msgs::Footstep::RIGHT) {
-        text->setCaption("R");
+      else if (footstep.leg == jsk_footstep_msgs::Footstep::RLEG) {
+        text->setCaption("RLEG");
+      }
+      else if (footstep.leg == jsk_footstep_msgs::Footstep::LARM) {
+        text->setCaption("LARM");
+      }
+      else if (footstep.leg == jsk_footstep_msgs::Footstep::RARM) {
+        text->setCaption("RARM");
       }
       else {
         text->setCaption("unknown");
