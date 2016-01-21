@@ -1,0 +1,4 @@
+<launch>
+  <arg name="id" default="2"/>
+  <param name="human_description" command="$(find xacro)/xacro.py $(find jsk_rviz_plugins)/urdf/human$(arg id).urdf.xacro" />
+</launch>
