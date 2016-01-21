@@ -19,6 +19,7 @@
 
 //#include <object_manipulator/tools/mechanism_interface.h>
 #include "jsk_interactive_marker/InteractivePointCloudConfig.h"
+#include <jsk_interactive_marker/parent_and_child_interactive_marker_server.h>
 #include <dynamic_reconfigure/server.h>
 
 #include <message_filters/subscriber.h>
@@ -97,7 +98,7 @@ private:
   boost::shared_ptr<message_filters::Synchronizer<SyncPolicy> >sync_;
   boost::shared_ptr<message_filters::Synchronizer<SyncHandlePose> > sync_handle_;
   
-  interactive_markers::InteractiveMarkerServer marker_server_;
+  jsk_interactive_marker::ParentAndChildInteractiveMarkerServer marker_server_;
   interactive_markers::MenuHandler menu_handler_;
 
   sensor_msgs::PointCloud2 msg_cloud_;

@@ -5,6 +5,7 @@
 #include <interactive_markers/interactive_marker_server.h>
 #include <jsk_interactive_marker/transformable_object.h>
 #include <jsk_interactive_marker/yaml_menu_handler.h>
+#include <jsk_interactive_marker/parent_and_child_interactive_marker_server.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <std_srvs/Empty.h>
