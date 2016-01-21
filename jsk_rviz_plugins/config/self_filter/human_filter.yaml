@@ -1,0 +1,37 @@
+min_sensor_dist: .2
+self_see_default_padding: .01
+self_see_default_scale: 1.0
+self_see_links:
+  - name: torso_{human_id}
+    padding: .04
+  - name: head_{human_id}
+    padding: .04
+  - name: neck_{human_id}
+    padding: .04
+
+  - name: right_shoulder_{human_id}
+    padding: .04
+  - name: right_elbow_{human_id}
+    padding: .04
+  - name: right_hand_{human_id}
+    padding: .01
+  - name: right_hip_{human_id}
+    padding: .04
+  - name: right_knee_{human_id}
+    padding: .04
+  - name: right_foot_{human_id}
+    padding: .04
+
+  - name: left_shoulder_{human_id}
+    padding: .04
+  - name: left_elbow_{human_id}
+    padding: .04
+  - name: left_hand_{human_id}
+    padding: .01
+  - name: left_hip_{human_id}
+    padding: .04
+  - name: left_knee_{human_id}
+    padding: .04
+  - name: left_foot_{human_id}
+    padding: .04
+
