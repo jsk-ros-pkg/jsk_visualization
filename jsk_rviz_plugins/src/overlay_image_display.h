@@ -45,6 +45,7 @@
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/bool_property.h>
 
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
@@ -64,6 +65,7 @@ namespace jsk_rviz_plugins
     boost::mutex mutex_;
     OverlayObject::Ptr overlay_;
     rviz::RosTopicProperty* update_topic_property_;
+    rviz::BoolProperty* keep_aspect_ratio_property_;
     rviz::IntProperty* width_property_;
     rviz::IntProperty* height_property_;
     rviz::IntProperty* left_property_;
@@ -76,6 +78,7 @@ namespace jsk_rviz_plugins
     sensor_msgs::Image::ConstPtr msg_;
     bool is_msg_available_;
     bool require_update_;
+    bool keep_aspect_ratio_;
 
     virtual void redraw();
     virtual void onInitialize();
@@ -84,6 +87,7 @@ namespace jsk_rviz_plugins
     virtual void update(float wall_dt, float ros_dt);
     virtual void subscribe();
     virtual void unsubscribe();
+    virtual void setImageSize();
     virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
   protected Q_SLOTS:
     void updateTopic();
@@ -92,6 +96,7 @@ namespace jsk_rviz_plugins
     void updateLeft();
     void updateTop();
     void updateAlpha();
+    void updateKeepAspectRatio();
   };
 
 }
