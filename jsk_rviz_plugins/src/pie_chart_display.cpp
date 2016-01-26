@@ -387,7 +387,23 @@ namespace jsk_rviz_plugins
     max_color_ = max_color_property_->getColor();
   }
 
-  
+  bool PieChartDisplay::isInRegion(int x, int y)
+  {
+    return (top_ < y && top_ + texture_size_ > y &&
+            left_ < x && left_ + texture_size_ > x);
+  }
+
+  void PieChartDisplay::movePosition(int x, int y)
+  {
+    top_ = y;
+    left_ = x;
+  }
+
+  void PieChartDisplay::setPosition(int x, int y)
+  {
+    top_property_->setValue(y);
+    left_property_->setValue(x);
+  }
 }
 
 #include <pluginlib/class_list_macros.h>

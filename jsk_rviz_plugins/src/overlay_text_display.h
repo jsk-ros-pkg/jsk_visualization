@@ -56,6 +56,12 @@ namespace jsk_rviz_plugins
   public:
     OverlayTextDisplay();
     virtual ~OverlayTextDisplay();
+    // methods for OverlayPickerTool
+    virtual bool isInRegion(int x, int y);
+    virtual void movePosition(int x, int y);
+    virtual void setPosition(int x, int y);
+    virtual int getX() { return left_; };
+    virtual int getY() { return top_; };
   protected:
     OverlayObject::Ptr overlay_;
 
