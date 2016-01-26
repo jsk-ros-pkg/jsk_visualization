@@ -312,6 +312,25 @@ namespace jsk_rviz_plugins
     keep_aspect_ratio_ = keep_aspect_ratio_property_->getBool();
     setImageSize();
   }
+
+  bool OverlayImageDisplay::isInRegion(int x, int y)
+  {
+    return (top_ < y && top_ + height_ > y &&
+            left_ < x && left_ + width_ > x);
+  }
+
+  void OverlayImageDisplay::movePosition(int x, int y)
+  {
+    top_ = y;
+    left_ = x;
+  }
+
+  void OverlayImageDisplay::setPosition(int x, int y)
+  {
+    top_property_->setValue(y);
+    left_property_->setValue(x);
+  }
+  
 }
 
 #include <pluginlib/class_list_macros.h>

@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /OverlayText1
         - /sin plot1
         - /pie chart1
         - /OverlayImage1
@@ -86,13 +87,13 @@ Visualization Manager:
       foreground alpha: 0.7
       foreground color: 25; 255; 240
       height: 128
-      left: 620
+      left: 495
       linewidth: 2
       max color: 255; 0; 0
       max value: 1
       min value: -1
       text size: 12
-      top: 128
+      top: 111
       update interval: 0.04
       width: 128
     - Class: jsk_rviz_plugin/PieChart
@@ -145,6 +146,7 @@ Visualization Manager:
     - Class: rviz/PublishPoint
       Single click: true
       Topic: /clicked_point
+    - Class: jsk_rviz_plugin/OverlayPicker
   Value: true
   Views:
     Current:
@@ -182,5 +184,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1457
-  X: 796
-  Y: 428
+  X: 134
+  Y: 24

@@ -449,6 +449,25 @@ namespace jsk_rviz_plugins
       require_update_texture_ = true;
     }
   }
+
+  bool OverlayTextDisplay::isInRegion(int x, int y)
+  {
+    return (top_ < y && top_ + texture_height_ > y &&
+            left_ < x && left_ + texture_width_ > x);
+  }
+
+  void OverlayTextDisplay::movePosition(int x, int y)
+  {
+    top_ = y;
+    left_ = x;
+  }
+
+  void OverlayTextDisplay::setPosition(int x, int y)
+  {
+    top_property_->setValue(y);
+    left_property_->setValue(x);
+  }
+  
 }
 
 #include <pluginlib/class_list_macros.h>

@@ -62,7 +62,18 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   n_->param("yaml_filename", yaml_filename, std::string(""));
   yaml_menu_handler_ptr_ = boost::make_shared <YamlMenuHandler> (n_, yaml_filename);
 
-  server_ = new interactive_markers::InteractiveMarkerServer("simple_marker");
+  bool use_parent_and_child;
+  n_->param("use_parent_and_child", use_parent_and_child, false);
+  if (use_parent_and_child)
+  {
+    ROS_INFO("initialize parent and child marker");
+    server_ = new jsk_interactive_marker::ParentAndChildInteractiveMarkerServer("simple_marker");
+  }
+  else
+  {
+    ROS_INFO("initialize simple marker");
+    server_ = new interactive_markers::InteractiveMarkerServer("simple_marker");
+  }
 }
 
 TransformableInteractiveServer::~TransformableInteractiveServer()
