@@ -59,6 +59,9 @@ namespace jsk_rviz_plugins
       ros::message_traits::datatype<sensor_msgs::Image>(),
       "sensor_msgs::Image topic to subscribe to.",
       this, SLOT( updateTopic() ));
+    keep_aspect_ratio_property_ = new rviz::BoolProperty("keep aspect ratio", false,
+                                                         "keep aspect ratio of original image",
+                                                         this, SLOT(updateKeepAspectRatio()));
     width_property_ = new rviz::IntProperty("width", 128,
                                             "width of the image window",
                                             this, SLOT(updateWidth()));
@@ -79,6 +82,7 @@ namespace jsk_rviz_plugins
   OverlayImageDisplay::~OverlayImageDisplay()
   {
     delete update_topic_property_;
+    delete keep_aspect_ratio_property_;
     delete width_property_;
     delete height_property_;
     delete left_property_;
@@ -93,6 +97,7 @@ namespace jsk_rviz_plugins
     
     updateWidth();
     updateHeight();
+    updateKeepAspectRatio();
     updateTop();
     updateLeft();
     updateAlpha();
@@ -136,7 +141,7 @@ namespace jsk_rviz_plugins
     msg_ = msg;
     is_msg_available_ = true;
     require_update_ = true;
-    if ((width_property_->getInt() < 0) || (height_property_->getInt() < 0)) {
+    if ((width_property_->getInt() < 0) || (height_property_->getInt() < 0) || keep_aspect_ratio_) {
       // automatically setup display size
       updateWidth();
       updateHeight();
@@ -223,51 +228,64 @@ namespace jsk_rviz_plugins
     unsubscribe();
     subscribe();
   }
+
+  void OverlayImageDisplay::setImageSize()
+  {
+    if (width_ == -1) {
+      if (is_msg_available_) {
+        width_ = msg_->width;
+      }
+      else {
+        width_ = 128;
+      }
+    }
+
+    if (height_ == -1) {
+      if (is_msg_available_) {
+        height_ = msg_->height;
+      }
+      else {
+        height_ = 128;
+      }
+    }
+
+    if (keep_aspect_ratio_) {
+      if (is_msg_available_) {
+        double aspect_ratio = msg_->height / (double)msg_->width;
+        int width_from_height = std::ceil(height_ * 1 / aspect_ratio);
+        int height_from_width = std::ceil(width_ * aspect_ratio);
+        if (width_from_height > width_ && height_from_width > height_) {
+          // ??
+          ROS_ERROR("width_from_height: %d, height_from_width: %d", width_from_height, height_from_width);
+          // do nothing
+        }
+        else if (width_from_height > width_) {
+          height_ = height_from_width;
+        }
+        else if (height_from_width > height_) {
+          width_ = width_from_height;
+        }
+        else {
+          width_ = width_from_height;
+          height_ = height_from_width;
+        }
+      }
+    }
+
+  }
   
   void OverlayImageDisplay::updateWidth()
   {
     boost::mutex::scoped_lock lock(mutex_);
-    int input_value = width_property_->getInt();
-    if (input_value >= 0) {
-      width_ = input_value;
-    } else {
-      if (is_msg_available_) {  // will automatically set width
-        if (height_property_->getInt() == -1) {
-          // same size as input image
-          width_ = msg_->width;
-          height_ = msg_->height;
-        } else {
-          // same scale as height
-          float scale = (float)height_ / msg_->height;
-          width_ = (int)(scale * msg_->width);
-        }
-      } else {
-        width_ = 128;
-      }
-    }
+    width_ = width_property_->getInt();
+    setImageSize();
   }
   
   void OverlayImageDisplay::updateHeight()
   {
     boost::mutex::scoped_lock lock(mutex_);
-    int input_value = height_property_->getInt();
-    if (input_value >= 0) {
-      height_ = input_value;
-    } else {
-      if (is_msg_available_) {  // will automatically set height
-        if (width_property_->getInt() == -1) {
-          // same size as input image
-          width_ = msg_->width;
-          height_ = msg_->height;
-        } else {
-          // same scale as width
-          float scale = (float)width_ / msg_->width;
-          height_ = (int)(scale * msg_->height);
-        }
-      } else {
-        height_ = 128;
-      }
-    }
+    height_ = height_property_->getInt();
+    setImageSize();
   }
 
   void OverlayImageDisplay::updateTop()
@@ -286,6 +304,13 @@ namespace jsk_rviz_plugins
   {
     boost::mutex::scoped_lock lock(mutex_);
     alpha_ = alpha_property_->getFloat();
+  }
+
+  void OverlayImageDisplay::updateKeepAspectRatio()
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    keep_aspect_ratio_ = keep_aspect_ratio_property_->getBool();
+    setImageSize();
   }
 
   bool OverlayImageDisplay::isInRegion(int x, int y)
