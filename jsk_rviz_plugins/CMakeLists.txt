@@ -93,6 +93,7 @@ qt4_wrap_cpp(MOC_FILES
   src/camera_info_display.h
   src/close_all_tool.h
   src/open_all_tool.h
+  src/overlay_picker_tool.h
   src/transformable_marker_operator.h
   src/object_fit_operator.h
   src/robot_command_interface.h
@@ -137,6 +138,7 @@ set(SOURCE_FILES
   src/camera_info_display.cpp
   src/close_all_tool.cpp
   src/open_all_tool.cpp
+  src/overlay_picker_tool.cpp
   src/screenshot_listener_tool.cpp
   src/transformable_marker_operator.cpp
   src/object_fit_operator.cpp

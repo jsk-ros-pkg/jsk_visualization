@@ -443,6 +443,25 @@ namespace jsk_rviz_plugins
   {
     stall_duration_ = stall_duration_property_->getFloat();
   }
+
+  bool OverlayDiagnosticDisplay::isInRegion(int x, int y)
+  {
+    return (top_ < y && top_ + size_ > y &&
+            left_ < x && left_ + size_ > x);
+  }
+
+  void OverlayDiagnosticDisplay::movePosition(int x, int y)
+  {
+    top_ = y;
+    left_ = x;
+  }
+
+  void OverlayDiagnosticDisplay::setPosition(int x, int y)
+  {
+    top_property_->setValue(y);
+    left_property_->setValue(x);
+  }
+  
 }
 
 #include <pluginlib/class_list_macros.h>

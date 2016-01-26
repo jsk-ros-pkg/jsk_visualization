@@ -1,0 +1,160 @@
+// -*- mode: c++ -*-
+/*********************************************************************
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2014, JSK Lab
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/o2r other materials provided
+ *     with the distribution.
+ *   * Neither the name of the JSK Lab nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *********************************************************************/
+
+#include <ros/ros.h>
+#include <rviz/tool_manager.h>
+#include <rviz/display_context.h>
+#include <rviz/view_manager.h>
+#include <rviz/display_group.h>
+#include <rviz/display.h>
+#include "overlay_picker_tool.h"
+#include "overlay_text_display.h"
+#include "plotter_2d_display.h"
+#include "pie_chart_display.h"
+#include "overlay_image_display.h"
+#include "overlay_diagnostic_display.h"
+
+namespace jsk_rviz_plugins
+{
+  OverlayPickerTool::OverlayPickerTool()
+    : is_moving_(false), rviz::Tool()
+  {
+
+  }
+
+  int OverlayPickerTool::processMouseEvent(rviz::ViewportMouseEvent& event)
+  {
+    if (event.left() && event.leftDown()) {
+      if (!is_moving_) {
+        onClicked(event);
+      }
+    }
+    else if (event.left() && is_moving_) {
+      onMove(event);
+    }
+    else if (is_moving_ && !(event.left() && event.leftDown())) {
+      onRelease(event);
+    }
+  }
+
+  void OverlayPickerTool::onClicked(rviz::ViewportMouseEvent& event)
+  {
+    ROS_INFO("onClicked");
+    is_moving_ = true;
+    ROS_INFO("clicked: (%d, %d)", event.x, event.y);
+    // check the active overlay plugin
+    rviz::DisplayGroup* display_group = context_->getRootDisplayGroup();
+    ROS_INFO("%d plugins", display_group->numChildren());
+    for (int i = 0; i < display_group->numChildren(); i++) {
+      rviz::Property* property = display_group->childAt(i);
+      std::string property_name = property->getName().toStdString();
+      if (startMovement<OverlayTextDisplay>(property, event, "overlay_text_display")) {
+        return;
+      }
+      else if (startMovement<Plotter2DDisplay>(property, event, "plotter_2d_display")) {
+        return;
+      }
+      else if (startMovement<PieChartDisplay>(property, event, "pie_chart_display")) {
+        return;
+      }
+      else if (startMovement<OverlayImageDisplay>(property, event, "overlay_image_display")) {
+        return;
+      }
+      else if (startMovement<OverlayDiagnosticDisplay>(property, event, "overlay_diagnostic_display")) {
+        return;
+      }
+      else {
+        ROS_INFO("%s is NOT overlay text", property_name.c_str());
+      }
+      ROS_INFO("%d: %s", i, property_name.c_str());
+      
+    }
+    
+  }
+
+  void OverlayPickerTool::onMove(rviz::ViewportMouseEvent& event)
+  {
+    ROS_INFO("onMove");
+    ROS_INFO("moving: (%d, %d)", event.x, event.y);
+    if (target_property_) {
+      if (target_property_type_ == "overlay_text_display") {
+        movePosition<OverlayTextDisplay>(event);
+      }
+      else if (target_property_type_ == "plotter_2d_display") {
+        movePosition<Plotter2DDisplay>(event);
+      }
+      else if (target_property_type_ == "pie_chart_display") {
+        movePosition<PieChartDisplay>(event);
+      }
+      else if (target_property_type_ == "overlay_image_display") {
+        movePosition<OverlayImageDisplay>(event);
+      }
+      else if (target_property_type_ == "overlay_diagnostic_display") {
+        movePosition<OverlayDiagnosticDisplay>(event);
+      }
+    }
+  }
+  
+  void OverlayPickerTool::onRelease(rviz::ViewportMouseEvent& event)
+  {
+    ROS_INFO("onRelease");
+    is_moving_ = false;
+    ROS_INFO("released: (%d, %d)", event.x, event.y);
+    if (target_property_) {
+      if (target_property_type_ == "overlay_text_display") {
+        setPosition<OverlayTextDisplay>(event);
+      }
+      else if (target_property_type_ == "plotter_2d_display") {
+        setPosition<Plotter2DDisplay>(event);
+      }
+      else if (target_property_type_ == "pie_chart_display") {
+        setPosition<PieChartDisplay>(event);
+      }
+      else if (target_property_type_ == "overlay_image_display") {
+        setPosition<OverlayImageDisplay>(event);
+      }
+      else if (target_property_type_ == "overlay_diagnostic_display") {
+        setPosition<OverlayDiagnosticDisplay>(event);
+      }
+    }
+    // clear cache
+    target_property_ = NULL;
+    target_property_type_ = "";
+  }
+  
+}
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayPickerTool, rviz::Tool )
