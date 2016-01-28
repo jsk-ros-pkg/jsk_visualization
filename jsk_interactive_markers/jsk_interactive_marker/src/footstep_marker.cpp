@@ -227,6 +227,7 @@ void FootstepMarker::configCallback(Config& config, uint32_t level)
   use_projection_topic_ = config.use_projection_topic;
   use_projection_service_ = config.use_projection_service;
   use_plane_snap_ = config.use_plane_snap;
+  use_2d_ = config.use_2d;
 }
 
 // a function to read double value from XmlRpcValue.
@@ -781,7 +782,12 @@ void FootstepMarker::initializeInteractiveMarker() {
 
   int_marker.controls.push_back( right_box_control );
   if (show_6dof_control_) {
-    im_helpers::add6DofControl(int_marker, false);
+    if (use_2d_) {
+      im_helpers::add3Dof2DControl(int_marker, false);
+    }
+    else {
+      im_helpers::add6DofControl(int_marker, false);
+    }
   }
   
   server_->insert(int_marker,

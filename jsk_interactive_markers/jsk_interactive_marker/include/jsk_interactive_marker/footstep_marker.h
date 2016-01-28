@@ -153,6 +153,7 @@ protected:
   bool use_initial_reference_;
   bool always_planning_;
   bool lleg_first_;
+  bool use_2d_;
   std::string initial_reference_frame_;
   geometry_msgs::Pose lleg_pose_;
   geometry_msgs::Pose rleg_pose_;
