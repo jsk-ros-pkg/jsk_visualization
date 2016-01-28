@@ -50,9 +50,9 @@ visualization_msgs::InteractiveMarker makeEmptyMarker( const char *frame_id = ""
 visualization_msgs::Marker makeBox( float scale );
 
 visualization_msgs::Marker makeSphere( float scale );
-
+void add3Dof2DControl( visualization_msgs::InteractiveMarker &msg, bool fixed = false);
 void add6DofControl( visualization_msgs::InteractiveMarker &msg, bool fixed = false );
- void addVisible6DofControl( visualization_msgs::InteractiveMarker &msg, bool fixed = false, bool visible = true );
+void addVisible6DofControl( visualization_msgs::InteractiveMarker &msg, bool fixed = false, bool visible = true );
 
 
 visualization_msgs::InteractiveMarkerControl& makeBoxControl( visualization_msgs::InteractiveMarker &msg );
