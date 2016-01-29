@@ -98,6 +98,7 @@ namespace jsk_rviz_plugins
     virtual void onClicked(rviz::ViewportMouseEvent& event);
     virtual void onMove(rviz::ViewportMouseEvent& event);
     virtual void onRelease(rviz::ViewportMouseEvent& event);
+    virtual bool handleDisplayClick(rviz::Property* property, rviz::ViewportMouseEvent& event);
 
     bool is_moving_;
     rviz::Property* target_property_;
