@@ -69,6 +69,38 @@ namespace jsk_rviz_plugins
     }
   }
 
+  bool OverlayPickerTool::handleDisplayClick(rviz::Property* property, rviz::ViewportMouseEvent& event)
+  {
+    if (isPropertyType<rviz::DisplayGroup>(property)) {
+      rviz::DisplayGroup* group_property = isPropertyType<rviz::DisplayGroup>(property);
+      for (int i = 0; i < group_property->numChildren(); i++) {
+        if (handleDisplayClick(group_property->childAt(i), event)) {
+          return true;
+        }
+      }
+    }
+    else {
+      if (startMovement<OverlayTextDisplay>(property, event, "overlay_text_display")) {
+        return true;
+      }
+      else if (startMovement<Plotter2DDisplay>(property, event, "plotter_2d_display")) {
+        return true;
+      }
+      else if (startMovement<PieChartDisplay>(property, event, "pie_chart_display")) {
+        return true;
+      }
+      else if (startMovement<OverlayImageDisplay>(property, event, "overlay_image_display")) {
+        return true;
+      }
+      else if (startMovement<OverlayDiagnosticDisplay>(property, event, "overlay_diagnostic_display")) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    }
+  }
+
   void OverlayPickerTool::onClicked(rviz::ViewportMouseEvent& event)
   {
     ROS_INFO("onClicked");
@@ -76,32 +108,7 @@ namespace jsk_rviz_plugins
     ROS_INFO("clicked: (%d, %d)", event.x, event.y);
     // check the active overlay plugin
     rviz::DisplayGroup* display_group = context_->getRootDisplayGroup();
-    ROS_INFO("%d plugins", display_group->numChildren());
-    for (int i = 0; i < display_group->numChildren(); i++) {
-      rviz::Property* property = display_group->childAt(i);
-      std::string property_name = property->getName().toStdString();
-      if (startMovement<OverlayTextDisplay>(property, event, "overlay_text_display")) {
-        return;
-      }
-      else if (startMovement<Plotter2DDisplay>(property, event, "plotter_2d_display")) {
-        return;
-      }
-      else if (startMovement<PieChartDisplay>(property, event, "pie_chart_display")) {
-        return;
-      }
-      else if (startMovement<OverlayImageDisplay>(property, event, "overlay_image_display")) {
-        return;
-      }
-      else if (startMovement<OverlayDiagnosticDisplay>(property, event, "overlay_diagnostic_display")) {
-        return;
-      }
-      else {
-        ROS_INFO("%s is NOT overlay text", property_name.c_str());
-      }
-      ROS_INFO("%d: %s", i, property_name.c_str());
-      
-    }
-    
+    handleDisplayClick(display_group, event);
   }
 
   void OverlayPickerTool::onMove(rviz::ViewportMouseEvent& event)
