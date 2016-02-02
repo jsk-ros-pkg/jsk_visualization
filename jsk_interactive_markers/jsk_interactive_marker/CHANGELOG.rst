@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.28 (2016-02-03)
+-------------------
 * [jsk_interactive_marker] Utility script and euslisp function to use moveit_msgs/DispalayRobotState
 * [jsk_interactive_marker] Add ~use_2d parameter to remove z-axis translation
   and rotation around x-y axis

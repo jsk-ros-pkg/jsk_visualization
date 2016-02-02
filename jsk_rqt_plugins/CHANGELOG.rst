@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.28 (2016-02-03)
+-------------------
 * Except NavigationToolbar ImportError from matplotlib
   this is caused with upgraded matplotlib.
   reported at: https://github.com/semiautomaticgit/SemiAutomaticClassificationPlugin/issues/2

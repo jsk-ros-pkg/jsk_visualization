@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.28 (2016-02-03)
+-------------------
 * [jsk_rviz_plugins] Fix OverlayPicker for plugins gdouped by DisplayGroup.
 * [jsk_rviz_plugins] Add keep aspect ratio option to OverlayImageDisplay.
   And ass overlay image sample to overlay_sample.launch
