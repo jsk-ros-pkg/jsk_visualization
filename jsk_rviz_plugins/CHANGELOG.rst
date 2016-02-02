@@ -2,6 +2,53 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins] Fix OverlayPicker for plugins gdouped by DisplayGroup.
+* [jsk_rviz_plugins] Add keep aspect ratio option to OverlayImageDisplay.
+  And ass overlay image sample to overlay_sample.launch
+* [jsk_rviz_plugins] Add new tool OverlayPicker to move overlay plugin
+  by mouse dragging
+* [jsk_rviz_plugins] Add script to visualize static OverlayText
+* [jsk_rviz_plugins] Support multiple Float32 in float32_to_overlay_text.py
+* [jsk_rviz_plugins] Utility script to draw float32 as overlay text
+  Added:
+  - jsk_rviz_plugins/scripts/float32_to_overlay_text.py
+* [jsk_rviz_plugins] Add utility python class to publish OverlayText
+  Modified:
+  - jsk_rviz_plugins/CMakeLists.txt
+  Added:
+  - jsk_rviz_plugins/cfg/OverlayTextInterface.cfg
+  - jsk_rviz_plugins/python/jsk_rviz_plugins/__init_\_.py
+  - jsk_rviz_plugins/python/jsk_rviz_plugins/overlay_text_interface.py
+  - jsk_rviz_plugins/setup.py
+* [jsk_rviz_plugins] Add regular expression interface to specify
+  target node in rosconsole_overlay_text.py
+  Modified:
+  - jsk_rviz_plugins/scripts/rosconsole_overlay_text.py
+* [jsk_rviz_plugins] Fix allocateShapes API of TorusArrayDisplay
+  Modified:
+  - jsk_rviz_plugins/src/torus_array_display.cpp
+  - jsk_rviz_plugins/src/torus_array_display.h
+* [jsk_rviz_plugins] Add script to visualize /rosout on rviz
+  Added:
+  - jsk_rviz_plugins/scripts/rosconsole_overlay_text.py
+* Merge remote-tracking branch 'refs/remotes/garaemon/clear-torus-arrow' into many-prs
+* [jsk_rviz_plugins] Support css to change text color and so on in OverlayText display.
+* [jsk_rviz_plugins] A script to take screenshot of rviz when a topic is
+  published: relay_screenshot.py
+  It depends on ScreenshotListener tool of jsk_rviz_plugins.
+  For example, `rosrun jsk_rviz_plugins relay_screenshot.py ~input:=/region_growing_multi_plane_segmentation/output/polygons`
+* [jsk_rviz_plugins] Clear arrow of torus when it is disabled
+  Modified:
+  jsk_rviz_plugins/src/torus_array_display.cpp
+* [jsk_rviz_plugins] Disable `show coords` in default in BoundingBoxDisplay
+  Modified:
+  jsk_rviz_plugins/src/bounding_box_array_display.cpp
+* [jsk_rviz_plugins] Do not visualize failure=true toruses.
+  It requires https://github.com/jsk-ros-pkg/jsk_recognition/pull/1379
+* Contributors: Ryohei Ueda
+
 1.0.27 (2015-12-08)
 -------------------
 * [jsk_rviz_plugins/BoundingBoxArray] Fix coords orientation.

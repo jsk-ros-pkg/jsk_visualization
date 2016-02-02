@@ -2,6 +2,30 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_interactive_marker] Utility script and euslisp function to use moveit_msgs/DispalayRobotState
+* [jsk_interactive_marker] Add ~use_2d parameter to remove z-axis translation
+  and rotation around x-y axis
+  Modified:
+  - jsk_interactive_markers/jsk_interactive_marker/cfg/FootstepMarker.cfg
+  - jsk_interactive_markers/jsk_interactive_marker/include/jsk_interactive_marker/footstep_marker.h
+  - jsk_interactive_markers/jsk_interactive_marker/src/footstep_marker.cpp
+* [jsk_interactive_marker]add parent and child interactive marker
+* [out_of_body_marker.launch] odom_on_ground will be deprecated
+* [jsk_interactive_marker] add some arguments to out_of_body_marker.launch
+* [jsk_interactive_marker] add out_of_body_marker.launch
+* Fix problem of genjava error caused by not listed message_generation
+  Closes `#551 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/551>`_
+  Modified:
+  - jsk_interactive_markers/jsk_interactive_marker/package.xml
+* [jsk_interactive_marker/urdf_model_marker] Check if urdf file exists
+* [jsk_interactive_marker] Fix paren position of urdf_model_marker
+* [jsk_interactive_marker] Untabify urdf_model_marker
+* [jsk_interactive_marker] Add polygon marker to select one polygon
+  out of multiple polygons
+* Contributors: Eisoku Kuroiwa, Kentaro Wada, Ryohei Ueda, Yu Ohara
+
 1.0.27 (2015-12-08)
 -------------------
 * Use ccache to make it faster to generate object file

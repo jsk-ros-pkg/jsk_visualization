@@ -2,6 +2,21 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Except NavigationToolbar ImportError from matplotlib
+  this is caused with upgraded matplotlib.
+  reported at: https://github.com/semiautomaticgit/SemiAutomaticClassificationPlugin/issues/2
+  Modified:
+  - jsk_rqt_plugins/src/jsk_rqt_plugins/hist.py
+  - jsk_rqt_plugins/src/jsk_rqt_plugins/plot.py
+  - jsk_rqt_plugins/src/jsk_rqt_plugins/plot_2d.py
+* [jsk_rqt_plugins] Support min-max fields of PlotDataArray in
+  rqt_2d_plot
+* [jsk_rqt_plugins/plot_2d] Update to support new
+  jsk_recognition_msgs/PlotData fields
+* Contributors: Kentaro Wada, Ryohei Ueda
+
 1.0.27 (2015-12-08)
 -------------------
 * [jsk_rqt_plugins] Avoid already advertised error for rqt_yn_btn
