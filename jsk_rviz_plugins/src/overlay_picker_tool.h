@@ -40,6 +40,7 @@
 #include <rviz/properties/property.h>
 #include <rviz/properties/property_tree_model.h>
 #include <rviz/viewport_mouse_event.h>
+#include <rviz/render_panel.h>
 
 namespace jsk_rviz_plugins
 {
@@ -49,6 +50,7 @@ namespace jsk_rviz_plugins
     OverlayPickerTool();
     virtual void activate() {}
     virtual void deactivate() {};
+    virtual int processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel);
     virtual int processMouseEvent(rviz::ViewportMouseEvent& event);
     template <class T>
     T* isPropertyType(rviz::Property* p)
@@ -83,15 +85,31 @@ namespace jsk_rviz_plugins
     template <class T>
     void movePosition(rviz::ViewportMouseEvent& event)
     {
-      isPropertyType<T>(target_property_)->movePosition(
-        event.x - move_offset_x_, event.y - move_offset_y_);
+      if (shift_pressing_) {
+        int orig_x = event.x - move_offset_x_;
+        int orig_y = event.y - move_offset_y_;
+        isPropertyType<T>(target_property_)->movePosition(
+          20 * (orig_x / 20), 20 * (orig_y / 20));
+      }
+      else {
+        isPropertyType<T>(target_property_)->movePosition(
+          event.x - move_offset_x_, event.y - move_offset_y_);
+      }
     }
 
     template <class T>
     void setPosition(rviz::ViewportMouseEvent& event)
     {
-      isPropertyType<T>(target_property_)->setPosition(
-        event.x - move_offset_x_, event.y - move_offset_y_);
+      if (shift_pressing_) {
+        int orig_x = event.x - move_offset_x_;
+        int orig_y = event.y - move_offset_y_;
+        isPropertyType<T>(target_property_)->setPosition(
+          20 * (orig_x / 20), 20 * (orig_y / 20));
+      }
+      else {
+        isPropertyType<T>(target_property_)->setPosition(
+          event.x - move_offset_x_, event.y - move_offset_y_);
+      }
     }
     
   protected:
@@ -104,6 +122,7 @@ namespace jsk_rviz_plugins
     rviz::Property* target_property_;
     std::string target_property_type_;
     int move_offset_x_, move_offset_y_;
+    bool shift_pressing_;
   private:
     
   };

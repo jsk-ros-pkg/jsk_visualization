@@ -33,12 +33,16 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+#include <QApplication>
+#include <QMenu>
+#include <QTimer>
 #include <ros/ros.h>
 #include <rviz/tool_manager.h>
 #include <rviz/display_context.h>
 #include <rviz/view_manager.h>
 #include <rviz/display_group.h>
 #include <rviz/display.h>
+
 #include "overlay_picker_tool.h"
 #include "overlay_text_display.h"
 #include "plotter_2d_display.h"
@@ -49,11 +53,23 @@
 namespace jsk_rviz_plugins
 {
   OverlayPickerTool::OverlayPickerTool()
-    : is_moving_(false), rviz::Tool()
+    : is_moving_(false), shift_pressing_(false), rviz::Tool()
   {
 
   }
 
+  int OverlayPickerTool::processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel)
+  {
+    if (event->type() == QEvent::KeyPress && event->key() == 16777248) { // sift
+      shift_pressing_ = true;
+    }
+    else if (event->type() == QEvent::KeyRelease && event->key() == 16777248) {
+      shift_pressing_ = false;
+    }
+    return 0;
+  }
+  
+  
   int OverlayPickerTool::processMouseEvent(rviz::ViewportMouseEvent& event)
   {
     if (event.left() && event.leftDown()) {
@@ -67,6 +83,7 @@ namespace jsk_rviz_plugins
     else if (is_moving_ && !(event.left() && event.leftDown())) {
       onRelease(event);
     }
+    return 0;
   }
 
   bool OverlayPickerTool::handleDisplayClick(rviz::Property* property, rviz::ViewportMouseEvent& event)
@@ -103,9 +120,9 @@ namespace jsk_rviz_plugins
 
   void OverlayPickerTool::onClicked(rviz::ViewportMouseEvent& event)
   {
-    ROS_INFO("onClicked");
+    ROS_DEBUG("onClicked");
     is_moving_ = true;
-    ROS_INFO("clicked: (%d, %d)", event.x, event.y);
+    ROS_DEBUG("clicked: (%d, %d)", event.x, event.y);
     // check the active overlay plugin
     rviz::DisplayGroup* display_group = context_->getRootDisplayGroup();
     handleDisplayClick(display_group, event);
@@ -113,8 +130,8 @@ namespace jsk_rviz_plugins
 
   void OverlayPickerTool::onMove(rviz::ViewportMouseEvent& event)
   {
-    ROS_INFO("onMove");
-    ROS_INFO("moving: (%d, %d)", event.x, event.y);
+    ROS_DEBUG("onMove");
+    ROS_DEBUG("moving: (%d, %d)", event.x, event.y);
     if (target_property_) {
       if (target_property_type_ == "overlay_text_display") {
         movePosition<OverlayTextDisplay>(event);
@@ -136,9 +153,9 @@ namespace jsk_rviz_plugins
   
   void OverlayPickerTool::onRelease(rviz::ViewportMouseEvent& event)
   {
-    ROS_INFO("onRelease");
+    ROS_DEBUG("onRelease");
     is_moving_ = false;
-    ROS_INFO("released: (%d, %d)", event.x, event.y);
+    ROS_DEBUG("released: (%d, %d)", event.x, event.y);
     if (target_property_) {
       if (target_property_type_ == "overlay_text_display") {
         setPosition<OverlayTextDisplay>(event);
