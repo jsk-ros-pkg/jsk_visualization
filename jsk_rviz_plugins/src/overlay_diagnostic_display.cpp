@@ -49,8 +49,9 @@
 namespace jsk_rviz_plugins
 {
   const double overlay_diagnostic_animation_duration = 5.0;
+  const double overlay_diagnostic_animation_transition_duration = 0.2;
   OverlayDiagnosticDisplay::OverlayDiagnosticDisplay()
-    : Display()
+    : previous_state_(STALL_STATE), Display()
   {
     ros_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "/diagnostics_agg",
@@ -61,6 +62,10 @@ namespace jsk_rviz_plugins
       "diagnostics namespace", "/",
       "diagnostics namespace to visualize diagnostics",
       this, SLOT(updateDiagnosticsNamespace()));
+    type_property_ = new rviz::EnumProperty(
+      "type", "SAC", "Type of visualization", this, SLOT(updateType()));
+    type_property_->addOptionStd("SAC", 0);
+    type_property_->addOptionStd("EVA", 1);
     top_property_ = new rviz::IntProperty(
       "top", 128,
       "top positoin",
@@ -162,8 +167,23 @@ namespace jsk_rviz_plugins
       ss << "OverlayDiagnosticDisplayObject" << count++;
       overlay_.reset(new OverlayObject(ss.str()));
       overlay_->show();
+      animation_start_time_ = ros::WallTime::now();
     }
     t_ += wall_dt;
+
+    // check if the widget should animate
+    if (!is_animating_) {
+      if (previous_state_ != getLatestState()) {
+        is_animating_ = true;
+        animation_start_time_ = ros::WallTime::now();
+      }
+    }
+    else {
+      if (!isAnimating()) {     // animation time is over
+        is_animating_ = false;
+        previous_state_ = getLatestState();
+      }
+    }
     
     overlay_->updateTextureSize(size_, size_);
     redraw();
@@ -173,6 +193,16 @@ namespace jsk_rviz_plugins
     t_ = fmod(t_, overlay_diagnostic_animation_duration);
   }
 
+  bool OverlayDiagnosticDisplay::isAnimating()
+  {
+    return ((ros::WallTime::now() - animation_start_time_).toSec() < overlay_diagnostic_animation_transition_duration);
+  }
+  
+  double OverlayDiagnosticDisplay::animationRate()
+  {
+    return ((ros::WallTime::now() - animation_start_time_).toSec() / overlay_diagnostic_animation_transition_duration);
+  }
+  
   void OverlayDiagnosticDisplay::onEnable()
   {
     t_ = 0.0;
@@ -195,8 +225,7 @@ namespace jsk_rviz_plugins
   {
     
     ROS_DEBUG("onInitialize");
-
-
+    updateType();
     updateDiagnosticsNamespace();
     updateSize();
     updateAlpha();
@@ -263,7 +292,35 @@ namespace jsk_rviz_plugins
     }
   }
   
-  
+  OverlayDiagnosticDisplay::State
+  OverlayDiagnosticDisplay::getLatestState()
+  {
+    if (latest_status_) {
+      if (!isStalled()) {
+        if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
+          return OK_STATE;
+        }
+        else if (latest_status_->level
+                 == diagnostic_msgs::DiagnosticStatus::WARN) {
+          return WARN_STATE;
+        }
+        else if (latest_status_->level
+                 == diagnostic_msgs::DiagnosticStatus::ERROR) {
+          return ERROR_STATE;
+        }
+        else {
+          return STALL_STATE;
+        }
+      }
+      else {
+        return STALL_STATE;
+      }
+    }
+    else {
+      return STALL_STATE;
+    } 
+  }
+
   QColor OverlayDiagnosticDisplay::foregroundColor()
   {
     QColor ok_color(25, 255, 240, alpha_ * 255.0);
@@ -271,33 +328,45 @@ namespace jsk_rviz_plugins
     QColor error_color(217, 83, 79, alpha_ * 255.0);
     QColor stall_color(151, 151, 151, alpha_ * 255.0);
     //QColor fg_color = stall_color;
-    
-    if (latest_status_) {
-      if (!isStalled()) {
-        if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
-          return ok_color;
-        }
-        else if (latest_status_->level
-                 == diagnostic_msgs::DiagnosticStatus::WARN) {
-          return warn_color;
-        }
-        else if (latest_status_->level
-                 == diagnostic_msgs::DiagnosticStatus::ERROR) {
-          return error_color;
-        }
-        else {
-          return stall_color;
-        }
-      }
-      else {
-        return stall_color;
-      }
+    State state = getLatestState();
+    if (state == OK_STATE) {
+      return ok_color;
+    }
+    else if (state == WARN_STATE) {
+      return warn_color;
+    }
+    else if (state == ERROR_STATE) {
+      return error_color;
     }
     else {
       return stall_color;
     }
   }
 
+  QColor OverlayDiagnosticDisplay::textColor()
+  {
+    QColor ok_color(40, 40, 40,  alpha_ * 255.0);
+    QColor warn_color(255, 255, 255, alpha_ * 255.0);
+    QColor error_color(240, 173, 78, alpha_ * 255.0);
+    QColor stall_color(240, 173, 78, alpha_ * 255.0);
+    //QColor fg_color = stall_color;
+    State state = getLatestState();
+    if (state == OK_STATE) {
+      return ok_color;
+    }
+    else if (state == WARN_STATE) {
+      return warn_color;
+    }
+    else if (state == ERROR_STATE) {
+      return error_color;
+    }
+    else {
+      return stall_color;
+    }
+  }
+
+
+  
   QColor OverlayDiagnosticDisplay::blendColor(QColor a, QColor b, double a_rate) {
     QColor ret (a.red() * a_rate + b.red() * (1 - a_rate),
                 a.green() * a_rate + b.green() * (1 - a_rate),
@@ -306,6 +375,40 @@ namespace jsk_rviz_plugins
     return ret;
   }
 
+  double OverlayDiagnosticDisplay::textWidth(QPainter& painter, double font_size, const std::string& text)
+  {
+    painter.save();
+    const double r = size_ / 128.0;
+    QFont font("Arial", font_size * r, font_size * r, QFont::Bold);
+    QPen pen;
+    QPainterPath path;
+    pen.setWidth(1);
+    painter.setFont(font);
+    painter.setPen(pen);
+    QFontMetrics metrics(font);
+    const int text_width = metrics.width(text.c_str());
+    const int text_height = metrics.height();
+    painter.restore();
+    return text_width;
+  }
+
+  double OverlayDiagnosticDisplay::textHeight(QPainter& painter, double font_size)
+  {
+    painter.save();
+    const double r = size_ / 128.0;
+    QFont font("Arial", font_size * r, font_size * r, QFont::Bold);
+    QPen pen;
+    QPainterPath path;
+    pen.setWidth(1);
+    painter.setFont(font);
+    painter.setPen(pen);
+    QFontMetrics metrics(font);
+    const int text_height = metrics.height();
+    painter.restore();
+    return text_height;
+  }
+  
+  
   double OverlayDiagnosticDisplay::drawAnimatingText(QPainter& painter,
                                                      QColor fg_color,
                                                      const double height,
@@ -364,14 +467,10 @@ namespace jsk_rviz_plugins
                       + status_size + namespace_size,
                       10, message);
   }
-  
-  void OverlayDiagnosticDisplay::redraw()
+
+  void OverlayDiagnosticDisplay::drawSAC(QImage& Hud)
   {
-    ScopedPixelBuffer buffer = overlay_->getBuffer();
     QColor fg_color = foregroundColor();
-    QColor transparent(0, 0, 0, 0.0);
-    
-    QImage Hud = buffer.getQImage(*overlay_, transparent);
     // draw outer circle
     // line-width - margin - inner-line-width < size
     QPainter painter( &Hud );
@@ -392,6 +491,143 @@ namespace jsk_rviz_plugins
     const double inner_circle_start
       = line_width + margin + inner_line_width / 2.0;
     drawText(painter, fg_color, statusText());
+  }
+
+  void OverlayDiagnosticDisplay::drawEVAConnectedRectangle(QPainter& painter,
+                                                           QColor color,
+                                                           QColor small_color,
+                                                           int width)
+  {
+    double S = size_;
+    double A = S * 0.1;
+    double B = 0.2 * S;
+    double C = 0.2;
+    painter.setPen(QPen(color, width, Qt::SolidLine));
+    QPainterPath large_rectangle_path;
+    large_rectangle_path.moveTo(A, S - B);
+    large_rectangle_path.lineTo(A, S);
+    large_rectangle_path.lineTo(S, B);
+    large_rectangle_path.lineTo(S, 0);
+    painter.setPen(Qt::NoPen);
+    painter.fillPath(large_rectangle_path, QBrush(color));
+    QPainterPath small_rectangle_path;
+    small_rectangle_path.moveTo(A, S - B);
+    small_rectangle_path.lineTo(A, S - B + C * B);
+    small_rectangle_path.lineTo(A + (S - A) * C, S - B + C * B - (S - B) * C);
+    small_rectangle_path.lineTo(A + (S - A) * C, S - B - (S - B) * C);
+    painter.setPen(Qt::NoPen);
+    painter.fillPath(small_rectangle_path, QBrush(small_color));
+  }
+
+  void OverlayDiagnosticDisplay::drawEVANonConnectedRectangle(QPainter& painter,
+                                                              QColor color,
+                                                              QColor small_color,
+                                                              int width,
+                                                              double D)
+  {
+    double S = size_;
+    double A = S * 0.1;
+    double B = 0.2 * S;
+    double C = 0.2;
+    //double D = 0.05 * S;
+    painter.setPen(QPen(color, width, Qt::SolidLine));
+    QPainterPath large_rectangle_path;
+    large_rectangle_path.moveTo(A, S - B);
+    large_rectangle_path.lineTo(A, S);
+    double r0 = (S - A - D) / 2 / (S - A);
+    large_rectangle_path.lineTo(A + (S - A - D) / 2, S - r0 * (S - B));
+    large_rectangle_path.lineTo(A + (S - A - D) / 2, S - r0 * (S - B) - B);
+    painter.setPen(Qt::NoPen);
+    painter.fillPath(large_rectangle_path, QBrush(color));
+
+    QPainterPath large_rectangle_path2;
+    large_rectangle_path2.moveTo(S - (S - A - D) / 2, (S - B) * r0);
+    large_rectangle_path2.lineTo(S - (S - A - D) / 2, (S - B) * r0 + B);
+    large_rectangle_path2.lineTo(S, B);
+    large_rectangle_path2.lineTo(S, 0);
+    painter.setPen(Qt::NoPen);
+    painter.fillPath(large_rectangle_path2, QBrush(color));
+    
+    QPainterPath small_rectangle_path;
+    small_rectangle_path.moveTo(A, S - B);
+    small_rectangle_path.lineTo(A, S - B + C * B);
+    small_rectangle_path.lineTo(A + (S - A) * C, S - B + C * B - (S - B) * C);
+    small_rectangle_path.lineTo(A + (S - A) * C, S - B - (S - B) * C);
+    painter.setPen(Qt::NoPen);
+    painter.fillPath(small_rectangle_path, QBrush(small_color));
+  }
+  
+  void OverlayDiagnosticDisplay::drawEVA(QImage& Hud)
+  {
+    QColor line_color(240, 173, 78, alpha_ * 255.0);
+    QColor rectangle_color = foregroundColor();
+    QColor small_rectangle_color(line_color);
+    QPainter painter(&Hud);
+    State close_state = OK_STATE;
+    int line_width = 2;
+    double S = size_;
+    double A = S * 0.1;
+    double B = 0.2 * S;
+    double C = 0.2;
+    double max_gap = 0.05 * S;
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setPen(QPen(line_color, line_width, Qt::SolidLine));
+    painter.drawLine(QPoint(0, 0), QPoint(0, S));
+    painter.drawLine(QPoint(0, S - B / 2), QPoint(A, S - B / 2));
+    if (isAnimating()) {
+      // check animation direction
+      double r = animationRate();
+      if (previous_state_ == close_state) { // close -> open
+        drawEVANonConnectedRectangle(painter, rectangle_color, small_rectangle_color, line_width, max_gap * r);
+      }
+      else if (getLatestState() == close_state) { // open -> close
+        drawEVANonConnectedRectangle(painter, rectangle_color, small_rectangle_color, line_width, max_gap * (1 - r));
+      }
+      else {                    // open -> open
+        drawEVANonConnectedRectangle(painter, rectangle_color, small_rectangle_color, line_width, max_gap);
+      }
+    }
+    else {
+      State state = getLatestState();
+      if (state == close_state) {
+        drawEVAConnectedRectangle(painter, rectangle_color, small_rectangle_color, line_width);
+      }
+      else {
+        drawEVANonConnectedRectangle(painter, rectangle_color, small_rectangle_color, line_width, max_gap);
+      }
+    }
+    painter.setPen(QPen(textColor(), 2 * line_width, Qt::SolidLine));
+    painter.setFont(QFont("Arial", 12, QFont::Bold));
+    double theta = atan2(S - B, S - A) / M_PI * 180;
+    double text_box_height = cos(theta*M_PI/180) * B;
+    double text_box_width = (S - A) / cos(theta*M_PI/180) - sin(theta*M_PI/180) * B * 2;
+    double text_width = textWidth(painter, 12, diagnostics_namespace_);
+    
+    painter.translate(A, S - B);
+    painter.rotate(-theta);
+    if (text_width > text_box_width) {
+      double text_left = - fmod(t_, overlay_diagnostic_animation_duration) /
+        overlay_diagnostic_animation_duration * text_width;
+      painter.drawText(QRectF(text_left, 0, text_width*2, text_box_height), Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine,
+                       diagnostics_namespace_.c_str());
+    }
+    else {
+      painter.drawText(QRectF(0, 0, text_box_width, text_box_height), Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine,
+                       diagnostics_namespace_.c_str());
+    }
+  }
+  
+  void OverlayDiagnosticDisplay::redraw()
+  {
+    ScopedPixelBuffer buffer = overlay_->getBuffer();
+    QColor transparent(0, 0, 0, 0.0);    
+    QImage Hud = buffer.getQImage(*overlay_, transparent);
+    if (type_ == 0) {
+      drawSAC(Hud);
+    }
+    else if (type_ == 1) {
+      drawEVA(Hud);
+    }
   }
 
   void OverlayDiagnosticDisplay::fillNamespaceList()
@@ -461,7 +697,11 @@ namespace jsk_rviz_plugins
     top_property_->setValue(y);
     left_property_->setValue(x);
   }
-  
+
+  void OverlayDiagnosticDisplay::updateType()
+  {
+    type_ = type_property_->getOptionInt();
+  }
 }
 
 #include <pluginlib/class_list_macros.h>

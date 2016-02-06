@@ -44,6 +44,7 @@
 
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/editable_enum_property.h>
+#include <rviz/properties/enum_property.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/color_property.h>
@@ -59,6 +60,7 @@ namespace jsk_rviz_plugins
     Q_OBJECT
   public:
     OverlayDiagnosticDisplay();
+    typedef enum {OK_STATE, ERROR_STATE, WARN_STATE, STALL_STATE} State;
     virtual ~OverlayDiagnosticDisplay();
 
     // methods for OverlayPickerTool
@@ -79,8 +81,23 @@ namespace jsk_rviz_plugins
     virtual void subscribe();
     virtual void unsubscribe();
     virtual void redraw();
+    virtual State getLatestState();
+    virtual void drawSAC(QImage& Hud);
+    virtual void drawEVA(QImage& Hud);
+    virtual void drawEVAConnectedRectangle(QPainter& painter,
+                                           QColor color,
+                                           QColor small_color,
+                                           int width);
+    virtual void drawEVANonConnectedRectangle(QPainter& painter,
+                                              QColor color,
+                                              QColor small_color,
+                                              int width,
+                                              double gap);
     virtual void fillNamespaceList();
     virtual QColor foregroundColor();
+    virtual QColor textColor();
+    virtual double textWidth(QPainter& painter, double font_size, const std::string& text);
+    virtual double textHeight(QPainter& painter, double font_size);
     virtual QColor blendColor(QColor a, QColor b, double a_rate);
     virtual void drawText(QPainter& painter, QColor fg_color,
                           const std::string& text);
@@ -89,21 +106,29 @@ namespace jsk_rviz_plugins
                                      const double height,
                                      const double font_size,
                                      const std::string text);
+    // return true if plugin needs to animate
+    virtual bool isAnimating();
+    virtual double animationRate();
     virtual std::string statusText();
     boost::mutex mutex_;
     OverlayObject::Ptr overlay_;
     
     diagnostic_msgs::DiagnosticStatus::Ptr latest_status_;
+    State previous_state_;
     ros::WallTime latest_message_time_;
+    ros::WallTime animation_start_time_;
     int size_;
     std::string diagnostics_namespace_;
+    int type_;
     std::set<std::string> namespaces_;
     double alpha_;
     int top_, left_;
     double t_;
     double stall_duration_;
+    bool is_animating_;
     rviz::RosTopicProperty* ros_topic_property_;
     rviz::EditableEnumProperty* diagnostics_namespace_property_;
+    rviz::EnumProperty* type_property_;
     rviz::IntProperty* top_property_;
     rviz::IntProperty* left_property_;
     rviz::FloatProperty* alpha_property_;
@@ -112,6 +137,7 @@ namespace jsk_rviz_plugins
     
     ros::Subscriber sub_;
   protected Q_SLOTS:
+    virtual void updateType();
     virtual void updateRosTopic();
     virtual void updateDiagnosticsNamespace();
     virtual void updateSize();
