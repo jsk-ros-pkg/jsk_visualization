@@ -106,6 +106,7 @@ namespace jsk_rviz_plugins
     delete left_property_;
     delete alpha_property_;
     delete size_property_;
+    delete type_property_;
   }
 
   void OverlayDiagnosticDisplay::processMessage(
