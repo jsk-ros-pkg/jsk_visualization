@@ -135,6 +135,7 @@ namespace jsk_rviz_plugins
       ros::message_traits::datatype<sensor_msgs::Image>(),
       "sensor_msgs::Image topic to subscribe to.",
       this, SLOT( updateImageTopic() ));
+    image_topic_property_->hide();
     color_property_ = new rviz::ColorProperty(
       "color",
       QColor(85, 255, 255),
@@ -277,7 +278,6 @@ namespace jsk_rviz_plugins
 
   void CameraInfoDisplay::createTextureForBottom(int width, int height)
   {
-    ROS_INFO("%dx%d", width, height);
     if (bottom_texture_.isNull() 
         || bottom_texture_->getWidth() != width
         || bottom_texture_->getHeight() != height) {
@@ -543,6 +543,12 @@ namespace jsk_rviz_plugins
   void CameraInfoDisplay::updateShowPolygons()
   {
     show_polygons_ = show_polygons_property_->getBool();
+    if (show_polygons_) {
+      not_show_side_polygons_property_->show();
+    }
+    else {
+      not_show_side_polygons_property_->hide();
+    }
     if (camera_info_) {
       createCameraInfoShapes(camera_info_);
     }
@@ -567,7 +573,13 @@ namespace jsk_rviz_plugins
   void CameraInfoDisplay::updateUseImage()
   {
     use_image_ = use_image_property_->getBool();
-    updateImageTopic();
+    if (use_image_) {
+      image_topic_property_->show();
+      updateImageTopic();
+    }
+    else {
+      image_topic_property_->hide();
+    }
   }
   void CameraInfoDisplay::updateNotShowSidePolygons()
   {
