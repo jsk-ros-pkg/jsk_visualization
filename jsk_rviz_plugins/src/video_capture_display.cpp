@@ -174,6 +174,7 @@ namespace jsk_rviz_plugins
       QImage src = screenshot.toImage().convertToFormat(QImage::Format_RGB888);
       cv::Mat image(src.height(), src.width(), CV_8UC3,
                     (uchar*)src.bits(), src.bytesPerLine());
+      cv::cvtColor(image, image, CV_BGR2RGB); 
       writer_ << image;
       ++frame_counter_;
       if (frame_counter_ % 100 == 0) {
