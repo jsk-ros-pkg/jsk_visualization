@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.29 (2016-03-20)
+-------------------
 * remove dynamic_reconfigure.parameter_generator, which only used for rosbuild
 * [jsk_rviz_plugins] Do not show unnecessary properties of CameraInfo
 * [jsk_rviz_plugins] Delete property in OverlayDiagnosticDisplay
