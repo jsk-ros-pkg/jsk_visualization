@@ -2,6 +2,13 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove dynamic_reconfigure.parameter_generator, which only used for rosbuild
+* [jsk_interactive_marker/euslisp] add transformable-object-util.
+* [jsk_interactive_marker] Add document (JP) about how to use moveit_msgs/DisplayRobotState
+* Contributors: Kei Okada, Masaki Murooka, Ryohei Ueda
+
 1.0.28 (2016-02-03)
 -------------------
 * [jsk_interactive_marker] Utility script and euslisp function to use moveit_msgs/DispalayRobotState

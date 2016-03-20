@@ -2,6 +2,15 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove dynamic_reconfigure.parameter_generator, which only used for rosbuild
+* [jsk_rviz_plugins] Do not show unnecessary properties of CameraInfo
+* [jsk_rviz_plugins] Delete property in OverlayDiagnosticDisplay
+* [jsk_rviz_plugins/OverlayDiagnostics] Add new style
+* [jsk_rviz_plugins/OverlayPicker] Align to grid in pressing shift key
+* Contributors: Kei Okada, Ryohei Ueda
+
 1.0.28 (2016-02-03)
 -------------------
 * [jsk_rviz_plugins] Fix OverlayPicker for plugins gdouped by DisplayGroup.
