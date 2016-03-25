@@ -156,7 +156,7 @@ set(SOURCE_FILES
 )
 
 add_library(jsk_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
-target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
 add_dependencies(jsk_rviz_plugins jsk_hark_msgs_gencpp ${PROJECT_NAME}_gencpp)
 
 set_target_properties(jsk_rviz_plugins
