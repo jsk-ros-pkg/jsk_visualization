@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   jsk_topic_tools
   image_geometry
   view_controller_msgs
-  roseus
   geometry_msgs
   dynamic_reconfigure
   jsk_recognition_msgs)
@@ -26,7 +25,7 @@ endif(CCACHE_FOUND)
 
 add_message_files(FILES
   OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg ObjectFitCommand.msg
-  Pictogram.msg PictogramArray.msg RecordCommand.msg)
+  Pictogram.msg PictogramArray.msg RecordCommand.msg StringStamped.msg)
 add_service_files(FILES
   RequestMarkerOperate.srv EusCommand.srv
   Screenshot.srv
