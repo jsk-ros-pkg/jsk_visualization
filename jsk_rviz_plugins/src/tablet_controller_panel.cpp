@@ -170,9 +170,9 @@ namespace jsk_rviz_plugins
   TabletControllerPanel::TabletControllerPanel(QWidget* parent): rviz::Panel(parent)
   {
     ros::NodeHandle nh;
-    pub_start_demo_ = nh.advertise<roseus::StringStamped>(
+    pub_start_demo_ = nh.advertise<jsk_rviz_plugins::StringStamped>(
       "/Tablet/StartDemo", 1);
-    pub_spot_ = nh.advertise<roseus::StringStamped>(
+    pub_spot_ = nh.advertise<jsk_rviz_plugins::StringStamped>(
       "/Tablet/MoveToSpot", 1);
     sub_spots_ = nh.subscribe("/spots_marker_array",
                               1, &TabletControllerPanel::spotCallback, this);
@@ -296,7 +296,7 @@ namespace jsk_rviz_plugins
         std::string task = radio->text().toStdString();
         ROS_INFO("task: %s", task.c_str());
         task_dialog_->reject();
-        roseus::StringStamped command;
+        jsk_rviz_plugins::StringStamped command;
         command.data = task;
         command.header.stamp = ros::Time::now();
         pub_start_demo_.publish(command);
@@ -354,7 +354,7 @@ namespace jsk_rviz_plugins
     QListWidgetItem* item = spot_list_->currentItem();
     if (item) {
       std::string spot = item->text().toStdString();
-      roseus::StringStamped spot_command;
+      jsk_rviz_plugins::StringStamped spot_command;
       spot_command.data = spot;
       spot_command.header.stamp = ros::Time::now();
       pub_spot_.publish(spot_command);

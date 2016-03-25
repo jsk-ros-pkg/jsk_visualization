@@ -54,7 +54,7 @@
 #include <QPaintEvent>
 #include <QMouseEvent>
 #include <geometry_msgs/Twist.h>
-#include <roseus/StringStamped.h>
+#include <jsk_rviz_plugins/StringStamped.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <boost/thread.hpp>
 
