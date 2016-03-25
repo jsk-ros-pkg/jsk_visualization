@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.30 (2016-03-25)
+-------------------
 * use jsk_rviz_plugins::StringStamped instead of roseus::StringStamped, to remove roseus depends
 * add rviz_DEFAULT_PLUGIN_LIBRARIES:  see https://github.com/ros-visualization/rviz/pull/979
 * Contributors: Kei Okada
