@@ -2,6 +2,12 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use jsk_rviz_plugins::StringStamped instead of roseus::StringStamped, to remove roseus depends
+* add rviz_DEFAULT_PLUGIN_LIBRARIES:  see https://github.com/ros-visualization/rviz/pull/979
+* Contributors: Kei Okada
+
 1.0.29 (2016-03-20)
 -------------------
 * remove dynamic_reconfigure.parameter_generator, which only used for rosbuild
