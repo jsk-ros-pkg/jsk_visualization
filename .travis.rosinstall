@@ -1,9 +1,8 @@
 - git:
     uri: https://github.com/jsk-ros-pkg/jsk_recognition.git
     local-name: jsk-ros-pkg/jsk_recognition
+    version: 0.3.21
 - git:
     uri: https://github.com/jsk-ros-pkg/jsk_common.git
     local-name: jsk-ros-pkg/jsk_common
-# - git:
-#     uri: https://github.com/jsk-ros-pkg/jsk_roseus.git
-#     local-name: jsk-ros-pkg/jsk_roseus
+    version: 2.0.13
