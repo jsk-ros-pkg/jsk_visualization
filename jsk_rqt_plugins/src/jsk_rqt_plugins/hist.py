@@ -153,7 +153,7 @@ class HistogramPlotWidget(QWidget):
             return
         axes = self.data_plot._canvas.axes
         axes.cla()
-        if self._rosdata.sub.data_class is HistogramWithRange:
+        if isinstance(data_y[-1], HistogramWithRange):
             xs = [y.count for y in data_y[-1].bins]
             pos = [y.min_value for y in data_y[-1].bins]
             widths = [y.max_value - y.min_value for y in data_y[-1].bins]
