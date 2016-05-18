@@ -23,6 +23,7 @@ from jsk_recognition_msgs.msg import HistogramWithRange, HistogramWithRangeBin
 
 import os, sys
 import argparse
+import collections
 
 try:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
@@ -138,11 +139,11 @@ class HistogramPlotWidget(QWidget):
     @Slot()
     def on_clear_button_clicked(self):
         self.data_plot.clear()
-    
+
     @Slot(bool)
     def on_pause_button_clicked(self, checked):
         self.enable_timer(not checked)
-    
+
     def update_plot(self):
         if not self._rosdata:
             return
@@ -157,11 +158,19 @@ class HistogramPlotWidget(QWidget):
             pos = [y.min_value for y in data_y[-1].bins]
             widths = [y.max_value - y.min_value for y in data_y[-1].bins]
             axes.set_xlim(xmin=pos[0], xmax=pos[-1] + widths[-1])
-        else:
+        elif isinstance(data_y[-1], collections.Sequence):
             xs = data_y[-1]
             pos = np.arange(len(xs))
             widths = [1] * len(xs)
             axes.set_xlim(xmin=0, xmax=len(xs))
+        else:
+            rospy.logerr(
+                "Topic/Field name '%s' has unsupported '%s' type."
+                "List of float values and "
+                "jsk_recognition_msgs/HistogramWithRange are supported."
+                % (self.topic_with_field_name,
+                   self._rosdata.sub.data_class))
+            return
         #axes.xticks(range(5))
         for p, x, w in zip(pos, xs, widths):
             axes.bar(p, x, color='r', align='center', width=w)
