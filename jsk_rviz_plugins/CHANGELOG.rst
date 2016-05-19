@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2016-05-19)
+-------------------
 * Stop passing -z flag to ld with Clang
 * Contributors: Kentaro Wada
 

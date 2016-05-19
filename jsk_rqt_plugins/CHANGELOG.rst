@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2016-05-19)
+-------------------
 * Warn about unsupported topic type
 * Check class type of data instead of subscribed topic type in rqt_histgram_plot to support HistgramWithRangeArray
 * Contributors: Kentaro Wada, Iori Kumagai
