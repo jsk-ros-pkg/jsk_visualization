@@ -2,6 +2,11 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Stop passing -z flag to ld with Clang
+* Contributors: Kentaro Wada
+
 1.0.30 (2016-03-25)
 -------------------
 * use jsk_rviz_plugins::StringStamped instead of roseus::StringStamped, to remove roseus depends
