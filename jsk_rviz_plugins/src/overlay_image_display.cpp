@@ -157,7 +157,7 @@ namespace jsk_rviz_plugins
       return;
     }
     
-    if (require_update_) {
+    if (require_update_ && is_msg_available_) {
       if (!overlay_) {
         static int count = 0;
         rviz::UniformStringStream ss;
@@ -166,6 +166,9 @@ namespace jsk_rviz_plugins
         overlay_->show();
       }
       overlay_->updateTextureSize(msg_->width, msg_->height);
+      // When aspect_ratio being kept, the size is specified by width;
+      height_property_->setHidden(keep_aspect_ratio_);
+      setImageSize();
       redraw();
       require_update_ = false;
     }
@@ -249,27 +252,11 @@ namespace jsk_rviz_plugins
       }
     }
 
-    if (keep_aspect_ratio_) {
-      if (is_msg_available_) {
-        double aspect_ratio = msg_->height / (double)msg_->width;
-        int width_from_height = std::ceil(height_ * 1 / aspect_ratio);
-        int height_from_width = std::ceil(width_ * aspect_ratio);
-        if (width_from_height > width_ && height_from_width > height_) {
-          // ??
-          ROS_ERROR("width_from_height: %d, height_from_width: %d", width_from_height, height_from_width);
-          // do nothing
-        }
-        else if (width_from_height > width_) {
-          height_ = height_from_width;
-        }
-        else if (height_from_width > height_) {
-          width_ = width_from_height;
-        }
-        else {
-          width_ = width_from_height;
-          height_ = height_from_width;
-        }
-      }
+    if (keep_aspect_ratio_ && is_msg_available_) {
+      // When aspect_ratio being kept, the size is specified by width;
+      double aspect_ratio = msg_->height / (double)msg_->width;
+      int height_from_width = std::ceil(width_ * aspect_ratio);
+      height_ = height_from_width;
     }
 
   }
@@ -278,14 +265,14 @@ namespace jsk_rviz_plugins
   {
     boost::mutex::scoped_lock lock(mutex_);
     width_ = width_property_->getInt();
-    setImageSize();
+    require_update_ = true;
   }
   
   void OverlayImageDisplay::updateHeight()
   {
     boost::mutex::scoped_lock lock(mutex_);
     height_ = height_property_->getInt();
-    setImageSize();
+    require_update_ = true;
   }
 
   void OverlayImageDisplay::updateTop()
@@ -310,7 +297,7 @@ namespace jsk_rviz_plugins
   {
     boost::mutex::scoped_lock lock(mutex_);
     keep_aspect_ratio_ = keep_aspect_ratio_property_->getBool();
-    setImageSize();
+    require_update_ = true;
   }
 
   bool OverlayImageDisplay::isInRegion(int x, int y)
