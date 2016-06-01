@@ -1,6 +1,7 @@
 // -*- mode: C++ -*-
 #ifndef NORMAL_DISPLAY_H
 #define NORMAL_DISPLAY_H
+#ifndef Q_MOC_RUN
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <QColor>
@@ -20,6 +21,7 @@
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
 #include "normal_visual.h"
+#endif
 
 namespace jsk_rviz_plugins
 {

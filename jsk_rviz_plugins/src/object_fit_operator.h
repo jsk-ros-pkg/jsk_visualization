@@ -1,12 +1,14 @@
 #ifndef OBJECT_FIT_OPERATOR_H
 #define OBJECT_FIT_OPERATOR_H
 
+#ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #include <rviz/panel.h>
 #include <QtGui>
 #include <QToolButton>
 #include <QCheckBox>
 #include <jsk_rviz_plugins/ObjectFitCommand.h>
+#endif
 
 class QLineEdit;
 class QToolButton;

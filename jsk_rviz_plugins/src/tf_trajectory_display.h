@@ -36,6 +36,7 @@
 #ifndef JSK_RVIZ_PLUGINS_TF_TRAJECTORY_DISPLAY_H_
 #define JSK_RVIZ_PLUGINS_TF_TRAJECTORY_DISPLAY_H_
 
+#ifndef Q_MOC_RUN
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/tf_frame_property.h>
@@ -43,6 +44,7 @@
 #include <rviz/properties/status_property.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <geometry_msgs/PointStamped.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

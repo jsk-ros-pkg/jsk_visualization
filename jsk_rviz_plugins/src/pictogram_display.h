@@ -37,6 +37,7 @@
 #ifndef JSK_RVIZ_PLUGIN_PICTOGRAM_DISPLAY_H_
 #define JSK_RVIZ_PLUGIN_PICTOGRAM_DISPLAY_H_
 
+#ifndef Q_MOC_RUN
 #include <rviz/display.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
@@ -50,6 +51,7 @@
 #include <OGRE/OgreSceneManager.h>
 #include <jsk_rviz_plugins/Pictogram.h>
 #include "facing_visualizer.h"
+#endif
 
 namespace jsk_rviz_plugins
 {

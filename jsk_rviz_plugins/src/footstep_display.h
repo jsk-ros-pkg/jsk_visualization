@@ -37,6 +37,7 @@
 #define FOOTSTEP_DISPLAY_H
 
 #include <jsk_footstep_msgs/FootstepArray.h>
+#ifndef Q_MOC_RUN
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/bool_property.h>
@@ -44,6 +45,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/movable_text.h>
 #include <OGRE/OgreSceneNode.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

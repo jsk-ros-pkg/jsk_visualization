@@ -36,6 +36,7 @@
 #ifndef JSK_RVIZ_PLUGIN_DIAGNOSTICS_DISPLAY_H_
 #define JSK_RVIZ_PLUGIN_DIAGNOSTICS_DISPLAY_H_
 
+#ifndef Q_MOC_RUN
 #include <rviz/display.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/string_property.h>
@@ -50,6 +51,7 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <rviz/ogre_helpers/movable_text.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

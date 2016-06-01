@@ -33,6 +33,7 @@
 #ifndef JSK_RVIZ_PLUGINS_TABLET_VIEW_CONTROLLER_H_
 #define JSK_RVIZ_PLUGINS_TABLET_VIEW_CONTROLLER_H_
 
+#ifndef Q_MOC_RUN
 #include "rviz/view_controller.h"
 
 #include <ros/subscriber.h>
@@ -42,6 +43,7 @@
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
+#endif
 
 namespace rviz {
   class SceneNode;

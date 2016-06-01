@@ -37,8 +37,10 @@
 #ifndef JSK_RVIZ_PLUGINS_PICTOGRAM_ARRAY_DISPLAY_H_
 #define JSK_RVIZ_PLUGINS_PICTOGRAM_ARRAY_DISPLAY_H_
 
+#ifndef Q_MOC_RUN
 #include "pictogram_display.h"
 #include <jsk_rviz_plugins/PictogramArray.h>
+#endif
 namespace jsk_rviz_plugins
 {
   ////////////////////////////////////////////////////////

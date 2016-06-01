@@ -38,13 +38,13 @@
 
 #include <rviz/default_plugin/camera_display.h>
 
+#ifndef Q_MOC_RUN
 #include <QObject>
 
 #include <OgreMaterial.h>
 #include <OgreRenderTargetListener.h>
 #include <OgreSharedPtr.h>
 
-#ifndef Q_MOC_RUN
 # include <sensor_msgs/CameraInfo.h>
 
 # include <message_filters/subscriber.h>
@@ -53,9 +53,9 @@
 # include "rviz/image/image_display_base.h"
 # include "rviz/image/ros_image_texture.h"
 # include "rviz/render_panel.h"
-#endif
 
 #include "overlay_utils.h"
+#endif
 
 namespace Ogre
 {

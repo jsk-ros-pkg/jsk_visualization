@@ -36,6 +36,7 @@
 #define JSK_RVIZ_PLUGIN_OVERLAY_TEXT_DISPLAY_H_
 
 #include "jsk_rviz_plugins/OverlayText.h"
+#ifndef Q_MOC_RUN
 #include <rviz/display.h>
 #include "overlay_utils.h"
 #include <OGRE/OgreColourValue.h>
@@ -46,6 +47,7 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/color_property.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

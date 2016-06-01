@@ -36,6 +36,7 @@
 #ifndef JSK_RVIZ_PLUGINS_SIMPLE_OCCUPANCY_GRID_ARRAY_DISPLAY_H_
 #define JSK_RVIZ_PLUGINS_SIMPLE_OCCUPANCY_GRID_ARRAY_DISPLAY_H_
 
+#ifndef Q_MOC_RUN
 #include <jsk_recognition_msgs/SimpleOccupancyGridArray.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
@@ -43,6 +44,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/ogre_helpers/point_cloud.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

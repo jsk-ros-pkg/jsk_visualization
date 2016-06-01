@@ -38,6 +38,7 @@
 #define JSK_RVIZ_PLUGIN_PEOPLE_POSITION_MEASUREMENT_ARRAY_DISPLAY_H_
 
 
+#ifndef Q_MOC_RUN
 #include <rviz/display.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
@@ -52,6 +53,7 @@
 #include <people_msgs/PositionMeasurementArray.h>
 #include "overlay_utils.h"
 #include "facing_visualizer.h"
+#endif
 
 namespace jsk_rviz_plugins
 {

@@ -1,9 +1,11 @@
 #ifndef PUBLISH_TOPIC_H
 #define PUBLISH_TOPIC_H
 
+#ifndef Q_MOC_RUN
 #include <ros/ros.h>
 
 #include <rviz/panel.h>
+#endif
 
 class QLineEdit;
 class QPushButton;

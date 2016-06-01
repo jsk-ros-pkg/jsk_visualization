@@ -37,6 +37,7 @@
 #define JSK_RVIZ_PLUGIN_TARGET_VISUALIZER_DISPLAY_H_
 
 
+#ifndef Q_MOC_RUN
 #include <rviz/display.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
@@ -56,6 +57,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 #include "facing_visualizer.h"
+#endif
 
 namespace jsk_rviz_plugins
 {

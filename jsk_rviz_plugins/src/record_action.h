@@ -1,11 +1,13 @@
 #ifndef RECORD_ACTION_H
 #define RECORD_ACTION_H
 
+#ifndef Q_MOC_RUN
 #include <ros/ros.h>
 
 #include <rviz/panel.h>
 #include <QtGui>
 #include <jsk_rviz_plugins/RecordCommand.h>
+#endif
 
 class QLineEdit;
 class QLabel;
