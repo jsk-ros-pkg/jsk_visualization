@@ -7,9 +7,9 @@ jsk visualization ros packages
 see [read the docs](http://jsk-visualization.readthedocs.org/en/latest/)
 
 Deb Build Status
-------------
+----------------
 
-Package | Indigo (Saucy) | Indigo (Trusty) |
-------- | -------------- | --------------- |
-jsk_visualization (32-bit) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-jsk-visualization_binarydeb_saucy_i386)](http://jenkins.ros.org/job/ros-indigo-jsk-visualization_binarydeb_saucy_i386/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-jsk-visualization_binarydeb_trusty_i386)](http://jenkins.ros.org/job/ros-indigo-jsk-visualization_binarydeb_trusty_i386/)
-jsk_visualization (64-bit) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-jsk-visualization_binarydeb_saucy_amd64)](http://jenkins.ros.org/job/ros-indigo-jsk-visualization_binarydeb_saucy_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-jsk-visualization_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-jsk-visualization_binarydeb_trusty_amd64/)
+| Package | Indigo (Saucy) | Indigo (Trusty) |
+|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| jsk_visualization (32-bit) | [![Build Status](http://build.ros.org/job/Ibin_uS32__jsk_visualization__ubuntu_saucy_i386__binary/badge/icon)](http://build.ros.org/job/Ibin_uS32__jsk_visualization__ubuntu_saucy_i386__binary/) | [![Build Status](http://build.ros.org/job/Ibin_uT32__jsk_visualization__ubuntu_trusty_i386__binary/badge/icon)](http://build.ros.org/job/Ibin_uT32__jsk_visualization__ubuntu_trusty_i386__binary/) |
+| jsk_visualization (64-bit) | [![Build Status](http://build.ros.org/job/Ibin_uS64__jsk_visualization__ubuntu_saucy_amd64__binary/badge/icon)](http://build.ros.org/job/Ibin_uS64__jsk_visualization__ubuntu_saucy_amd64__binary/) | [![Build Status](http://build.ros.org/job/Ibin_uT64__jsk_visualization__ubuntu_trusty_amd64__binary/badge/icon)](http://build.ros.org/job/Ibin_uT64__jsk_visualization__ubuntu_trusty_amd64__binary/) |
