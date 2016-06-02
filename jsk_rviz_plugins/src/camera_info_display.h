@@ -37,6 +37,7 @@
 #ifndef JSK_RVIZ_PLUGINS_CAMERA_INFO_DISPLAY_H_
 #define JSK_RVIZ_PLUGINS_CAMERA_INFO_DISPLAY_H_
 
+#ifndef Q_MOC_RUN
 #include <rviz/display.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/color_property.h>
@@ -53,6 +54,7 @@
 #include <OGRE/OgreTexture.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

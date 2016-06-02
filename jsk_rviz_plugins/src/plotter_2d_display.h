@@ -36,6 +36,7 @@
 #define JSK_RVIZ_PLUGIN_PLOTTER_2D_H_
 
 #include "std_msgs/Float32.h"
+#ifndef Q_MOC_RUN
 #include <rviz/display.h>
 #include "overlay_utils.h"
 #include <OGRE/OgreColourValue.h>
@@ -46,6 +47,7 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/ros_topic_property.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

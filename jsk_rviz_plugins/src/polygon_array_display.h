@@ -36,6 +36,7 @@
 #ifndef POLYGON_ARRAY_DISPLAY_H
 #define POLYGON_ARRAY_DISPLAY_H
 
+#ifndef Q_MOC_RUN
 #include <jsk_recognition_msgs/PolygonArray.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
@@ -50,6 +51,7 @@
 #include <rviz/properties/enum_property.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/arrow.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

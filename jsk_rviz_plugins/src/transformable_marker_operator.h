@@ -1,10 +1,12 @@
 #ifndef TRANSFORMABLE_MARKER_OPERATOR_H
 #define TRANSFORMABLE_MARKER_OPERATOR_H
 
+#ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #include <rviz/panel.h>
 #include <QtGui>
 #include <jsk_rviz_plugins/RequestMarkerOperate.h>
+#endif
 
 class QLineEdit;
 class QPushButton;

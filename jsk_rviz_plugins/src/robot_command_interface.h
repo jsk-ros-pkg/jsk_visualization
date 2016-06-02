@@ -1,11 +1,13 @@
 #ifndef ROBOT_COMMAND_INTERFACE_H
 #define ROBOT_COMMAND_INTERFACE_H
 
+#ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #include <rviz/panel.h>
 #include <QtGui>
 #include <jsk_rviz_plugins/EusCommand.h>
 #include <resource_retriever/retriever.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

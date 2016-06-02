@@ -37,6 +37,7 @@
 #ifndef JSK_RVIZ_PLUGINS_TABLET_CONTROLLER_PANEL_H_
 #define JSK_RVIZ_PLUGINS_TABLET_CONTROLLER_PANEL_H_
 
+#ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #include <rviz/panel.h>
 #include <QtGui>
@@ -57,6 +58,7 @@
 #include <jsk_rviz_plugins/StringStamped.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <boost/thread.hpp>
+#endif
 
 namespace jsk_rviz_plugins
 {

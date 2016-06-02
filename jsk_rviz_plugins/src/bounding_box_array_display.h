@@ -36,6 +36,7 @@
 #ifndef JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
 #define JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
 
+#ifndef Q_MOC_RUN
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
@@ -46,6 +47,7 @@
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/arrow.h>
 #include <OGRE/OgreSceneNode.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

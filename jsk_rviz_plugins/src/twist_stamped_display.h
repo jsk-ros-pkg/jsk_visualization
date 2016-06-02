@@ -37,6 +37,7 @@
 #ifndef JSK_RVIZ_PLUGINS_TWIST_STAMPED_H_
 #define JSK_RVIZ_PLUGINS_TWIST_STAMPED_H_
 
+#ifndef Q_MOC_RUN
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
@@ -50,6 +51,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/billboard_line.h>
+#endif
 
 
 namespace jsk_rviz_plugins

@@ -35,6 +35,7 @@
 #ifndef JSK_RVIZ_PLUGIN_OVERLAY_IMAGE_DISPLAY_H_
 #define JSK_RVIZ_PLUGIN_OVERLAY_IMAGE_DISPLAY_H_
 
+#ifndef Q_MOC_RUN
 #include <rviz/display.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreColourValue.h>
@@ -51,6 +52,7 @@
 #include <sensor_msgs/Image.h>
 
 #include "overlay_utils.h"
+#endif
 
 namespace jsk_rviz_plugins
 {

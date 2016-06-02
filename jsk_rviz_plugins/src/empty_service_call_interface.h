@@ -1,10 +1,12 @@
 #ifndef EMPTY_SERCICE_CALL_INTERFACE_H
 #define EMPTY_SERCICE_CALL_INTERFACE_H
 
+#ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #include <rviz/panel.h>
 #include <std_srvs/Empty.h>
 #include <QtGui>
+#endif
 
 namespace jsk_rviz_plugins
 {
