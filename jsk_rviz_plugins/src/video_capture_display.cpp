@@ -171,9 +171,10 @@ namespace jsk_rviz_plugins
       rviz::RenderPanel* panel = context_->getViewManager()->getRenderPanel();
       QPixmap screenshot
         = QPixmap::grabWindow(context_->getViewManager()->getRenderPanel()->winId());
-      QImage src = screenshot.toImage().convertToFormat(QImage::Format_RGB888);
+      QImage src = screenshot.toImage().convertToFormat(QImage::Format_RGB888);  // RGB
       cv::Mat image(src.height(), src.width(), CV_8UC3,
-                    (uchar*)src.bits(), src.bytesPerLine());
+                    (uchar*)src.bits(), src.bytesPerLine());  // RGB
+      cv::cvtColor(image, image, CV_RGB2BGR);  // RGB -> BGR
       writer_ << image;
       ++frame_counter_;
       if (frame_counter_ % 100 == 0) {
