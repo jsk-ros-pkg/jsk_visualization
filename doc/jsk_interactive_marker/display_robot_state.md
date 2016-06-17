@@ -4,7 +4,7 @@
 rviz上に自由にロボットを配置し、可視化するには`moveit_msgs/DisplayRobotState`が便利です。
 これを利用することで、関節角度+ルートリンク位置を指定することでロボットを可視化できます。
 
-サンプルは`roslaunch jsk_interactive_marker display_robot_state_sample.launch`で確認できます。
+サンプルは`roslaunch jsk_interactive_marker sample_display_robot_state.launch`で確認できます。
 
 `moveit_msgs/DisplayRobotState`を利用するためには、`moveit_ros_visualization`から`RobotState`を選択します.
 ![](images/rviz_moveit_robot_state.png)
