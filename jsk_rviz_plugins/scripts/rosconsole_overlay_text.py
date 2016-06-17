@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-import rospy
-from rosgraph_msgs.msg import Log
-from jsk_rviz_plugins.msg import OverlayText
 import re
+
+from jsk_rviz_plugins.msg import OverlayText
+from rosgraph_msgs.msg import Log
+import rospy
+
 
 def colored_message(msg):
     if msg.level == Log.DEBUG:
@@ -16,7 +18,7 @@ def colored_message(msg):
         return '<span style="color: red;">%s</span>' % (msg.msg)
     elif msg.level == Log.FATAL:
         return '<span style="color: red;">%s</span>' % (msg.msg)
-        
+
 
 def callback(msg):
     global lines
@@ -37,6 +39,7 @@ def callback(msg):
                 text.text = "\n".join(lines)
                 pub.publish(text)
 
+
 if __name__ == "__main__":
     rospy.init_node("rosconsole_overlay_text")
     nodes = rospy.get_param("~nodes", [])
@@ -44,9 +47,8 @@ if __name__ == "__main__":
     if nodes_regexp:
         nodes_regexp_compiled = re.compile(nodes_regexp)
     ignore_nodes = rospy.get_param("~ignore_nodes", [])
-    
     line_buffer_length = rospy.get_param("~line_buffer_length", 100)
     lines = []
-    pub = rospy.Publisher("~output", OverlayText)
     sub = rospy.Subscriber("/rosout", Log, callback)
+    pub = rospy.Publisher("~output", OverlayText, queue_size=1)
     rospy.spin()
