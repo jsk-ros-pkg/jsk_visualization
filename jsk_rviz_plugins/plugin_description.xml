@@ -284,4 +284,13 @@
       A panel widget to EmptyServiceCallInterfaceAction action
     </description>
   </class>
+
+  <class name="jsk_rviz_plugin/YesNoButton"
+         type="jsk_rviz_plugins::YesNoButtonInterface"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget for yes/no button
+    </description>
+  </class>
+
 </library>

@@ -106,6 +106,7 @@ qt4_wrap_cpp(MOC_FILES
   src/twist_stamped_display.h
   src/pose_array_display.h
   src/tf_trajectory_display.h
+  src/yes_no_button_interface.h
 )
 
 set(SOURCE_FILES
@@ -153,6 +154,7 @@ set(SOURCE_FILES
   src/twist_stamped_display.cpp
   src/pose_array_display.cpp
   src/tf_trajectory_display.cpp
+  src/yes_no_button_interface.cpp
   ${MOC_FILES}
 )
 
