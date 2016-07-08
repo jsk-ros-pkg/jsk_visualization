@@ -1356,7 +1356,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
     return;
   }
   else {
-    JSK_ROS_INFO("model name is ", model->getName().c_str());
+    JSK_ROS_INFO("model name is %s", model->getName().c_str());
   }
   if (mode_ == "robot") {
     resetRobotBase();
