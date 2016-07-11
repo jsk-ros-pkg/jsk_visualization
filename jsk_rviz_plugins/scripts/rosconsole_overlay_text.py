@@ -8,16 +8,24 @@ import rospy
 
 
 def colored_message(msg):
+    cmsg = msg.msg
+    cmsg = re.sub(r'\x1b\[31m', '<spam style="color: red">', cmsg)
+    cmsg = re.sub(r'\x1b\[32m', '<spam style="color: green">', cmsg)
+    cmsg = re.sub(r'\x1b\[33m', '<spam style="color: yellow">', cmsg)
+    cmsg = re.sub(r'\x1b\[34m', '<spam style="color: blue">', cmsg)
+    cmsg = re.sub(r'\x1b\[35m', '<spam style="color: purple">', cmsg)
+    cmsg = re.sub(r'\x1b\[36m', '<spam style="color: cyan">', cmsg)
+    cmsg = re.sub(r'\x1b\[0m', '</spam>', cmsg)
     if msg.level == Log.DEBUG:
-        return '<span style="color: rgb(120,120,120);">%s</span>' % (msg.msg)
+        return '<span style="color: rgb(120,120,120);">%s</span>' % cmsg
     elif msg.level == Log.INFO:
-        return '<span style="color: white;">%s</span>' % (msg.msg)
+        return '<span style="color: white;">%s</span>' % cmsg
     elif msg.level == Log.WARN:
-        return '<span style="color: yellow;">%s</span>' % (msg.msg)
+        return '<span style="color: yellow;">%s</span>' % cmsg
     elif msg.level == Log.ERROR:
-        return '<span style="color: red;">%s</span>' % (msg.msg)
+        return '<span style="color: red;">%s</span>' % cmsg
     elif msg.level == Log.FATAL:
-        return '<span style="color: red;">%s</span>' % (msg.msg)
+        return '<span style="color: red;">%s</span>' % cmsg
 
 
 def callback(msg):
