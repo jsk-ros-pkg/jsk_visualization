@@ -2,6 +2,20 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Show colorized ros logging on rviz overlay text
+* Fix style of code of rosconsole_overlay_text.py
+* Convert RGB to BGR precisely in video capturing
+* Support multi legs in footstep_display
+* Use small sized icons for faster adding display properties
+  Fix https://github.com/jsk-ros-pkg/jsk_visualization/issues/603
+* Cleanup jsk_rviz_plugins package.xml
+* Fix moc generation errors with boost >= 1.57 (for OS X currently)
+  Please refer to https://github.com/ros-visualization/rviz/pull/826
+* Keep aspect ratio with only specified width for OverlayImage
+* Contributors: Kentaro Wada, Eisoku Kuroiwa
+
 1.0.31 (2016-05-19)
 -------------------
 * Stop passing -z flag to ld with Clang

@@ -2,6 +2,11 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix missing cpp format string
+* Contributors: Kentaro Wada
+
 1.0.31 (2016-05-19)
 -------------------
 
