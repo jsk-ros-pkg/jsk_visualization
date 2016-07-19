@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.32 (2016-07-20)
+-------------------
 * Show colorized ros logging on rviz overlay text
 * Fix style of code of rosconsole_overlay_text.py
 * Convert RGB to BGR precisely in video capturing
