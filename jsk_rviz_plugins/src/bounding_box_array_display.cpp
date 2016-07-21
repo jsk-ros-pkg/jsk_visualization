@@ -515,7 +515,7 @@ namespace jsk_rviz_plugins
   {
     // Store latest message
     latest_msg_ = msg;
-    
+
     if (!only_edge_) {
       showBoxes(msg);
     }
