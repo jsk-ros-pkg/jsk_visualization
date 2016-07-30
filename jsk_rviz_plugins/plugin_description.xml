@@ -114,6 +114,13 @@
       visualize jsk_recognition_msgs/BoundingBoxArray
     </description>
   </class>
+  <class name="jsk_rviz_plugin/BoundingBox"
+         type="jsk_rviz_plugins::BoundingBoxDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize jsk_recognition_msgs/BoundingBox
+    </description>
+  </class>
   <class name="jsk_rviz_plugin/TorusArray"
          type="jsk_rviz_plugins::TorusArrayDisplay"
          base_class_type="rviz::Display">
