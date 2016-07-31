@@ -2,7 +2,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2015, JSK Lab
+ *  Copyright (c) 2015-2016, JSK Lab
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -92,8 +92,10 @@ public:
                                 interactive_markers::MenuHandler::CHECKED);
     server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
     initializeInteractiveMarker();
+    // Timer to update current pose on Rviz in the case which user re-enabled the plugin
+    timer_pose_ = nh.createTimer(ros::Duration(0.1), boost::bind(&Marker6DOF::timerPoseCallback, this, _1));
     if (publish_tf_) {
-      timer_ = nh.createTimer(ros::Duration(tf_duration), boost::bind(&Marker6DOF::timerCallback, this, _1));
+      timer_tf_ = nh.createTimer(ros::Duration(tf_duration), boost::bind(&Marker6DOF::timerTFCallback, this, _1));
     }
   }
   
@@ -269,13 +271,21 @@ protected:
     initializeInteractiveMarker(); // ok...?
   }
 
-  void timerCallback(const ros::TimerEvent& e) {
+  void timerPoseCallback(const ros::TimerEvent& e) {
+    boost::mutex::scoped_lock lock(mutex_);
+    geometry_msgs::PoseStamped pose = latest_pose_;
+    pose.header.stamp = e.current_real;
+    server_->setPose("marker", pose.pose, pose.header);
+    server_->applyChanges();
+  }
+
+  void timerTFCallback(const ros::TimerEvent& e) {
     boost::mutex::scoped_lock lock(mutex_);
     geometry_msgs::PoseStamped pose = latest_pose_;
     pose.header.stamp = e.current_real;
     publishTF(pose);
   }
-  
+
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   interactive_markers::MenuHandler menu_handler_;
   ros::Subscriber pose_stamped_sub_;
@@ -293,7 +303,8 @@ protected:
   bool show_6dof_circle_;
   bool publish_tf_;
   std::string tf_frame_;
-  ros::Timer timer_;
+  ros::Timer timer_pose_;
+  ros::Timer timer_tf_;
   boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster_;
   boost::mutex mutex_;
   interactive_markers::MenuHandler::EntryHandle circle_menu_entry_;
