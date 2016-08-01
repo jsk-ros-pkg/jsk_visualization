@@ -70,8 +70,8 @@ namespace jsk_rviz_plugins
     QColor getColor(size_t index,
                     const jsk_recognition_msgs::BoundingBox& box,
                     double min_value, double max_value);
-    virtual bool isValid(
-      const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
+    virtual bool isValidBoundingBox(
+      const jsk_recognition_msgs::BoundingBox box_msg);
     virtual void hideCoords();
     virtual void showCoords(
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);

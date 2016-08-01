@@ -276,24 +276,17 @@ namespace jsk_rviz_plugins
     }
   }
 
-  bool BoundingBoxArrayDisplay::isValid(
-    const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+  bool BoundingBoxArrayDisplay::isValidBoundingBox(
+    const jsk_recognition_msgs::BoundingBox box_msg)
   {
     // Check size
-    for (size_t i = 0; i < msg->boxes.size(); i++) {
-      jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
-      if (box.dimensions.x < 1.0e-9 || 
-          box.dimensions.y < 1.0e-9 ||
-          box.dimensions.z < 1.0e-9 ||
-          std::isnan(box.dimensions.x) ||
-          std::isnan(box.dimensions.y) ||
-          std::isnan(box.dimensions.z)) {
-        ROS_FATAL("Size of bounding box is [%f, %f, %f]",
-                  box.dimensions.x,
-                  box.dimensions.y,
-                  box.dimensions.z);
-        return false;
-      }
+    if (box_msg.dimensions.x < 1.0e-9 ||
+        box_msg.dimensions.y < 1.0e-9 ||
+        box_msg.dimensions.z < 1.0e-9 ||
+        std::isnan(box_msg.dimensions.x) ||
+        std::isnan(box_msg.dimensions.y) ||
+        std::isnan(box_msg.dimensions.z)) {
+      return false;
     }
     return true;
   }
@@ -311,6 +304,12 @@ namespace jsk_rviz_plugins
     }
     for (size_t i = 0; i < msg->boxes.size(); i++) {
       jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
+      if (!isValidBoundingBox(box)) {
+        ROS_WARN_THROTTLE(10, "Invalid size of bounding box is included and skipped: [%f, %f, %f]",
+          box.dimensions.x, box.dimensions.y, box.dimensions.z);
+        continue;
+      }
+
       ShapePtr shape = shapes_[i];
       Ogre::Vector3 position;
       Ogre::Quaternion orientation;
@@ -357,6 +356,12 @@ namespace jsk_rviz_plugins
 
     for (size_t i = 0; i < msg->boxes.size(); i++) {
       jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
+      if (!isValidBoundingBox(box)) {
+        ROS_WARN_THROTTLE(10, "Invalid size of bounding box is included and skipped: [%f, %f, %f]",
+          box.dimensions.x, box.dimensions.y, box.dimensions.z);
+        continue;
+      }
+
       geometry_msgs::Vector3 dimensions = box.dimensions;
       
       BillboardLinePtr edge = edges_[i];
@@ -508,9 +513,6 @@ namespace jsk_rviz_plugins
   void BoundingBoxArrayDisplay::processMessage(
     const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
   {
-    if (!isValid(msg)) {
-      return;
-    }
     // Store latest message
     latest_msg_ = msg;
     
