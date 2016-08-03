@@ -1,4 +1,5 @@
 #include <jsk_interactive_marker/transformable_interactive_server.h>
+#include <jsk_topic_tools/log_utils.h>
 
 using namespace jsk_interactive_marker;
 
@@ -412,6 +413,12 @@ bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugin
 {
   switch(req.operate.action){
   case jsk_rviz_plugins::TransformableMarkerOperate::INSERT:
+    // validation
+    if (req.operate.name.empty()) {
+      JSK_ROS_ERROR("Non empty name is required to insert object.");
+      return false;
+    }
+
     if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::BOX) {
       insertNewBox(req.operate.frame_id, req.operate.name, req.operate.description);
     } else if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER) {
