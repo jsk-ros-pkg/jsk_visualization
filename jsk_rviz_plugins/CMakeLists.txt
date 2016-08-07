@@ -83,6 +83,7 @@ qt4_wrap_cpp(MOC_FILES
   src/pie_chart_display.h
   src/diagnostics_display.h
   src/quiet_interactive_marker_display.h
+  src/bounding_box_display.h
   src/bounding_box_array_display.h
   src/torus_array_display.h
   src/overlay_diagnostic_display.h
@@ -125,6 +126,7 @@ set(SOURCE_FILES
   src/plotter_2d_display.cpp
   src/pie_chart_display.cpp
   src/diagnostics_display.cpp
+  src/bounding_box_display.cpp
   src/bounding_box_array_display.cpp
   src/torus_array_display.cpp
   src/quiet_interactive_marker_display.cpp
