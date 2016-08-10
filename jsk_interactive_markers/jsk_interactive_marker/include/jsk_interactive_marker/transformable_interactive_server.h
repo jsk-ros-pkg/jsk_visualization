@@ -68,6 +68,7 @@ namespace jsk_interactive_marker
     void focusTextPublish();
     void focusPosePublish();
     void focusObjectMarkerNamePublish();
+    void focusInteractiveManipulatorDisplay();
 
     void updateTransformableObject(TransformableObject* tobject);
 
@@ -145,6 +146,7 @@ namespace jsk_interactive_marker
     int torus_udiv_;
     int torus_vdiv_;
     bool display_interactive_manipulator_;
+    bool display_interactive_manipulator_only_selected_;
     bool strict_tf_;
     int interactive_manipulator_orientation_;
     ros::Timer tf_timer;

@@ -4,7 +4,6 @@
 using namespace jsk_interactive_marker;
 
 TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::NodeHandle("~")){
-  n_->param("display_interactive_manipulator", display_interactive_manipulator_, true);
   n_->param("interactive_manipulator_orientation", interactive_manipulator_orientation_ , 0);
   n_->param("torus_udiv", torus_udiv_, 20);
   n_->param("torus_vdiv", torus_vdiv_, 20);
@@ -89,6 +88,7 @@ void TransformableInteractiveServer::configCallback(InteractiveSettingConfig &co
   {
     boost::mutex::scoped_lock lock(mutex_);
     display_interactive_manipulator_ = config.display_interactive_manipulator;
+    display_interactive_manipulator_only_selected_ = config.display_interactive_manipulator_only_selected;
     interactive_manipulator_orientation_ = config.interactive_manipulator_orientation;
     for (std::map<string, TransformableObject* >::iterator itpairstri = transformable_objects_map_.begin(); itpairstri != transformable_objects_map_.end(); itpairstri++) {
       TransformableObject* tobject = itpairstri->second;
@@ -109,6 +109,7 @@ void TransformableInteractiveServer::processFeedback(
       focusTextPublish();
       focusPosePublish();
       focusObjectMarkerNamePublish();
+      focusInteractiveManipulatorDisplay();
       break;
 
     case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
@@ -509,6 +510,23 @@ void TransformableInteractiveServer::setControlRelativePose(geometry_msgs::Pose 
   server_->applyChanges();
 }
 
+void TransformableInteractiveServer::focusInteractiveManipulatorDisplay() {
+  if (display_interactive_manipulator_ && display_interactive_manipulator_only_selected_) {
+    for (std::map<string, TransformableObject* >::iterator it = transformable_objects_map_.begin();
+         it != transformable_objects_map_.end(); it++) {
+      std::string object_name = it->first;
+      TransformableObject* tobject = it->second;
+      // display interactive manipulator only for the focused object
+      if (object_name == focus_object_marker_name_) {
+        tobject->setDisplayInteractiveManipulator(true);
+      } else {
+        tobject->setDisplayInteractiveManipulator(false);
+      }
+      updateTransformableObject(tobject);
+    }
+  }
+}
+
 void TransformableInteractiveServer::focusTextPublish(){
   jsk_rviz_plugins::OverlayText focus_text;
   focus_text.text = focus_object_marker_name_;
@@ -606,7 +624,11 @@ void TransformableInteractiveServer::insertNewObject( TransformableObject* tobje
 void TransformableInteractiveServer::SetInitialInteractiveMarkerConfig( TransformableObject* tobject )
 {
   InteractiveSettingConfig config;
-  config.display_interactive_manipulator = display_interactive_manipulator_;
+  if (display_interactive_manipulator_ && !display_interactive_manipulator_only_selected_) {
+    config.display_interactive_manipulator = true;
+  } else {
+    config.display_interactive_manipulator = false;
+  }
   config.interactive_manipulator_orientation = interactive_manipulator_orientation_;
   tobject->setInteractiveMarkerSetting(config);
 }
