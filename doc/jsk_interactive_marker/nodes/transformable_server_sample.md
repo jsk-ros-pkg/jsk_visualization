@@ -25,6 +25,15 @@ child_marker_name: 'hand'"
   If `parent_topic_name==empty`, it uses self server,
   and only 1 hierarchy is supported.
 
+* `~display_interactive_manipulator` (Bool, default: `true`)
+
+  Flat to show the 6dof interactive manipulator for all objects.
+
+* `~display_interactive_manipulator_only_selected` (Bool, default: `false`)
+
+  Flat to show the 6dof interactive manipulator only for the selected object.
+  This flag does nothing if `~display_interactive_manipulator` is `false`.
+
 
 ## Usage
 
