@@ -58,7 +58,6 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
 
   // initialize yaml-menu-handler
   std::string yaml_filename;
-  std::string default_filename;
   n_->param("yaml_filename", yaml_filename, std::string(""));
   yaml_menu_handler_ptr_ = boost::make_shared <YamlMenuHandler> (n_, yaml_filename);
   yaml_menu_handler_ptr_->_menu_handler.insert(
