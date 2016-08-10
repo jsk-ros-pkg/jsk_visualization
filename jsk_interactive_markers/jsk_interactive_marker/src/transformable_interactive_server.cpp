@@ -61,6 +61,12 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   std::string default_filename;
   n_->param("yaml_filename", yaml_filename, std::string(""));
   yaml_menu_handler_ptr_ = boost::make_shared <YamlMenuHandler> (n_, yaml_filename);
+  yaml_menu_handler_ptr_->_menu_handler.insert(
+    "enable manipulator",
+    boost::bind(&TransformableInteractiveServer::enableInteractiveManipulatorDisplay, this, _1, /*enable=*/true));
+  yaml_menu_handler_ptr_->_menu_handler.insert(
+    "disable manipulator",
+    boost::bind(&TransformableInteractiveServer::enableInteractiveManipulatorDisplay, this, _1, /*enable=*/false));
 
   bool use_parent_and_child;
   n_->param("use_parent_and_child", use_parent_and_child, false);
@@ -508,6 +514,14 @@ void TransformableInteractiveServer::setControlRelativePose(geometry_msgs::Pose 
   server_->setPose(focus_object_marker_name_, tobject->pose_, header);
   yaml_menu_handler_ptr_->applyMenu(server_, focus_object_marker_name_);
   server_->applyChanges();
+}
+
+void TransformableInteractiveServer::enableInteractiveManipulatorDisplay(
+    const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback,
+    const bool enable) {
+  TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
+  tobject->setDisplayInteractiveManipulator(enable);
+  updateTransformableObject(tobject);
 }
 
 void TransformableInteractiveServer::focusInteractiveManipulatorDisplay() {

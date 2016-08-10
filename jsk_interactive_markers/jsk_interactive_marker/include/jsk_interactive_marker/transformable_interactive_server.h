@@ -70,6 +70,9 @@ namespace jsk_interactive_marker
     void focusObjectMarkerNamePublish();
     void focusInteractiveManipulatorDisplay();
 
+    void enableInteractiveManipulatorDisplay(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback,
+                                             const bool enable);
+
     void updateTransformableObject(TransformableObject* tobject);
 
     bool getPoseService(jsk_interactive_marker::GetTransformableMarkerPose::Request &req,jsk_interactive_marker::GetTransformableMarkerPose::Response &res, bool for_interactive_control);
