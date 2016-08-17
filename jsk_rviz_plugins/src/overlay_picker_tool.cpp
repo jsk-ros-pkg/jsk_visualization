@@ -116,6 +116,7 @@ namespace jsk_rviz_plugins
         return false;
       }
     }
+    return false;
   }
 
   void OverlayPickerTool::onClicked(rviz::ViewportMouseEvent& event)
