@@ -94,6 +94,7 @@ void TransformableInteractiveServer::configCallback(InteractiveSettingConfig &co
     boost::mutex::scoped_lock lock(mutex_);
     display_interactive_manipulator_ = config.display_interactive_manipulator;
     display_interactive_manipulator_only_selected_ = config.display_interactive_manipulator_only_selected;
+    display_description_only_selected_ = config.display_description_only_selected;
     interactive_manipulator_orientation_ = config.interactive_manipulator_orientation;
     for (std::map<string, TransformableObject* >::iterator itpairstri = transformable_objects_map_.begin(); itpairstri != transformable_objects_map_.end(); itpairstri++) {
       TransformableObject* tobject = itpairstri->second;
@@ -524,19 +525,19 @@ void TransformableInteractiveServer::enableInteractiveManipulatorDisplay(
 }
 
 void TransformableInteractiveServer::focusInteractiveManipulatorDisplay() {
-  if (display_interactive_manipulator_ && display_interactive_manipulator_only_selected_) {
-    for (std::map<string, TransformableObject* >::iterator it = transformable_objects_map_.begin();
-         it != transformable_objects_map_.end(); it++) {
-      std::string object_name = it->first;
-      TransformableObject* tobject = it->second;
+  for (std::map<string, TransformableObject* >::iterator it = transformable_objects_map_.begin();
+        it != transformable_objects_map_.end(); it++) {
+    std::string object_name = it->first;
+    TransformableObject* tobject = it->second;
+    if (display_interactive_manipulator_ && display_interactive_manipulator_only_selected_) {
       // display interactive manipulator only for the focused object
-      if (object_name == focus_object_marker_name_) {
-        tobject->setDisplayInteractiveManipulator(true);
-      } else {
-        tobject->setDisplayInteractiveManipulator(false);
-      }
-      updateTransformableObject(tobject);
+      tobject->setDisplayInteractiveManipulator(object_name == focus_object_marker_name_);
     }
+    if (display_description_only_selected_) {
+      // display description only for the focused object
+      tobject->setDisplayDescription(object_name == focus_object_marker_name_);
+    }
+    updateTransformableObject(tobject);
   }
 }
 
