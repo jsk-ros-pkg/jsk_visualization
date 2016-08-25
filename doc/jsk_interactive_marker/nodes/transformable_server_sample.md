@@ -31,8 +31,12 @@ child_marker_name: 'hand'"
 
 * `~display_interactive_manipulator_only_selected` (Bool, default: `false`)
 
-  Flat to show the 6dof interactive manipulator only for the selected object.
+  Flag to show the 6dof interactive manipulator only for the selected object.
   This flag does nothing if `~display_interactive_manipulator` is `false`.
+
+* `~display_description_only_selected` (Bool, default: `false`)
+
+  Flag to show the description only for the selected object.
 
 
 ## Usage
