@@ -88,6 +88,9 @@ namespace jsk_rviz_plugins
       = new rviz::IntProperty("text size", 14,
                               "text size",
                               this, SLOT(updateTextSize()));
+    caption_property_ = new rviz::StringProperty("caption", "PieChart",
+                                                 "text of the caption",
+                                                 this, SLOT(updateCaption()));
     show_caption_property_
       = new rviz::BoolProperty("show caption", true,
                                 "show caption",
@@ -151,6 +154,7 @@ namespace jsk_rviz_plugins
     updateMinValue();
     updateMaxValue();
     updateTextSize();
+    updateCaption();
     updateShowCaption();
     updateAutoColorChange();
     updateMaxColor();
@@ -259,7 +263,7 @@ namespace jsk_rviz_plugins
       if (show_caption_) {
         painter.drawText(0, height - caption_offset_, width, caption_offset_,
                          Qt::AlignCenter | Qt::AlignVCenter,
-                         getName());
+                         getCaption());
       }
       
       // done
@@ -359,6 +363,11 @@ namespace jsk_rviz_plugins
     
   }
   
+  void PieChartDisplay::updateCaption()
+  {
+    caption_ = caption_property_->getStdString();
+  }
+
   void PieChartDisplay::updateShowCaption()
   {
     show_caption_ = show_caption_property_->getBool();

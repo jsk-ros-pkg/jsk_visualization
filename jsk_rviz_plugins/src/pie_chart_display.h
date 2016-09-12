@@ -44,6 +44,7 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/color_property.h>
+#include <rviz/properties/string_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/ros_topic_property.h>
 #endif
@@ -64,6 +65,7 @@ namespace jsk_rviz_plugins
     virtual void setPosition(int x, int y);
     virtual int getX() { return left_; };
     virtual int getY() { return top_; };
+    virtual const char* getCaption() { return caption_.c_str(); };
 
   protected:
     virtual void subscribe();
@@ -86,6 +88,7 @@ namespace jsk_rviz_plugins
     rviz::FloatProperty* fg_alpha2_property_;
     rviz::FloatProperty* bg_alpha_property_;
     rviz::FloatProperty* text_alpha_property_;
+    rviz::StringProperty* caption_property_;
     rviz::IntProperty* text_size_property_;
     rviz::FloatProperty* max_value_property_;
     rviz::FloatProperty* min_value_property_;
@@ -101,6 +104,7 @@ namespace jsk_rviz_plugins
     QColor bg_color_;
     QColor max_color_;
     int text_size_;
+    std::string caption_;
     bool show_caption_;
     bool auto_color_change_;
     int caption_offset_;
@@ -123,6 +127,7 @@ namespace jsk_rviz_plugins
     void updateLeft();
     void updateBGColor();
     void updateTextSize();
+    void updateCaption();
     void updateFGColor();
     void updateFGAlpha();
     void updateFGAlpha2();
