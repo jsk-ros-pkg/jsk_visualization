@@ -21,7 +21,7 @@ env:
   matrix:
     - ROS_DISTRO=hydro USE_DEB=false NOT_TEST_INSTALL=true
     - ROS_DISTRO=indigo USE_DEB=true
-    - ROS_DISTRO=jade USE_DEB=false NOT_TEST_INSTALL=true
+    - ROS_DISTRO=jade USE_DEB=false NOT_TEST_INSTALL=true CATKIN_PARALLEL_JOBS='-p1' ROS_PARALLEL_JOBS='-j1' CATKIN_TOOLS_BUILD_OPTIONS="-iv --summarize --no-status"
 script:
   - source .travis/travis.sh
   # test building sphinx documentation
