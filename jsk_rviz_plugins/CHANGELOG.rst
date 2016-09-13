@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.33 (2016-09-13)
+-------------------
 * [doc/jsk_rviz_plugins/plugins/pie_chart.md, plotter_2d.md] add doc to how to change caption of overray text (Fix https://github.com/jsk-ros-pkg/jsk_visualization/issues/634)
 * [jsk_rviz_plugins/CMakeLists.txt] Install samples dir that was missing for jsk_rviz_plugins (https://github.com/jsk-ros-pkg/jsk_visualization/issues/632)
 * [jsk_rviz_plugins/samples/overlay_sample.py] Add queue_size arg for deprecated warning in overlay_sample.py (https://github.com/jsk-ros-pkg/jsk_visualization/issues/631)
