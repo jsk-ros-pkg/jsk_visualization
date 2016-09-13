@@ -122,7 +122,7 @@ namespace jsk_rviz_plugins
     text_size_property_->setMin(1);
     text_size_property_->setMax(1000);
     show_caption_property_ = new rviz::BoolProperty(
-      "caption", true,
+      "show caption", true,
       "show caption or not",
       this, SLOT(updateShowCaption()));
     update_interval_property_ = new rviz::FloatProperty(
