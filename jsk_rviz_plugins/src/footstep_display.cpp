@@ -299,6 +299,7 @@ namespace jsk_rviz_plugins
       Ogre::SceneNode* node = text_nodes_[i];
       jsk_footstep_msgs::Footstep footstep = msg->footsteps[i];
       Ogre::Vector3 step_position;
+      Ogre::Vector3 shape_position;
       Ogre::Quaternion step_quaternion;
       if( !context_->getFrameManager()->transform( msg->header, footstep.pose,
                                                    step_position,
@@ -308,7 +309,11 @@ namespace jsk_rviz_plugins
                    qPrintable( getName() ), msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
         return;
       }
-      shape->setPosition(step_position);
+      // add offset
+      Ogre::Vector3 step_offset (footstep.offset.x, footstep.offset.y, footstep.offset.z);
+      shape_position = step_position + (step_quaternion * step_offset);
+
+      shape->setPosition(shape_position);
       shape->setOrientation(step_quaternion);
       // size of shape
       Ogre::Vector3 scale;
@@ -342,7 +347,7 @@ namespace jsk_rviz_plugins
         text->setCaption("unknown");
       }
       text->setCharacterHeight(estimateTextSize(footstep));
-      node->setPosition(step_position);
+      node->setPosition(shape_position);
       node->setOrientation(step_quaternion);
       text->setVisible(show_name_); // TODO
       line_->addPoint(step_position);
