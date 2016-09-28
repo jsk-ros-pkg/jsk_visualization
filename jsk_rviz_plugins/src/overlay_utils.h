@@ -36,15 +36,25 @@
 #ifndef JSK_RVIZ_PLUGIN_OVERLAY_UTIL_H_
 #define JSK_RVIZ_PLUGIN_OVERLAY_UTIL_H_
 
-#include <OGRE/OgreOverlayManager.h>
+
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreTextureManager.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreTechnique.h>
 #include <OGRE/OgreHardwarePixelBuffer.h>
-#include <OGRE/OgrePanelOverlayElement.h>
-#include <OGRE/OgreOverlayElement.h>
-#include <OGRE/OgreOverlayContainer.h>
+// see OGRE/OgrePrerequisites.h
+//#define OGRE_VERSION    ((OGRE_VERSION_MAJOR << 16) | (OGRE_VERSION_MINOR << 8) | OGRE_VERSION_PATCH)
+#if OGRE_VERSION < ((1 << 16) | (9 << 8) | 0)
+  #include <OGRE/OgrePanelOverlayElement.h>
+  #include <OGRE/OgreOverlayElement.h>
+  #include <OGRE/OgreOverlayContainer.h>
+  #include <OGRE/OgreOverlayManager.h>
+#else
+  #include <OGRE/Overlay/OgrePanelOverlayElement.h>
+  #include <OGRE/Overlay/OgreOverlayElement.h>
+  #include <OGRE/Overlay/OgreOverlayContainer.h>
+  #include <OGRE/Overlay/OgreOverlayManager.h>
+#endif
 
 #include <QImage>
 #include <QColor>
