@@ -2,6 +2,13 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix for Ogre >= 1.9, which build fail on Jade on 14.10/15.04
+* [jsk_rviz_plugins] add offset to footstep_display.h
+* [jsk_rviz_plugin] Add rviz button interface for yes/no service request
+* Contributors: Kei Okada, Kentaro Wada, Yohei Kakiuchi
+
 1.0.33 (2016-09-13)
 -------------------
 * [doc/jsk_rviz_plugins/plugins/pie_chart.md, plotter_2d.md] add doc to how to change caption of overray text (Fix https://github.com/jsk-ros-pkg/jsk_visualization/issues/634)

@@ -2,6 +2,9 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.33 (2016-09-13)
 -------------------
 * Show description of only object which is selected `#633 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/633>`_
