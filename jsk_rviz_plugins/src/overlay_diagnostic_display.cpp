@@ -34,7 +34,7 @@
  *********************************************************************/
 
 #include "overlay_diagnostic_display.h"
-#include <OGRE/OgreOverlayManager.h>
+
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreTextureManager.h>
 #include <OGRE/OgreTexture.h>
