@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.34 (2016-09-29)
+-------------------
 * Fix for Ogre >= 1.9, which build fail on Jade on 14.10/15.04
 * [jsk_rviz_plugins] add offset to footstep_display.h
 * [jsk_rviz_plugin] Add rviz button interface for yes/no service request
