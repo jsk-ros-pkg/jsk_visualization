@@ -37,11 +37,6 @@ namespace jsk_rviz_plugins
 
   void EmptyServiceCallInterfaceAction::parseROSParameters(){
     ros::NodeHandle nh("~");
-    std::string buttons_names("emtpy_call_buttons");
-
-    //Check the buttons
-    std::string button_names;
-    nh.param<std::string>(buttons_names.c_str(), button_names, std::string(""));
 
     //icon file package file_name
     std::string icon_package_name;
