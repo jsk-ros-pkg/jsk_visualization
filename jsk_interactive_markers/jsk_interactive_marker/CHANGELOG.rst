@@ -2,6 +2,24 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.34 (2016-09-29)
+-------------------
+
+1.0.33 (2016-09-13)
+-------------------
+* Show description of only object which is selected `#633 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/633>`_
+* [jsk_interactive_marker] Mode to display interactive manipultor only when selected `#626 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/626>`_
+
+  * Refactor: remove variable which is not used
+  * Add doc symlink for jsk_interactive_marker
+  * Menu to enable/disable interactive manipulator
+  * Mode to display interactive manipultor only when selected
+
+* Validate object name is not empty to insert `#621 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/621>`_
+* Set marker pose periodically for re-enabling on rviz `#618 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/618>`_
+
+* Contributors: Kentaro Wada
+
 1.0.32 (2016-07-20)
 -------------------
 * Fix missing cpp format string

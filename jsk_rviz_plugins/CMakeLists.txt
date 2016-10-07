@@ -83,6 +83,7 @@ qt4_wrap_cpp(MOC_FILES
   src/pie_chart_display.h
   src/diagnostics_display.h
   src/quiet_interactive_marker_display.h
+  src/bounding_box_display.h
   src/bounding_box_array_display.h
   src/torus_array_display.h
   src/overlay_diagnostic_display.h
@@ -105,6 +106,7 @@ qt4_wrap_cpp(MOC_FILES
   src/twist_stamped_display.h
   src/pose_array_display.h
   src/tf_trajectory_display.h
+  src/yes_no_button_interface.h
 )
 
 set(SOURCE_FILES
@@ -125,6 +127,7 @@ set(SOURCE_FILES
   src/plotter_2d_display.cpp
   src/pie_chart_display.cpp
   src/diagnostics_display.cpp
+  src/bounding_box_display.cpp
   src/bounding_box_array_display.cpp
   src/torus_array_display.cpp
   src/quiet_interactive_marker_display.cpp
@@ -151,6 +154,7 @@ set(SOURCE_FILES
   src/twist_stamped_display.cpp
   src/pose_array_display.cpp
   src/tf_trajectory_display.cpp
+  src/yes_no_button_interface.cpp
   ${MOC_FILES}
 )
 
@@ -169,7 +173,7 @@ install(TARGETS jsk_rviz_plugins
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
-install(DIRECTORY scripts launch cfg icons
+install(DIRECTORY cfg icons launch samples scripts
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
 install(DIRECTORY ./src/

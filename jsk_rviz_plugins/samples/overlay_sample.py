@@ -10,8 +10,8 @@ import rospy
 import math
 rospy.init_node("overlay_sample")
 
-text_pub = rospy.Publisher("text_sample", OverlayText)
-value_pub = rospy.Publisher("value_sample", Float32)
+text_pub = rospy.Publisher("text_sample", OverlayText, queue_size=1)
+value_pub = rospy.Publisher("value_sample", Float32, queue_size=1)
 counter = 0
 rate = 100
 r = rospy.Rate(rate)

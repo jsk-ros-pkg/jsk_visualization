@@ -33,21 +33,21 @@
  *********************************************************************/
 
 #include "bounding_box_display_common.h"
-#include "bounding_box_array_display.h"
+#include "bounding_box_display.h"
 #include <jsk_topic_tools/color_utils.h>
 
 namespace jsk_rviz_plugins
 {
 
-  BoundingBoxArrayDisplay::BoundingBoxArrayDisplay()
+  BoundingBoxDisplay::BoundingBoxDisplay()
   {
     coloring_property_ = new rviz::EnumProperty(
-      "coloring", "Auto",
+      "coloring", "Flat color",
       "coloring method",
       this, SLOT(updateColoring()));
-    coloring_property_->addOption("Flat color", 1);
-    coloring_property_->addOption("Label", 2);
-    coloring_property_->addOption("Value", 3);
+    coloring_property_->addOption("Flat color", 0);
+    coloring_property_->addOption("Label", 1);
+    coloring_property_->addOption("Value", 2);
 
     color_property_ = new rviz::ColorProperty(
       "color", QColor(25, 255, 0),
@@ -71,7 +71,7 @@ namespace jsk_rviz_plugins
       this, SLOT(updateShowCoords()));
   }
 
-  BoundingBoxArrayDisplay::~BoundingBoxArrayDisplay()
+  BoundingBoxDisplay::~BoundingBoxDisplay()
   {
     delete color_property_;
     delete alpha_property_;
@@ -80,7 +80,7 @@ namespace jsk_rviz_plugins
     delete show_coords_property_;
   }
 
-  void BoundingBoxArrayDisplay::onInitialize()
+  void BoundingBoxDisplay::onInitialize()
   {
     MFDClass::onInitialize();
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -93,7 +93,7 @@ namespace jsk_rviz_plugins
     updateShowCoords();
   }
 
-  void BoundingBoxArrayDisplay::updateLineWidth()
+  void BoundingBoxDisplay::updateLineWidth()
   {
     line_width_ = line_width_property_->getFloat();
     if (latest_msg_) {
@@ -101,7 +101,7 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void BoundingBoxArrayDisplay::updateColor()
+  void BoundingBoxDisplay::updateColor()
   {
     color_ = color_property_->getColor();
     if (latest_msg_) {
@@ -109,7 +109,7 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void BoundingBoxArrayDisplay::updateAlpha()
+  void BoundingBoxDisplay::updateAlpha()
   {
     alpha_ = alpha_property_->getFloat();
     if (latest_msg_) {
@@ -117,7 +117,7 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void BoundingBoxArrayDisplay::updateOnlyEdge()
+  void BoundingBoxDisplay::updateOnlyEdge()
   {
     only_edge_ = only_edge_property_->getBool();
     if (only_edge_) {
@@ -126,32 +126,22 @@ namespace jsk_rviz_plugins
     else {
       line_width_property_->hide();;
     }
-    // Imediately apply attribute
     if (latest_msg_) {
-      if (only_edge_) {
-        showEdges(latest_msg_);
-      }
-      else {
-        showBoxes(latest_msg_);
-      }
+      processMessage(latest_msg_);
     }
   }
 
-  void BoundingBoxArrayDisplay::updateColoring()
+  void BoundingBoxDisplay::updateColoring()
   {
     if (coloring_property_->getOptionInt() == 0) {
-      coloring_method_ = "auto";
-      color_property_->hide();
-    }
-    else if (coloring_property_->getOptionInt() == 1) {
       coloring_method_ = "flat";
       color_property_->show();
     }
-    else if (coloring_property_->getOptionInt() == 2) {
+    else if (coloring_property_->getOptionInt() == 1) {
       coloring_method_ = "label";
       color_property_->hide();
     }
-    else if (coloring_property_->getOptionInt() == 3) {
+    else if (coloring_property_->getOptionInt() == 2) {
       coloring_method_ = "value";
       color_property_->hide();
     }
@@ -161,19 +151,19 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void BoundingBoxArrayDisplay::updateShowCoords()
+  void BoundingBoxDisplay::updateShowCoords()
   {
     show_coords_ = show_coords_property_->getBool();
     // Immediately apply show_coords attribute
     if (!show_coords_) {
       hideCoords();
     }
-    else if (show_coords_ && latest_msg_) {
-      showCoords(latest_msg_);
+    else if (latest_msg_) {
+      processMessage(latest_msg_);
     }
   }
 
-  void BoundingBoxArrayDisplay::reset()
+  void BoundingBoxDisplay::reset()
   {
     MFDClass::reset();
     shapes_.clear();
@@ -183,21 +173,28 @@ namespace jsk_rviz_plugins
     latest_msg_.reset();
   }
 
-  void BoundingBoxArrayDisplay::processMessage(
-    const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+  void BoundingBoxDisplay::processMessage(
+    const jsk_recognition_msgs::BoundingBox::ConstPtr& msg)
   {
     // Store latest message
     latest_msg_ = msg;
 
+    // Convert bbox to bbox_array to show it
+    jsk_recognition_msgs::BoundingBoxArrayPtr bbox_array_msg(new jsk_recognition_msgs::BoundingBoxArray);
+    bbox_array_msg->header = msg->header;
+    std::vector<jsk_recognition_msgs::BoundingBox> boxes;
+    boxes.push_back(*msg);
+    bbox_array_msg->boxes = boxes;
+
     if (!only_edge_) {
-      showBoxes(msg);
+      showBoxes(bbox_array_msg);
     }
     else {
-      showEdges(msg);
+      showEdges(bbox_array_msg);
     }
 
     if (show_coords_) {
-      showCoords(msg);
+      showCoords(bbox_array_msg);
     }
     else {
       hideCoords();
@@ -207,4 +204,4 @@ namespace jsk_rviz_plugins
 }  // namespace jsk_rviz_plugins
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::BoundingBoxArrayDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::BoundingBoxDisplay, rviz::Display)

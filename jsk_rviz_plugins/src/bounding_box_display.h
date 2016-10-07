@@ -2,7 +2,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, JSK Lab
+ *  Copyright (c) 2016, JSK Lab
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
-#define JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
+#ifndef JSK_RVIZ_PLUGINS_BOUDNING_BOX_DISPLAY_H_
+#define JSK_RVIZ_PLUGINS_BOUDNING_BOX_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
 #include "bounding_box_display_common.h"
@@ -53,12 +53,12 @@
 namespace jsk_rviz_plugins
 {
 
-  class BoundingBoxArrayDisplay: public BoundingBoxDisplayCommon<jsk_recognition_msgs::BoundingBoxArray>
+  class BoundingBoxDisplay: public BoundingBoxDisplayCommon<jsk_recognition_msgs::BoundingBox>
   {
     Q_OBJECT
   public:
-    BoundingBoxArrayDisplay();
-    virtual ~BoundingBoxArrayDisplay();
+    BoundingBoxDisplay();
+    virtual ~BoundingBoxDisplay();
   protected:
     void onInitialize();
     virtual void reset();
@@ -73,7 +73,7 @@ namespace jsk_rviz_plugins
     rviz::FloatProperty* line_width_property_;
     rviz::BoolProperty* show_coords_property_;
 
-    jsk_recognition_msgs::BoundingBoxArray::ConstPtr latest_msg_;
+    jsk_recognition_msgs::BoundingBox::ConstPtr latest_msg_;
   protected Q_SLOTS:
     void updateColor();
     void updateAlpha();
@@ -83,9 +83,9 @@ namespace jsk_rviz_plugins
     void updateShowCoords();
   private:
     void processMessage(
-      const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
+      const jsk_recognition_msgs::BoundingBox::ConstPtr& msg);
   };
 
 }  // namespace jsk_rviz_plugins
 
-#endif  // JSK_RVIZ_PLUGINS_BOUDNING_BOX_ARRAY_DISPLAY_H_
+#endif  // JSK_RVIZ_PLUGINS_BOUDNING_BOX_DISPLAY_H_
