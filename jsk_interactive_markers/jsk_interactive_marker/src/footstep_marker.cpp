@@ -101,11 +101,11 @@ plan_run_(false), lleg_first_(true) {
   
   if (pnh.getParam("initial_reference_frame", initial_reference_frame_)) {
     use_initial_reference_ = true;
-    JSK_ROS_INFO_STREAM("initial_reference_frame: " << initial_reference_frame_);
+    ROS_INFO_STREAM("initial_reference_frame: " << initial_reference_frame_);
   }
   else {
     use_initial_reference_ = false;
-    JSK_ROS_INFO("initial_reference_frame is not specified ");
+    ROS_INFO("initial_reference_frame is not specified ");
   }
 
   server_.reset( new interactive_markers::InteractiveMarkerServer(ros::this_node::getName()));
@@ -469,10 +469,10 @@ void FootstepMarker::changePlannerHeuristic(const std::string& heuristic)
   jsk_interactive_marker::SetHeuristic heuristic_req;
   heuristic_req.request.heuristic = heuristic;
   if (!ros::service::call("/footstep_planner/set_heuristic", heuristic_req)) {
-    JSK_ROS_ERROR("failed to set heuristic");
+    ROS_ERROR("failed to set heuristic");
   }
   else {
-    JSK_ROS_INFO("Success to set heuristic: %s", heuristic.c_str());
+    ROS_INFO("Success to set heuristic: %s", heuristic.c_str());
   }
 }
 

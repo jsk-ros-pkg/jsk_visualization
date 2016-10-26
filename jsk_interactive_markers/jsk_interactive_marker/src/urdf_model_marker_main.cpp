@@ -111,7 +111,7 @@ public:
     if (model_config_.hasMember("use_visible_color")) {
       use_visible_color_ = model_config_["use_visible_color"];
     }
-    JSK_ROS_INFO_STREAM("use_visible_color: " << use_visible_color_);
+    ROS_INFO_STREAM("use_visible_color: " << use_visible_color_);
     //frame id
     frame_id_.assign(model_config_["frame-id"]);
 
@@ -179,20 +179,20 @@ public:
     else {
       display_ = true;
     }
-    JSK_ROS_INFO("Loading model config");
-    JSK_ROS_INFO("model_name: %s", model_name_.c_str());
-    JSK_ROS_INFO("model_description: %s", model_description_.c_str());
-    JSK_ROS_INFO("scale_factor: %f", scale_factor_);
-    JSK_ROS_INFO_STREAM("pose_stamped: " << pose_stamped_);
-    JSK_ROS_INFO_STREAM("root_offset: " << root_offset_);
-    JSK_ROS_INFO_STREAM("frame_id: " << frame_id_);
-    JSK_ROS_INFO_STREAM("mode: " << mode_);
-    JSK_ROS_INFO_STREAM("registration: " << registration_);
+    ROS_INFO("Loading model config");
+    ROS_INFO("model_name: %s", model_name_.c_str());
+    ROS_INFO("model_description: %s", model_description_.c_str());
+    ROS_INFO("scale_factor: %f", scale_factor_);
+    ROS_INFO_STREAM("pose_stamped: " << pose_stamped_);
+    ROS_INFO_STREAM("root_offset: " << root_offset_);
+    ROS_INFO_STREAM("frame_id: " << frame_id_);
+    ROS_INFO_STREAM("mode: " << mode_);
+    ROS_INFO_STREAM("registration: " << registration_);
 
 
-    //JSK_ROS_INFO_STREAM("fixed_link: " << fixed_link_);
-    JSK_ROS_INFO_STREAM("model_file: " << model_file_);
-    JSK_ROS_INFO_STREAM("use_robot_description: " << use_robot_description_);
+    //ROS_INFO_STREAM("fixed_link: " << fixed_link_);
+    ROS_INFO_STREAM("model_file: " << model_file_);
+    ROS_INFO_STREAM("use_robot_description: " << use_robot_description_);
   }
 
   void addUrdfMarker() {
