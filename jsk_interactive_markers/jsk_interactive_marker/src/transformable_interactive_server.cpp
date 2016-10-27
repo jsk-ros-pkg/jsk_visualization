@@ -422,7 +422,7 @@ bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugin
   case jsk_rviz_plugins::TransformableMarkerOperate::INSERT:
     // validation
     if (req.operate.name.empty()) {
-      JSK_ROS_ERROR("Non empty name is required to insert object.");
+      ROS_ERROR("Non empty name is required to insert object.");
       return false;
     }
 

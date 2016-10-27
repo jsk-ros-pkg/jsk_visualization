@@ -448,7 +448,7 @@ namespace jsk_rviz_plugins
     if (font_index < font_families_.size()) {
       font_ = font_families_[font_index].toStdString();
     } else {
-      JSK_ROS_FATAL("Unexpected error at selecting font index %d.", font_index);
+      ROS_FATAL("Unexpected error at selecting font index %d.", font_index);
       return;
     }
     if (overtake_color_properties_) {

@@ -213,7 +213,7 @@ void UrdfModelMarker::setRootPose (geometry_msgs::PoseStamped ps) {
     
   }
   catch (tf::TransformException ex) {
-    JSK_ROS_ERROR("%s",ex.what());
+    ROS_ERROR("%s",ex.what());
   }
 
 }
@@ -242,7 +242,7 @@ void UrdfModelMarker::resetJointStatesCB(const sensor_msgs::JointStateConstPtr &
 
 
 void UrdfModelMarker::proc_feedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, string parent_frame_id, string frame_id) {
-  JSK_ROS_INFO("proc_feedback");
+  ROS_INFO("proc_feedback");
   switch (feedback->event_type) {
   case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
   case visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP:
@@ -346,7 +346,7 @@ void UrdfModelMarker::resetRobotBase() {
     root_pose_ = Transform2Pose(ts_msg.transform);
   }
   catch (tf::TransformException ex) {
-    JSK_ROS_ERROR("%s",ex.what());
+    ROS_ERROR("%s",ex.what());
   }
 }
 
@@ -379,7 +379,7 @@ void UrdfModelMarker::resetRootForVisualization() {
           }
         }
         catch (tf::TransformException ex) {
-          JSK_ROS_ERROR("Failed to lookup transformation from %s to %s: %s",
+          ROS_ERROR("Failed to lookup transformation from %s to %s: %s",
                         source_frame.c_str(), target_frame.c_str(),
                         ex.what());
         }
@@ -516,7 +516,7 @@ void UrdfModelMarker::setUrdfCB(const std_msgs::StringConstPtr &msg) {
 
   model = parseURDF(msg->data);
   if (!model) {
-    JSK_ROS_ERROR("Model Parsing the xml failed");
+    ROS_ERROR("Model Parsing the xml failed");
     return;
   }
   addChildLinkNames(model->getRoot(), true, true);
@@ -921,7 +921,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
   double scale_factor = 1.02;
   string link_frame_name_ =  tf_prefix_ + link->name;
   string parent_link_frame_name_;
-  JSK_ROS_INFO("link_frame_name: %s", link_frame_name_.c_str());
+  ROS_INFO("link_frame_name: %s", link_frame_name_.c_str());
   if (root) {
     parent_link_frame_name_ = frame_id_;
     //ps.pose = root_pose_;
@@ -1046,7 +1046,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
           mesh_scale.x = mesh->scale.x;
           mesh_scale.y = mesh->scale.y;
           mesh_scale.z = mesh->scale.z;
-          JSK_ROS_INFO("make mesh marker from %s", model_mesh_.c_str());
+          ROS_INFO("make mesh marker from %s", model_mesh_.c_str());
           if (use_color) {
             meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale, color);
           }
@@ -1059,7 +1059,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
           ps.pose = UrdfPose2Pose(link_visual->origin);
           double length = cylinder->length;
           double radius = cylinder->radius;
-          JSK_ROS_INFO_STREAM("cylinder " << link->name << ", length =  " << length << ", radius " << radius);
+          ROS_INFO_STREAM("cylinder " << link->name << ", length =  " << length << ", radius " << radius);
           if (use_color) {
             meshControl = makeCylinderMarkerControl(ps, length, radius, color, true);
           }
@@ -1071,7 +1071,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
           boost::shared_ptr<const Box> box = boost::static_pointer_cast<const Box>(link_visual->geometry);
           ps.pose = UrdfPose2Pose(link_visual->origin);
           Vector3 dim = box->dim;
-          JSK_ROS_INFO_STREAM("box " << link->name << ", dim =  " << dim.x << ", " << dim.y << ", " << dim.z);
+          ROS_INFO_STREAM("box " << link->name << ", dim =  " << dim.x << ", " << dim.y << ", " << dim.z);
           if (use_color) {
             meshControl = makeBoxMarkerControl(ps, dim, color, true);
           }
@@ -1179,7 +1179,7 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
     ros::service::waitForService("publish_tf", -1);
     dynamic_tf_publisher_publish_tf_client = nh_.serviceClient<std_srvs::Empty>("publish_tf", true);
   }
-  JSK_ROS_INFO_STREAM("use_dynamic_tf_ is " << use_dynamic_tf_);
+  ROS_INFO_STREAM("use_dynamic_tf_ is " << use_dynamic_tf_);
 
   if (index != -1) {
     stringstream ss;
@@ -1319,17 +1319,17 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
   std::string xml_string;
 
   if (use_robot_description_) {
-    JSK_ROS_INFO("loading robot_description from parameter %s", model_file_.c_str());
+    ROS_INFO("loading robot_description from parameter %s", model_file_.c_str());
     nh_.getParam(model_file_, xml_string);
 
   }
   else {
-    JSK_ROS_INFO_STREAM("loading model_file: " << model_file_);
+    ROS_INFO_STREAM("loading model_file: " << model_file_);
     model_file_ = getFilePathFromRosPath(model_file_);
     model_file_ = getFullPathFromModelPath(model_file_);
     try {
       if (!boost::filesystem::exists(model_file_.c_str())) {
-        JSK_ROS_ERROR("%s does not exists", model_file_.c_str());
+        ROS_ERROR("%s does not exists", model_file_.c_str());
       }
       else {
         std::fstream xml_file(model_file_.c_str(), std::fstream::in);
@@ -1340,23 +1340,23 @@ UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, s
           xml_string += (line + "\n");
         }
         xml_file.close();
-        JSK_ROS_INFO_STREAM("finish loading model_file: " << model_file_);
+        ROS_INFO_STREAM("finish loading model_file: " << model_file_);
       }
     }
     catch (...) {
-      JSK_ROS_ERROR("model or mesh not found: %s", model_file_.c_str());
-      JSK_ROS_ERROR("Please check GAZEBO_MODEL_PATH");
+      ROS_ERROR("model or mesh not found: %s", model_file_.c_str());
+      ROS_ERROR("Please check GAZEBO_MODEL_PATH");
     }
   }
-  JSK_ROS_INFO("xml_string is %lu size", xml_string.length());
+  ROS_INFO("xml_string is %lu size", xml_string.length());
   model = parseURDF(xml_string);
 
   if (!model) {
-    JSK_ROS_ERROR("ERROR: Model Parsing the xml failed");
+    ROS_ERROR("ERROR: Model Parsing the xml failed");
     return;
   }
   else {
-    JSK_ROS_INFO("model name is %s", model->getName().c_str());
+    ROS_INFO("model name is %s", model->getName().c_str());
   }
   if (mode_ == "robot") {
     resetRobotBase();
