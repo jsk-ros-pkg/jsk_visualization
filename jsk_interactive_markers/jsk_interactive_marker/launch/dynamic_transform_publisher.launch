@@ -1,0 +1,31 @@
+<launch>
+  <arg name="node_name1" default="dynamic_transform_publisher1" />
+  <arg name="node_name2" default="dynamic_transform_publisher2" />
+  <arg name="parent_frame_id" default="base_link" />
+  <arg name="frame_id1" default="dynamic_link1" />
+  <arg name="frame_id2" default="dynamic_link2" />
+
+  <node name="$(arg node_name1)"
+        pkg="jsk_interactive_marker" type="dynamic_transform_publisher"
+        clear_params="true">
+    <param name="parent_frame_id" type="string" value="$(arg parent_frame_id)" />
+    <param name="frame_id" type="string" value="$(arg frame_id1)" />
+    <param name="x" value="1.0" />
+    <param name="y" value="1.0" />
+    <param name="z" value="1.0" />
+  </node>
+  <node name="$(arg node_name2)"
+        pkg="jsk_interactive_marker" type="dynamic_transform_publisher"
+        clear_params="true">
+    <param name="parent_frame_id" type="string" value="$(arg frame_id1)" />
+    <param name="frame_id" type="string" value="$(arg frame_id2)" />
+    <param name="x" value="-2.0" />
+    <param name="y" value="-2.0" />
+    <param name="z" value="-2.0" />
+  </node>
+
+  <node pkg="rviz" type="rviz" name="rviz"
+        args="-d $(find jsk_interactive_marker)/config/dynamic_transform_publisher.rviz"
+        respawn="true"/>
+
+</launch>
