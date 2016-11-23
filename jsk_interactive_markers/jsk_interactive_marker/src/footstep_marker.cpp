@@ -42,7 +42,7 @@
 #include <jsk_footstep_msgs/PlanFootstepsGoal.h>
 #include <jsk_footstep_msgs/PlanFootstepsResult.h>
 #include <std_srvs/Empty.h>
-#include <jsk_pcl_ros/CallSnapIt.h>
+#include <jsk_recognition_msgs/CallSnapIt.h>
 #include <Eigen/StdVector>
 #include <eigen_conversions/eigen_msg.h>
 #include <tf_conversions/tf_eigen.h>
@@ -91,7 +91,7 @@ plan_run_(false), lleg_first_(true) {
   pnh.param("no_wait", nowait, true);
   pnh.param("frame_id", marker_frame_id_, std::string("/map"));
   footstep_pub_ = nh.advertise<jsk_footstep_msgs::FootstepArray>("footstep_from_marker", 1);
-  snapit_client_ = nh.serviceClient<jsk_pcl_ros::CallSnapIt>("snapit");
+  snapit_client_ = nh.serviceClient<jsk_recognition_msgs::CallSnapIt>("snapit");
   snapped_pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("snapped_pose", 1);
   current_pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("current_pose", 1);
   estimate_occlusion_client_ = nh.serviceClient<std_srvs::Empty>("require_estimation");
@@ -296,7 +296,7 @@ void FootstepMarker::resetLegPoses() {
 
 geometry_msgs::Pose FootstepMarker::computeLegTransformation(uint8_t leg) {
   geometry_msgs::Pose new_pose;
-  jsk_pcl_ros::CallSnapIt srv;
+  jsk_recognition_msgs::CallSnapIt srv;
   srv.request.request.header.stamp = ros::Time::now();
   srv.request.request.header.frame_id = marker_frame_id_;
   srv.request.request.target_plane.header.stamp = ros::Time::now();
