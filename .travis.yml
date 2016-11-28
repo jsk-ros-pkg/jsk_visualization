@@ -22,8 +22,11 @@ env:
     - ROS_DISTRO=hydro USE_DEB=false NOT_TEST_INSTALL=true
     - ROS_DISTRO=indigo USE_DEB=true
     - ROS_DISTRO=jade USE_DEB=true
-    # TODO(unknown): run tests on kinetic
-    - ROS_DISTRO=kinetic USE_DEB=false TEST_PKGS=''
+    # TODO(unknown): run test and build jsk_interactiveXXX
+    - ROS_DISTRO=kinetic
+      USE_DEB=false
+      BUILD_PKGS='jsk_rqt_plugins jsk_rviz_plugins'
+      TEST_PKGS=''
 script:
   - source .travis/travis.sh
   # test building sphinx documentation
