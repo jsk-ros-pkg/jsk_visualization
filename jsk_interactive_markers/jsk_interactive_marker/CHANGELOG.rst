@@ -2,6 +2,20 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* ** Major Release** : Migrate srv files from jsk_pcl_ros to jsk_recognition_msgs ( `#644 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/644>`_ )
+  see
+  - https://github.com/jsk-ros-pkg/jsk_recognition/pull/1827
+  - https://github.com/jsk-ros-pkg/jsk_recognition/pull/1914
+  from this version, this package requires jsk_recognition higher than 1.0.0
+* Remove dependency: jsk_interactive_marker on jsk_pcl_ros
+* Stop using deprecated jsk_topic_tools/log_utils.h
+  see
+  - https://github.com/jsk-ros-pkg/jsk_common/pull/1462
+  - https://github.com/jsk-ros-pkg/jsk_common/issues/1461
+* Contributors: Kei Okada, Kentaro Wada
+
 1.0.34 (2016-09-29)
 -------------------
 

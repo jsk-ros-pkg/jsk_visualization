@@ -2,6 +2,15 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Stop using deprecated jsk_topic_tools/log_utils.h
+  see
+  - https://github.com/jsk-ros-pkg/jsk_common/pull/1462
+  - https://github.com/jsk-ros-pkg/jsk_common/issues/1461
+* [jsk_rviz_plugins/src/empty_service_call_interface.cpp] remove unused variables.
+* Contributors: Kentaro Wada, MasakiMurooka
+
 1.0.34 (2016-09-29)
 -------------------
 * Fix for Ogre >= 1.9, which build fail on Jade on 14.10/15.04
