@@ -46,9 +46,9 @@
 #include <Eigen/StdVector>
 #include <eigen_conversions/eigen_msg.h>
 #include <tf_conversions/tf_eigen.h>
-#include <jsk_pcl_ros/geo_util.h>
-#include <jsk_pcl_ros/pcl_conversion_util.h>
-#include <jsk_pcl_ros/tf_listener_singleton.h>
+#include <jsk_recognition_utils/geo_util.h>
+#include <jsk_recognition_utils/pcl_conversion_util.h>
+#include <jsk_recognition_utils/tf_listener_singleton.h>
 #include <jsk_interactive_marker/SnapFootPrint.h>
 #include <jsk_interactive_marker/SnapFootPrintInput.h>
 #include <jsk_interactive_marker/SetHeuristic.h>

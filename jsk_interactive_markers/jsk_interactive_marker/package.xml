@@ -26,7 +26,6 @@
   <build_depend>tf</build_depend>
   <build_depend>jsk_footstep_msgs</build_depend>
   <build_depend>actionlib</build_depend>
-  <build_depend>jsk_pcl_ros</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>tf_conversions</build_depend>
   <build_depend>tinyxml</build_depend>
@@ -54,7 +53,6 @@
   <run_depend>tf</run_depend>
   <run_depend>jsk_footstep_msgs</run_depend>
   <run_depend>actionlib</run_depend>
-  <run_depend>jsk_pcl_ros</run_depend>
   <run_depend>eigen_conversions</run_depend>
   <run_depend>tf_conversions</run_depend>
   <run_depend>roscpp</run_depend>
