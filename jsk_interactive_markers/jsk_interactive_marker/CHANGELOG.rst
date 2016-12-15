@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.1 (2016-12-15)
+------------------
 * Fix jsk_recognition_msgs>=1.0.0 dep by jsk_interactive_marker
 * Contributors: Kentaro Wada
 
