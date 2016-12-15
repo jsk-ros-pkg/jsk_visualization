@@ -2,6 +2,9 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.0.0 (2016-12-14)
 ------------------
 * Stop using deprecated jsk_topic_tools/log_utils.h

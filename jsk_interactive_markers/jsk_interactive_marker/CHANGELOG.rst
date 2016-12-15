@@ -2,6 +2,11 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix jsk_recognition_msgs>=1.0.0 dep by jsk_interactive_marker
+* Contributors: Kentaro Wada
+
 2.0.0 (2016-12-14)
 ------------------
 * ** Major Release** : Migrate srv files from jsk_pcl_ros to jsk_recognition_msgs ( `#644 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/644>`_ )
