@@ -54,8 +54,12 @@ include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 
-find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-include(${QT_USE_FILE})
+if(rviz_QT_VERSION VERSION_LESS "5")
+  find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+  include(${QT_USE_FILE})
+else()
+  find_package(Qt5Widgets REQUIRED)
+endif()
 add_definitions(-DQT_NO_KEYWORDS -g)
 
 
@@ -66,7 +70,8 @@ add_definitions(-DQT_NO_KEYWORDS -g)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 #set(SOURCE_FILES src/ambient_sound_display.cpp src/ambient_sound_visual.cpp)
-qt4_wrap_cpp(MOC_FILES
+
+set(HEADER_FILES
   src/ambient_sound_display_groovy.h
   src/select_point_cloud_publish_action.h
   src/footstep_display.h
@@ -108,6 +113,12 @@ qt4_wrap_cpp(MOC_FILES
   src/tf_trajectory_display.h
   src/yes_no_button_interface.h
 )
+
+if(rviz_QT_VERSION VERSION_LESS "5")
+  qt4_wrap_cpp(MOC_FILES ${HEADER_FILES})
+else()
+  qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
+endif()
 
 set(SOURCE_FILES
   src/ambient_sound_display_groovy.cpp
@@ -159,7 +170,11 @@ set(SOURCE_FILES
 )
 
 add_library(jsk_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
-target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+if(rviz_QT_VERSION VERSION_LESS "5")
+  target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+else()
+  target_link_libraries(jsk_rviz_plugins Qt5::Widgets ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+endif()
 add_dependencies(jsk_rviz_plugins jsk_hark_msgs_gencpp ${PROJECT_NAME}_gencpp)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
