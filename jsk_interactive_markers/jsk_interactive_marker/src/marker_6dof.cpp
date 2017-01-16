@@ -38,6 +38,7 @@
 #include <interactive_markers/tools.h>
 #include <interactive_markers/menu_handler.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf_conversions/tf_eigen.h>
 #include <jsk_topic_tools/rosparam_utils.h>
@@ -79,6 +80,7 @@ public:
     pnh.param("line_width", line_width_, 0.007);
     if (publish_tf_) {
       tf_broadcaster_.reset(new tf::TransformBroadcaster);
+      tf_listener_.reset(new tf::TransformListener);
     }
     latest_pose_.header.frame_id = frame_id_;
     
@@ -242,7 +244,9 @@ protected:
 
   void publishTF(const geometry_msgs::PoseStamped& pose) {
     tf::Transform transform;
-    tf::poseMsgToTF(pose.pose, transform);
+    geometry_msgs::PoseStamped transformed_pose;
+    tf_listener_->transformPose(frame_id_, ros::Time(0), pose, pose.header.frame_id, transformed_pose);
+    tf::poseMsgToTF(transformed_pose.pose, transform);
     tf_broadcaster_->sendTransform(tf::StampedTransform(
                                      transform, pose.header.stamp,
                                      frame_id_,
@@ -306,6 +310,7 @@ protected:
   ros::Timer timer_pose_;
   ros::Timer timer_tf_;
   boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster_;
+  boost::shared_ptr<tf::TransformListener> tf_listener_;
   boost::mutex mutex_;
   interactive_markers::MenuHandler::EntryHandle circle_menu_entry_;
   geometry_msgs::PoseStamped latest_pose_;
