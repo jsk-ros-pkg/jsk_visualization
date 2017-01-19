@@ -260,6 +260,8 @@ protected:
     geometry_msgs::PoseStamped pose;
     pose.header = feedback->header;
     pose.pose = feedback->pose;
+    // frame_id of feedback pose is one set on RViz and can be different from the expected one (frame_id_).
+    tf_listener_->transformPose(frame_id_, ros::Time(0), pose, pose.header.frame_id, pose);
     latest_pose_ = pose;
     pose_pub_.publish(pose);
   }
