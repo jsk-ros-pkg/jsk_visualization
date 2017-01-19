@@ -47,7 +47,6 @@ class Marker6DOF {
 public:
   Marker6DOF(): show_6dof_circle_(true) {
     ros::NodeHandle nh, pnh("~");
-    pnh.param("frame_id", frame_id_, std::string("/map"));
     pnh.param("publish_tf", publish_tf_, false);
     pnh.param("tf_frame", tf_frame_, std::string("object"));
     double tf_duration;
@@ -60,6 +59,9 @@ public:
     pnh.param("object_g", object_g_, 1.0);
     pnh.param("object_b", object_b_, 1.0);
     pnh.param("object_a", object_a_, 1.0);
+    std::string frame_id;
+    pnh.param("frame_id", frame_id, std::string("/map"));
+    latest_pose_.header.frame_id = frame_id;
     double initial_x, initial_y, initial_z;
     pnh.param("initial_x", initial_x, 0.0);
     pnh.param("initial_y", initial_y, 0.0);
@@ -80,9 +82,7 @@ public:
     pnh.param("line_width", line_width_, 0.007);
     if (publish_tf_) {
       tf_broadcaster_.reset(new tf::TransformBroadcaster);
-      tf_listener_.reset(new tf::TransformListener);
     }
-    latest_pose_.header.frame_id = frame_id_;
     
     pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("pose", 1);
     pose_stamped_sub_ = pnh.subscribe("move_marker", 1, &Marker6DOF::moveMarkerCB, this);
@@ -243,15 +243,11 @@ protected:
   }
 
   void publishTF(const geometry_msgs::PoseStamped& pose) {
-    if (pose.header.frame_id != frame_id_) {
-      ROS_ERROR("Expected frame_id is [%s] but the pose has [%s].", frame_id_.c_str(), pose.header.frame_id.c_str());
-      return;
-    }
     tf::Transform transform;
     tf::poseMsgToTF(pose.pose, transform);
     tf_broadcaster_->sendTransform(tf::StampedTransform(
                                      transform, pose.header.stamp,
-                                     frame_id_,
+                                     pose.header.frame_id,
                                      tf_frame_));
   }
   
@@ -260,8 +256,6 @@ protected:
     geometry_msgs::PoseStamped pose;
     pose.header = feedback->header;
     pose.pose = feedback->pose;
-    // frame_id of feedback pose is one set on RViz and can be different from the expected one (frame_id_).
-    tf_listener_->transformPose(frame_id_, ros::Time(0), pose, pose.header.frame_id, pose);
     latest_pose_ = pose;
     pose_pub_.publish(pose);
   }
@@ -298,7 +292,6 @@ protected:
   interactive_markers::MenuHandler menu_handler_;
   ros::Subscriber pose_stamped_sub_;
   ros::Publisher pose_pub_;
-  std::string frame_id_;
   std::string object_type_;
   double object_x_;
   double object_y_;
@@ -314,7 +307,6 @@ protected:
   ros::Timer timer_pose_;
   ros::Timer timer_tf_;
   boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster_;
-  boost::shared_ptr<tf::TransformListener> tf_listener_;
   boost::mutex mutex_;
   interactive_markers::MenuHandler::EntryHandle circle_menu_entry_;
   geometry_msgs::PoseStamped latest_pose_;
