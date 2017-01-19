@@ -243,10 +243,12 @@ protected:
   }
 
   void publishTF(const geometry_msgs::PoseStamped& pose) {
+    if (pose.header.frame_id != frame_id_) {
+      ROS_ERROR("Expected frame_id is [%s] but the pose has [%s].", frame_id_.c_str(), pose.header.frame_id.c_str());
+      return;
+    }
     tf::Transform transform;
-    geometry_msgs::PoseStamped transformed_pose;
-    tf_listener_->transformPose(frame_id_, ros::Time(0), pose, pose.header.frame_id, transformed_pose);
-    tf::poseMsgToTF(transformed_pose.pose, transform);
+    tf::poseMsgToTF(pose.pose, transform);
     tf_broadcaster_->sendTransform(tf::StampedTransform(
                                      transform, pose.header.stamp,
                                      frame_id_,
