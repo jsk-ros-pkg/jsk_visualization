@@ -79,6 +79,11 @@ public:
     }
     pnh.param("line_width", line_width_, 0.007);
     pnh.param("mesh_file", mesh_file_, std::string(""));
+    if (pnh.hasParam("interactive_marker_scale")) {
+      pnh.param("interactive_marker_scale", int_marker_scale_, 1.0);
+    } else {
+      int_marker_scale_ = std::max(object_x_, std::max(object_y_, object_z_)) + 0.5;
+    }
     if (publish_tf_) {
       tf_broadcaster_.reset(new tf::TransformBroadcaster);
     }
@@ -248,7 +253,7 @@ protected:
       int_marker.controls.push_back(control);
     }
   
-    int_marker.scale = std::max(object_x_, std::max(object_y_, object_z_)) + 0.5;
+    int_marker.scale = int_marker_scale_;
 
     server_->insert(int_marker,
                     boost::bind(&Marker6DOF::processFeedbackCB, this, _1));
@@ -322,6 +327,7 @@ protected:
   double object_b_;
   double object_a_;
   double line_width_;
+  double int_marker_scale_;
   std::string mesh_file_;
   bool show_6dof_circle_;
   bool publish_tf_;
