@@ -77,6 +77,7 @@ public:
       latest_pose_.pose.orientation.w = 1.0;
     }
     pnh.param("line_width", line_width_, 0.007);
+    pnh.param("mesh_file", mesh_file_, std::string(""));
     if (publish_tf_) {
       tf_broadcaster_.reset(new tf::TransformBroadcaster);
     }
@@ -177,7 +178,8 @@ protected:
       object_marker.color.b = object_b_;
       object_marker.color.a = object_a_;
       object_marker.pose.orientation.w = 1.0;
-    }else if(object_type_ == std::string("line")){
+    }
+    else if(object_type_ == std::string("line")){
       object_marker.type = visualization_msgs::Marker::LINE_LIST;
       object_marker.scale.x = line_width_;
       object_marker.color.g = object_g_;
@@ -185,6 +187,18 @@ protected:
       object_marker.color.a = object_a_;
       object_marker.pose.orientation.w = 1.0;
       calculateBoundingBox(object_marker);
+    }
+    else if(object_type_ == std::string("mesh")){
+      object_marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+      object_marker.scale.x = object_x_;
+      object_marker.scale.y = object_y_;
+      object_marker.scale.z = object_z_;
+      object_marker.color.r = object_r_;
+      object_marker.color.g = object_g_;
+      object_marker.color.b = object_b_;
+      object_marker.color.a = object_a_;
+      object_marker.pose.orientation.w = 1.0;
+      object_marker.mesh_resource = mesh_file_;
     }
 
     
@@ -300,6 +314,7 @@ protected:
   double object_b_;
   double object_a_;
   double line_width_;
+  std::string mesh_file_;
   bool show_6dof_circle_;
   bool publish_tf_;
   std::string tf_frame_;
