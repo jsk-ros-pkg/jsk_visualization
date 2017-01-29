@@ -48,6 +48,7 @@ public:
     ros::NodeHandle nh, pnh("~");
     pnh.param("frame_id", frame_id_, std::string("/map"));
     pnh.param("publish_tf", publish_tf_, false);
+    pnh.param("publish_pose_periodically", publish_pose_periodically_, false);
     pnh.param("tf_frame", tf_frame_, std::string("object"));
     double tf_duration;
     pnh.param("tf_duration", tf_duration, 0.1);
@@ -103,7 +104,9 @@ public:
 protected:
   void moveMarkerCB(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     boost::mutex::scoped_lock lock(mutex_);
-    pose_pub_.publish(msg);
+    if(!publish_pose_periodically_) {
+      pose_pub_.publish(msg);
+    }
     server_->setPose("marker", msg->pose, msg->header);
     latest_pose_ = geometry_msgs::PoseStamped(*msg);
     server_->applyChanges();
@@ -269,7 +272,9 @@ protected:
     pose.header = feedback->header;
     pose.pose = feedback->pose;
     latest_pose_ = pose;
-    pose_pub_.publish(pose);
+    if (!publish_pose_periodically_) {
+      pose_pub_.publish(pose);
+    }
   }
 
   void menuFeedbackCB(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
@@ -291,6 +296,9 @@ protected:
     pose.header.stamp = e.current_real;
     server_->setPose("marker", pose.pose, pose.header);
     server_->applyChanges();
+    if (publish_pose_periodically_) {
+      pose_pub_.publish(pose);
+    }
   }
 
   void timerTFCallback(const ros::TimerEvent& e) {
@@ -317,6 +325,7 @@ protected:
   std::string mesh_file_;
   bool show_6dof_circle_;
   bool publish_tf_;
+  bool publish_pose_periodically_;
   std::string tf_frame_;
   ros::Timer timer_pose_;
   ros::Timer timer_tf_;
