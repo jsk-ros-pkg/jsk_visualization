@@ -190,6 +190,7 @@ protected:
     else if(object_type_ == std::string("line")){
       object_marker.type = visualization_msgs::Marker::LINE_LIST;
       object_marker.scale.x = line_width_;
+      object_marker.color.r = object_r_;
       object_marker.color.g = object_g_;
       object_marker.color.b = object_b_;
       object_marker.color.a = object_a_;
