@@ -38,10 +38,12 @@
 #include <rviz/uniform_string_stream.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreHardwarePixelBuffer.h>
+#include <QFontDatabase>
 #include <QPainter>
 #include <QStaticText>
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+#include <jsk_topic_tools/log_utils.h>
 
 namespace jsk_rviz_plugins
 {
@@ -115,10 +117,16 @@ namespace jsk_rviz_plugins
       this, SLOT(updateBGAlpha()));
     bg_alpha_property_->setMin(0.0);
     bg_alpha_property_->setMax(1.0);
-    font_property_ = new rviz::StringProperty(
+
+    QFontDatabase database;
+    font_families_ = database.families();
+    font_property_ = new rviz::EnumProperty(
       "font", "DejaVu Sans Mono",
       "font", this,
       SLOT(updateFont()));
+    for (size_t i = 0; i < font_families_.size(); i++) {
+      font_property_->addOption(font_families_[i], (int)i);
+    }
   }
   
   OverlayTextDisplay::~OverlayTextDisplay()
@@ -436,7 +444,13 @@ namespace jsk_rviz_plugins
 
   void OverlayTextDisplay::updateFont()
   {
-    font_ = font_property_->getStdString();
+    int font_index = font_property_->getOptionInt();
+    if (font_index < font_families_.size()) {
+      font_ = font_families_[font_index].toStdString();
+    } else {
+      ROS_FATAL("Unexpected error at selecting font index %d.", font_index);
+      return;
+    }
     if (overtake_color_properties_) {
       require_update_texture_ = true;
     }

@@ -1,9 +1,9 @@
 #include <jsk_interactive_marker/transformable_interactive_server.h>
+#include <jsk_topic_tools/log_utils.h>
 
 using namespace jsk_interactive_marker;
 
 TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::NodeHandle("~")){
-  n_->param("display_interactive_manipulator", display_interactive_manipulator_, true);
   n_->param("interactive_manipulator_orientation", interactive_manipulator_orientation_ , 0);
   n_->param("torus_udiv", torus_udiv_, 20);
   n_->param("torus_vdiv", torus_vdiv_, 20);
@@ -58,9 +58,14 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
 
   // initialize yaml-menu-handler
   std::string yaml_filename;
-  std::string default_filename;
   n_->param("yaml_filename", yaml_filename, std::string(""));
   yaml_menu_handler_ptr_ = boost::make_shared <YamlMenuHandler> (n_, yaml_filename);
+  yaml_menu_handler_ptr_->_menu_handler.insert(
+    "enable manipulator",
+    boost::bind(&TransformableInteractiveServer::enableInteractiveManipulatorDisplay, this, _1, /*enable=*/true));
+  yaml_menu_handler_ptr_->_menu_handler.insert(
+    "disable manipulator",
+    boost::bind(&TransformableInteractiveServer::enableInteractiveManipulatorDisplay, this, _1, /*enable=*/false));
 
   bool use_parent_and_child;
   n_->param("use_parent_and_child", use_parent_and_child, false);
@@ -88,6 +93,8 @@ void TransformableInteractiveServer::configCallback(InteractiveSettingConfig &co
   {
     boost::mutex::scoped_lock lock(mutex_);
     display_interactive_manipulator_ = config.display_interactive_manipulator;
+    display_interactive_manipulator_only_selected_ = config.display_interactive_manipulator_only_selected;
+    display_description_only_selected_ = config.display_description_only_selected;
     interactive_manipulator_orientation_ = config.interactive_manipulator_orientation;
     for (std::map<string, TransformableObject* >::iterator itpairstri = transformable_objects_map_.begin(); itpairstri != transformable_objects_map_.end(); itpairstri++) {
       TransformableObject* tobject = itpairstri->second;
@@ -108,6 +115,7 @@ void TransformableInteractiveServer::processFeedback(
       focusTextPublish();
       focusPosePublish();
       focusObjectMarkerNamePublish();
+      focusInteractiveManipulatorDisplay();
       break;
 
     case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
@@ -412,6 +420,12 @@ bool TransformableInteractiveServer::requestMarkerOperateService(jsk_rviz_plugin
 {
   switch(req.operate.action){
   case jsk_rviz_plugins::TransformableMarkerOperate::INSERT:
+    // validation
+    if (req.operate.name.empty()) {
+      ROS_ERROR("Non empty name is required to insert object.");
+      return false;
+    }
+
     if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::BOX) {
       insertNewBox(req.operate.frame_id, req.operate.name, req.operate.description);
     } else if (req.operate.type == jsk_rviz_plugins::TransformableMarkerOperate::CYLINDER) {
@@ -500,6 +514,31 @@ void TransformableInteractiveServer::setControlRelativePose(geometry_msgs::Pose 
   server_->setPose(focus_object_marker_name_, tobject->pose_, header);
   yaml_menu_handler_ptr_->applyMenu(server_, focus_object_marker_name_);
   server_->applyChanges();
+}
+
+void TransformableInteractiveServer::enableInteractiveManipulatorDisplay(
+    const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback,
+    const bool enable) {
+  TransformableObject* tobject = transformable_objects_map_[focus_object_marker_name_];
+  tobject->setDisplayInteractiveManipulator(enable);
+  updateTransformableObject(tobject);
+}
+
+void TransformableInteractiveServer::focusInteractiveManipulatorDisplay() {
+  for (std::map<string, TransformableObject* >::iterator it = transformable_objects_map_.begin();
+        it != transformable_objects_map_.end(); it++) {
+    std::string object_name = it->first;
+    TransformableObject* tobject = it->second;
+    if (display_interactive_manipulator_ && display_interactive_manipulator_only_selected_) {
+      // display interactive manipulator only for the focused object
+      tobject->setDisplayInteractiveManipulator(object_name == focus_object_marker_name_);
+    }
+    if (display_description_only_selected_) {
+      // display description only for the focused object
+      tobject->setDisplayDescription(object_name == focus_object_marker_name_);
+    }
+    updateTransformableObject(tobject);
+  }
 }
 
 void TransformableInteractiveServer::focusTextPublish(){
@@ -599,7 +638,11 @@ void TransformableInteractiveServer::insertNewObject( TransformableObject* tobje
 void TransformableInteractiveServer::SetInitialInteractiveMarkerConfig( TransformableObject* tobject )
 {
   InteractiveSettingConfig config;
-  config.display_interactive_manipulator = display_interactive_manipulator_;
+  if (display_interactive_manipulator_ && !display_interactive_manipulator_only_selected_) {
+    config.display_interactive_manipulator = true;
+  } else {
+    config.display_interactive_manipulator = false;
+  }
   config.interactive_manipulator_orientation = interactive_manipulator_orientation_;
   tobject->setInteractiveMarkerSetting(config);
 }

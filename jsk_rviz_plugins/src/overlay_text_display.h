@@ -46,6 +46,7 @@
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/enum_property.h>
 #include <rviz/properties/color_property.h>
 #endif
 
@@ -77,6 +78,7 @@ namespace jsk_rviz_plugins
     int text_size_;
     int line_width_;
     std::string text_;
+    QStringList font_families_;
     std::string font_;
     int left_;
     int top_;
@@ -104,7 +106,7 @@ namespace jsk_rviz_plugins
     rviz::FloatProperty* bg_alpha_property_;
     rviz::ColorProperty* fg_color_property_;
     rviz::FloatProperty* fg_alpha_property_;
-    rviz::StringProperty* font_property_;
+    rviz::EnumProperty* font_property_;
   protected Q_SLOTS:
     void updateTopic();
     void updateOvertakePositionProperties();

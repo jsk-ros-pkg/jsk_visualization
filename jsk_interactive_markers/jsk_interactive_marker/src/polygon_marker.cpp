@@ -63,7 +63,7 @@ void processFeedback(
   // control_name is "sec nsec index"
   if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN) {
     std::string control_name = feedback->control_name;
-    JSK_ROS_INFO("control_name: %s", control_name.c_str());
+    ROS_INFO("control_name: %s", control_name.c_str());
     std::list<std::string> splitted_string;
     boost::split(splitted_string, control_name, boost::is_space());
     jsk_recognition_msgs::Int32Stamped index;

@@ -2,6 +2,39 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.1 (2016-12-15)
+------------------
+
+2.0.0 (2016-12-14)
+------------------
+* Stop using deprecated jsk_topic_tools/log_utils.h
+  see
+  - https://github.com/jsk-ros-pkg/jsk_common/pull/1462
+  - https://github.com/jsk-ros-pkg/jsk_common/issues/1461
+* [jsk_rviz_plugins/src/empty_service_call_interface.cpp] remove unused variables.
+* Contributors: Kentaro Wada, MasakiMurooka
+
+1.0.34 (2016-09-29)
+-------------------
+* Fix for Ogre >= 1.9, which build fail on Jade on 14.10/15.04
+* [jsk_rviz_plugins] add offset to footstep_display.h
+* [jsk_rviz_plugin] Add rviz button interface for yes/no service request
+* Contributors: Kei Okada, Kentaro Wada, Yohei Kakiuchi
+
+1.0.33 (2016-09-13)
+-------------------
+* [doc/jsk_rviz_plugins/plugins/pie_chart.md, plotter_2d.md] add doc to how to change caption of overray text (Fix https://github.com/jsk-ros-pkg/jsk_visualization/issues/634)
+* [jsk_rviz_plugins/CMakeLists.txt] Install samples dir that was missing for jsk_rviz_plugins (https://github.com/jsk-ros-pkg/jsk_visualization/issues/632)
+* [jsk_rviz_plugins/samples/overlay_sample.py] Add queue_size arg for deprecated warning in overlay_sample.py (https://github.com/jsk-ros-pkg/jsk_visualization/issues/631)
+* [jsk_rviz_plugins/src/overlay_text_display.cpp] Show available fonts using enum property (https://github.com/jsk-ros-pkg/jsk_visualization/issues/630)
+* [jsk_rviz_plugins/src/overlay_picker_tool.cpp] handleDisplayClick was not going past first group  as after processing a group with no overlay item, it was still  returning true by default. It needed to return false to continue the
+  seach (https://github.com/jsk-ros-pkg/jsk_visualization/issues/627)
+* New rviz plugin to visualize jsk_recognition_msgs::BoundingBox (https://github.com/jsk-ros-pkg/jsk_visualization/issues/616)
+
+  * [jsk_rviz_plugins/src/bounding_box_array_display.cpp] Show valid boxes even if invalid box is included
+
+* Contributors: Jit Ray Chowdhury, Kei Okada, Kentaro Wada
+
 1.0.32 (2016-07-20)
 -------------------
 * Show colorized ros logging on rviz overlay text

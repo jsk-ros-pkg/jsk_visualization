@@ -15,9 +15,14 @@ notifications:
     on_failure: always
   slack: jsk-robotics:Av7tc8wj3IWkLYvlTzHE7x2g
 env:
-  - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false export ROS_PARALLEL_JOBS="-j8" USE_JENKINS="true"
-  - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true export ROS_PARALLEL_JOBS="-j8"
-  - ROS_DISTRO=jade  ROSWS=wstool BUILDER=catkin   USE_DEB=false export ROS_PARALLEL_JOBS="-j8"
+  global:
+    - ROS_PARALLEL_JOBS='-j8'
+    - USE_JENKINS=true
+  matrix:
+    - ROS_DISTRO=hydro USE_DEB=false NOT_TEST_INSTALL=true
+    - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
+    - ROS_DISTRO=indigo USE_DEB=true
+    - ROS_DISTRO=jade USE_DEB=true
 script:
   - source .travis/travis.sh
   # test building sphinx documentation

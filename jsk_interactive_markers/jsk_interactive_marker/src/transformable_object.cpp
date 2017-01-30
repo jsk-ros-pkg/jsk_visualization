@@ -22,6 +22,7 @@ TransformableObject::TransformableObject(){
   control_offset_pose_.orientation.w = 1;
   pose_ = control_offset_pose_;
   display_interactive_manipulator_ = true;
+  display_description_ = true;
 }
 
 void TransformableObject::setDisplayInteractiveManipulator(bool v)
@@ -29,8 +30,14 @@ void TransformableObject::setDisplayInteractiveManipulator(bool v)
   display_interactive_manipulator_ = v;
 }
 
+void TransformableObject::setDisplayDescription(bool v)
+{
+  display_description_ = v;
+}
+
 void TransformableObject::setInteractiveMarkerSetting(InteractiveSettingConfig config){
   display_interactive_manipulator_ = config.display_interactive_manipulator;
+  display_description_ = config.display_description_only_selected ? false : true;
   interactive_manipulator_orientation_ = config.interactive_manipulator_orientation;
 }
 
@@ -100,7 +107,11 @@ visualization_msgs::InteractiveMarker TransformableObject::getInteractiveMarker(
   addControl(int_marker);
   int_marker.header.frame_id = frame_id_;
   int_marker.name = name_;
-  int_marker.description = description_;
+  if (display_description_) {
+    int_marker.description = description_;
+  } else {
+    int_marker.description = "";
+  }
   int_marker.pose = pose_;
   int_marker.scale = getInteractiveMarkerScale();
   return int_marker;

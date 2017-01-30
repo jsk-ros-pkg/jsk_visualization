@@ -19,7 +19,7 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS
   message_generation
-  cmake_modules jsk_pcl_ros jsk_footstep_msgs geometry_msgs visualization_msgs
+  cmake_modules jsk_footstep_msgs geometry_msgs visualization_msgs
   dynamic_reconfigure jsk_rviz_plugins
   interactive_markers dynamic_tf_publisher tf_conversions eigen_conversions
   actionlib roscpp roslib urdf

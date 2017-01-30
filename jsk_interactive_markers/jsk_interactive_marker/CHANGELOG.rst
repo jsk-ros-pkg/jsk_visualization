@@ -2,6 +2,43 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.1 (2016-12-15)
+------------------
+* Fix jsk_recognition_msgs>=1.0.0 dep by jsk_interactive_marker
+* Contributors: Kentaro Wada
+
+2.0.0 (2016-12-14)
+------------------
+* ** Major Release** : Migrate srv files from jsk_pcl_ros to jsk_recognition_msgs ( `#644 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/644>`_ )
+  see
+  - https://github.com/jsk-ros-pkg/jsk_recognition/pull/1827
+  - https://github.com/jsk-ros-pkg/jsk_recognition/pull/1914
+  from this version, this package requires jsk_recognition higher than 1.0.0
+* Remove dependency: jsk_interactive_marker on jsk_pcl_ros
+* Stop using deprecated jsk_topic_tools/log_utils.h
+  see
+  - https://github.com/jsk-ros-pkg/jsk_common/pull/1462
+  - https://github.com/jsk-ros-pkg/jsk_common/issues/1461
+* Contributors: Kei Okada, Kentaro Wada
+
+1.0.34 (2016-09-29)
+-------------------
+
+1.0.33 (2016-09-13)
+-------------------
+* Show description of only object which is selected `#633 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/633>`_
+* [jsk_interactive_marker] Mode to display interactive manipultor only when selected `#626 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/626>`_
+
+  * Refactor: remove variable which is not used
+  * Add doc symlink for jsk_interactive_marker
+  * Menu to enable/disable interactive manipulator
+  * Mode to display interactive manipultor only when selected
+
+* Validate object name is not empty to insert `#621 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/621>`_
+* Set marker pose periodically for re-enabling on rviz `#618 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/618>`_
+
+* Contributors: Kentaro Wada
+
 1.0.32 (2016-07-20)
 -------------------
 * Fix missing cpp format string
