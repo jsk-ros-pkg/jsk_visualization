@@ -1,0 +1,16 @@
+boxes:
+- dimensions: [0.09, 0.13, 0.15]
+  frame_id: map
+  name: box_a
+  orientation: [0.0, 0.0, 0.0, 1.0]
+  position: [1.0644522905349731, -0.16333749890327454, 0.35267987847328186]
+- dimensions: [0.15, 0.09, 0.13]
+  frame_id: map
+  name: box_b
+  orientation: [0.0, 0.0, 0.0, 1.0]
+  position: [1.4170238971710205, -0.3371482789516449, 0.5605951547622681]
+- dimensions: [0.13, 0.15, 0.09]
+  frame_id: map
+  name: box_c
+  orientation: [0.0, 0.0, 0.0, 1.0]
+  position: [0.6171420216560364, -0.3371482789516449, 0.5605951547622681]
