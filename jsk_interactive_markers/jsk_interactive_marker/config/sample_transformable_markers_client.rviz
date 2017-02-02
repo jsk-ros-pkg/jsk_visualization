@@ -60,7 +60,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/BoundingBoxArray
       Enabled: true
       Name: BoundingBoxArray
-      Topic: /transformable_boxes/output/boxes
+      Topic: /transformable_markers_client/output/boxes
       Unreliable: false
       Value: true
       alpha: 1
@@ -126,5 +126,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 10
+  X: 0
   Y: 14

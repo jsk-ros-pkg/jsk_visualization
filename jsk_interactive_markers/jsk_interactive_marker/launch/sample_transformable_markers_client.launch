@@ -10,12 +10,12 @@
     </rosparam>
   </node>
 
-  <node name="transformable_boxes"
-        pkg="jsk_interactive_marker" type="transformable_boxes_client.py"
+  <node name="transformable_markers_client"
+        pkg="jsk_interactive_marker" type="transformable_markers_client.py"
         output="screen">
     <remap from="~server" to="transformable_interactive_server" />
     <rosparam subst_value="true">
-      config_file: $(find jsk_interactive_marker)/launch/config/sample_transformable_boxes_client.yaml
+      config_file: $(find jsk_interactive_marker)/launch/config/sample_transformable_markers_client.yaml
       config_auto_save: false  <!-- Use true to save config updated on rviz -->
     </rosparam>
   </node>
@@ -23,7 +23,7 @@
   <group if="$(arg rviz)">
     <node name="rviz"
           pkg="rviz" type="rviz"
-          args="-d $(find jsk_interactive_marker)/config/sample_transformable_boxes_client.rviz">
+          args="-d $(find jsk_interactive_marker)/config/sample_transformable_markers_client.rviz">
     </node>
   </group>
 
