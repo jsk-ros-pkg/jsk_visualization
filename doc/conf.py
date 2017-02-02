@@ -3,6 +3,7 @@
 import sys
 import os
 import shlex
+import subprocess
 import xml.etree.ElementTree
 
 from recommonmark.parser import CommonMarkParser
@@ -37,7 +38,8 @@ exclude_patterns = ['_build', 'venv']
 this_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, this_dir)
 import add_img_tables_to_index
-add_img_tables_to_index.main(exclude_patterns)
+if not subprocess.check_output(['git', 'diff']):
+    add_img_tables_to_index.main(exclude_patterns)
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
