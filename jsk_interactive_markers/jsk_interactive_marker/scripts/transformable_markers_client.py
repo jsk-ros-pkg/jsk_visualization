@@ -8,12 +8,12 @@ import yaml
 from geometry_msgs.msg import Vector3
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Pose
-from geometry_msgs.msg import PoseStamped
 from jsk_rviz_plugins.srv import RequestMarkerOperate
 from jsk_rviz_plugins.msg import TransformableMarkerOperate
+from jsk_interactive_marker.msg import MarkerDimensions
 from jsk_interactive_marker.msg import PoseStampedWithName
-from jsk_interactive_marker.srv import GetTransformableMarkerPose
-from jsk_interactive_marker.srv import GetTransformableMarkerPoseRequest
+from jsk_interactive_marker.srv import GetTransformableMarkerFocus
+from jsk_interactive_marker.srv import GetTransformableMarkerFocusRequest
 from jsk_interactive_marker.srv import SetTransformableMarkerPose
 from jsk_interactive_marker.srv import SetTransformableMarkerPoseRequest
 from jsk_interactive_marker.srv import SetTransformableMarkerColor
@@ -23,7 +23,6 @@ from jsk_interactive_marker.srv import SetMarkerDimensionsRequest
 from jsk_recognition_utils.color import labelcolormap
 from jsk_recognition_msgs.msg import BoundingBox
 from jsk_recognition_msgs.msg import BoundingBoxArray
-from std_msgs.msg import Header
 import rospy
 
 
@@ -48,12 +47,17 @@ class TransformableMarkersClient(object):
             osp.join(self.server, 'set_pose'), SetTransformableMarkerPose)
         self.req_dim = rospy.ServiceProxy(
             osp.join(self.server, 'set_dimensions'), SetMarkerDimensions)
+        self.req_focus = rospy.ServiceProxy(
+            osp.join(self.server, 'get_focus'),
+            GetTransformableMarkerFocus)
         rospy.wait_for_service(self.req_marker.resolved_name)
         rospy.wait_for_service(self.req_color.resolved_name)
         rospy.wait_for_service(self.req_pose.resolved_name)
         rospy.wait_for_service(self.req_dim.resolved_name)
+        rospy.wait_for_service(self.req_focus.resolved_name)
 
         self.object_poses = {}
+        self.object_dimensions = {}
 
         # TODO: support other than box: ex. torus, cylinder, mesh
 
@@ -73,15 +77,17 @@ class TransformableMarkersClient(object):
             pos = box.get('position', [0, 0, 0])
             ori = box.get('orientation', [0, 0, 0, 1])
             self.set_pose(box['name'], box['frame_id'], pos, ori)
-            self.object_poses[box['name']] = PoseStamped(
-                header=Header(frame_id=box['frame_id']),
-                pose=Pose(
-                    position=Vector3(*pos),
-                    orientation=Quaternion(*ori),
-                )
+            self.object_poses[box['name']] = Pose(
+                position=Vector3(*pos),
+                orientation=Quaternion(*ori),
             )
+            self.object_dimensions[box['name']] = Vector3(*dim)
             rospy.loginfo("Inserted transformable box '{}'.".format(name))
 
+        self.sub_dimensions = rospy.Subscriber(
+            osp.join(self.server, 'marker_dimensions'),
+            MarkerDimensions,
+            self._dimensions_change_callback)
         self.sub_pose = rospy.Subscriber(
             osp.join(self.server, 'pose_with_name'),
             PoseStampedWithName,
@@ -89,10 +95,6 @@ class TransformableMarkersClient(object):
 
         do_auto_save = rospy.get_param('~config_auto_save', True)
         if do_auto_save:
-            self.req_get_pose = rospy.ServiceProxy(
-                osp.join(self.server, 'get_pose'),
-                GetTransformableMarkerPose)
-            rospy.wait_for_service(self.req_get_pose.resolved_name)
             self.timer_save = rospy.Timer(
                 rospy.Duration(1), self._save_callback)
 
@@ -141,13 +143,17 @@ class TransformableMarkersClient(object):
         req.pose_stamped.pose.orientation.w = orientation[3]
         self.req_pose(req)
 
-    def get_pose(self, name):
-        req = GetTransformableMarkerPoseRequest(target_name=name)
-        res = self.req_get_pose(req)
-        return res.pose_stamped
+    def get_focus_marker(self):
+        req = GetTransformableMarkerFocusRequest()
+        res = self.req_focus(req)
+        return res.target_name
+
+    def _dimensions_change_callback(self, msg):
+        name = self.get_focus_marker()
+        self.object_dimensions[name] = msg
 
     def _pose_change_callback(self, msg):
-        self.object_poses[msg.name] = msg.pose
+        self.object_poses[msg.name] = msg.pose.pose
 
     def _pub_bboxes_callback(self, event):
         bbox_array_msg = BoundingBoxArray()
@@ -155,15 +161,14 @@ class TransformableMarkersClient(object):
         bbox_array_msg.header.stamp = event.current_real
         for box in self.config['boxes']:
             bbox_msg = BoundingBox()
-            pose_stamped = self.object_poses[box['name']]
+            pose = self.object_poses[box['name']]
             bbox_msg.header.frame_id = bbox_array_msg.header.frame_id
             bbox_msg.header.stamp = bbox_array_msg.header.stamp
-            bbox_msg.pose = pose_stamped.pose
-            # TODO: support transformed bbox dimensions like pose
-            dimensions = box['dimensions']
-            bbox_msg.dimensions.x = dimensions[0]
-            bbox_msg.dimensions.y = dimensions[1]
-            bbox_msg.dimensions.z = dimensions[2]
+            bbox_msg.pose = pose
+            dimensions = self.object_dimensions[box['name']]
+            bbox_msg.dimensions.x = dimensions.x
+            bbox_msg.dimensions.y = dimensions.y
+            bbox_msg.dimensions.z = dimensions.z
             bbox_array_msg.boxes.append(bbox_msg)
         self.pub_bboxes.publish(bbox_array_msg)
 
@@ -171,20 +176,26 @@ class TransformableMarkersClient(object):
         for i, box in enumerate(self.config['boxes']):
             box_cfg = self.config['boxes'][i]
             box_cfg['name'] = box['name']
-            pose_stamped = self.object_poses[box['name']]
+            pose = self.object_poses[box['name']]
+            dimensions = self.object_dimensions[box['name']]
             # TODO: support transformed bbox dimensions like pose
             box_cfg.update({
-                'frame_id': pose_stamped.header.frame_id,
+                'frame_id': box['frame_id'],
+                'dimensions': [
+                    dimensions.x,
+                    dimensions.y,
+                    dimensions.z,
+                ],
                 'position': [
-                    pose_stamped.pose.position.x,
-                    pose_stamped.pose.position.y,
-                    pose_stamped.pose.position.z,
+                    pose.position.x,
+                    pose.position.y,
+                    pose.position.z,
                 ],
                 'orientation': [
-                    pose_stamped.pose.orientation.x,
-                    pose_stamped.pose.orientation.y,
-                    pose_stamped.pose.orientation.z,
-                    pose_stamped.pose.orientation.w,
+                    pose.orientation.x,
+                    pose.orientation.y,
+                    pose.orientation.z,
+                    pose.orientation.w,
                 ],
             })
         yaml.dump(self.config, open(self.config_file, 'w'))
