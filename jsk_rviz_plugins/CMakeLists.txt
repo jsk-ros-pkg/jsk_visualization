@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   dynamic_reconfigure
   jsk_recognition_msgs)
 
+find_package(OpenCV REQUIRED)
 # Use ccache if installed to make it fast to generate object files
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
@@ -47,7 +48,7 @@ catkin_package(
 
 set(ROS_BUILD_TYPE Release)
 
-include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 # TODO: fill in what other packages will need to use this package
 ## LIBRARIES: libraries you create in this project that dependent projects also need
@@ -159,7 +160,7 @@ set(SOURCE_FILES
 )
 
 add_library(jsk_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
-target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
 add_dependencies(jsk_rviz_plugins jsk_hark_msgs_gencpp ${PROJECT_NAME}_gencpp)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

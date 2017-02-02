@@ -18,6 +18,7 @@ endif()
 
 
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
   message_generation
   cmake_modules jsk_footstep_msgs geometry_msgs visualization_msgs
   dynamic_reconfigure jsk_rviz_plugins
@@ -28,6 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
   ${PCL_MSGS}
   jsk_topic_tools
   roseus)
+find_package(OpenCV REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(TinyXML REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
@@ -52,7 +54,7 @@ generate_dynamic_reconfigure_options(
 add_definitions("-g")
 
 include_directories(include ${catkin_INCLUDE_DIRS}
-  ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+  ${OpenCV_INCLUDE_DIRS} ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 # target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${TinyXML_LIBRARIES} ${orocos_kdl_LIBRARIES})
 link_directories(${catkin_LIBRARY_DIRS})
@@ -107,7 +109,7 @@ target_link_libraries(bounding_box_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRA
 add_dependencies(bounding_box_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 add_executable(polygon_marker src/polygon_marker.cpp)
-target_link_libraries(polygon_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
+target_link_libraries(polygon_marker ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
 add_dependencies(polygon_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 add_executable(interactive_point_cloud src/interactive_point_cloud_node.cpp src/interactive_point_cloud.cpp src/parent_and_child_interactive_marker_server.cpp)
