@@ -62,13 +62,16 @@
 * /move_marker (`geometry_msgs/PoseStamped`)
 * /update (`visualization_msgs/InteractiveMarkerUpdate`)
 * /update_full (`visualization_msgs/InteractiveMarkerInit`)
+
 You can control markers through topics above.
 
 * /pose (`geometry_msgs/PoseStamped`)
+
 Pose of marker.
 You can select publishing polcy via `~publish_pose_periodically`.
 
 * /tf (`tf2_msgs/TFMessage`)
+
 Tf of marker pose. Available only when `~publish_tf` is true.
 
 
