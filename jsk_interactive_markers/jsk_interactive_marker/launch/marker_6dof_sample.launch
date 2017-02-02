@@ -1,0 +1,59 @@
+<launch>
+  <node pkg="jsk_interactive_marker" type="marker_6dof" name="marker_cube">
+    <rosparam>
+      frame_id: map
+      object_type: cube
+      object_x: 0.2
+      object_y: 0.2
+      object_z: 0.3
+      object_r: 1.0
+      object_g: 0.2
+      object_b: 0.2
+      object_a: 1.0
+    </rosparam>
+  </node>
+
+  <node pkg="jsk_interactive_marker" type="marker_6dof" name="marker_sphere">
+    <rosparam>
+      frame_id: map
+      object_type: sphere
+      object_x: 0.2
+      object_y: 0.2
+      object_z: 0.3
+      object_r: 0.2
+      object_g: 1.0
+      object_b: 0.2
+      object_a: 1.0
+    </rosparam>
+  </node>
+
+  <node pkg="jsk_interactive_marker" type="marker_6dof" name="marker_line">
+    <rosparam>
+      frame_id: map
+      object_type: line
+      object_x: 0.1
+      object_r: 0.2
+      object_g: 0.2
+      object_b: 1.0
+      object_a: 1.0
+    </rosparam>
+  </node>
+
+  <node pkg="jsk_interactive_marker" type="marker_6dof" name="marker_mesh">
+    <rosparam>
+      frame_id: map
+      object_type: mesh
+      object_x: 1.0
+      object_y: 0.5
+      object_z: 1.0
+      object_r: 1.0
+      object_g: 0.2
+      object_b: 1.0
+      object_a: 1.0
+      mesh_file: package://jsk_interactive_marker/models/sample_mesh.dae
+    </rosparam>
+  </node>
+
+  <node pkg="rviz" type="rviz" name="rviz"
+        args="-d $(find jsk_interactive_marker)/config/marker_6dof_sample.rviz" />
+</launch>
