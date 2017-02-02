@@ -5,11 +5,16 @@
 #include <ros/ros.h>
 #include <rviz/panel.h>
 #include <QtGui>
+#include <jsk_interactive_marker/SetMarkerDimensions.h>
 #include <jsk_rviz_plugins/RequestMarkerOperate.h>
 #endif
 
 class QLineEdit;
 class QPushButton;
+
+namespace rviz {
+  class VisualizationManager;
+}
 
 namespace jsk_rviz_plugins
 {
@@ -19,10 +24,15 @@ namespace jsk_rviz_plugins
       public:
       TransformableMarkerOperatorAction( QWidget* parent = 0 );
 
+      virtual void onInitialize();
       virtual void load( const rviz::Config& config );
       virtual void save( rviz::Config config ) const;
 
     protected Q_SLOTS:
+      void update();
+      void updateServerName();
+      void updateFocusMarkerDimensions();
+      void updateDimensionsService();
 
       void callRequestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate srv);
       void insertBoxService();
@@ -44,6 +54,12 @@ namespace jsk_rviz_plugins
       QVBoxLayout* layout;
 
       QLineEdit* server_name_editor_;
+      QLineEdit* transform_name_editor_;
+      QLineEdit* dimension_x_editor_;
+      QLineEdit* dimension_y_editor_;
+      QLineEdit* dimension_z_editor_;
+      QLineEdit* dimension_radius_editor_;
+      QLineEdit* dimension_sm_radius_editor_;
       QLineEdit* name_editor_;
       QLineEdit* description_editor_;
       QLineEdit* frame_editor_;
