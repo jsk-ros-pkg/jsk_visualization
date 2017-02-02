@@ -43,6 +43,7 @@ namespace jsk_rviz_plugins
 
       QVBoxLayout* layout;
 
+      QLineEdit* server_name_editor_;
       QLineEdit* name_editor_;
       QLineEdit* description_editor_;
       QLineEdit* frame_editor_;
