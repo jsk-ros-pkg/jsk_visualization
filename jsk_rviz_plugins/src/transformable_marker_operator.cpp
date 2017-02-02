@@ -15,6 +15,13 @@ namespace jsk_rviz_plugins
   {
     layout = new QVBoxLayout;
 
+    // server name
+    QHBoxLayout* server_name_layout = new QHBoxLayout;
+    server_name_layout->addWidget( new QLabel( "Server Name:" ));
+    server_name_editor_ = new QLineEdit;
+    server_name_layout->addWidget( server_name_editor_ );
+    layout->addLayout( server_name_layout );
+
     QVBoxLayout* layout1 = new QVBoxLayout;
     QVBoxLayout* layout2 = new QVBoxLayout;
 
@@ -133,13 +140,15 @@ namespace jsk_rviz_plugins
   };
 
   void TransformableMarkerOperatorAction::callRequestMarkerOperateService(jsk_rviz_plugins::RequestMarkerOperate srv){
-    ros::ServiceClient client = nh_.serviceClient<jsk_rviz_plugins::RequestMarkerOperate>("request_marker_operate", true);
+    std::string server_name = server_name_editor_->text().toStdString();
+    std::string service_name = server_name + "/request_marker_operate";
+    ros::ServiceClient client = nh_.serviceClient<jsk_rviz_plugins::RequestMarkerOperate>(service_name, true);
     if(client.call(srv))
       {
         ROS_INFO("Call Success");
       }
     else{
-      ROS_ERROR("Service call FAIL");
+      ROS_ERROR("Service call FAIL: %s", service_name.c_str());
     };
   }
 
