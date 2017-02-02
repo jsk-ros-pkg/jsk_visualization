@@ -27,7 +27,7 @@ from std_msgs.msg import Header
 import rospy
 
 
-class TransformableBoxesClient(object):
+class TransformableMarkersClient(object):
 
     def __init__(self):
         self.server = rospy.resolve_name('~server')
@@ -54,15 +54,22 @@ class TransformableBoxesClient(object):
         rospy.wait_for_service(self.req_dim.resolved_name)
 
         self.object_poses = {}
+
+        # TODO: support other than box: ex. torus, cylinder, mesh
+
+        # insert box
         boxes = self.config['boxes']
         n_boxes = len(boxes)
         cmap = labelcolormap(n_boxes)
         for i in xrange(n_boxes):
             box = boxes[i]
-            self.insert_box(box['name'], box['frame_id'])
-            self.set_color(box['name'],
-                           (cmap[i][0], cmap[i][1], cmap[i][2], 0.5))
-            self.set_dimension(box['name'], box['dimensions'])
+            name = box['name']
+            frame_id = box.get('frame_id', '/map')
+            self.insert_marker(name, frame_id,
+                               type=TransformableMarkerOperate.BOX)
+            self.set_color(name, (cmap[i][0], cmap[i][1], cmap[i][2], 0.5))
+            dim = box.get('dimensions', [1, 1, 1])
+            self.set_dimensions(name, dim)
             pos = box.get('position', [0, 0, 0])
             ori = box.get('orientation', [0, 0, 0, 1])
             self.set_pose(box['name'], box['frame_id'], pos, ori)
@@ -73,8 +80,8 @@ class TransformableBoxesClient(object):
                     orientation=Quaternion(*ori),
                 )
             )
-            rospy.loginfo("Inserted transformable box '{}'."
-                          .format(box['name']))
+            rospy.loginfo("Inserted transformable box '{}'.".format(name))
+
         self.sub_pose = rospy.Subscriber(
             osp.join(self.server, 'pose_with_name'),
             PoseStampedWithName,
@@ -94,10 +101,10 @@ class TransformableBoxesClient(object):
         self.timer_pub_bboxes = rospy.Timer(
             rospy.Duration(0.1), self._pub_bboxes_callback)
 
-    def insert_box(self, name, frame_id):
+    def insert_marker(self, name, frame_id, type):
         msg = TransformableMarkerOperate(
             name=name,
-            type=TransformableMarkerOperate.BOX,
+            type=type,
             action=TransformableMarkerOperate.INSERT,
             frame_id=frame_id,
             description=name,
@@ -113,7 +120,7 @@ class TransformableBoxesClient(object):
         req.color.a = rgba[3]
         self.req_color(req)
 
-    def set_dimension(self, name, dimensions):
+    def set_dimensions(self, name, dimensions):
         req = SetMarkerDimensionsRequest()
         req.target_name = name
         req.dimensions.x = dimensions[0]
@@ -152,6 +159,7 @@ class TransformableBoxesClient(object):
             bbox_msg.header.frame_id = bbox_array_msg.header.frame_id
             bbox_msg.header.stamp = bbox_array_msg.header.stamp
             bbox_msg.pose = pose_stamped.pose
+            # TODO: support transformed bbox dimensions like pose
             dimensions = box['dimensions']
             bbox_msg.dimensions.x = dimensions[0]
             bbox_msg.dimensions.y = dimensions[1]
@@ -164,6 +172,7 @@ class TransformableBoxesClient(object):
             box_cfg = self.config['boxes'][i]
             box_cfg['name'] = box['name']
             pose_stamped = self.object_poses[box['name']]
+            # TODO: support transformed bbox dimensions like pose
             box_cfg.update({
                 'frame_id': pose_stamped.header.frame_id,
                 'position': [
@@ -182,6 +191,6 @@ class TransformableBoxesClient(object):
 
 
 if __name__ == '__main__':
-    rospy.init_node('transformable_boxes')
-    TransformableBoxesClient()
+    rospy.init_node('transformable_markers_client')
+    TransformableMarkersClient()
     rospy.spin()
