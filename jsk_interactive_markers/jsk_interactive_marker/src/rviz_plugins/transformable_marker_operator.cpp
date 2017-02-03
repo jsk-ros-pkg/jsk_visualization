@@ -271,7 +271,7 @@ namespace jsk_interactive_marker
       dimension_sm_radius_editor_->setPlaceholderText(
         QString::number(srv_dim.response.dimensions.small_radius, 'f', 4));
     } else{
-      ROS_ERROR("Service call FAIL: %s", server_name.c_str());
+      ROS_ERROR_THROTTLE(10, "Service call FAIL: %s", server_name.c_str());
     }
   }
 
