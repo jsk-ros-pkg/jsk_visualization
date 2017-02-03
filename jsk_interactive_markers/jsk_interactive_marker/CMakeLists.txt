@@ -70,6 +70,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 
 add_library(jsk_interactive_marker src/interactive_marker_helpers.cpp src/rviz_plugins/transformable_marker_operator.cpp ${MOC_FILES})
 target_link_libraries(jsk_interactive_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(jsk_interactive_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp)
 target_link_libraries(interactive_marker_interface ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
