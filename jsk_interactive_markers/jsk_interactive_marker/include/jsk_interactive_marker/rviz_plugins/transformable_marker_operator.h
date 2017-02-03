@@ -16,7 +16,7 @@ namespace rviz {
   class VisualizationManager;
 }
 
-namespace jsk_rviz_plugins
+namespace jsk_interactive_marker
 {
   class TransformableMarkerOperatorAction: public rviz::Panel
     {
@@ -67,6 +67,6 @@ namespace jsk_rviz_plugins
 
       ros::NodeHandle nh_;
     };
-}
+}  // namespace jsk_interactive_marker
 
 #endif

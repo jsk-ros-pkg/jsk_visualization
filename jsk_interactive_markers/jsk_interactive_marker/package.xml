@@ -40,6 +40,7 @@
   <build_depend version_gte="1.0.0">jsk_recognition_msgs</build_depend>
   <build_depend>jsk_topic_tools</build_depend> 
   <build_depend>yaml-cpp</build_depend>
+  <build_depend>rviz</build_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>roseus</run_depend>
   <run_depend>tinyxml</run_depend>
@@ -64,6 +65,12 @@
   <run_depend>pr2eus_moveit</run_depend>
   <run_depend>yaml-cpp</run_depend>
   <run_depend>moveit_msgs</run_depend>
+  <run_depend>rviz</run_depend>
+
+  <export>
+    <rviz plugin="${prefix}/plugin_description.xml" />
+  </export>
+
 </package>
 
 

@@ -13,10 +13,10 @@
 #include <jsk_interactive_marker/GetMarkerDimensions.h>
 #include <jsk_interactive_marker/GetTransformableMarkerFocus.h>
 
-#include "transformable_marker_operator.h"
+#include "jsk_interactive_marker/rviz_plugins/transformable_marker_operator.h"
 
 using namespace rviz;
-namespace jsk_rviz_plugins
+namespace jsk_interactive_marker
 {
   TransformableMarkerOperatorAction::TransformableMarkerOperatorAction( QWidget* parent )
     : rviz::Panel( parent )
@@ -288,7 +288,7 @@ namespace jsk_rviz_plugins
     config.mapGetString( "ServerName", &server_name );
     server_name_editor_->setText(server_name);
   }
-}
+}  // namespace jsk_interactive_marker
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::TransformableMarkerOperatorAction, rviz::Panel )
+PLUGINLIB_EXPORT_CLASS(jsk_interactive_marker::TransformableMarkerOperatorAction, rviz::Panel )
