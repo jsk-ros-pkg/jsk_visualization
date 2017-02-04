@@ -58,6 +58,7 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 # include Qt
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
 include(${QT_USE_FILE})
+add_definitions(-DQT_NO_KEYWORDS -g)
 
 qt4_wrap_cpp(MOC_FILES
   include/jsk_interactive_marker/rviz_plugins/transformable_marker_operator.h
@@ -68,8 +69,13 @@ link_directories(${catkin_LIBRARY_DIRS})
 link_directories(${orocos_kdl_LIBRARY_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
-add_library(jsk_interactive_marker src/interactive_marker_helpers.cpp src/rviz_plugins/transformable_marker_operator.cpp ${MOC_FILES})
-target_link_libraries(jsk_interactive_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+add_library(jsk_interactive_marker
+  src/interactive_marker_helpers.cpp
+  src/rviz_plugins/transformable_marker_operator.cpp
+  ${MOC_FILES}
+  ${UIC_FILES}
+)
+target_link_libraries(jsk_interactive_marker ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
 add_dependencies(jsk_interactive_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp)
