@@ -23,6 +23,11 @@ env:
     - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
     - ROS_DISTRO=indigo USE_DEB=true
     - ROS_DISTRO=jade USE_DEB=true
+    # TODO(unknown): run test and build jsk_interactiveXXX
+    - ROS_DISTRO=kinetic
+      USE_DEB=false
+      BUILD_PKGS='jsk_rqt_plugins jsk_rviz_plugins'
+      TEST_PKGS=''
 script:
   - source .travis/travis.sh
   # test building sphinx documentation
