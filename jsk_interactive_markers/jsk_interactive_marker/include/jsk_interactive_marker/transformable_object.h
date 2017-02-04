@@ -88,7 +88,7 @@ namespace jsk_interactive_marker
     bool setY(std_msgs::Float32 y){box_y_=y.data;return true;};
     bool setZ(std_msgs::Float32 z){box_z_=z.data;return true;};
 
-    float getInteractiveMarkerScale(){return 1+std::max(std::max(box_x_, box_y_),box_z_);};
+    float getInteractiveMarkerScale(){return 1.25*std::max(std::max(box_x_, box_y_),box_z_);};
 
     float box_x_;
     float box_y_;
@@ -172,7 +172,7 @@ namespace jsk_interactive_marker
     bool setRadius(std_msgs::Float32 r){cylinder_radius_=r.data;return true;};
     bool setZ(std_msgs::Float32 z){cylinder_z_=z.data;return true;};
 
-    float getInteractiveMarkerScale(){return 1+std::max(cylinder_radius_, cylinder_z_);};
+    float getInteractiveMarkerScale(){return 1.25*std::max(cylinder_radius_, cylinder_z_);};
 
     float cylinder_radius_;
     float cylinder_z_;
