@@ -38,6 +38,7 @@
 #include <interactive_markers/tools.h>
 #include <interactive_markers/menu_handler.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf_conversions/tf_eigen.h>
 #include <jsk_topic_tools/rosparam_utils.h>
@@ -46,7 +47,6 @@ class Marker6DOF {
 public:
   Marker6DOF(): show_6dof_circle_(true) {
     ros::NodeHandle nh, pnh("~");
-    pnh.param("frame_id", frame_id_, std::string("/map"));
     pnh.param("publish_tf", publish_tf_, false);
     pnh.param("publish_pose_periodically", publish_pose_periodically_, false);
     pnh.param("tf_frame", tf_frame_, std::string("object"));
@@ -60,6 +60,9 @@ public:
     pnh.param("object_g", object_g_, 1.0);
     pnh.param("object_b", object_b_, 1.0);
     pnh.param("object_a", object_a_, 1.0);
+    std::string frame_id;
+    pnh.param("frame_id", frame_id, std::string("/map"));
+    latest_pose_.header.frame_id = frame_id;
     double initial_x, initial_y, initial_z;
     pnh.param("initial_x", initial_x, 0.0);
     pnh.param("initial_y", initial_y, 0.0);
@@ -87,7 +90,6 @@ public:
     if (publish_tf_) {
       tf_broadcaster_.reset(new tf::TransformBroadcaster);
     }
-    latest_pose_.header.frame_id = frame_id_;
     
     pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("pose", 1);
     pose_stamped_sub_ = pnh.subscribe("move_marker", 1, &Marker6DOF::moveMarkerCB, this);
@@ -268,7 +270,7 @@ protected:
     tf::poseMsgToTF(pose.pose, transform);
     tf_broadcaster_->sendTransform(tf::StampedTransform(
                                      transform, pose.header.stamp,
-                                     frame_id_,
+                                     pose.header.frame_id,
                                      tf_frame_));
   }
   
@@ -318,7 +320,6 @@ protected:
   interactive_markers::MenuHandler menu_handler_;
   ros::Subscriber pose_stamped_sub_;
   ros::Publisher pose_pub_;
-  std::string frame_id_;
   std::string object_type_;
   double object_x_;
   double object_y_;

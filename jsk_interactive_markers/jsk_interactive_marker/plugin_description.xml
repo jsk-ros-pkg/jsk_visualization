@@ -1,0 +1,15 @@
+<library path="lib/libjsk_interactive_marker">
+
+  <!--
+    Use name jsk_rviz_plugin/XXX intentionally for backward compatibility
+    of plugins moved from jsk_rviz_plugin.
+  -->
+  <class name="jsk_rviz_plugin/TransformableMarkerOperatorAction"
+         type="jsk_interactive_marker::TransformableMarkerOperatorAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to TransformableOperator action
+    </description>
+  </class>
+
+</library>

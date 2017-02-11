@@ -94,7 +94,6 @@ qt4_wrap_cpp(MOC_FILES
   src/close_all_tool.h
   src/open_all_tool.h
   src/overlay_picker_tool.h
-  src/transformable_marker_operator.h
   src/object_fit_operator.h
   src/robot_command_interface.h
   src/empty_service_call_interface.h
@@ -143,7 +142,6 @@ set(SOURCE_FILES
   src/open_all_tool.cpp
   src/overlay_picker_tool.cpp
   src/screenshot_listener_tool.cpp
-  src/transformable_marker_operator.cpp
   src/object_fit_operator.cpp
   src/robot_command_interface.cpp
   src/empty_service_call_interface.cpp
