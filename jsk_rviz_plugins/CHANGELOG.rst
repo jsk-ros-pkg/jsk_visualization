@@ -2,6 +2,16 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* migration to kinetic, which uses qt5 wehre as indig/jade uses qt4 (`#662 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/662>`_ )
+* Feature to transform markers in rviz (`#661 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/661>`_ )
+  * Not to build transformable_marker_operator in jsk_rviz_plugins
+  * Move TransformableMarkerOperatorAction to jsk_interactive_marker
+  * Add feature to transform marker to rviz plugin
+  * Add server_name for TransformableMarkerOperatorAction
+* Contributors: Kentaro Wada, Hiroto Mizohana
+
 2.0.1 (2016-12-15)
 ------------------
 

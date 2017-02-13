@@ -2,6 +2,35 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* migration to kinetic, which uses qt5 wehre as indig/jade uses qt4 (`#662 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/662>`_ )
+* Feature to transform markers in rviz (`#661 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/661>`_ )
+  * Fix for same config in CMakeLists as jsk_rviz_plugins
+    To fix error on hydro
+  * Fix dependency of jsk_interactive_marker
+  * Use throttle for ROS_ERROR
+  * Move TransformableMarkerOperatorAction to jsk_interactive_marker
+  * Update rviz for sample of transformable_markers
+  * Use better marker size
+  * Support transformation of dimension in transformable_markers_client
+* Add client node for transformable markers (only boxes) (`#658 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/658>`_ )
+  * Add TODO to extend transformable_markers_client
+  * Rename transformable_boxes_client -> transformable_markers_client
+  * Add client node for transformable boxes
+* [maker_6dof] support mesh, publish pose topoic periodically ( `#657 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/657>`_ )
+  * [jsk_interactive_marker/marker_6dof] add sample launch and doc.
+  * [jsk_interactive_marker/src/marker_6dof] fix minor bug in line shape color setting.
+  * [jsk_interactive_marker/src/marker_6dof] add option to select interactive marker size. default interactive marker size does not change.
+  * [jsk_interactive_marker/src/marker_6dof] add option to publish pose periodically. default behavior does not change.
+  * [jsk_interactive_marker/src/marker_6dof] supoort mesh as marker shape.
+* Fix `#655 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/655>`_ : fix frame_id of tf published by marker 6dof( `#657 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/657>`_ )
+  * Stop using fixed frame_id_ for simplicity
+  * Transform pose in feedback with expected frame_id
+  * Check frame_id of pose before publishing as TF
+  * marker_6dof: publish tf after transformed to frame_id_, update is published with fixed frame of rviz
+* Contributors: Kei Okada, Kentaro Wada, Masaki Murooka, Hiroto Mizohana
+
 2.0.1 (2016-12-15)
 ------------------
 * Fix jsk_recognition_msgs>=1.0.0 dep by jsk_interactive_marker
