@@ -107,6 +107,7 @@ qt4_wrap_cpp(MOC_FILES
   src/tf_trajectory_display.h
   src/yes_no_button_interface.h
   src/edge_array_display.h
+  src/pose_labeled_array_display.h
 )
 
 set(SOURCE_FILES
@@ -155,6 +156,7 @@ set(SOURCE_FILES
   src/tf_trajectory_display.cpp
   src/yes_no_button_interface.cpp
   src/edge_array_display.cpp
+  src/pose_labeled_array_display.cpp
   ${MOC_FILES}
 )
 
