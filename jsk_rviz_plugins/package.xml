@@ -31,7 +31,6 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>urdfdom_py</build_depend>
   <build_depend>view_controller_msgs</build_depend>
-  <build_depend>wxwidgets</build_depend>
 
   <run_depend>cv_bridge</run_depend>
   <run_depend>diagnostic_msgs</run_depend>
@@ -50,7 +49,6 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>urdfdom_py</run_depend>
   <run_depend>view_controller_msgs</run_depend>
-  <run_depend>wxwidgets</run_depend>
 
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
