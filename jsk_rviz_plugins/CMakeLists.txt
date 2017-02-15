@@ -62,11 +62,6 @@ else()
 endif()
 add_definitions(-DQT_NO_KEYWORDS -g)
 
-
-#find_package(wxWidgets REQUIRED)
-#include(${wxWidgets_USE_FILE})
-#include_directories( ${wxWidgets_INCLUDE_DIRS} )
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 #set(SOURCE_FILES src/ambient_sound_display.cpp src/ambient_sound_visual.cpp)
