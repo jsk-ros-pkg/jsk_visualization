@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.1 (2017-02-15)
+------------------
 * remove depends to wxwidgets https://github.com/ros/rosdistro/pull/13886#issuecomment-279832181
 * Contributors: Kei Okada
 

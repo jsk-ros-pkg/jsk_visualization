@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.1 (2017-02-15)
+------------------
 * CMakeLists.txt: fix to support qt5
 * package.xml: remove pr2eus_moveit from dependency
 * Contributors: Yuki Furuta, Kei Okada
