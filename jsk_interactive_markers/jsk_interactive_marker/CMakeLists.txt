@@ -56,13 +56,23 @@ include_directories(include ${catkin_INCLUDE_DIRS}
   ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 # include Qt
-find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-include(${QT_USE_FILE})
+if(rviz_QT_VERSION VERSION_LESS "5")
+  find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+  include(${QT_USE_FILE})
+else()
+  find_package(Qt5Widgets REQUIRED)
+endif()
 add_definitions(-DQT_NO_KEYWORDS -g)
 
-qt4_wrap_cpp(MOC_FILES
-  include/jsk_interactive_marker/rviz_plugins/transformable_marker_operator.h
-)
+if(rviz_QT_VERSION VERSION_LESS "5")
+  qt4_wrap_cpp(MOC_FILES
+    include/jsk_interactive_marker/rviz_plugins/transformable_marker_operator.h
+    )
+else()
+  qt5_wrap_cpp(MOC_FILES
+    include/jsk_interactive_marker/rviz_plugins/transformable_marker_operator.h
+    )
+endif()
 
 # target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${TinyXML_LIBRARIES} ${orocos_kdl_LIBRARIES})
 link_directories(${catkin_LIBRARY_DIRS})
@@ -75,7 +85,11 @@ add_library(jsk_interactive_marker
   ${MOC_FILES}
   ${UIC_FILES}
 )
-target_link_libraries(jsk_interactive_marker ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+if(rviz_QT_VERSION VERSION_LESS "5")
+  target_link_libraries(jsk_interactive_marker ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+else()
+  target_link_libraries(jsk_interactive_marker Qt5::Widgets ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
+endif()
 add_dependencies(jsk_interactive_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp)
