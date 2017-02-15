@@ -2,6 +2,12 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* CMakeLists.txt: fix to support qt5
+* package.xml: remove pr2eus_moveit from dependency
+* Contributors: Yuki Furuta, Kei Okada
+
 2.1.0 (2017-02-13)
 ------------------
 * migration to kinetic, which uses qt5 wehre as indig/jade uses qt4 (`#662 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/662>`_ )

@@ -2,6 +2,11 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove depends to wxwidgets https://github.com/ros/rosdistro/pull/13886#issuecomment-279832181
+* Contributors: Kei Okada
+
 2.1.0 (2017-02-13)
 ------------------
 * migration to kinetic, which uses qt5 wehre as indig/jade uses qt4 (`#662 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/662>`_ )
