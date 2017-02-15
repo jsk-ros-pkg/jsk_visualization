@@ -1,6 +1,4 @@
-language:
-  - cpp
-  - python
+language: generic
 cache:
   directories:
     - $HOME/.ccache
@@ -9,6 +7,10 @@ python:
   - "2.7"
 compiler:
   - gcc
+sudo: required
+dist: trusty
+services:
+  - docker
 notifications:
   email:
     on_success: always
@@ -17,7 +19,7 @@ notifications:
 env:
   global:
     - ROS_PARALLEL_JOBS='-j8'
-    - USE_JENKINS=true
+    - USE_DOCKER=true
   matrix:
     - ROS_DISTRO=hydro USE_DEB=false NOT_TEST_INSTALL=true
     - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
