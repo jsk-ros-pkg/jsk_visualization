@@ -106,6 +106,8 @@ set(HEADER_FILES
   src/pose_array_display.h
   src/tf_trajectory_display.h
   src/yes_no_button_interface.h
+  src/edge_array_display.h
+  src/pose_labeled_array_display.h
 )
 
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -159,6 +161,8 @@ set(SOURCE_FILES
   src/pose_array_display.cpp
   src/tf_trajectory_display.cpp
   src/yes_no_button_interface.cpp
+  src/edge_array_display.cpp
+  src/pose_labeled_array_display.cpp
   ${MOC_FILES}
 )
 
