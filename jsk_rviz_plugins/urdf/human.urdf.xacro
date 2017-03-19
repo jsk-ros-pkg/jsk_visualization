@@ -1,0 +1,354 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="human">
+
+  <link name="human_base">
+  </link>
+
+  <xacro:property name="torso_{human_id}_width" value=".25" />
+  <xacro:property name="torso_{human_id}_bodylen" value=".45" />
+  <link name="torso_{human_id}">
+    <visual>
+      <origin rpy="1.57 0 0" xyz="0 -0.1 0"/>
+      <geometry>
+        <cylinder radius=".1" length=".45"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 0" xyz="0 -0.1 0"/>
+      <geometry>
+        <cylinder radius="${torso_{human_id}_width}" length="${torso_{human_id}_bodylen}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="head_{human_id}_width" value=".25" />
+  <link name="head_{human_id}">
+    <visual>
+      <origin rpy="1.57 0 0" xyz="0 0.1 0"/>
+      <geometry>
+        <sphere radius=".15"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 0" xyz="0 0.1 0"/>
+      <geometry>
+        <sphere radius="${head_{human_id}_width}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="neck_{human_id}_width" value=".2" />
+  <xacro:property name="neck_{human_id}_bodylen" value=".35" />
+  <link name="neck_{human_id}">
+    <visual>
+      <origin rpy="1.57 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius=".1" length="${neck_{human_id}_bodylen}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="${neck_{human_id}_width}" length="${neck_{human_id}_bodylen}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="left_shoulder_{human_id}_width" value=".15" />
+  <xacro:property name="left_shoulder_{human_id}_width2" value=".15" />
+  <xacro:property name="left_shoulder_{human_id}_bodylen" value=".35" />
+  <link name="left_shoulder_{human_id}">
+    <visual>
+      <origin rpy="0 1.57 0" xyz="0.1 0 0"/>
+      <geometry>
+        <cylinder radius=".05" length=".35"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 1.57 0" xyz="0.1 0 0"/>
+      <geometry>
+        <cylinder radius="${left_shoulder_{human_id}_width}" length="${left_shoulder_{human_id}_bodylen}"/>
+	<sphere radius="${left_shoulder_{human_id}_width2}"/>
+      </geometry>
+    </collision>
+  </link>
+
+
+  <xacro:property name="left_elbow_{human_id}_width" value=".15" />
+  <xacro:property name="left_elbow_{human_id}_bodylen" value=".25" />
+  <link name="left_elbow_{human_id}">
+    <visual>
+      <origin rpy="0 1.57 0" xyz="0.1 0 0"/>
+      <geometry>
+        <cylinder radius=".05" length=".35"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 1.57 0" xyz="0.1 0 0"/>
+      <geometry>
+        <cylinder radius="${left_elbow_{human_id}_width}" length="${left_elbow_{human_id}_bodylen}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="left_hand_{human_id}_width" value=".19" />
+  <link name="left_hand_{human_id}">
+    <visual>
+      <origin rpy="1.57 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.09"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="${left_hand_{human_id}_width}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="right_shoulder_{human_id}_width" value=".15" />
+  <xacro:property name="right_shoulder_{human_id}_width2" value=".15" />
+  <xacro:property name="right_shoulder_{human_id}_bodylen" value=".35" />
+  <link name="right_shoulder_{human_id}">
+    <visual>
+      <origin rpy="0 1.57 0" xyz="-0.1 0 0"/>
+      <geometry>
+        <cylinder radius=".05" length=".35"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 1.57 0" xyz="-0.1 0 0"/>
+      <geometry>
+        <cylinder radius="${right_shoulder_{human_id}_width}" length="${right_shoulder_{human_id}_bodylen}"/>
+	<sphere radius="${right_shoulder_{human_id}_width2}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="right_elbow_{human_id}_width" value=".15" />
+  <xacro:property name="right_elbow_{human_id}_bodylen" value=".25" />
+  <link name="right_elbow_{human_id}">
+    <visual>
+      <origin rpy="0 1.57 0" xyz="-0.1 0 0"/>
+      <geometry>
+        <cylinder radius=".05" length="0.35"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 1.57 0" xyz="-0.1 0 0"/>
+      <geometry>
+        <cylinder radius="${right_elbow_{human_id}_width}" length="${right_elbow_{human_id}_bodylen}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="right_hand_{human_id}_width" value=".19" />
+  <link name="right_hand_{human_id}">
+    <visual>
+      <origin rpy="1.57 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.09"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="${right_hand_{human_id}_width}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="left_hip_{human_id}_width" value=".25" />
+  <xacro:property name="left_hip_{human_id}_bodylen" value=".5" />
+  <link name="left_hip_{human_id}">
+    <visual>
+      <origin rpy="1.57 0 0" xyz="0 -0.175 0"/>
+      <geometry>
+        <cylinder radius=".06" length="${left_hip_{human_id}_bodylen}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 0" xyz="0 -0.175 0"/>
+      <geometry>
+        <cylinder radius="${left_hip_{human_id}_width}" length="${left_hip_{human_id}_bodylen}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="left_knee_{human_id}_width" value=".25" />
+  <xacro:property name="left_knee_{human_id}_bodylen" value=".35" />
+  <link name="left_knee_{human_id}">
+    <visual>
+      <origin rpy="1.57 0 0" xyz="0 -0.1 0"/>
+      <geometry>
+        <cylinder radius=".06" length="${left_knee_{human_id}_bodylen}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 0" xyz="0 -0.1 0"/>
+      <geometry>
+        <cylinder radius="${left_knee_{human_id}_width}" length="${left_knee_{human_id}_bodylen}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="left_foot_{human_id}_width" value=".04" />
+  <xacro:property name="left_foot_{human_id}_bodylen" value=".25" />
+  <link name="left_foot_{human_id}">
+    <visual>
+      <origin rpy="0 0 0" xyz="0.1 0 0"/>
+      <geometry>
+        <cylinder radius="${left_foot_{human_id}_width}" length="${left_foot_{human_id}_bodylen}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.1 0 0"/>
+      <geometry>
+        <cylinder radius="${left_foot_{human_id}_width}" length="${left_foot_{human_id}_bodylen}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="right_hip_{human_id}_width" value=".25" />
+  <xacro:property name="right_hip_{human_id}_bodylen" value=".5" />
+  <link name="right_hip_{human_id}">
+    <visual>
+      <origin rpy="1.57 0 0" xyz="0 -0.175 0"/>
+      <geometry>
+        <cylinder radius=".06" length="${right_hip_{human_id}_bodylen}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 0" xyz="0 -0.175 0"/>
+      <geometry>
+        <cylinder radius="${right_hip_{human_id}_width}" length="${right_hip_{human_id}_bodylen}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="right_knee_{human_id}_width" value=".25" />
+  <xacro:property name="right_knee_{human_id}_bodylen" value=".35" />
+  <link name="right_knee_{human_id}">
+    <visual>
+      <origin rpy="1.57 0 0" xyz="0 -0.1 0"/>
+      <geometry>
+        <cylinder radius=".06" length="${right_knee_{human_id}_bodylen}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 0" xyz="0 -0.1 0"/>
+      <geometry>
+        <cylinder radius="${right_knee_{human_id}_width}" length="${right_knee_{human_id}_bodylen}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:property name="right_foot_{human_id}_width" value=".04" />
+  <xacro:property name="right_foot_{human_id}_bodylen" value=".25" />
+  <link name="right_foot_{human_id}">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.1 0 0"/>
+      <geometry>
+        <cylinder radius="${right_foot_{human_id}_width}" length="${right_foot_{human_id}_bodylen}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="-0.1 0 0"/>
+      <geometry>
+        <cylinder radius="${right_foot_{human_id}_width}" length="${right_foot_{human_id}_bodylen}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="head_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="head_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="neck_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="neck_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="torso_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="torso_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="left_shoulder_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="left_shoulder_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="left_elbow_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="left_elbow_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="left_hand_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="left_hand_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="left_hip_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="left_hip_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="left_knee_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="left_knee_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="left_foot_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="left_foot_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="right_shoulder_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="right_shoulder_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="right_elbow_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="right_elbow_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="right_hand_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="right_hand_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="right_hip_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="right_hip_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="right_knee_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="right_knee_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+  <joint name="right_foot_{human_id}" type="floating">
+    <parent link="human_base"/>
+    <child link="right_foot_{human_id}"/>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+  </joint>
+
+</robot>
