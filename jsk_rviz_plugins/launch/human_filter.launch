@@ -1,0 +1,35 @@
+<launch>
+  <arg name="id" default="2"/>
+  <arg name="input_cloud" default="/kinect_head/depth_registered/points"/>
+  <include file="$(find jsk_rviz_plugins)/launch/upload_human.launch"/>
+
+  <node name="human_filter"
+        pkg="pr2_navigation_self_filter" type="self_filter"
+        clear_params="true" respawn="true" output="screen">
+    <remap from="cloud_in" to="$(arg input_cloud)" />
+    <remap from="cloud_out" to="$(arg input_cloud)_human_filtered" />
+    <remap from="robot_description" to="human_description" />
+    <param name="use_rgb" type="bool" value="true"/>
+    <param name="keep_organized" type="bool" value="true"/>
+    <rosparam command="load" file="$(find jsk_rviz_plugins)/config/self_filter/human$(arg id)_filter.yaml" />
+  </node>
+
+  <node pkg="jsk_pcl_ros" name="organized_to_pi"
+        type="organized_pointcloud_to_point_indices">
+    <remap from="~input" to="$(arg input_cloud)_human_filtered" />
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="pi_to_maskimage"
+        args="standalone jsk_pcl/PointIndicesToMaskImage">
+    <remap from="~input" to="organized_to_pi/output" />
+    <remap from="~input/image" to="/kinect_head/rgb/image_rect_color" />
+    <param name="approximate_sync" value="true" />
+  </node>
+
+  <!-- <node pkg="nodelet" type="nodelet" name="apply_mask" -->
+  <!--       args="standalone jsk_perception/ApplyMaskImage"> -->
+  <!--   <remap from="~input" to="/kinect_head/rgb/image_rect_color" /> -->
+  <!--   <remap from="~input/mask" to="pi_to_maskimage/output" /> -->
+  <!--   <param name="approximate_sync" value="true" /> -->
+  <!-- </node> -->
+</launch>
