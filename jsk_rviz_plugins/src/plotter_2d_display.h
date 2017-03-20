@@ -45,6 +45,7 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/color_property.h>
+#include <rviz/properties/string_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/ros_topic_property.h>
 #endif
@@ -65,6 +66,7 @@ namespace jsk_rviz_plugins
     virtual void setPosition(int x, int y);
     virtual int getX() { return left_; };
     virtual int getY() { return top_; };
+    virtual const char* getCaption() { return caption_.c_str(); };
   protected:
     ////////////////////////////////////////////////////////
     // methods
@@ -98,6 +100,7 @@ namespace jsk_rviz_plugins
     rviz::BoolProperty* auto_color_change_property_;
     rviz::ColorProperty* max_color_property_;
     rviz::BoolProperty* show_caption_property_;
+    rviz::StringProperty* caption_property_;
     rviz::IntProperty* text_size_property_;
     rviz::BoolProperty* auto_scale_property_;
     rviz::FloatProperty* max_value_property_;
@@ -127,6 +130,7 @@ namespace jsk_rviz_plugins
     int top_;
     int line_width_;
     int text_size_;
+    std::string caption_;
     int caption_offset_;
     double min_value_;
     double max_value_;
@@ -155,6 +159,7 @@ namespace jsk_rviz_plugins
     void updateMaxColor();
     void updateUpdateInterval();
     void updateShowCaption();
+    void updateCaption();
     void updateTextSize();
     void updateAutoScale();
     void updateMinValue();

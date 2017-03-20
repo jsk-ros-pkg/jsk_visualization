@@ -121,6 +121,11 @@ namespace jsk_rviz_plugins
                                                 this, SLOT(updateTextSize()));
     text_size_property_->setMin(1);
     text_size_property_->setMax(1000);
+
+    caption_property_ = new rviz::StringProperty("caption", "Plotter2D",
+                                                 "text of the caption",
+                                                 this, SLOT(updateCaption()));
+
     show_caption_property_ = new rviz::BoolProperty(
       "show caption", true,
       "show caption or not",
@@ -205,6 +210,7 @@ namespace jsk_rviz_plugins
     updateMaxColor();
     updateShowCaption();
     updateTextSize();
+    updateCaption();
     updateAutoScale();
     updateMinValue();
     updateMaxValue();
@@ -289,7 +295,7 @@ namespace jsk_rviz_plugins
         painter.setFont(font);
         painter.drawText(0, h, w, caption_offset_,
                          Qt::AlignCenter | Qt::AlignVCenter,
-                         getName());
+                         getCaption());
       }
       if (show_value_) {
         QFont font = painter.font();
@@ -494,6 +500,11 @@ namespace jsk_rviz_plugins
     caption_offset_ = QFontMetrics(font).height();
   }
   
+  void Plotter2DDisplay::updateCaption()
+  {
+    caption_ = caption_property_->getStdString();
+  }
+
   void Plotter2DDisplay::updateShowCaption()
   {
     show_caption_  = show_caption_property_->getBool();
