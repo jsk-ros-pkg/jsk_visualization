@@ -38,6 +38,7 @@ namespace jsk_interactive_marker {
     bool display_interactive_manipulator_;
     bool display_description_;
     int interactive_manipulator_orientation_;
+    unsigned int interaction_mode_;
     
     void setPose(geometry_msgs::Pose pose, bool for_interactive_control=false);
     void addPose(geometry_msgs::Pose msg, bool relative=false);
@@ -46,7 +47,7 @@ namespace jsk_interactive_marker {
     geometry_msgs::Pose getPose(bool for_interactive_control=false);
     void setDisplayInteractiveManipulator(bool v);
     void setDisplayDescription(bool v);
-    void setInteractiveMarkerSetting(InteractiveSettingConfig config);
+    void setInteractiveMarkerSetting(const InteractiveSettingConfig& config);
     virtual bool setRadius(std_msgs::Float32 recieve_val){return false;};
     virtual bool setSmallRadius(std_msgs::Float32 recieve_val){return false;};
     virtual bool setHeight(std_msgs::Float32 recieve_val){return false;};

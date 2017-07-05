@@ -35,10 +35,11 @@ void TransformableObject::setDisplayDescription(bool v)
   display_description_ = v;
 }
 
-void TransformableObject::setInteractiveMarkerSetting(InteractiveSettingConfig config){
+void TransformableObject::setInteractiveMarkerSetting(const InteractiveSettingConfig& config){
   display_interactive_manipulator_ = config.display_interactive_manipulator;
   display_description_ = config.display_description_only_selected ? false : true;
   interactive_manipulator_orientation_ = config.interactive_manipulator_orientation;
+  interaction_mode_ = static_cast<unsigned int>(config.interaction_mode);
 }
 
 std::vector<visualization_msgs::InteractiveMarkerControl> TransformableObject::makeRotateTransFixControl(unsigned int orientation_mode){
@@ -103,7 +104,7 @@ void TransformableObject::addControl(visualization_msgs::InteractiveMarker &int_
 visualization_msgs::InteractiveMarker TransformableObject::getInteractiveMarker(){
   visualization_msgs::InteractiveMarker int_marker;
 
-  addMarker(int_marker);
+  addMarker(int_marker, true, interaction_mode_);
   addControl(int_marker);
   int_marker.header.frame_id = frame_id_;
   int_marker.name = name_;
