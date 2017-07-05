@@ -36,6 +36,7 @@ namespace jsk_interactive_marker
     protected Q_SLOTS:
       void update();
       void updateServerName();
+      void updateObjectArrayTopic();
       void updateFocusMarkerDimensions();
       void updateDimensionsService();
       void updateFrameId();
@@ -64,6 +65,7 @@ namespace jsk_interactive_marker
       QVBoxLayout* layout;
 
       QLineEdit* server_name_editor_;
+      QLineEdit* topic_name_editor_;
       QLineEdit* transform_name_editor_;
       QLineEdit* dimension_x_editor_;
       QLineEdit* dimension_y_editor_;

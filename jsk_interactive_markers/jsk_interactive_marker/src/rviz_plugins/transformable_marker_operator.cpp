@@ -31,6 +31,13 @@ namespace jsk_interactive_marker
     server_name_layout->addWidget( server_name_editor_ );
     layout->addLayout( server_name_layout );
 
+    // topic name
+    QHBoxLayout* obj_array_topic_layout = new QHBoxLayout;
+    obj_array_topic_layout->addWidget( new QLabel( "ObjectArray Topic:" ));
+    topic_name_editor_ = new QLineEdit;
+    obj_array_topic_layout->addWidget( topic_name_editor_ );
+    layout->addLayout( obj_array_topic_layout );
+
     // tabs for operations
     QTabWidget* tabs = new QTabWidget();
 
@@ -56,7 +63,6 @@ namespace jsk_interactive_marker
     insert_mesh_button_ = new QPushButton("Insert New Mesh Marker");
     layout1->addWidget( insert_mesh_button_ );
 
-    sub_obj_array_ = nh_.subscribe("object_array", 1, &TransformableMarkerOperatorAction::objectArrayCb, this);
     QHBoxLayout* object_layout = new QHBoxLayout;
     object_layout->addWidget( new QLabel( "Object:" ));
     object_editor_ = new QComboBox;
@@ -147,6 +153,7 @@ namespace jsk_interactive_marker
     connect( dimension_radius_editor_, SIGNAL( editingFinished() ), this, SLOT( updateDimensionsService ()));
     connect( dimension_sm_radius_editor_, SIGNAL( editingFinished() ), this, SLOT( updateDimensionsService ()));
     connect( object_editor_, SIGNAL( currentIndexChanged(int)), SLOT( updateName ()));
+    connect( topic_name_editor_, SIGNAL( editingFinished() ), this, SLOT( updateObjectArrayTopic ()));
   }
 
   void TransformableMarkerOperatorAction::objectArrayCb(const jsk_recognition_msgs::ObjectArray::ConstPtr& obj_array_msg) {
@@ -171,6 +178,7 @@ namespace jsk_interactive_marker
 
   void TransformableMarkerOperatorAction::onInitialize() {
     connect( vis_manager_, SIGNAL( preUpdate() ), this, SLOT( update() ));
+    updateObjectArrayTopic();
   }
 
   void TransformableMarkerOperatorAction::update() {
@@ -178,6 +186,24 @@ namespace jsk_interactive_marker
     updateFocusMarkerDimensions();
     updateFrameId();
     // updateDimensionsService();
+  }
+
+  void TransformableMarkerOperatorAction::updateObjectArrayTopic() {
+    sub_obj_array_.shutdown();
+    std::string topic = topic_name_editor_->text().toStdString();
+    if (topic.empty()) {
+      ros::master::V_TopicInfo topics;
+      ros::master::getTopics(topics);
+      for (size_t i = 0; i < topics.size(); i++) {
+        if (topics[i].datatype == "jsk_recognition_msgs/ObjectArray") {
+          topic = topics[i].name;
+          break;
+        }
+      }
+      topic_name_editor_->setText(QString::fromStdString(topic));
+    }
+    sub_obj_array_ = nh_.subscribe(
+      topic, 1, &TransformableMarkerOperatorAction::objectArrayCb, this);
   }
 
   void TransformableMarkerOperatorAction::insertBoxService(){
