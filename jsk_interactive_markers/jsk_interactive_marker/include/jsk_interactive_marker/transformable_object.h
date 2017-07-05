@@ -118,6 +118,7 @@ namespace jsk_interactive_marker
     float getInteractiveMarkerScale(){return marker_scale_;};
     float marker_scale_;
     std::string mesh_resource_;
+    bool mesh_use_embedded_materials_;
     float mesh_r_;
     float mesh_g_;
     float mesh_b_;

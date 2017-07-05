@@ -333,14 +333,19 @@ namespace jsk_interactive_marker{
     marker_scale_ = 0.5;
     marker_.type = visualization_msgs::Marker::MESH_RESOURCE;
     type_ = jsk_rviz_plugins::TransformableMarkerOperate::MESH_RESOURCE;
-    marker_.mesh_resource = mesh_resource;
-    marker_.mesh_use_embedded_materials = mesh_use_embedded_materials;
+    mesh_resource_ = mesh_resource;
+    mesh_use_embedded_materials_ = mesh_use_embedded_materials;
     frame_id_ = frame;
     name_ = name;
     description_ = description;
   }
 
   visualization_msgs::Marker TransformableMesh::getVisualizationMsgMarker(){
+    marker_.mesh_resource = mesh_resource_;
+    marker_.mesh_use_embedded_materials = mesh_use_embedded_materials_;
+    marker_.scale.x = 1.0;
+    marker_.scale.y = 1.0;
+    marker_.scale.z = 1.0;
     marker_.color.r = mesh_r_;
     marker_.color.g = mesh_g_;
     marker_.color.b = mesh_b_;
