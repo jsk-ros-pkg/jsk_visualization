@@ -16,12 +16,9 @@ from visualization_msgs.msg import Marker, MarkerArray
 class ClassificationResultVisualizer(ConnectionBasedTransport):
     def __init__(self):
         super(ClassificationResultVisualizer, self).__init__()
-
         self.queue_size = rospy.get_param("~queue_size", 100)
-
         self.srv = Server(ClassificationResultVisualizerConfig,
                           self.config_callback)
-
         self.pub_marker = self.advertise("~output", MarkerArray, queue_size=10)
 
     def subscribe(self):
@@ -53,6 +50,7 @@ class ClassificationResultVisualizer(ConnectionBasedTransport):
         for i, data in enumerate(zip(bboxes.boxes, zip(classes.label_names, classes.label_proba))):
             bbox, cls = data
             text = "%s (%.3f)" % cls
+
             m = Marker(type=Marker.TEXT_VIEW_FACING,
                        action=Marker.MODIFY,
                        header=bbox.header,
