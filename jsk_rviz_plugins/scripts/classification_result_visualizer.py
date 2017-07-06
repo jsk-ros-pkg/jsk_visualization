@@ -56,10 +56,10 @@ class ClassificationResultVisualizer(ConnectionBasedTransport):
                        header=bbox.header,
                        id=i,
                        pose=bbox.pose,
-                       color=ColorRGBA(*self.text_color),
+                       color=ColorRGBA(**self.text_color),
                        text=text,
                        ns=classes.classifier,
-                       lifetime=rospy.Time(self.marker_lifetime))
+                       lifetime=rospy.Duration(self.marker_lifetime))
             m.scale.z = self.text_size
             m.pose.position.x += self.text_offset[0]
             m.pose.position.y += self.text_offset[1]
