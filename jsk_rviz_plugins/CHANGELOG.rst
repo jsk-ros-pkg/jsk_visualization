@@ -2,6 +2,14 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins][classification_result_visualizer] minor bugfix (`#669 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/669>`_ )
+* [jsk_rviz_plugins] add marker publisher for classification result (`#667 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/667>`_)
+  * [jsk_rviz_plugins] add visualizer for classification result
+
+* Contributors: Yuki Furuta
+
 2.1.1 (2017-02-15)
 ------------------
 * remove depends to wxwidgets https://github.com/ros/rosdistro/pull/13886#issuecomment-279832181

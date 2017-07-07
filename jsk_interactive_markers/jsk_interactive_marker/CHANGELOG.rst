@@ -2,6 +2,12 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins][classification_result_visualizer] minor bugfix (`#669 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/669>`_)
+* [jsk_interactive_marker] Install scripts in jsk_interactive_marker (`#670 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/670>`_)
+* Contributors: Kei Okada, Kentaro Wada
+
 2.1.1 (2017-02-15)
 ------------------
 * CMakeLists.txt: fix to support qt5

@@ -2,6 +2,9 @@
 Changelog for package jsk_interactive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.1.1 (2017-02-15)
 ------------------
 
