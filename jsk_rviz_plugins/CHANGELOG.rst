@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.2 (2017-07-07)
+------------------
 * [jsk_rviz_plugins][classification_result_visualizer] minor bugfix (`#669 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/669>`_ )
 * [jsk_rviz_plugins] add marker publisher for classification result (`#667 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/667>`_)
   * [jsk_rviz_plugins] add visualizer for classification result
