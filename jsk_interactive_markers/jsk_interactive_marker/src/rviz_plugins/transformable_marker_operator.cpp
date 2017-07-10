@@ -163,14 +163,18 @@ namespace jsk_interactive_marker
     for (size_t i = 0; i < obj_array_msg->objects.size(); i++) {
       jsk_recognition_msgs::Object object =  objects_[i];
       // thumbnail
-      std::string thumbnail = object.thumbnail;
-      resource_retriever::Retriever retriever;
       QPixmap pixmap = QPixmap();
-      resource_retriever::MemoryResource mem = retriever.get(thumbnail);
-      pixmap.loadFromData(static_cast<unsigned char*>(mem.data.get()), mem.size);
+      if (object.image_resources.size() > 0)
+      {
+        std::string thumbnail = object.image_resources[0];
+        resource_retriever::Retriever retriever;
+        resource_retriever::MemoryResource mem = retriever.get(thumbnail);
+        pixmap.loadFromData(static_cast<unsigned char*>(mem.data.get()), mem.size);
+      }
       // name
       std::stringstream ss;
       ss << object.id << ": " << object.name;
+      //
       object_editor_->addItem(QIcon(pixmap), QString::fromStdString(ss.str()));
     }
     object_editor_->setCurrentIndex(current_index);
@@ -233,6 +237,10 @@ namespace jsk_interactive_marker
       return;
     }
     jsk_recognition_msgs::Object object = objects_[current_index];
+    if (object.mesh_resource.empty()) {
+      ROS_ERROR("Mesh resource of object '%s' is empty, so skipping.", object.name.c_str());
+      return;
+    }
 
     jsk_rviz_plugins::RequestMarkerOperate operator_srv;
     operator_srv.request.operate.type = jsk_rviz_plugins::TransformableMarkerOperate::MESH_RESOURCE;
