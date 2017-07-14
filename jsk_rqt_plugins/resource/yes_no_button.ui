@@ -14,6 +14,13 @@
     <string>YesNoButton</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+      <widget class="QLabel" name="message">
+        <property name="text">
+          <string>Select yes or no.</string>
+        </property>
+      </widget>
+    </item>
     <property name="spacing">
       <number>0</number>
     </property>
