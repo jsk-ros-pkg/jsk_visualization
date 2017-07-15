@@ -9,7 +9,7 @@ from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtGui import QWidget
 
-from jsk_rqt_plugins.srv import YesNo, YesNoResponse
+from jsk_gui_msgs.srv import YesNo, YesNoResponse
 
 
 class YesNoButtonWidget(QWidget):
@@ -42,6 +42,7 @@ class YesNoButtonWidget(QWidget):
     def _handle_yn_btn(self, req):
         """Callback function of service,
         and handle enable/disable of the buttons."""
+        self.message.setText(req.message)
         self.yes = None  # initialize
         self.yes_button.setEnabled(True)
         self.no_button.setEnabled(True)
