@@ -29,6 +29,10 @@ def colored_message(msg):
 
 
 def callback(msg):
+    for exclude_regex in exclude_regexes:
+        if re.match(exclude_regex, msg.msg):
+            return
+
     global lines
     if msg.name not in ignore_nodes:
         if msg.name in nodes or len(nodes) == 0:
@@ -55,6 +59,7 @@ if __name__ == "__main__":
     if nodes_regexp:
         nodes_regexp_compiled = re.compile(nodes_regexp)
     ignore_nodes = rospy.get_param("~ignore_nodes", [])
+    exclude_regexes = rospy.get_param("~exclude_regexes", [])
     line_buffer_length = rospy.get_param("~line_buffer_length", 100)
     lines = []
     sub = rospy.Subscriber("/rosout", Log, callback)
