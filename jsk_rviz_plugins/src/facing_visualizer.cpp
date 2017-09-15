@@ -295,7 +295,7 @@ namespace jsk_rviz_plugins
       context->getSceneManager(),
       node_);
     target_text_node_ = node_->createChildSceneNode();
-    msg_ = new rviz::MovableText("not initialized", "Arial", 0.05);
+    msg_ = new rviz::MovableText("not initialized", "Liberation Sans", 0.05);
     msg_->setVisible(false);
     msg_->setTextAlignment(rviz::MovableText::H_LEFT,
                            rviz::MovableText::V_ABOVE);

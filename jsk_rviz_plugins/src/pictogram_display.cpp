@@ -313,7 +313,7 @@ namespace jsk_rviz_plugins
                        pictogram_text);
       painter.end();
     }else if( mode_ == jsk_rviz_plugins::Pictogram::STRING_MODE){
-      QFont font("Arial");
+      QFont font("Liberation Sans");
       font.setPointSize(32);
       font.setBold(true);
       painter.setFont(font);
