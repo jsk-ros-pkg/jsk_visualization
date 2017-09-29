@@ -179,7 +179,7 @@ namespace jsk_rviz_plugins
         // create nodes
         Ogre::SceneNode* node = scene_node_->createChildSceneNode();
         rviz::MovableText* text 
-          = new rviz::MovableText("not initialized", "Arial", 0.05);
+          = new rviz::MovableText("not initialized", "Liberation Sans", 0.05);
         text->setVisible(false);
         text->setTextAlignment(rviz::MovableText::H_CENTER,
                                rviz::MovableText::V_ABOVE);
