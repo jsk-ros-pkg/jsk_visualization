@@ -2,6 +2,12 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* PR `#672 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/672>`_ needs jsk_gui_msgs 4.3.0 (https://github.com/jsk-ros-pkg/jsk_common_msgs/pull/18) (`#673 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/673>`_)
+* Display message on rqt_yn_btn (`#672 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/672>`_)
+* Contributors: Kei Okada, Kentaro Wada
+
 2.1.2 (2017-07-07)
 ------------------
 
