@@ -31,3 +31,6 @@ script:
   # test building sphinx documentation
   - which virtualenv 2>/dev/null || pip install --user virtualenv
   - (cd $TRAVIS_BUILD_DIR/doc && source setup.sh && make html)
+after_success:
+  # trigger build of jsk-docs.readthedocs.org
+  - curl -X POST -d "branches=master" -d "token=da477cb4ef53d533aeb51c2b43e8baca6202baca" https://readthedocs.org/api/v2/webhook/jsk-docs/9094/
