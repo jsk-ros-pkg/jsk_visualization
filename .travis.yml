@@ -23,7 +23,6 @@ env:
     - USE_TRAVIS=true
     - USE_DOCKER=true
   matrix:
-    - ROS_DISTRO=hydro USE_DEB=false NOT_TEST_INSTALL=true
     - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
     - ROS_DISTRO=indigo USE_DEB=true
     - ROS_DISTRO=jade USE_DEB=true
