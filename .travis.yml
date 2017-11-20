@@ -19,9 +19,10 @@ notifications:
 env:
   global:
     - ROS_PARALLEL_JOBS='-j8'
+    - USE_JENKINS=false
+    - USE_TRAVIS=true
     - USE_DOCKER=true
   matrix:
-    - ROS_DISTRO=hydro USE_DEB=false NOT_TEST_INSTALL=true USE_DOCKER=false USE_JENKINS=true
     - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
     - ROS_DISTRO=indigo USE_DEB=true
     - ROS_DISTRO=jade USE_DEB=true
