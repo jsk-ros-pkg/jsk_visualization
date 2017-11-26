@@ -29,6 +29,8 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_topic_tools
   rviz
   roseus)
+message("jsk_recognition_msgs : ${jsk_recognition_msgs_VERSION}")
+message("jsk_footstep_msgs    : ${jsk_footstep_msgs_VERSION}")
 find_package(orocos_kdl REQUIRED)
 find_package(TinyXML REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
@@ -64,6 +66,12 @@ else()
 endif()
 add_definitions(-DQT_NO_KEYWORDS -g)
 
+if(jsk_recognition_msgs_VERSION VERSION_LESS "1.2.0")
+  set(TRANSFORMABLE_MARKER_OPERATOR_SRC_FILES)
+  message(WARNING "transformable_marker_operator.h requires jsk_recognition_msgs >= 1.2.0")
+else(jsk_recognition_msgs_VERSION VERSION_LESS "1.2.0")
+  set(TRANSFORMABLE_MARKER_OPERATOR_SRC_FILES
+     src/rviz_plugins/transformable_marker_operator.cpp)
 if(rviz_QT_VERSION VERSION_LESS "5")
   qt4_wrap_cpp(MOC_FILES
     include/jsk_interactive_marker/rviz_plugins/transformable_marker_operator.h
@@ -73,6 +81,7 @@ else()
     include/jsk_interactive_marker/rviz_plugins/transformable_marker_operator.h
     )
 endif()
+endif(jsk_recognition_msgs_VERSION VERSION_LESS "1.2.0")
 
 # target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${TinyXML_LIBRARIES} ${orocos_kdl_LIBRARIES})
 link_directories(${catkin_LIBRARY_DIRS})
@@ -81,7 +90,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 
 add_library(jsk_interactive_marker
   src/interactive_marker_helpers.cpp
-  src/rviz_plugins/transformable_marker_operator.cpp
+  ${TRANSFORMABLE_MARKER_OPERATOR_SRC_FILES}
   ${MOC_FILES}
   ${UIC_FILES}
 )
