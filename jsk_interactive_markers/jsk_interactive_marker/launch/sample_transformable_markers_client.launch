@@ -17,6 +17,7 @@
     <rosparam subst_value="true">
       config_file: $(find jsk_interactive_marker)/launch/config/sample_transformable_markers_client.yaml
       config_auto_save: false  <!-- Use true to save config updated on rviz -->
+      interactive_mode: 2  # BUTTON
     </rosparam>
   </node>
 
