@@ -45,6 +45,7 @@
   <run_depend>jsk_topic_tools</run_depend>
   <run_depend>message_generation</run_depend>
   <run_depend>people_msgs</run_depend>
+  <run_depend>posedetection_msgs</run_depend>
   <run_depend>rviz</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>urdfdom_py</run_depend>
