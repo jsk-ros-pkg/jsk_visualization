@@ -87,8 +87,10 @@ namespace jsk_rviz_plugins
     // rviz::BoolProperty* auto_coloring_property_;
     rviz::EnumProperty* coloring_property_;
     rviz::BoolProperty* show_normal_property_;
+    rviz::BoolProperty* enable_lighting_property_;
     rviz::FloatProperty* normal_length_property_;
     bool only_border_;
+    bool enable_lighting_;
     std::string coloring_method_;
     bool show_normal_;
     double normal_length_;
@@ -103,6 +105,7 @@ namespace jsk_rviz_plugins
     void updateColoring();
     void updateOnlyBorder();
     void updateShowNormal();
+    void updateEnableLighting();
     void updateNormalLength();
   private:
     
