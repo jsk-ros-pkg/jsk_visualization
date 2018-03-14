@@ -78,7 +78,7 @@ namespace jsk_rviz_plugins
     alpha_property_->setMin(0);
     alpha_property_->setMax(1);
   }
-  
+
   PolygonArrayDisplay::~PolygonArrayDisplay()
   {
     delete alpha_property_;
@@ -90,18 +90,18 @@ namespace jsk_rviz_plugins
     for (size_t i = 0; i < lines_.size(); i++) {
       delete lines_[i];
     }
-    
+
     for (size_t i = 0; i < materials_.size(); i++) {
       materials_[i]->unload();
       Ogre::MaterialManager::getSingleton().remove(materials_[i]->getName());
     }
-    
+
     for (size_t i = 0; i < manual_objects_.size(); i++) {
       scene_manager_->destroyManualObject(manual_objects_[i]);
       scene_manager_->destroySceneNode(scene_nodes_[i]);
     }
   }
-  
+
   void PolygonArrayDisplay::onInitialize()
   {
     MFDClass::onInitialize();
@@ -117,7 +117,7 @@ namespace jsk_rviz_plugins
       return;
     }
     static uint32_t count = 0;
-    
+
     if (num > materials_.size()) {
       for (size_t i = materials_.size(); num > i; i++) {
         std::stringstream ss;
@@ -131,7 +131,7 @@ namespace jsk_rviz_plugins
       }
     }
   }
-  
+
   bool validateFloats(const jsk_recognition_msgs::PolygonArray& msg)
   {
     for (size_t i = 0; i < msg.polygons.size(); i++) {
@@ -140,7 +140,7 @@ namespace jsk_rviz_plugins
     }
     return true;
   }
-  
+
   void PolygonArrayDisplay::reset()
   {
     MFDClass::reset();
@@ -210,7 +210,7 @@ namespace jsk_rviz_plugins
       lines_[i]->clear();
     }
   }
-  
+
   Ogre::ColourValue PolygonArrayDisplay::getColor(size_t index)
   {
     Ogre::ColourValue color;
@@ -278,7 +278,7 @@ namespace jsk_rviz_plugins
     rviz::BillboardLine* line = lines_[i];
     line->clear();
     line->setMaxPointsPerLine(polygon.polygon.points.size() + 1);
-        
+
     Ogre::ColourValue color = getColor(i);
     line->setColor(color.r, color.g, color.b, color.a);
 
@@ -310,7 +310,7 @@ namespace jsk_rviz_plugins
       materials_[i]->getTechnique(0)->setSceneBlending(Ogre::SBT_REPLACE);
       materials_[i]->getTechnique(0)->setDepthWriteEnabled(true);
     }
-      
+
     materials_[i]->getTechnique(0)->setAmbient(color * 0.5);
     materials_[i]->getTechnique(0)->setDiffuse(color);
   }
@@ -326,7 +326,7 @@ namespace jsk_rviz_plugins
                  polygon.header.frame_id.c_str(), qPrintable(fixed_frame_));
       return;
     }
-    
+
     {
       Ogre::SceneNode* scene_node = scene_nodes_[i * 2];
       Ogre::ManualObject* manual_object = manual_objects_[i * 2];
@@ -334,12 +334,12 @@ namespace jsk_rviz_plugins
       scene_node->setOrientation(orientation);
       manual_object->clear();
       manual_object->setVisible(true);
-      
+
       jsk_recognition_utils::Polygon geo_polygon
         = jsk_recognition_utils::Polygon::fromROSMsg(polygon.polygon);
       std::vector<jsk_recognition_utils::Polygon::Ptr>
         triangles = geo_polygon.decomposeToTriangles();
-        
+
       uint32_t num_points = 0;
       for (size_t j = 0; j < triangles.size(); j++) {
         num_points += triangles[j]->getNumVertices();
@@ -364,7 +364,7 @@ namespace jsk_rviz_plugins
       }
     }
   }
-  
+
   void PolygonArrayDisplay::processNormal(
     const size_t i, const geometry_msgs::PolygonStamped& polygon)
   {
@@ -398,7 +398,7 @@ namespace jsk_rviz_plugins
     Ogre::Vector3 pos(centroid[0], centroid[1], centroid[2]);
     Eigen::Vector3f normal = geo_polygon.getNormal();
     Ogre::Vector3 direction(normal[0], normal[1], normal[2]);
-    if (isnan(direction[0]) || isnan(direction[1]) || isnan(direction[2])) {
+    if (std::isnan(direction[0]) || std::isnan(direction[1]) || std::isnan(direction[2])) {
       ROS_ERROR("failed to compute normal direction");
       Ogre::Vector3 zeroscale(0, 0, 0);
       arrow->setScale(zeroscale);
@@ -407,11 +407,11 @@ namespace jsk_rviz_plugins
     Ogre::Vector3 scale(normal_length_, normal_length_, normal_length_);
     arrow->setPosition(pos);
     arrow->setDirection(direction);
-    
+
     arrow->setScale(scale);
     arrow->setColor(getColor(i));
   }
-  
+
   void PolygonArrayDisplay::processMessage(
     const jsk_recognition_msgs::PolygonArray::ConstPtr& msg)
   {
@@ -446,7 +446,7 @@ namespace jsk_rviz_plugins
       for (size_t i = 0; i < msg->polygons.size(); i++) {
         processPolygonMaterial(i);
       }
-      
+
       for (size_t i = 0; i < msg->polygons.size(); i++) {
         geometry_msgs::PolygonStamped polygon = msg->polygons[i];
         processPolygon(i, polygon);

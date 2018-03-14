@@ -72,7 +72,7 @@ namespace jsk_rviz_plugins
     repaint();
     publishCmdVel(0, 0, 0);
   }
-  
+
   void TabletCmdVelArea::paintEvent(QPaintEvent* event)
   {
     QSize widget_size = size();
@@ -105,7 +105,7 @@ namespace jsk_rviz_plugins
       publishVelocity(mouse_x_, mouse_y_, center_x, center_y);
     }
     painter.drawArc(mouse_x_ - inner_size / 2,
-		    mouse_y_ - inner_size / 2, 
+		    mouse_y_ - inner_size / 2,
 		    inner_size, inner_size, 0, (360 + 1) * 16);
   }
 
@@ -116,7 +116,7 @@ namespace jsk_rviz_plugins
     double diff_y = mouse_y - cy;
     Eigen::Vector3d ex(0, -1, 0);
     Eigen::Vector3d vel(diff_x / cx, diff_y / cy, 0);
-    
+
     int sign = 1;
     if (ex.cross(vel).dot(Eigen::Vector3d(0, 0, -1)) < 0) {
       sign = -1;
@@ -129,9 +129,9 @@ namespace jsk_rviz_plugins
       dot = 1.0;
     }
     double theta = sign * acos(dot);
-    if (!isnan(theta)) {
+    if (!std::isnan(theta)) {
       Eigen::Vector3d vel_refined(-vel[1], -vel[0], 0);
-      
+
       publishCmdVel(vel_refined[0] * 0.2 , vel_refined[1] * 0.2, theta * 0.2);
     }
   }
@@ -161,12 +161,12 @@ namespace jsk_rviz_plugins
   {
     return "QRadioButton {font-size: 20pt; color: #424242;}";
   }
-  
+
   QString TabletControllerPanel::listStyleSheet()
   {
     return "QListWidget {font-size: 20pt; color: #424242;}";
   }
-  
+
   TabletControllerPanel::TabletControllerPanel(QWidget* parent): rviz::Panel(parent)
   {
     ros::NodeHandle nh;
@@ -195,8 +195,8 @@ namespace jsk_rviz_plugins
     layout_->addSpacing(10);
     cmd_vel_area_ = new TabletCmdVelArea(this, pub_cmd_vel_);
     layout_->addWidget(cmd_vel_area_);
-    
-    
+
+
     setLayout(layout_);
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
@@ -211,7 +211,7 @@ namespace jsk_rviz_plugins
   {
     rviz::Panel::load(config);
   }
-  
+
   void TabletControllerPanel::save(rviz::Config config) const
   {
     rviz::Panel::save(config);
@@ -232,9 +232,9 @@ namespace jsk_rviz_plugins
       }
     }
   }
-  
 
-  
+
+
   void TabletControllerPanel::taskButtonClicked()
   {
     task_dialog_ = new QDialog();
@@ -260,7 +260,7 @@ namespace jsk_rviz_plugins
       task->setStyleSheet(radioButtonStyleSheet());
       task_radio_buttons_.push_back(task);
     }
-    
+
     for (size_t i = 0; i < task_radio_buttons_.size(); i++) {
       task_dialog_layout_->addWidget(task_radio_buttons_[i]);
     }
@@ -280,7 +280,7 @@ namespace jsk_rviz_plugins
     task_dialog_layout_->addLayout(task_dialog_button_layout_);
     task_dialog_->setLayout(task_dialog_layout_);
     task_dialog_->show();
-    
+
   }
 
   void TabletControllerPanel::taskCancelClicked()
@@ -304,7 +304,7 @@ namespace jsk_rviz_plugins
       }
     }
   }
-  
+
   void TabletControllerPanel::spotButtonClicked()
   {
     boost::mutex::scoped_lock lock(mutex_);
@@ -331,7 +331,7 @@ namespace jsk_rviz_plugins
     connect(spot_go_button_, SIGNAL(released()),
             this, SLOT(spotGoClicked()));
     spot_dialog_button_layout_->addWidget(spot_go_button_);
-    
+
     spot_cancel_button_ = new QPushButton("Cancel", this);
     spot_cancel_button_->setMinimumHeight(50);
     spot_cancel_button_->setMinimumWidth(300);
