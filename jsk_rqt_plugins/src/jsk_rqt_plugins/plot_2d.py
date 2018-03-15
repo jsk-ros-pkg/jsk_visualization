@@ -235,10 +235,17 @@ class Plot2DWidget(QWidget):
             model_ransac.fit(X, Y)
             line_X = X
             line_y_ransac = model_ransac.predict(line_X)
-            axes.plot(line_X, line_y_ransac, "r--",
-                      label="{0} x + {1}".format(
-                          model_ransac.estimator_.coef_[0][0],
-                          model_ransac.estimator_.intercept_[0]))
+            if len(model_ransac.estimator_.coef_) == 1:
+                coef = model_ransac.estimator_.coef_[0]
+            else:
+                coef = model_ransac.estimator_.coef_[0][0]
+            if not isinstance(model_ransac.estimator_.intercept_, list):
+                intercept = model_ransac.estimator_.intercept_
+            else:
+                intercept = model_ransac.estimator_.intercept_
+            axes.plot(
+                line_X, line_y_ransac, "r--",
+                label="{0} x + {1}".format(coef, intercept))
 
     def update_plot(self):
         if not self._rosdata:
