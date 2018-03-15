@@ -398,7 +398,7 @@ namespace jsk_rviz_plugins
     Ogre::Vector3 pos(centroid[0], centroid[1], centroid[2]);
     Eigen::Vector3f normal = geo_polygon.getNormal();
     Ogre::Vector3 direction(normal[0], normal[1], normal[2]);
-    if (isnan(direction[0]) || isnan(direction[1]) || isnan(direction[2])) {
+    if (std::isnan(direction[0]) || std::isnan(direction[1]) || std::isnan(direction[2])) {
       ROS_ERROR("failed to compute normal direction");
       Ogre::Vector3 zeroscale(0, 0, 0);
       arrow->setScale(zeroscale);
