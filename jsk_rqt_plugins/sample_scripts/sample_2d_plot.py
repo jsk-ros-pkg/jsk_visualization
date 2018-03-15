@@ -8,7 +8,7 @@ from random import random
 
 if __name__ == "__main__":
     rospy.init_node("sample_2d_plot")
-    pub = rospy.Publisher("~output", PlotData)
+    pub = rospy.Publisher("~output", PlotData, queue_size=1)
     r = rospy.Rate(10)
     offset = 0
     while not rospy.is_shutdown():

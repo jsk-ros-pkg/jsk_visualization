@@ -182,7 +182,8 @@ class Plot2DWidget(QWidget):
     def subscribe_topic(self, topic_name):
         rospy.loginfo("subscribe topic")
         self.topic_with_field_name = topic_name
-        self.pub_image = rospy.Publisher(topic_name + "/plot_image", Image)
+        self.pub_image = rospy.Publisher(
+            topic_name + "/plot_image", Image, queue_size=1)
         if not self._rosdata:
             self._rosdata = ROSData(topic_name, self._start_time)
         else:
