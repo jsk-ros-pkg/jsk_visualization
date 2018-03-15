@@ -8,16 +8,15 @@ import sys
 from cStringIO import StringIO
 import cv2
 from cv_bridge import CvBridge
+from distutils.version import LooseVersion
 from matplotlib.figure import Figure
 import numpy as np
+import python_qt_binding
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtCore import QTimer
 from python_qt_binding.QtCore import Slot
 from python_qt_binding.QtGui import QIcon
-from python_qt_binding.QtGui import QSizePolicy
-from python_qt_binding.QtGui import QVBoxLayout
-from python_qt_binding.QtGui import QWidget
 import rospkg
 import rospy
 from rqt_gui_py.plugin import Plugin
@@ -27,6 +26,16 @@ from rqt_py_common.topic_completer import TopicCompleter
 from sensor_msgs.msg import Image
 
 from jsk_recognition_msgs.msg import HistogramWithRange
+
+# qt5 in kinetic
+if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] == 5:
+    from python_qt_binding.QtWidgets import QSizePolicy
+    from python_qt_binding.QtWidgets import QVBoxLayout
+    from python_qt_binding.QtWidgets import QWidget
+else:
+    from python_qt_binding.QtGui import QSizePolicy
+    from python_qt_binding.QtGui import QVBoxLayout
+    from python_qt_binding.QtGui import QWidget
 
 try:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg \
