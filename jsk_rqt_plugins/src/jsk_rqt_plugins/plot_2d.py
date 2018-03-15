@@ -312,7 +312,11 @@ class Plot2DWidget(QWidget):
         self.data_plot._canvas.figure.savefig(buffer, format="png")
         buffer.seek(0)
         img_array = np.asarray(bytearray(buffer.read()), dtype=np.uint8)
-        img = cv2.imdecode(img_array, cv2.CV_LOAD_IMAGE_COLOR)
+        if LooseVersion(cv2.__version__).version[0] < 2:
+            iscolor = cv2.CV_LOAD_IMAGE_COLOR
+        else:
+            iscolor = cv2.IMREAD_COLOR
+        img = cv2.imdecode(img_array, iscolor)
         self.pub_image.publish(self.cv_bridge.cv2_to_imgmsg(img, "bgr8"))
 
 
