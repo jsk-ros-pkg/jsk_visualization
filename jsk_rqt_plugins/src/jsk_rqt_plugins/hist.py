@@ -145,7 +145,7 @@ class HistogramPlotWidget(QWidget):
     def subscribe_topic(self, topic_name):
         self.topic_with_field_name = topic_name
         self.pub_image = rospy.Publisher(
-            topic_name + "/histogram_image", Image)
+            topic_name + "/histogram_image", Image, queue_size=1)
         if not self._rosdata:
             self._rosdata = ROSData(topic_name, self._start_time)
         else:
