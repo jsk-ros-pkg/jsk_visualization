@@ -171,13 +171,13 @@ else()
   target_link_libraries(jsk_rviz_plugins Qt5::Widgets ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
 endif()
 add_dependencies(jsk_rviz_plugins
-  jsk_footstep_msgs_gencpp
-  jsk_gui_msgs_gencpp
-  jsk_hark_msgs_gencpp
-  jsk_recognition_msgs_gencpp
-  people_msgs_gencpp
-  view_controller_msgs_gencpp
-  ${PROJECT_NAME}_gencpp)
+  jsk_footstep_msgs_generate_messages_cpp
+  jsk_gui_msgs_generate_messages_cpp
+  jsk_hark_msgs_generate_messages_cpp
+  jsk_recognition_msgs_generate_messages_cpp
+  people_msgs_generate_messages_cpp
+  view_controller_msgs_generate_messages_cpp
+  ${PROJECT_NAME}_generate_messages_cpp)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set_target_properties(jsk_rviz_plugins PROPERTIES LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")
