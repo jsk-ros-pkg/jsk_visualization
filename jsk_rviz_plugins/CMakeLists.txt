@@ -43,7 +43,7 @@ catkin_package(
     CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
     jsk_recognition_utils cv_bridge people_msgs image_geometry
     INCLUDE_DIRS # TODO include
-    LIBRARIES # TODO
+    LIBRARIES ${PROJECT_NAME}
 )
 
 
@@ -164,13 +164,13 @@ set(SOURCE_FILES
   ${MOC_FILES}
 )
 
-add_library(jsk_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
+add_library(${PROJECT_NAME} ${SOURCE_FILES} ${UIC_FILES})
 if(rviz_QT_VERSION VERSION_LESS "5")
   target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
 else()
   target_link_libraries(jsk_rviz_plugins Qt5::Widgets ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
 endif()
-add_dependencies(jsk_rviz_plugins
+add_dependencies(${PROJECT_NAME}
   jsk_footstep_msgs_generate_messages_cpp
   jsk_gui_msgs_generate_messages_cpp
   jsk_hark_msgs_generate_messages_cpp
@@ -180,13 +180,13 @@ add_dependencies(jsk_rviz_plugins
   ${PROJECT_NAME}_generate_messages_cpp)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set_target_properties(jsk_rviz_plugins PROPERTIES LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")
+  set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")
 endif()
 
 install(FILES plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(TARGETS jsk_rviz_plugins
+install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
