@@ -279,8 +279,12 @@ namespace jsk_rviz_plugins
     if(!context_->getFrameManager()->getTransform( msg->header.frame_id,
                                                     msg->header.stamp,
                                                    position, orientation)) {
-      ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-                 msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+      std::ostringstream oss;
+      oss << "Error transforming pose";
+      oss << " from frame '" << msg->header.frame_id << "'";
+      oss << " to frame '" << qPrintable(fixed_frame_) << "'";
+      ROS_ERROR_STREAM(oss.str());
+      setStatus(rviz::StatusProperty::Error, "Transform", QString::fromStdString(oss.str()));
       return;
     }
 
@@ -305,8 +309,12 @@ namespace jsk_rviz_plugins
                                                    step_position,
                                                    step_quaternion ))
       {
-        ROS_ERROR( "Error transforming pose '%s' from frame '%s' to frame '%s'",
-                   qPrintable( getName() ), msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+        std::ostringstream oss;
+        oss << "Error transforming pose";
+        oss << " from frame '" << msg->header.frame_id << "'";
+        oss << " to frame '" << qPrintable(fixed_frame_) << "'";
+        ROS_ERROR_STREAM(oss.str());
+        setStatus(rviz::StatusProperty::Error, "Transform", QString::fromStdString(oss.str()));
         return;
       }
       // add offset

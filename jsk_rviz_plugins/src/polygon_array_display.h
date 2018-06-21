@@ -81,6 +81,9 @@ namespace jsk_rviz_plugins
     virtual void processPolygonMaterial(const size_t i);
     virtual void processMessage(
       const jsk_recognition_msgs::PolygonArray::ConstPtr& msg);
+    virtual bool getTransform(
+      const std_msgs::Header &header,
+      Ogre::Vector3& position, Ogre::Quaternion& orientation);
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::BoolProperty* only_border_property_;

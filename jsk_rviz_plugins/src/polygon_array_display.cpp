@@ -268,11 +268,8 @@ namespace jsk_rviz_plugins
     //Ogre::ManualObject* manual_object = manual_objects_[i];
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
-    if(!context_->getFrameManager()->getTransform(
-         polygon.header, position, orientation)) {
-      ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
-                 polygon.header.frame_id.c_str(), qPrintable(fixed_frame_));
-    }
+    if (!getTransform(polygon.header, position, orientation))
+      return;
     scene_node->setPosition(position);
     scene_node->setOrientation(orientation);
     rviz::BillboardLine* line = lines_[i];
@@ -320,12 +317,8 @@ namespace jsk_rviz_plugins
   {
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
-    if(!context_->getFrameManager()->getTransform(
-         polygon.header, position, orientation)) {
-      ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
-                 polygon.header.frame_id.c_str(), qPrintable(fixed_frame_));
+    if (!getTransform(polygon.header, position, orientation))
       return;
-    }
     
     {
       Ogre::SceneNode* scene_node = scene_nodes_[i * 2];
@@ -373,12 +366,8 @@ namespace jsk_rviz_plugins
     ArrowPtr arrow = arrow_objects_[i];
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
-    if(!context_->getFrameManager()->getTransform(
-         polygon.header, position, orientation)) {
-      ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
-                 polygon.header.frame_id.c_str(), qPrintable(fixed_frame_));
+    if (!getTransform(polygon.header, position, orientation))
       return;
-    }
     scene_node->setPosition(position);
     scene_node->setOrientation(orientation); // scene node is at frame pose
     jsk_recognition_utils::Polygon geo_polygon
@@ -459,6 +448,25 @@ namespace jsk_rviz_plugins
         processNormal(i, polygon);
       }
     }
+  }
+
+  bool PolygonArrayDisplay::getTransform(
+      const std_msgs::Header &header,
+      Ogre::Vector3 &position, Ogre::Quaternion &orientation)
+  {
+    bool ok = context_->getFrameManager()->getTransform(
+        header.frame_id, header.stamp,
+        position, orientation);
+    if (!ok) {
+      std::ostringstream oss;
+      oss << "Error transforming from frame '";
+      oss << header.frame_id << "' to frame '";
+      oss << qPrintable(fixed_frame_) << "'";
+      ROS_DEBUG_STREAM(oss.str());
+      setStatus(rviz::StatusProperty::Error,
+                "Transform", QString::fromStdString(oss.str()));
+    }
+    return ok;
   }
 
   void PolygonArrayDisplay::updateColoring()
