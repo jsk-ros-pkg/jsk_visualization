@@ -208,8 +208,12 @@ protected:
         Ogre::Quaternion orientation;
         if(!this->context_->getFrameManager()->transform(
             box.header, box.pose, position, orientation)) {
-          ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
-                  box.header.frame_id.c_str(), qPrintable(this->fixed_frame_));
+          std::ostringstream oss;
+          oss << "Error transforming pose";
+          oss << " from frame '" << box.header.frame_id << "'";
+          oss << " to frame '" << qPrintable(this->fixed_frame_) << "'";
+          ROS_ERROR_STREAM(oss.str());
+          this->setStatus(rviz::StatusProperty::Error, "Transform", QString::fromStdString(oss.str()));
           return;
         }
 
@@ -264,11 +268,13 @@ protected:
         if(!this->context_->getFrameManager()->transform(box.header, box.pose,
                                                   position,
                                                   quaternion)) {
-          ROS_ERROR( "Error transforming pose"
-                    "'%s' from frame '%s' to frame '%s'",
-                    qPrintable( this->getName() ), box.header.frame_id.c_str(),
-                    qPrintable( this->fixed_frame_ ));
-          return;                 // return?
+          std::ostringstream oss;
+          oss << "Error transforming pose";
+          oss << " from frame '" << box.header.frame_id << "'";
+          oss << " to frame '" << qPrintable(this->fixed_frame_) << "'";
+          ROS_ERROR_STREAM(oss.str());
+          this->setStatus(rviz::StatusProperty::Error, "Transform", QString::fromStdString(oss.str()));
+          return;
         }
         edge->setPosition(position);
         edge->setOrientation(quaternion);

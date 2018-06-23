@@ -106,8 +106,12 @@ namespace jsk_rviz_plugins
                                                msg->pose,
                                                position, orientation))
     {
-      ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-                 msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+      std::ostringstream oss;
+      oss << "Error transforming pose";
+      oss << " from frame '" << msg->header.frame_id << "'";
+      oss << " to frame '" << qPrintable(fixed_frame_) << "'";
+      ROS_ERROR_STREAM(oss.str());
+      setStatus(rviz::StatusProperty::Error, "Transform", QString::fromStdString(oss.str()));
       return;
     }
     visualizer_->setPosition(position);
