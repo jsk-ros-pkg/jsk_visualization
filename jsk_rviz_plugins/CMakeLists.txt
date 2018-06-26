@@ -43,7 +43,7 @@ catkin_package(
     CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
     jsk_recognition_utils cv_bridge people_msgs image_geometry
     INCLUDE_DIRS # TODO include
-    LIBRARIES # TODO
+    LIBRARIES ${PROJECT_NAME}
 )
 
 
