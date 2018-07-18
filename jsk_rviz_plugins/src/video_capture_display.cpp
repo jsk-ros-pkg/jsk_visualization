@@ -40,6 +40,10 @@
 #include <rviz/display.h>
 #include <rviz/render_panel.h>
 #include <QImage>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QScreen>
+#include <QGuiApplication>
+#endif
 #include <boost/filesystem.hpp>
 
 namespace jsk_rviz_plugins
@@ -169,8 +173,13 @@ namespace jsk_rviz_plugins
     }
     if (capturing_) {
       rviz::RenderPanel* panel = context_->getViewManager()->getRenderPanel();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+      QPixmap screenshot
+        = QGuiApplication::primaryScreen()->grabWindow(context_->getViewManager()->getRenderPanel()->winId());
+#else
       QPixmap screenshot
         = QPixmap::grabWindow(context_->getViewManager()->getRenderPanel()->winId());
+#endif
       QImage src = screenshot.toImage().convertToFormat(QImage::Format_RGB888);  // RGB
       cv::Mat image(src.height(), src.width(), CV_8UC3,
                     (uchar*)src.bits(), src.bytesPerLine());  // RGB
