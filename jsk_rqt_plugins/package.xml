@@ -28,6 +28,7 @@
   <run_depend version_gte="4.3.0" >jsk_gui_msgs</run_depend>
   <run_depend>cv_bridge</run_depend>
   <run_depend>python-urlgrabber</run_depend>
+  <run_depend>python-sklearn</run_depend>
   <run_depend>message_runtime</run_depend>
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml" />
