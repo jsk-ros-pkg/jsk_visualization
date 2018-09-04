@@ -7,9 +7,8 @@ import numpy as np
 
 if __name__ == "__main__":
     rospy.init_node("sample_hist_pub")
-    pub = rospy.Publisher("normal_array", Float32MultiArray, queue_size=1)
-    pub_range = rospy.Publisher(
-        "range_array", HistogramWithRange, queue_size=1)
+    pub = rospy.Publisher("normal_array", Float32MultiArray)
+    pub_range = rospy.Publisher("range_array", HistogramWithRange)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
         data = np.random.normal(size=1000)
