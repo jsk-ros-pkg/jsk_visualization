@@ -1,10 +1,6 @@
 <package>
-  <name>
-    jsk_interactive_marker
-  </name>
-  <description>
-    jsk interactive markers
-  </description>
+  <name>jsk_interactive_marker</name>
+  <description>jsk interactive markers</description>
   <version>2.1.3</version>
   <author email="furuta@jsk.t.u-tokyo.ac.jp">furuta</author>
   <maintainer email="furuta@jsk.t.u-tokyo.ac.jp">furuta</maintainer>
