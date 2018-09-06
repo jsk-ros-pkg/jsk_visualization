@@ -32,26 +32,41 @@ if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] == 5:
     from python_qt_binding.QtWidgets import QSizePolicy
     from python_qt_binding.QtWidgets import QVBoxLayout
     from python_qt_binding.QtWidgets import QWidget
+    try:
+        from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg \
+            as FigureCanvas
+    except ImportError:
+        # work around bug in dateutil
+        import thread
+        sys.modules['_thread'] = thread
+        from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg \
+            as FigureCanvas
+    try:
+        from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg \
+            as NavigationToolbar
+    except ImportError:
+        from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT \
+            as NavigationToolbar
 else:
     from python_qt_binding.QtGui import QSizePolicy
     from python_qt_binding.QtGui import QVBoxLayout
     from python_qt_binding.QtGui import QWidget
+    try:
+        from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg \
+            as FigureCanvas
+    except ImportError:
+        # work around bug in dateutil
+        import thread
+        sys.modules['_thread'] = thread
+        from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg \
+            as FigureCanvas
+    try:
+        from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg \
+            as NavigationToolbar
+    except ImportError:
+        from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT \
+            as NavigationToolbar
 
-try:
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg \
-        as FigureCanvas
-except ImportError:
-    # work around bug in dateutil
-    import thread
-    sys.modules['_thread'] = thread
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg \
-        as FigureCanvas
-try:
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg \
-        as NavigationToolbar
-except ImportError:
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT \
-        as NavigationToolbar
 
 
 class ROSData(_ROSData):
