@@ -19,12 +19,15 @@ from visualization_msgs.msg import Marker, MarkerArray
 class ClassificationResultVisualizer(ConnectionBasedTransport):
     def __init__(self):
         super(ClassificationResultVisualizer, self).__init__()
-        self.queue_size = rospy.get_param("~queue_size", 100)
         self.srv = Server(ClassificationResultVisualizerConfig,
                           self.config_callback)
         self.pub_marker = self.advertise("~output", MarkerArray, queue_size=10)
 
     def subscribe(self):
+        approximate_sync = rospy.get_param("~approximate_sync", False)
+        queue_size = rospy.get_param("~queue_size", 100)
+        slop = rospy.get_param("~slop", 0.1)
+
         sub_cls = MF.Subscriber(
             "~input/classes", ClassificationResult, queue_size=1)
         sub_box = MF.Subscriber(
@@ -35,21 +38,36 @@ class ClassificationResultVisualizer(ConnectionBasedTransport):
             "~input/people", PeoplePoseArray, queue_size=1)
         sub_od = MF.Subscriber(
             "~input/ObjectDetection", ObjectDetection, queue_size=1)
-        sync_box = MF.TimeSynchronizer([sub_box, sub_cls], self.queue_size)
+
+        if approximate_sync:
+            sync_box = MF.ApproximateTimeSynchronizer(
+                [sub_box, sub_cls], queue_size=queue_size, slop=slop)
+            sync_pose = MF.ApproximateTimeSynchronizer(
+                [sub_pose, sub_cls], queue_size=queue_size, slop=slop)
+            sync_people = MF.ApproximateTimeSynchronizer(
+                [sub_people, sub_cls], queue_size=queue_size, slop=slop)
+            sync_od = MF.ApproximateTimeSynchronizer(
+                [sub_od, sub_cls], queue_size=queue_size, slop=slop)
+        else:
+            sync_box = MF.TimeSynchronizer(
+                [sub_box, sub_cls], queue_size=queue_size)
+            sync_pose = MF.TimeSynchronizer(
+                [sub_pose, sub_cls], queue_size=queue_size)
+            sync_people = MF.TimeSynchronizer(
+                [sub_people, sub_cls], queue_size=queue_size)
+            sync_od = MF.TimeSynchronizer(
+                [sub_od, sub_cls], queue_size=queue_size)
+
         sync_box.registerCallback(self.box_msg_callback)
-        sync_pose = MF.TimeSynchronizer([sub_pose, sub_cls], self.queue_size)
         sync_pose.registerCallback(self.pose_msg_callback)
-        sync_people = MF.TimeSynchronizer([sub_people, sub_cls], self.queue_size)
         sync_people.registerCallback(self.people_msg_callback)
-        sync_od = MF.TimeSynchronizer([sub_od, sub_cls], self.queue_size)
         sync_od.registerCallback(self.od_msg_callback)
-        self.syncs = [sync_box, sync_pose, sync_people, sync_od]
+
         self.subscribers = [sub_cls, sub_box, sub_pose, sub_people, sub_od]
 
     def unsubscribe(self):
         for sub in self.subscribers:
             sub.unregister()
-        self.syncs = []
 
     def config_callback(self, config, level):
         self.text_color = {'r': config.text_color_red,
