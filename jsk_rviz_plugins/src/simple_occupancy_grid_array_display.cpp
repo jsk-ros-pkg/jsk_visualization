@@ -125,10 +125,13 @@ namespace jsk_rviz_plugins
       if(!context_->getFrameManager()->transform(grid.header, plane_pose,
                                                  position,
                                                  quaternion)) {
-        ROS_ERROR( "Error transforming pose '%s' from frame '%s' to frame '%s'",
-                   qPrintable( getName() ), grid.header.frame_id.c_str(),
-                   qPrintable( fixed_frame_ ));
-        return;                 // return?
+        std::ostringstream oss;
+        oss << "Error transforming pose";
+        oss << " from frame '" << grid.header.frame_id << "'";
+        oss << " to frame '" << qPrintable(fixed_frame_) << "'";
+        ROS_ERROR_STREAM(oss.str());
+        setStatus(rviz::StatusProperty::Error, "Transform", QString::fromStdString(oss.str()));
+        return;
       }
       node->setPosition(position);
       node->setOrientation(quaternion);

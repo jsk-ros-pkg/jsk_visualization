@@ -33,6 +33,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+#include <boost/format.hpp>
 #include "tf_trajectory_display.h"
 
 namespace jsk_rviz_plugins
