@@ -69,6 +69,10 @@ namespace jsk_rviz_plugins
       "show normal", true,
       "show normal direction",
       this, SLOT(updateShowNormal()));
+    enable_lighting_property_ = new rviz::BoolProperty(
+      "enable lighting", true,
+      "enable lighting",
+      this, SLOT(updateEnableLighting()));
     normal_length_property_ = new rviz::FloatProperty(
       "normal length", 0.1,
       "normal length",
@@ -125,8 +129,10 @@ namespace jsk_rviz_plugins
         Ogre::MaterialPtr material
           = Ogre::MaterialManager::getSingleton().create(ss.str(), "rviz");
         material->setReceiveShadows(false);
-        material->getTechnique(0)->setLightingEnabled(true);
+        material->getTechnique(0)->setLightingEnabled(enable_lighting_);
         material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
+
+        //material->setCullingMode(Ogre::CULL_NONE);
         materials_.push_back(material);
       }
     }
@@ -296,6 +302,7 @@ namespace jsk_rviz_plugins
   void PolygonArrayDisplay::processPolygonMaterial(const size_t i)
   {
     Ogre::ColourValue color = getColor(i);
+    materials_[i]->getTechnique(0)->setLightingEnabled(enable_lighting_);
     materials_[i]->getTechnique(0)->setAmbient(color * 0.5);
     materials_[i]->getTechnique(0)->setDiffuse(color);
     if (color.a < 0.9998) {
@@ -307,7 +314,7 @@ namespace jsk_rviz_plugins
       materials_[i]->getTechnique(0)->setSceneBlending(Ogre::SBT_REPLACE);
       materials_[i]->getTechnique(0)->setDepthWriteEnabled(true);
     }
-      
+
     materials_[i]->getTechnique(0)->setAmbient(color * 0.5);
     materials_[i]->getTechnique(0)->setDiffuse(color);
   }
@@ -323,6 +330,7 @@ namespace jsk_rviz_plugins
     {
       Ogre::SceneNode* scene_node = scene_nodes_[i * 2];
       Ogre::ManualObject* manual_object = manual_objects_[i * 2];
+      Ogre::ColourValue color = getColor(i);
       scene_node->setPosition(position);
       scene_node->setOrientation(orientation);
       manual_object->clear();
@@ -347,10 +355,12 @@ namespace jsk_rviz_plugins
           for (size_t j = 0; j < num_vertices; j++) {
             Eigen::Vector3f v = triangle->getVertex(j);
             manual_object->position(v[0], v[1], v[2]);
+            manual_object->colour(color.r, color.g, color.b, color.a);
           }
           for (int j = num_vertices - 1; j >= 0; j--) {
             Eigen::Vector3f v = triangle->getVertex(j);
             manual_object->position(v[0], v[1], v[2]);
+            manual_object->colour(color.r, color.g, color.b, color.a);
           }
         }
         manual_object->end();
@@ -506,6 +516,11 @@ namespace jsk_rviz_plugins
         arrow_nodes_[i]->setVisible(false);
       }
     }
+  }
+
+  void PolygonArrayDisplay::updateEnableLighting()
+  {
+    enable_lighting_ = enable_lighting_property_->getBool();
   }
 
   void PolygonArrayDisplay::updateNormalLength()
