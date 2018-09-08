@@ -35,10 +35,11 @@ void TransformableObject::setDisplayDescription(bool v)
   display_description_ = v;
 }
 
-void TransformableObject::setInteractiveMarkerSetting(InteractiveSettingConfig config){
+void TransformableObject::setInteractiveMarkerSetting(const InteractiveSettingConfig& config){
   display_interactive_manipulator_ = config.display_interactive_manipulator;
   display_description_ = config.display_description_only_selected ? false : true;
   interactive_manipulator_orientation_ = config.interactive_manipulator_orientation;
+  interaction_mode_ = static_cast<unsigned int>(config.interaction_mode);
 }
 
 std::vector<visualization_msgs::InteractiveMarkerControl> TransformableObject::makeRotateTransFixControl(unsigned int orientation_mode){
@@ -103,7 +104,7 @@ void TransformableObject::addControl(visualization_msgs::InteractiveMarker &int_
 visualization_msgs::InteractiveMarker TransformableObject::getInteractiveMarker(){
   visualization_msgs::InteractiveMarker int_marker;
 
-  addMarker(int_marker);
+  addMarker(int_marker, true, interaction_mode_);
   addControl(int_marker);
   int_marker.header.frame_id = frame_id_;
   int_marker.name = name_;
@@ -332,14 +333,19 @@ namespace jsk_interactive_marker{
     marker_scale_ = 0.5;
     marker_.type = visualization_msgs::Marker::MESH_RESOURCE;
     type_ = jsk_rviz_plugins::TransformableMarkerOperate::MESH_RESOURCE;
-    marker_.mesh_resource = mesh_resource;
-    marker_.mesh_use_embedded_materials = mesh_use_embedded_materials;
+    mesh_resource_ = mesh_resource;
+    mesh_use_embedded_materials_ = mesh_use_embedded_materials;
     frame_id_ = frame;
     name_ = name;
     description_ = description;
   }
 
   visualization_msgs::Marker TransformableMesh::getVisualizationMsgMarker(){
+    marker_.mesh_resource = mesh_resource_;
+    marker_.mesh_use_embedded_materials = mesh_use_embedded_materials_;
+    marker_.scale.x = 1.0;
+    marker_.scale.y = 1.0;
+    marker_.scale.z = 1.0;
     marker_.color.r = mesh_r_;
     marker_.color.g = mesh_g_;
     marker_.color.b = mesh_b_;

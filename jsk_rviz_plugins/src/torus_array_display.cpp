@@ -267,12 +267,15 @@ namespace jsk_rviz_plugins
       if(!context_->getFrameManager()->transform(torus.header, torus.pose,
                                                  position,
                                                  quaternion))
-        {
-          ROS_ERROR( "Error transforming pose '%s' from frame '%s' to frame '%s'",
-                     qPrintable( getName() ), torus.header.frame_id.c_str(),
-                     qPrintable( fixed_frame_ ));
+      {
+          std::ostringstream oss;
+          oss << "Error transforming pose";
+          oss << " from frame '" << torus.header.frame_id << "'";
+          oss << " to frame '" << qPrintable(fixed_frame_) << "'";
+          ROS_ERROR_STREAM(oss.str());
+          setStatus(rviz::StatusProperty::Error, "Transform", QString::fromStdString(oss.str()));
           return;
-        }
+      }
 
       shape->clear();
       std::vector<Triangle> triangles;

@@ -2,6 +2,20 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.3 (2017-10-26)
+------------------
+* [jsk_rviz_plugins] Rviz default font is changed from Arial to LiberationSans (See: https://github.com/ros-visualization/rviz/pull/1141) (`#676 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/676>`_)
+* Add exclude regex in rosconsole_overlay (`#675 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/675>`_)
+* Contributors: Iori Kumagai, Kentaro Wada
+
+2.1.2 (2017-07-07)
+------------------
+* [jsk_rviz_plugins][classification_result_visualizer] minor bugfix (`#669 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/669>`_ )
+* [jsk_rviz_plugins] add marker publisher for classification result (`#667 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/667>`_)
+  * [jsk_rviz_plugins] add visualizer for classification result
+
+* Contributors: Yuki Furuta
+
 2.1.1 (2017-02-15)
 ------------------
 * remove depends to wxwidgets https://github.com/ros/rosdistro/pull/13886#issuecomment-279832181

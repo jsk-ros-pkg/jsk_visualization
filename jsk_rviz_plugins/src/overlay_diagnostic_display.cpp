@@ -380,7 +380,7 @@ namespace jsk_rviz_plugins
   {
     painter.save();
     const double r = size_ / 128.0;
-    QFont font("Arial", font_size * r, font_size * r, QFont::Bold);
+    QFont font("Liberation Sans", font_size * r, font_size * r, QFont::Bold);
     QPen pen;
     QPainterPath path;
     pen.setWidth(1);
@@ -397,7 +397,7 @@ namespace jsk_rviz_plugins
   {
     painter.save();
     const double r = size_ / 128.0;
-    QFont font("Arial", font_size * r, font_size * r, QFont::Bold);
+    QFont font("Liberation Sans", font_size * r, font_size * r, QFont::Bold);
     QPen pen;
     QPainterPath path;
     pen.setWidth(1);
@@ -417,7 +417,7 @@ namespace jsk_rviz_plugins
                                                      const std::string text)
   {
     const double r = size_ / 128.0;
-    QFont font("Arial", font_size * r, font_size * r, false);
+    QFont font("Liberation Sans", font_size * r, font_size * r, false);
     QPen pen;
     QPainterPath path;
     pen.setWidth(1);
@@ -598,7 +598,7 @@ namespace jsk_rviz_plugins
       }
     }
     painter.setPen(QPen(textColor(), 2 * line_width, Qt::SolidLine));
-    painter.setFont(QFont("Arial", 12, QFont::Bold));
+    painter.setFont(QFont("Liberation Sans", 12, QFont::Bold));
     double theta = atan2(S - B, S - A) / M_PI * 180;
     double text_box_height = cos(theta*M_PI/180) * B;
     double text_box_width = (S - A) / cos(theta*M_PI/180) - sin(theta*M_PI/180) * B * 2;

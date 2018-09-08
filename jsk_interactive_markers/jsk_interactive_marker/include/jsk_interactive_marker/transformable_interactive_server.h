@@ -148,9 +148,7 @@ namespace jsk_interactive_marker
     boost::shared_ptr<tf::TransformListener> tf_listener_;
     int torus_udiv_;
     int torus_vdiv_;
-    bool display_interactive_manipulator_;
-    bool display_interactive_manipulator_only_selected_;
-    bool display_description_only_selected_;
+    jsk_interactive_marker::InteractiveSettingConfig config_;
     bool strict_tf_;
     int interactive_manipulator_orientation_;
     ros::Timer tf_timer;

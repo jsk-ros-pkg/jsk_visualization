@@ -1,11 +1,7 @@
 <package>
-  <name>
-    jsk_interactive_marker
-  </name>
-  <description>
-    jsk interactive markers
-  </description>
-  <version>2.1.1</version>
+  <name>jsk_interactive_marker</name>
+  <description>jsk interactive markers</description>
+  <version>2.1.3</version>
   <author email="furuta@jsk.t.u-tokyo.ac.jp">furuta</author>
   <maintainer email="furuta@jsk.t.u-tokyo.ac.jp">furuta</maintainer>
   <license>BSD</license>
@@ -36,8 +32,9 @@
   <build_depend>message_generation</build_depend>
   <build_depend>jsk_rviz_plugins</build_depend>
   <build_depend>moveit_msgs</build_depend>
-  <build_depend version_gte="1.0.0">jsk_recognition_msgs</build_depend>
-  <build_depend>jsk_topic_tools</build_depend> 
+  <build_depend version_gte="1.2.0">jsk_recognition_msgs</build_depend>
+  <build_depend>jsk_recognition_utils</build_depend>
+  <build_depend>jsk_topic_tools</build_depend>
   <build_depend>yaml-cpp</build_depend>
   <build_depend>rviz</build_depend>
   <run_depend>message_runtime</run_depend>
@@ -61,6 +58,7 @@
   <run_depend>jsk_rviz_plugins</run_depend>
   <run_depend>jsk_topic_tools</run_depend>
   <run_depend version_gte="1.0.0">jsk_recognition_msgs</run_depend>
+  <run_depend>jsk_recognition_utils</run_depend>
   <run_depend>yaml-cpp</run_depend>
   <run_depend>moveit_msgs</run_depend>
   <run_depend>rviz</run_depend>

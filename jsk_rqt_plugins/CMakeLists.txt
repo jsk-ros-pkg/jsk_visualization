@@ -6,12 +6,7 @@ find_package(catkin REQUIRED
 )
 
 catkin_python_setup()
-add_service_files(
-  FILES
-  YesNo.srv
-)
-generate_messages(DEPENDENCIES)
-catkin_package(CATKIN_DEPENDS message_runtime)
+catkin_package()
 
 install(FILES plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

@@ -14,7 +14,8 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   view_controller_msgs
   geometry_msgs
   dynamic_reconfigure
-  jsk_recognition_msgs)
+  jsk_recognition_msgs
+  jsk_gui_msgs)
 
 # Use ccache if installed to make it fast to generate object files
 find_program(CCACHE_FOUND ccache)
@@ -32,6 +33,7 @@ add_service_files(FILES
   )
 catkin_python_setup()
 generate_dynamic_reconfigure_options(
+  cfg/ClassificationResultVisualizer.cfg
   cfg/ContactStateMarker.cfg
   cfg/OverlayTextInterface.cfg)
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
@@ -41,7 +43,7 @@ catkin_package(
     CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
     jsk_recognition_utils cv_bridge people_msgs image_geometry
     INCLUDE_DIRS # TODO include
-    LIBRARIES # TODO
+    LIBRARIES ${PROJECT_NAME}
 )
 
 
@@ -170,7 +172,14 @@ if(rviz_QT_VERSION VERSION_LESS "5")
 else()
   target_link_libraries(jsk_rviz_plugins Qt5::Widgets ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
 endif()
-add_dependencies(jsk_rviz_plugins jsk_hark_msgs_gencpp ${PROJECT_NAME}_gencpp)
+add_dependencies(jsk_rviz_plugins
+  jsk_footstep_msgs_generate_messages_cpp
+  jsk_gui_msgs_generate_messages_cpp
+  jsk_hark_msgs_generate_messages_cpp
+  jsk_recognition_msgs_generate_messages_cpp
+  people_msgs_generate_messages_cpp
+  view_controller_msgs_generate_messages_cpp
+  ${PROJECT_NAME}_generate_messages_cpp)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set_target_properties(jsk_rviz_plugins PROPERTIES LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")

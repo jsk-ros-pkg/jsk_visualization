@@ -129,7 +129,7 @@ namespace jsk_rviz_plugins
       dot = 1.0;
     }
     double theta = sign * acos(dot);
-    if (!isnan(theta)) {
+    if (!std::isnan(theta)) {
       Eigen::Vector3d vel_refined(-vel[1], -vel[0], 0);
       
       publishCmdVel(vel_refined[0] * 0.2 , vel_refined[1] * 0.2, theta * 0.2);

@@ -10,6 +10,7 @@
 #include <rviz/visualization_manager.h>
 #include <rviz/frame_manager.h>
 
+#include <resource_retriever/retriever.h>
 #include <jsk_interactive_marker/GetMarkerDimensions.h>
 #include <jsk_interactive_marker/GetTransformableMarkerFocus.h>
 
@@ -29,6 +30,13 @@ namespace jsk_interactive_marker
     server_name_editor_ = new QLineEdit;
     server_name_layout->addWidget( server_name_editor_ );
     layout->addLayout( server_name_layout );
+
+    // topic name
+    QHBoxLayout* obj_array_topic_layout = new QHBoxLayout;
+    obj_array_topic_layout->addWidget( new QLabel( "ObjectArray Topic:" ));
+    topic_name_editor_ = new QLineEdit;
+    obj_array_topic_layout->addWidget( topic_name_editor_ );
+    layout->addLayout( obj_array_topic_layout );
 
     // tabs for operations
     QTabWidget* tabs = new QTabWidget();
@@ -51,6 +59,17 @@ namespace jsk_interactive_marker
 
     insert_torus_button_ = new QPushButton("Insert New Torus Marker");
     layout1->addWidget( insert_torus_button_ );
+
+    insert_mesh_button_ = new QPushButton("Insert New Mesh Marker");
+    layout1->addWidget( insert_mesh_button_ );
+
+    QHBoxLayout* object_layout = new QHBoxLayout;
+    object_layout->addWidget( new QLabel( "Object:" ));
+    object_editor_ = new QComboBox;
+    object_editor_->setIconSize(QSize(50, 50));
+    object_editor_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    object_layout->addWidget( object_editor_ );
+    layout1->addLayout( object_layout );
 
     QHBoxLayout* name_layout = new QHBoxLayout;
     name_layout->addWidget( new QLabel( "Name:" ));
@@ -123,6 +142,7 @@ namespace jsk_interactive_marker
     connect( insert_box_button_, SIGNAL( clicked() ), this, SLOT( insertBoxService ()));
     connect( insert_cylinder_button_, SIGNAL( clicked() ), this, SLOT( insertCylinderService ()));
     connect( insert_torus_button_, SIGNAL( clicked() ), this, SLOT( insertTorusService ()));
+    connect( insert_mesh_button_, SIGNAL( clicked() ), this, SLOT( insertMeshService ()));
     connect( erase_with_id_button_, SIGNAL( clicked() ), this, SLOT( eraseWithIdService ()));
     connect( erase_all_button_, SIGNAL( clicked() ), this, SLOT( eraseAllService ()));
     connect( erase_focus_button_, SIGNAL( clicked() ), this, SLOT( eraseFocusService ()));
@@ -132,16 +152,62 @@ namespace jsk_interactive_marker
     connect( dimension_z_editor_, SIGNAL( editingFinished() ), this, SLOT( updateDimensionsService ()));
     connect( dimension_radius_editor_, SIGNAL( editingFinished() ), this, SLOT( updateDimensionsService ()));
     connect( dimension_sm_radius_editor_, SIGNAL( editingFinished() ), this, SLOT( updateDimensionsService ()));
+    connect( object_editor_, SIGNAL( currentIndexChanged(int)), SLOT( updateName ()));
+    connect( topic_name_editor_, SIGNAL( editingFinished() ), this, SLOT( updateObjectArrayTopic ()));
+  }
+
+  void TransformableMarkerOperatorAction::objectArrayCb(const jsk_recognition_msgs::ObjectArray::ConstPtr& obj_array_msg) {
+    objects_ = obj_array_msg->objects;
+    int current_index = object_editor_->currentIndex();
+    object_editor_->clear();
+    for (size_t i = 0; i < obj_array_msg->objects.size(); i++) {
+      jsk_recognition_msgs::Object object =  objects_[i];
+      // thumbnail
+      QPixmap pixmap = QPixmap();
+      if (object.image_resources.size() > 0)
+      {
+        std::string thumbnail = object.image_resources[0];
+        resource_retriever::Retriever retriever;
+        resource_retriever::MemoryResource mem = retriever.get(thumbnail);
+        pixmap.loadFromData(static_cast<unsigned char*>(mem.data.get()), mem.size);
+      }
+      // name
+      std::stringstream ss;
+      ss << object.id << ": " << object.name;
+      //
+      object_editor_->addItem(QIcon(pixmap), QString::fromStdString(ss.str()));
+    }
+    object_editor_->setCurrentIndex(current_index);
   }
 
   void TransformableMarkerOperatorAction::onInitialize() {
     connect( vis_manager_, SIGNAL( preUpdate() ), this, SLOT( update() ));
+    updateObjectArrayTopic();
   }
 
   void TransformableMarkerOperatorAction::update() {
     updateServerName();
     updateFocusMarkerDimensions();
+    updateFrameId();
     // updateDimensionsService();
+  }
+
+  void TransformableMarkerOperatorAction::updateObjectArrayTopic() {
+    sub_obj_array_.shutdown();
+    std::string topic = topic_name_editor_->text().toStdString();
+    if (topic.empty()) {
+      ros::master::V_TopicInfo topics;
+      ros::master::getTopics(topics);
+      for (size_t i = 0; i < topics.size(); i++) {
+        if (topics[i].datatype == "jsk_recognition_msgs/ObjectArray") {
+          topic = topics[i].name;
+          break;
+        }
+      }
+      topic_name_editor_->setText(QString::fromStdString(topic));
+    }
+    sub_obj_array_ = nh_.subscribe(
+      topic, 1, &TransformableMarkerOperatorAction::objectArrayCb, this);
   }
 
   void TransformableMarkerOperatorAction::insertBoxService(){
@@ -161,6 +227,29 @@ namespace jsk_interactive_marker
     operator_srv.request.operate.name = name_editor_->text().toStdString();
     operator_srv.request.operate.description = description_editor_->text().toStdString();
     operator_srv.request.operate.frame_id = frame_editor_->text().toStdString();
+    callRequestMarkerOperateService(operator_srv);
+  };
+
+  void TransformableMarkerOperatorAction::insertMeshService() {
+    int current_index = object_editor_->currentIndex();
+    if (!(0 <= current_index && current_index < objects_.size())) {
+      ROS_ERROR("Invalid index for object selection: %d. Please select again.", current_index);
+      return;
+    }
+    jsk_recognition_msgs::Object object = objects_[current_index];
+    if (object.mesh_resource.empty()) {
+      ROS_ERROR("Mesh resource of object '%s' is empty, so skipping.", object.name.c_str());
+      return;
+    }
+
+    jsk_rviz_plugins::RequestMarkerOperate operator_srv;
+    operator_srv.request.operate.type = jsk_rviz_plugins::TransformableMarkerOperate::MESH_RESOURCE;
+    operator_srv.request.operate.action = jsk_rviz_plugins::TransformableMarkerOperate::INSERT;
+    operator_srv.request.operate.name = object.name;
+    operator_srv.request.operate.description = description_editor_->text().toStdString();
+    operator_srv.request.operate.frame_id = frame_editor_->text().toStdString();
+    operator_srv.request.operate.mesh_resource = object.mesh_resource;
+    operator_srv.request.operate.mesh_use_embedded_materials = true;
     callRequestMarkerOperateService(operator_srv);
   };
 
@@ -237,6 +326,22 @@ namespace jsk_interactive_marker
       ROS_INFO("Call success: %s", service_name.c_str());
     } else {
       ROS_ERROR("Service call fail: %s", service_name.c_str());
+    }
+  }
+
+  void TransformableMarkerOperatorAction::updateFrameId() {
+    if (frame_editor_->text().isEmpty()) {
+      frame_editor_->setText(vis_manager_->getFixedFrame());
+    }
+  }
+
+  void TransformableMarkerOperatorAction::updateName() {
+    int current_index = object_editor_->currentIndex();
+    if (0 <= current_index && current_index < objects_.size()) {
+      jsk_recognition_msgs::Object object = objects_[current_index];
+      name_editor_->setText(QString::fromStdString(object.name));
+    } else {
+      name_editor_->setText(QString(""));
     }
   }
 

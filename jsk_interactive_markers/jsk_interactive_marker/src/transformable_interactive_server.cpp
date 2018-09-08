@@ -92,13 +92,11 @@ TransformableInteractiveServer::~TransformableInteractiveServer()
 void TransformableInteractiveServer::configCallback(InteractiveSettingConfig &config, uint32_t level)
   {
     boost::mutex::scoped_lock lock(mutex_);
-    display_interactive_manipulator_ = config.display_interactive_manipulator;
-    display_interactive_manipulator_only_selected_ = config.display_interactive_manipulator_only_selected;
-    display_description_only_selected_ = config.display_description_only_selected;
-    interactive_manipulator_orientation_ = config.interactive_manipulator_orientation;
+    config_ = config;
+    int interaction_mode = config.interaction_mode;
     for (std::map<string, TransformableObject* >::iterator itpairstri = transformable_objects_map_.begin(); itpairstri != transformable_objects_map_.end(); itpairstri++) {
       TransformableObject* tobject = itpairstri->second;
-      tobject->setInteractiveMarkerSetting(config);
+      tobject->setInteractiveMarkerSetting(config_);
       updateTransformableObject(tobject);
     }
   }
@@ -529,11 +527,11 @@ void TransformableInteractiveServer::focusInteractiveManipulatorDisplay() {
         it != transformable_objects_map_.end(); it++) {
     std::string object_name = it->first;
     TransformableObject* tobject = it->second;
-    if (display_interactive_manipulator_ && display_interactive_manipulator_only_selected_) {
+    if (config_.display_interactive_manipulator && config_.display_interactive_manipulator_only_selected) {
       // display interactive manipulator only for the focused object
       tobject->setDisplayInteractiveManipulator(object_name == focus_object_marker_name_);
     }
-    if (display_description_only_selected_) {
+    if (config_.display_description_only_selected) {
       // display description only for the focused object
       tobject->setDisplayDescription(object_name == focus_object_marker_name_);
     }
@@ -637,13 +635,12 @@ void TransformableInteractiveServer::insertNewObject( TransformableObject* tobje
 
 void TransformableInteractiveServer::SetInitialInteractiveMarkerConfig( TransformableObject* tobject )
 {
-  InteractiveSettingConfig config;
-  if (display_interactive_manipulator_ && !display_interactive_manipulator_only_selected_) {
+  InteractiveSettingConfig config(config_);
+  if (config.display_interactive_manipulator && !config.display_interactive_manipulator_only_selected) {
     config.display_interactive_manipulator = true;
   } else {
     config.display_interactive_manipulator = false;
   }
-  config.interactive_manipulator_orientation = interactive_manipulator_orientation_;
   tobject->setInteractiveMarkerSetting(config);
 }
 

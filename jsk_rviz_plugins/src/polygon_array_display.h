@@ -81,14 +81,19 @@ namespace jsk_rviz_plugins
     virtual void processPolygonMaterial(const size_t i);
     virtual void processMessage(
       const jsk_recognition_msgs::PolygonArray::ConstPtr& msg);
+    virtual bool getTransform(
+      const std_msgs::Header &header,
+      Ogre::Vector3& position, Ogre::Quaternion& orientation);
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::BoolProperty* only_border_property_;
     // rviz::BoolProperty* auto_coloring_property_;
     rviz::EnumProperty* coloring_property_;
     rviz::BoolProperty* show_normal_property_;
+    rviz::BoolProperty* enable_lighting_property_;
     rviz::FloatProperty* normal_length_property_;
     bool only_border_;
+    bool enable_lighting_;
     std::string coloring_method_;
     bool show_normal_;
     double normal_length_;
@@ -103,6 +108,7 @@ namespace jsk_rviz_plugins
     void updateColoring();
     void updateOnlyBorder();
     void updateShowNormal();
+    void updateEnableLighting();
     void updateNormalLength();
   private:
     
