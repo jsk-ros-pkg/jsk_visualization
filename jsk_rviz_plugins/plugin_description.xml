@@ -214,6 +214,15 @@
     <description>
     </description>
   </class>
+
+  <class name="jsk_rviz_plugin/SegmentArray"
+         type="jsk_rviz_plugins::SegmentArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize jsk_recognition_msgs/SegmentArray
+    </description>
+  </class>
+
   <class name="jsk_rviz_plugin/TabletControllerPanel"
          type="jsk_rviz_plugins::TabletControllerPanel"
          base_class_type="rviz::Panel">

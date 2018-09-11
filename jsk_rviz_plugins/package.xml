@@ -53,6 +53,7 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>urdfdom_py</run_depend>
   <run_depend>view_controller_msgs</run_depend>
+  <run_depend>python-scipy</run_depend>
 
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
