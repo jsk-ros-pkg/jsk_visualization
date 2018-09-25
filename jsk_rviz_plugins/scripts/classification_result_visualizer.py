@@ -16,6 +16,12 @@ from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker, MarkerArray
 
 
+def is_pose_nan(pose):
+    return pose.position.x == 0.0 and\
+           pose.position.y == 0.0 and\
+           pose.position.z == 0.0
+
+
 class ClassificationResultVisualizer(ConnectionBasedTransport):
     def __init__(self):
         super(ClassificationResultVisualizer, self).__init__()
@@ -124,6 +130,9 @@ class ClassificationResultVisualizer(ConnectionBasedTransport):
                 text = "%s (%.3f)" % cls
             else:
                 text = cls
+
+            if is_pose_nan(bbox.pose):
+                continue
 
             m = Marker(type=Marker.TEXT_VIEW_FACING,
                        action=Marker.MODIFY,
