@@ -79,6 +79,7 @@ class ClassificationResultVisualizer(ConnectionBasedTransport):
                             config.text_offset_z]
         self.text_size = config.text_size
         self.marker_lifetime = config.marker_lifetime
+        self.show_proba = config.show_proba
         return config
 
     def pose_msg_callback(self, pose, classes):
@@ -112,9 +113,17 @@ class ClassificationResultVisualizer(ConnectionBasedTransport):
 
     def box_msg_callback(self, bboxes, classes):
         msg = MarkerArray()
-        for i, data in enumerate(zip(bboxes.boxes, zip(classes.label_names, classes.label_proba))):
+        show_proba = self.show_proba and len(classes.label_names) == len(classes.label_proba)
+        if show_proba:
+            cls_iter = zip(classes.label_names, classes.label_proba)
+        else:
+            cls_iter = classes.label_names
+        for i, data in enumerate(zip(bboxes.boxes, cls_iter)):
             bbox, cls = data
-            text = "%s (%.3f)" % cls
+            if show_proba:
+                text = "%s (%.3f)" % cls
+            else:
+                text = cls
 
             m = Marker(type=Marker.TEXT_VIEW_FACING,
                        action=Marker.MODIFY,
