@@ -10,7 +10,7 @@ catkin_package()
 
 install(FILES plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-install(PROGRAMS bin/rqt_3d_plot bin/rqt_histogram_plot bin/rqt_yn_btn
+install(DIRECTORY bin
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(DIRECTORY resource
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
