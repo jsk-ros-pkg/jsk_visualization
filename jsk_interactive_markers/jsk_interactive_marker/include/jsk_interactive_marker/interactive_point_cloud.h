@@ -51,7 +51,7 @@ public:
 private:
 
   typedef jsk_interactive_marker::InteractivePointCloudConfig Config;
-  boost::shared_ptr <dynamic_reconfigure::Server<Config> > srv_;
+  std::shared_ptr <dynamic_reconfigure::Server<Config> > srv_;
   boost::mutex mutex_;
   virtual void configCallback (Config &config, uint32_t level);
 
@@ -95,8 +95,8 @@ private:
   message_filters::Subscriber<jsk_recognition_msgs::Int32Stamped> sub_selected_index_;
   message_filters::Subscriber<geometry_msgs::PoseArray> sub_handle_array_;
   tf::TransformListener tfl_;
-  boost::shared_ptr<message_filters::Synchronizer<SyncPolicy> >sync_;
-  boost::shared_ptr<message_filters::Synchronizer<SyncHandlePose> > sync_handle_;
+  std::shared_ptr<message_filters::Synchronizer<SyncPolicy> >sync_;
+  std::shared_ptr<message_filters::Synchronizer<SyncHandlePose> > sync_handle_;
   
   jsk_interactive_marker::ParentAndChildInteractiveMarkerServer marker_server_;
   interactive_markers::MenuHandler menu_handler_;

@@ -49,7 +49,7 @@ namespace jsk_interactive_marker
   class CameraInfoPublisher
   {
   public:
-    typedef boost::shared_ptr<CameraInfoPublisher> Ptr;
+    typedef std::shared_ptr<CameraInfoPublisher> Ptr;
     typedef jsk_interactive_marker::CameraInfoPublisherConfig Config;
     CameraInfoPublisher();
     virtual ~CameraInfoPublisher();
@@ -75,10 +75,10 @@ namespace jsk_interactive_marker
     ros::Publisher pub_camera_info_;
     ros::Subscriber sub_sync_;
     ros::Timer timer_;
-    boost::shared_ptr <dynamic_reconfigure::Server<Config> > srv_;
+    std::shared_ptr <dynamic_reconfigure::Server<Config> > srv_;
     boost::mutex mutex_;
-    boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
-    boost::shared_ptr<tf::TransformListener> tf_listener_;
+    std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+    std::shared_ptr<tf::TransformListener> tf_listener_;
     ////////////////////////////////////////////////////////
     // variables
     ////////////////////////////////////////////////////////

@@ -49,7 +49,7 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   marker_dimensions_pub_ = n_->advertise<jsk_interactive_marker::MarkerDimensions>("marker_dimensions", 1);
   request_marker_operate_srv_ = n_->advertiseService("request_marker_operate", &TransformableInteractiveServer::requestMarkerOperateService, this);
 
-  config_srv_ = boost::make_shared <dynamic_reconfigure::Server<InteractiveSettingConfig> > (*n_);
+  config_srv_ = std::make_shared <dynamic_reconfigure::Server<InteractiveSettingConfig> > (*n_);
   dynamic_reconfigure::Server<InteractiveSettingConfig>::CallbackType f =
     boost::bind (&TransformableInteractiveServer::configCallback, this, _1, _2);
   config_srv_->setCallback (f);
@@ -59,7 +59,7 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
   // initialize yaml-menu-handler
   std::string yaml_filename;
   n_->param("yaml_filename", yaml_filename, std::string(""));
-  yaml_menu_handler_ptr_ = boost::make_shared <YamlMenuHandler> (n_, yaml_filename);
+  yaml_menu_handler_ptr_ = std::make_shared <YamlMenuHandler> (n_, yaml_filename);
   yaml_menu_handler_ptr_->_menu_handler.insert(
     "enable manipulator",
     boost::bind(&TransformableInteractiveServer::enableInteractiveManipulatorDisplay, this, _1, /*enable=*/true));

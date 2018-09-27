@@ -51,7 +51,7 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
 
   if(use_bounding_box_){
     //point cloud and bounding box
-    sync_ = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(10);
+    sync_ = std::make_shared<message_filters::Synchronizer<SyncPolicy> >(10);
     sub_bounding_box_.subscribe(pnh_,input_bounding_box_, 1);
     sub_initial_handle_pose_.subscribe(pnh_, initial_handle_pose_, 1);
     sync_->connectInput(sub_point_cloud_, sub_bounding_box_, sub_initial_handle_pose_);
@@ -60,7 +60,7 @@ InteractivePointCloud::InteractivePointCloud(std::string marker_name,
   }else{
       sub_point_cloud_.registerCallback(&InteractivePointCloud::pointCloudCallback, this);
   }
-  srv_ = boost::make_shared <dynamic_reconfigure::Server<Config> > (pnh_);
+  srv_ = std::make_shared <dynamic_reconfigure::Server<Config> > (pnh_);
   dynamic_reconfigure::Server<Config>::CallbackType f =
     boost::bind (&InteractivePointCloud::configCallback, this, _1, _2);
   srv_->setCallback (f);

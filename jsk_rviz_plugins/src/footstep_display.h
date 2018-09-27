@@ -75,7 +75,7 @@ namespace jsk_rviz_plugins
     rviz::BoolProperty* show_name_property_;
     rviz::BoolProperty* use_group_coloring_property_;
     jsk_footstep_msgs::FootstepArray::ConstPtr latest_footstep_;
-    typedef boost::shared_ptr<rviz::Shape> ShapePtr;
+    typedef std::shared_ptr<rviz::Shape> ShapePtr;
     std::vector<ShapePtr> shapes_;
     std::vector<rviz::MovableText*> texts_;
     std::vector<Ogre::SceneNode*> text_nodes_;

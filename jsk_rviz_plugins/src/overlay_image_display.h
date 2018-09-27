@@ -82,7 +82,7 @@ namespace jsk_rviz_plugins
     rviz::FloatProperty* alpha_property_;
     int width_, height_, left_, top_;
     double alpha_;
-    boost::shared_ptr<image_transport::ImageTransport> it_;
+    std::shared_ptr<image_transport::ImageTransport> it_;
     image_transport::Subscriber sub_;
     sensor_msgs::Image::ConstPtr msg_;
     bool is_msg_available_;

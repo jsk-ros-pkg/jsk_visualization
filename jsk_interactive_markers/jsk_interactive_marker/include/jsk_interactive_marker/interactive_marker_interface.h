@@ -28,7 +28,7 @@ class InteractiveMarkerInterface {
   };
 
   struct UrdfProperty{
-    boost::shared_ptr<urdf::ModelInterface> model;
+    std::shared_ptr<urdf::ModelInterface> model;
     std::string root_link_name;
     geometry_msgs::Pose pose;
     double scale;
@@ -147,7 +147,7 @@ class InteractiveMarkerInterface {
 
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   ros::Publisher pub_;
   ros::Publisher pub_update_;
   ros::Publisher pub_move_;

@@ -17,7 +17,7 @@ private:
   ros::NodeHandle pnh_;
   ros::Subscriber display_marker_sub_;
   XmlRpc::XmlRpcValue model_config_;
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   string model_name_;
   string model_description_;
   double scale_factor_;
@@ -34,7 +34,7 @@ private:
   bool display_;
   map<string, double> initial_pose_map_;
 
-  typedef boost::shared_ptr<UrdfModelMarker> umm_ptr;
+  typedef std::shared_ptr<UrdfModelMarker> umm_ptr;
   typedef vector<umm_ptr> umm_vec;
   umm_vec umm_vec_;
 
@@ -199,7 +199,7 @@ public:
     new UrdfModelMarker(model_name_, model_description_, model_file_, frame_id_, pose_stamped_ ,root_offset_, scale_factor_, mode_ , robot_mode_, registration_,fixed_link_, use_robot_description_, use_visible_color_,initial_pose_map_, -1, server_);
   }
 
-  UrdfModelSettings(XmlRpc::XmlRpcValue model,   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : pnh_("~") {
+  UrdfModelSettings(XmlRpc::XmlRpcValue model,   std::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : pnh_("~") {
     model_config_ = model;
     server_ = server;
     init();
@@ -225,7 +225,7 @@ int main(int argc, char** argv)
     server_name = ros::this_node::getName();
   }
 
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
   server.reset( new interactive_markers::InteractiveMarkerServer(server_name, "", false) );
 
   XmlRpc::XmlRpcValue v;

@@ -43,12 +43,12 @@ using namespace std;
 class UrdfModelMarker {
  public:
   //  UrdfModelMarker(string file);
-  UrdfModelMarker(string file, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
-  UrdfModelMarker(string model_name, string model_description, string model_file, string frame_id, geometry_msgs::PoseStamped  root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, vector<string> fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string file, std::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
+  UrdfModelMarker(string model_name, string model_description, string model_file, string frame_id, geometry_msgs::PoseStamped  root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, vector<string> fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index, std::shared_ptr<interactive_markers::InteractiveMarkerServer> server);
   UrdfModelMarker();
 
-  void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root);
-  void addInvisibleMeshMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, const std_msgs::ColorRGBA &color);
+  void addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, std::shared_ptr<const Link> link, bool root);
+  void addInvisibleMeshMarkerControl(visualization_msgs::InteractiveMarker &int_marker, std::shared_ptr<const Link> link, const std_msgs::ColorRGBA &color);
   void addGraspPointControl(visualization_msgs::InteractiveMarker &int_marker, std::string link_frame_name_);
 
   void publishBasePose( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
@@ -85,15 +85,15 @@ class UrdfModelMarker {
   //joint state methods
   void publishJointState();
   void getJointState();
-  void getJointState(boost::shared_ptr<const Link> link);
+  void getJointState(std::shared_ptr<const Link> link);
 
-  void setJointState(boost::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js);
-  void setJointAngle(boost::shared_ptr<const Link> link, double joint_angle);
+  void setJointState(std::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js);
+  void setJointAngle(std::shared_ptr<const Link> link, double joint_angle);
   geometry_msgs::Pose getRootPose(geometry_msgs::Pose pose);
   geometry_msgs::PoseStamped getOriginPoseStamped();
-  void setOriginalPose(boost::shared_ptr<const Link> link);
-  void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init);
-  void addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index);
+  void setOriginalPose(std::shared_ptr<const Link> link);
+  void addChildLinkNames(std::shared_ptr<const Link> link, bool root, bool init);
+  void addChildLinkNames(std::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index);
 
   void callSetDynamicTf(string parent_frame_id, string frame_id, geometry_msgs::Transform transform);
   void callPublishTf();
@@ -123,10 +123,10 @@ class UrdfModelMarker {
  protected:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   
   /* diagnostics */
-  boost::shared_ptr<diagnostic_updater::Updater> diagnostic_updater_;
+  std::shared_ptr<diagnostic_updater::Updater> diagnostic_updater_;
   jsk_topic_tools::TimeAccumulator reset_joint_states_check_time_acc_;
   jsk_topic_tools::TimeAccumulator dynamic_tf_check_time_acc_;
 
@@ -170,7 +170,7 @@ class UrdfModelMarker {
   std::string target_frame;
 
 
-  boost::shared_ptr<ModelInterface> model;
+  std::shared_ptr<ModelInterface> model;
   std::string model_name_;
   std::string model_description_;
   std::string frame_id_;

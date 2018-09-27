@@ -60,8 +60,8 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
-    typedef boost::shared_ptr<rviz::Arrow> ArrowPtr;
-    typedef boost::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
+    typedef std::shared_ptr<rviz::Arrow> ArrowPtr;
+    typedef std::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
     TwistStampedDisplay();
     virtual ~TwistStampedDisplay();
   protected:

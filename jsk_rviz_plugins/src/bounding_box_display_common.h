@@ -59,9 +59,9 @@ namespace jsk_rviz_plugins
 public:
     BoundingBoxDisplayCommon() {};
     ~BoundingBoxDisplayCommon() {};
-    typedef boost::shared_ptr<rviz::Shape> ShapePtr;
-    typedef boost::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
-    typedef boost::shared_ptr<rviz::Arrow> ArrowPtr;
+    typedef std::shared_ptr<rviz::Shape> ShapePtr;
+    typedef std::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
+    typedef std::shared_ptr<rviz::Arrow> ArrowPtr;
 
 protected:
     QColor color_;

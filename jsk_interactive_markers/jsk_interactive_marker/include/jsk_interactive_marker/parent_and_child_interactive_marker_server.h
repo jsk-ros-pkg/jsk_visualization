@@ -71,7 +71,7 @@ namespace jsk_interactive_marker
     // access: parent server -> subscriber
     std::map <std::string, ros::Subscriber> parent_update_subscribers_; // self association is not included
     std::map <std::string, ros::Subscriber> parent_feedback_subscribers_; // self association is not included
-    std::map <std::string, boost::shared_ptr <FeedbackSynthesizer> > callback_map_;
+    std::map <std::string, std::shared_ptr <FeedbackSynthesizer> > callback_map_;
     std::map <std::string, int> parent_subscriber_nums_;
   };
 }

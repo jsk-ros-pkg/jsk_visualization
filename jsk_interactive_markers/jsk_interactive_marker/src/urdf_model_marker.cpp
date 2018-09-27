@@ -16,7 +16,7 @@ using namespace urdf;
 using namespace std;
 using namespace im_utils;
 
-void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, bool root) {
+void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker &int_marker, std::shared_ptr<const Link> link, bool root) {
   visualization_msgs::InteractiveMarkerControl control;
   if (root) {
     im_helpers::add6DofControl(int_marker,false);
@@ -25,7 +25,7 @@ void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker
     }
   }
   else {
-    boost::shared_ptr<Joint> parent_joint = link->parent_joint;
+    std::shared_ptr<Joint> parent_joint = link->parent_joint;
     Eigen::Vector3f origin_x(1,0,0);
     Eigen::Vector3f dest_x(parent_joint->axis.x, parent_joint->axis.y, parent_joint->axis.z);
     Eigen::Quaternionf qua;
@@ -54,7 +54,7 @@ void UrdfModelMarker::addMoveMarkerControl(visualization_msgs::InteractiveMarker
   }
 }
 
-void UrdfModelMarker::addInvisibleMeshMarkerControl(visualization_msgs::InteractiveMarker &int_marker, boost::shared_ptr<const Link> link, const std_msgs::ColorRGBA &color) {
+void UrdfModelMarker::addInvisibleMeshMarkerControl(visualization_msgs::InteractiveMarker &int_marker, std::shared_ptr<const Link> link, const std_msgs::ColorRGBA &color) {
   visualization_msgs::InteractiveMarkerControl control;
   //    ps.pose = UrdfPose2Pose(link->visual->origin);
   visualization_msgs::Marker marker;
@@ -68,7 +68,7 @@ void UrdfModelMarker::addInvisibleMeshMarkerControl(visualization_msgs::Interact
   marker.color = color;
   //marker.pose = stamped.pose;
   //visualization_msgs::InteractiveMarkerControl control;
-  boost::shared_ptr<Joint> parent_joint = link->parent_joint;
+  std::shared_ptr<Joint> parent_joint = link->parent_joint;
   Eigen::Vector3f origin_x(0,0,1);
   Eigen::Vector3f dest_x(parent_joint->axis.x, parent_joint->axis.y, parent_joint->axis.z);
   Eigen::Quaternionf qua;
@@ -644,10 +644,10 @@ void UrdfModelMarker::getJointState() {
   getJointState(model->getRoot());
 }
 
-void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link)
+void UrdfModelMarker::getJointState(std::shared_ptr<const Link> link)
 {
   string link_frame_name_ =  tf_prefix_ + link->name;
-  boost::shared_ptr<Joint> parent_joint = link->parent_joint;
+  std::shared_ptr<Joint> parent_joint = link->parent_joint;
   if (parent_joint != NULL) {
     KDL::Frame initialFrame;
     KDL::Frame presentFrame;
@@ -745,15 +745,15 @@ void UrdfModelMarker::getJointState(boost::shared_ptr<const Link> link)
     server_->applyChanges();
   }
 
-  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++) {
+  for (std::vector<std::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++) {
     getJointState(*child);
   }
   return;
 }
 
-void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double joint_angle) {
+void UrdfModelMarker::setJointAngle(std::shared_ptr<const Link> link, double joint_angle) {
   string link_frame_name_ =  tf_prefix_ + link->name;
-  boost::shared_ptr<Joint> parent_joint = link->parent_joint;
+  std::shared_ptr<Joint> parent_joint = link->parent_joint;
 
   if (parent_joint == NULL) {
     return;
@@ -823,10 +823,10 @@ void UrdfModelMarker::setJointAngle(boost::shared_ptr<const Link> link, double j
   callSetDynamicTf(linkMarkerMap[link_frame_name_].frame_id, link_frame_name_, Pose2Transform(linkMarkerMap[link_frame_name_].pose));
 }
 
-void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js)
+void UrdfModelMarker::setJointState(std::shared_ptr<const Link> link, const sensor_msgs::JointStateConstPtr &js)
 {
   string link_frame_name_ =  tf_prefix_ + link->name;
-  boost::shared_ptr<Joint> parent_joint = link->parent_joint;
+  std::shared_ptr<Joint> parent_joint = link->parent_joint;
   if (parent_joint != NULL) {
     KDL::Frame initialFrame;
     KDL::Frame presentFrame;
@@ -868,7 +868,7 @@ void UrdfModelMarker::setJointState(boost::shared_ptr<const Link> link, const se
       break;
     }
   }
-  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++) {
+  for (std::vector<std::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++) {
     setJointState(*child, js);
   }
   return;
@@ -899,22 +899,22 @@ geometry_msgs::PoseStamped UrdfModelMarker::getOriginPoseStamped() {
 }
 
 
-void UrdfModelMarker::setOriginalPose(boost::shared_ptr<const Link> link)
+void UrdfModelMarker::setOriginalPose(std::shared_ptr<const Link> link)
 {
   string link_frame_name_ =  tf_prefix_ + link->name;
   linkMarkerMap[link_frame_name_].origin =  linkMarkerMap[link_frame_name_].pose;
   
-  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++) {
+  for (std::vector<std::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++) {
     setOriginalPose(*child);
   }
 }
 
-void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init) {
+void UrdfModelMarker::addChildLinkNames(std::shared_ptr<const Link> link, bool root, bool init) {
   //addChildLinkNames(link, root, init, false, 0);
   addChildLinkNames(link, root, init, use_visible_color_, 0);
 }
 
-void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index)
+void UrdfModelMarker::addChildLinkNames(std::shared_ptr<const Link> link, bool root, bool init, bool use_color, int color_index)
 {
   geometry_msgs::PoseStamped ps;
 
@@ -1019,7 +1019,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     }
 
     //link_array
-    std::vector<boost::shared_ptr<Visual> > visual_array;
+    std::vector<std::shared_ptr<Visual> > visual_array;
     if (link->visual_array.size() != 0) {
       visual_array = link->visual_array;
     }
@@ -1027,11 +1027,11 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
       visual_array.push_back(link->visual);
     }
     for(int i=0; i<visual_array.size(); i++) {
-      boost::shared_ptr<Visual> link_visual = visual_array[i];
+      std::shared_ptr<Visual> link_visual = visual_array[i];
       if (link_visual.get() != NULL && link_visual->geometry.get() != NULL) {
         visualization_msgs::InteractiveMarkerControl meshControl;
         if (link_visual->geometry->type == Geometry::MESH) {
-          boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link_visual->geometry);
+          std::shared_ptr<const Mesh> mesh = std::static_pointer_cast<const Mesh>(link_visual->geometry);
           string model_mesh_ = mesh->filename;
           if (linkMarkerMap[link_frame_name_].mesh_file == "") {
             model_mesh_ = getRosPathFromModelPath(model_mesh_);
@@ -1055,7 +1055,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
           }
         }
         else if (link_visual->geometry->type == Geometry::CYLINDER) {
-          boost::shared_ptr<const Cylinder> cylinder = boost::static_pointer_cast<const Cylinder>(link_visual->geometry);
+          std::shared_ptr<const Cylinder> cylinder = std::static_pointer_cast<const Cylinder>(link_visual->geometry);
           ps.pose = UrdfPose2Pose(link_visual->origin);
           double length = cylinder->length;
           double radius = cylinder->radius;
@@ -1068,7 +1068,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
           }
         }
         else if (link_visual->geometry->type == Geometry::BOX) {
-          boost::shared_ptr<const Box> box = boost::static_pointer_cast<const Box>(link_visual->geometry);
+          std::shared_ptr<const Box> box = std::static_pointer_cast<const Box>(link_visual->geometry);
           ps.pose = UrdfPose2Pose(link_visual->origin);
           Vector3 dim = box->dim;
           ROS_INFO_STREAM("box " << link->name << ", dim =  " << dim.x << ", " << dim.y << ", " << dim.z);
@@ -1080,7 +1080,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
           }
         }
         else if (link_visual->geometry->type == Geometry::SPHERE) {
-          boost::shared_ptr<const Sphere> sphere = boost::static_pointer_cast<const Sphere>(link_visual->geometry);
+          std::shared_ptr<const Sphere> sphere = std::static_pointer_cast<const Sphere>(link_visual->geometry);
           ps.pose = UrdfPose2Pose(link_visual->origin);
           double rad = sphere->radius;
           if (use_color) {
@@ -1100,7 +1100,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 
       }
       else {
-        boost::shared_ptr<Joint> parent_joint = link->parent_joint;
+        std::shared_ptr<Joint> parent_joint = link->parent_joint;
         if (parent_joint != NULL) {
           if (parent_joint->type==Joint::REVOLUTE || parent_joint->type==Joint::REVOLUTE) {
             addInvisibleMeshMarkerControl(int_marker, link, color);
@@ -1148,7 +1148,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 
   //  cout << "Link:" << link->name << endl;
 
-  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++) {
+  for (std::vector<std::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++) {
     addChildLinkNames(*child, false, init, use_color, color_index + 1);
   }
   if (root) {
@@ -1161,7 +1161,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
 UrdfModelMarker::UrdfModelMarker ()
 {}
 
-UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, string model_file, string frame_id, geometry_msgs::PoseStamped root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, vector<string> fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index,  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true), is_joint_states_locked_(false) {
+UrdfModelMarker::UrdfModelMarker (string model_name, string model_description, string model_file, string frame_id, geometry_msgs::PoseStamped root_pose, geometry_msgs::Pose root_offset, double scale_factor, string mode, bool robot_mode, bool registration, vector<string> fixed_link, bool use_robot_description, bool use_visible_color, map<string, double> initial_pose_map, int index,  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server) : nh_(), pnh_("~"), tfl_(nh_),use_dynamic_tf_(true), is_joint_states_locked_(false) {
   diagnostic_updater_.reset(new diagnostic_updater::Updater);
   diagnostic_updater_->setHardwareID(ros::this_node::getName());
   diagnostic_updater_->add("Modeling Stats", boost::bind(&UrdfModelMarker::updateDiagnostic, this, _1));

@@ -48,7 +48,7 @@ namespace jsk_interactive_marker
     pub_camera_info_ = pnh.advertise<sensor_msgs::CameraInfo>("camera_info", 1);
 
     // setup dynamic reconfigure
-    srv_ = boost::make_shared <dynamic_reconfigure::Server<Config> > (pnh);
+    srv_ = std::make_shared <dynamic_reconfigure::Server<Config> > (pnh);
     dynamic_reconfigure::Server<Config>::CallbackType f =
       boost::bind (
         &CameraInfoPublisher::configCallback, this, _1, _2);

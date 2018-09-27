@@ -97,7 +97,7 @@ protected:
   bool forceToReplan(std_srvs::Empty::Request& req, std_srvs::Empty::Request& res);
   boost::mutex plane_mutex_;
   boost::mutex plan_run_mutex_;
-  boost::shared_ptr<dynamic_reconfigure::Server<Config> > srv_;
+  std::shared_ptr<dynamic_reconfigure::Server<Config> > srv_;
   // projection to the planes
   bool projectMarkerToPlane();
   
@@ -118,7 +118,7 @@ protected:
 
   visualization_msgs::Marker makeFootstepMarker(geometry_msgs::Pose pose);
   
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   interactive_markers::MenuHandler menu_handler_;
   double foot_size_x_;
   double foot_size_y_;
@@ -138,7 +138,7 @@ protected:
   ros::ServiceClient snapit_client_;
   ros::ServiceClient estimate_occlusion_client_;
   ros::ServiceServer plan_if_possible_srv_;
-  boost::shared_ptr<tf::TransformListener> tf_listener_;
+  std::shared_ptr<tf::TransformListener> tf_listener_;
   PlanningActionClient ac_;
   ExecuteActionClient ac_exec_;
   bool use_projection_service_;

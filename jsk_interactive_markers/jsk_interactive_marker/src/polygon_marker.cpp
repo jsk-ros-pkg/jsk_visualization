@@ -41,7 +41,7 @@
 #include <jsk_recognition_utils/geo/polygon.h>
 #include <jsk_topic_tools/log_utils.h>
 
-boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
+std::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
 boost::mutex mutex;
 ros::Publisher pub, polygon_pub, polygon_arr_pub;
 jsk_recognition_msgs::PolygonArray::ConstPtr polygon_msg;

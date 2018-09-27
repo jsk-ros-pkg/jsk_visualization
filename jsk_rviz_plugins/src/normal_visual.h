@@ -27,7 +27,7 @@ namespace jsk_rviz_plugins
     void setScale( float scale );
 
   private:
-    boost::shared_ptr<rviz::Arrow> normal_arrow_;
+    std::shared_ptr<rviz::Arrow> normal_arrow_;
     Ogre::SceneNode* frame_node_;
     Ogre::SceneManager* scene_manager_;
   };

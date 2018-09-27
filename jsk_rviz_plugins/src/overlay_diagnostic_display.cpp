@@ -113,7 +113,7 @@ namespace jsk_rviz_plugins
     const diagnostic_msgs::DiagnosticArray::ConstPtr& msg)
   {
     boost::mutex::scoped_lock(mutex_);
-    //boost::make_shared<diagnostic_msgs::DiagnosticStatus>
+    //std::make_shared<diagnostic_msgs::DiagnosticStatus>
     // update namespaces_ if needed
     std::set<std::string> new_namespaces;
     for (size_t i = 0; i < msg->status.size(); i++) {
@@ -149,7 +149,7 @@ namespace jsk_rviz_plugins
       diagnostic_msgs::DiagnosticStatus status = msg->status[i];
       if (status.name == diagnostics_namespace_) {
         latest_status_
-          = boost::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
+          = std::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
         latest_message_time_ = ros::WallTime::now();
         break;
       }

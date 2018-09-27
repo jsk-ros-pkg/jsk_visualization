@@ -109,7 +109,7 @@ private:
   // adjustable history length, so we need one visual per history
   // item.
   //boost::circular_buffer<AmbientSoundVisual*> visuals_;
-  boost::circular_buffer<boost::shared_ptr<AmbientSoundVisual> > visuals_;
+  boost::circular_buffer<std::shared_ptr<AmbientSoundVisual> > visuals_;
 
   // A node in the Ogre scene tree to be the parent of all our visuals.
   //Ogre::SceneNode* scene_node_;
