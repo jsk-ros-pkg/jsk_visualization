@@ -82,6 +82,7 @@
 
   <test test-name="test_rqt_plugins"
         name="test_rqt_plugins"
-        pkg="jsk_rqt_plugins" type="test_rqt_plugins.py" />
+        pkg="jsk_rqt_plugins" type="test_rqt_plugins.py"
+        retry="3"/>
 
 </launch>
