@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import argparse
 import os
 import sys
@@ -28,7 +29,7 @@ from jsk_recognition_msgs.msg import PlotData
 from jsk_recognition_msgs.msg import PlotDataArray
 
 # qt5 in kinetic
-if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] == 5:
+if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QSizePolicy
     from python_qt_binding.QtWidgets import QVBoxLayout
     from python_qt_binding.QtWidgets import QWidget
