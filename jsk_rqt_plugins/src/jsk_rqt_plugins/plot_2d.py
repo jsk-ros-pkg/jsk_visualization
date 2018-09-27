@@ -259,7 +259,7 @@ class Plot2DWidget(QWidget):
             if not isinstance(model_ransac.estimator_.intercept_, list):
                 intercept = model_ransac.estimator_.intercept_
             else:
-                intercept = model_ransac.estimator_.intercept_
+                intercept = model_ransac.estimator_.intercept_[0]
             axes.plot(
                 line_X, line_y_ransac, "r--",
                 label="{0} x + {1}".format(coef, intercept))
