@@ -5,7 +5,7 @@ rqt\_yn\_btn
 ![](images/rqt_yn_btn.jpg)
 
 
-Serves yes/no buttons. The buttons is enabled when there is a request.
+Serves yes/no buttons. The buttons are enabled when there is a request.
 
 
 Advertising Service
@@ -19,6 +19,6 @@ Usage
 
 ```
 $ rosrun jsk_rqt_plugins rqt_yn_btn rqt_yn_btn:=yes_no
-$ rosservice call /yes_no  # push button here
+$ rosservice call /yes_no "Select Yes or No"  # push button here
 yes: True
 ```
