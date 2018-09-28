@@ -8,9 +8,10 @@ import rospy
 import rosunit
 # from sensor_msgs.msg import Image
 from std_msgs.msg import Bool
-# from std_msgs.msg import String
-# from std_msgs.msg import UInt8
 from std_msgs.msg import Float32
+# from std_msgs.msg import String
+from std_msgs.msg import Time
+# from std_msgs.msg import UInt8
 
 from jsk_recognition_msgs.msg import HistogramWithRange
 from jsk_recognition_msgs.msg import PlotData
@@ -65,6 +66,10 @@ class TestRqtPlugins(unittest.TestCase):
         self.assertTrue(
             self.is_subscribed('/drc_2015_environment/is_blackout', Bool,
                                '/rqt_drc_mini_maxwell'))
+        self.assertTrue(
+            self.is_subscribed(
+                '/drc_2015_environment/next_whiteout_time', Time,
+                '/rqt_drc_mini_maxwell'))
 
     def test_rqt_histogram_plot(self):
         self.assertTrue(
