@@ -1,0 +1,7 @@
+<launch>
+  <node name="rqt_drc_mini_maxwell"
+        pkg="jsk_rqt_plugins" type="rqt_drc_mini_maxwell"/>
+
+  <node name="pub_sample_state"
+        pkg="jsk_rqt_plugins" type="sample_drc_mini_maxwell.py"/>
+</launch>
