@@ -10,11 +10,10 @@
 
   <!-- rqt_3d_plot -->
   <node name="pub_sample_3d_data"
-        pkg="rostopic" type="rostopic"
-        args="pub -r 10 /sample_3d_data std_msgs/Float32 1.0"/>
+        pkg="jsk_rqt_plugins" type="sample_3d_plot.py"/>
   <node name="rqt_3d_plot"
         pkg="jsk_rqt_plugins" type="rqt_3d_plot"
-        args="/sample_3d_data/data"
+        args="/pub_sample_3d_data/output1/data"
         required="true"/>
 
   <!-- rqt_drc_mini_maxwell -->

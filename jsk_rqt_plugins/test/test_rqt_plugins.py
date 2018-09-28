@@ -55,7 +55,8 @@ class TestRqtPlugins(unittest.TestCase):
 
     def test_rqt_3d_plot(self):
         self.assertTrue(
-            self.is_subscribed('/sample_3d_data', Float32, '/rqt_3d_plot'))
+            self.is_subscribed(
+                '/pub_sample_3d_data/output1', Float32, '/rqt_3d_plot'))
 
     def test_rqt_drc_mini_maxwell(self):
         self.assertTrue(
