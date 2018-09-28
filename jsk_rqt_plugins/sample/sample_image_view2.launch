@@ -1,0 +1,19 @@
+<launch>
+  <node name="pub_sample_image"
+        pkg="image_publisher" type="image_publisher"
+        args="$(find jsk_rqt_plugins)/sample/kiva_pod_image_color.jpg"/>
+
+  <node name="image_view2"
+        pkg="image_view2" type="image_view2">
+    <remap from="image" to="pub_sample_image/image_raw"/>
+    <rosparam>
+      use_window: false
+    </rosparam>
+  </node>
+
+  <node name="rqt_image_view2"
+        pkg="jsk_rqt_plugins" type="rqt_image_view2">
+    <remap from="event" to="image_view2/event"/>
+    <remap from="image_marked" to="image_marked"/>
+  </node>
+</launch>
