@@ -1,0 +1,12 @@
+<launch>
+  <node name="sample_data"
+        pkg="jsk_rqt_plugins" type="sample_3d_plot.py"/>
+
+  <node name="polygon_plot"
+        pkg="jsk_rqt_plugins" type="rqt_3d_plot"
+        args="/sample_data/output1/data /sample_data/output2/data /sample_data/output3/data --buffer 1000"/>
+
+  <node name="line_plot"
+        pkg="jsk_rqt_plugins" type="rqt_3d_plot"
+        args="/sample_data/output1/data /sample_data/output2/data /sample_data/output3/data --line --buffer 1000"/>
+</launch>
