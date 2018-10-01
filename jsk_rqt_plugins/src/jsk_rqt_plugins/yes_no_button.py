@@ -1,23 +1,31 @@
 #!/usr/bin/env python
-#
+
+from distutils.version import LooseVersion
 import os
-import rospy
 import rospkg
+import rospy
 import rosservice
 
-from qt_gui.plugin import Plugin
+import python_qt_binding
 from python_qt_binding import loadUi
-from python_qt_binding.QtGui import QWidget
+from qt_gui.plugin import Plugin
 
-from jsk_gui_msgs.srv import YesNo, YesNoResponse
+from jsk_gui_msgs.srv import YesNo
+from jsk_gui_msgs.srv import YesNoResponse
+
+# For both qt4 and qt5
+if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
+    from python_qt_binding.QtWidgets import QWidget
+else:
+    from python_qt_binding.QtGui import QWidget
 
 
 class YesNoButtonWidget(QWidget):
     def __init__(self):
         super(YesNoButtonWidget, self).__init__()
         rp = rospkg.RosPack()
-        ui_file = os.path.join(rp.get_path('jsk_rqt_plugins'),
-            'resource', 'yes_no_button.ui')
+        ui_file = os.path.join(
+            rp.get_path('jsk_rqt_plugins'), 'resource', 'yes_no_button.ui')
         loadUi(ui_file, self)
         self.setObjectName('YesNoButtonUi')
         self.yes_button.clicked[bool].connect(self._clicked_yes_button)
@@ -41,7 +49,9 @@ class YesNoButtonWidget(QWidget):
 
     def _handle_yn_btn(self, req):
         """Callback function of service,
-        and handle enable/disable of the buttons."""
+
+        and handle enable/disable of the buttons.
+        """
         self.message.setText(req.message)
         self.yes = None  # initialize
         self.yes_button.setEnabled(True)

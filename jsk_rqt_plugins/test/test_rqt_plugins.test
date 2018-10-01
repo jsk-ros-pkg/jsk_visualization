@@ -1,0 +1,83 @@
+<launch>
+
+  <!-- rqt_2d_plot -->
+  <node name="pub_sample_2d_data"
+        pkg="jsk_rqt_plugins" type="sample_2d_plot.py"/>
+  <node name="rqt_2d_plot"
+        pkg="jsk_rqt_plugins" type="rqt_2d_plot"
+        args="/pub_sample_2d_data/output"
+        required="true"/>
+
+  <!-- rqt_3d_plot -->
+  <node name="pub_sample_3d_data"
+        pkg="jsk_rqt_plugins" type="sample_3d_plot.py"/>
+  <node name="rqt_3d_plot"
+        pkg="jsk_rqt_plugins" type="rqt_3d_plot"
+        args="/pub_sample_3d_data/output1/data"
+        required="true"/>
+
+  <!-- rqt_drc_mini_maxwell -->
+  <node name="pub_sample_drc_mini_maxwell"
+        pkg="jsk_rqt_plugins" type="sample_drc_mini_maxwell.py"/>
+  <node name="rqt_drc_mini_maxwell"
+        pkg="jsk_rqt_plugins" type="rqt_drc_mini_maxwell"
+        required="true"/>
+
+  <!-- rqt_histogram_plot -->
+  <node name="pub_sample_hist_data"
+        pkg="jsk_rqt_plugins" type="sample_hist_pub.py"/>
+  <node name="rqt_histogram_plot"
+        pkg="jsk_rqt_plugins" type="rqt_histogram_plot"
+        args="/range_array"
+        required="true"/>
+
+  <!-- rqt_image_view2 -->
+  <node name="pub_sample_image"
+        pkg="image_publisher" type="image_publisher"
+        args="$(find jsk_rqt_plugins)/sample/kiva_pod_image_color.jpg"/>
+  <node name="image_view2"
+        pkg="image_view2" type="image_view2">
+    <remap from="image" to="pub_sample_image/image_raw"/>
+    <rosparam>
+      use_window: false
+    </rosparam>
+  </node>
+  <node name="rqt_image_view2"
+        pkg="jsk_rqt_plugins" type="rqt_image_view2"
+        required="true">
+    <remap from="event" to="image_view2/event"/>
+    <remap from="image_marked" to="image_marked"/>
+  </node>
+
+  <!-- rqt_service_button -->
+  <node name="rqt_service_buttons"
+        pkg="jsk_rqt_plugins" type="rqt_service_buttons"
+        required="true"/>
+
+  <!-- rqt_status_light -->
+  <node name="pub_sample_status"
+        pkg="rostopic" type="rostopic"
+        args="pub -r 10 /sample_status std_msgs/UInt8 1"/>
+  <node name="rqt_status_light"
+        pkg="jsk_rqt_plugins" type="rqt_status_light"
+        required="true"/>
+
+  <!-- rqt_string_label -->
+  <node name="pub_sample_string"
+        pkg="rostopic" type="rostopic"
+        args="pub -r 10 /sample_string std_msgs/String 'This is a sample string.'"/>
+  <node name="rqt_string_label"
+        pkg="jsk_rqt_plugins" type="rqt_string_label"
+        required="true"/>
+
+  <!-- rqt_yn_btn -->
+  <node name="rqt_yn_btn"
+        pkg="jsk_rqt_plugins" type="rqt_yn_btn"
+        required="true"/>
+
+  <test test-name="test_rqt_plugins"
+        name="test_rqt_plugins"
+        pkg="jsk_rqt_plugins" type="test_rqt_plugins.py"
+        retry="3"/>
+
+</launch>

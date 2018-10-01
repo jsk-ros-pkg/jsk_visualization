@@ -28,7 +28,7 @@ from sensor_msgs.msg import Image
 from jsk_recognition_msgs.msg import HistogramWithRange
 
 # qt5 in kinetic
-if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] == 5:
+if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QSizePolicy
     from python_qt_binding.QtWidgets import QVBoxLayout
     from python_qt_binding.QtWidgets import QWidget
@@ -66,7 +66,6 @@ else:
     except ImportError:
         from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT \
             as NavigationToolbar
-
 
 
 class ROSData(_ROSData):

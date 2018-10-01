@@ -1,26 +1,58 @@
-from rqt_gui_py.plugin import Plugin
-import python_qt_binding.QtGui as QtGui
-from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
-                                     QPainter, QColor, QFont, QBrush, 
-                                     QPen, QMessageBox, QSizePolicy,
-                                     QLabel, QComboBox)
-from python_qt_binding.QtCore import Qt, QTimer, qWarning, Slot, QEvent, QSize
-from threading import Lock
-import rospy
-import roslib
-import rqt_plot
-import python_qt_binding.QtCore as QtCore
-from std_msgs.msg import Bool, Time
+from distutils.version import LooseVersion
 import math
-from resource_retriever import get_filename
-import yaml
-import os, sys
+import os
+import sys
+from threading import Lock
 
+import python_qt_binding
+import python_qt_binding.QtCore as QtCore
+from python_qt_binding.QtCore import QEvent
+from python_qt_binding.QtCore import QSize
+from python_qt_binding.QtCore import Qt
+from python_qt_binding.QtCore import QTimer
+from python_qt_binding.QtCore import qWarning
+from python_qt_binding.QtCore import Slot
+import python_qt_binding.QtGui as QtGui
+from python_qt_binding.QtGui import QBrush
+from python_qt_binding.QtGui import QColor
+from python_qt_binding.QtGui import QFont
+from python_qt_binding.QtGui import QIcon
+from python_qt_binding.QtGui import QPainter
+from python_qt_binding.QtGui import QPen
+import yaml
+
+from resource_retriever import get_filename
+import roslib
+import rospy
+from rqt_gui_py.plugin import Plugin
+import rqt_plot
+from std_msgs.msg import Bool
+from std_msgs.msg import Time
 from std_msgs.msg import String
 
 from .util import get_slot_type_field_names
 from .hist import ROSData
 from .button_general import LineEditDialog
+
+if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
+    from python_qt_binding.QtWidgets import QAction
+    from python_qt_binding.QtWidgets import QComboBox
+    from python_qt_binding.QtWidgets import QLabel
+    from python_qt_binding.QtWidgets import QMenu
+    from python_qt_binding.QtWidgets import QMessageBox
+    from python_qt_binding.QtWidgets import QSizePolicy
+    from python_qt_binding.QtWidgets import QVBoxLayout
+    from python_qt_binding.QtWidgets import QWidget
+
+else:
+    from python_qt_binding.QtGui import QAction
+    from python_qt_binding.QtGui import QComboBox
+    from python_qt_binding.QtGui import QLabel
+    from python_qt_binding.QtGui import QMenu
+    from python_qt_binding.QtGui import QMessageBox
+    from python_qt_binding.QtGui import QSizePolicy
+    from python_qt_binding.QtGui import QVBoxLayout
+    from python_qt_binding.QtGui import QWidget
 
 
 class StringLabel(Plugin):
@@ -32,10 +64,13 @@ class StringLabel(Plugin):
         self.setObjectName("StringLabel")
         self._widget = StringLabelWidget()
         context.add_widget(self._widget)
+
     def save_settings(self, plugin_settings, instance_settings):
         self._widget.save_settings(plugin_settings, instance_settings)
+
     def restore_settings(self, plugin_settings, instance_settings):
         self._widget.restore_settings(plugin_settings, instance_settings)
+
     def trigger_configuration(self):
         self._widget.trigger_configuration()
 
@@ -44,10 +79,11 @@ class StringLabelWidget(QWidget):
     def __init__(self):
         super(StringLabelWidget, self).__init__()
         self.lock = Lock()
-        vbox = QtGui.QVBoxLayout(self)
+        vbox = QVBoxLayout(self)
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignLeft)
-        self.label.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
+        self.label.setSizePolicy(
+            QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
         font = QFont("Helvetica", 14)
         self.label.setFont(font)
         self.label.setWordWrap(True)
@@ -65,9 +101,11 @@ class StringLabelWidget(QWidget):
         self._update_label_timer = QTimer(self)
         self._update_label_timer.timeout.connect(self.updateLabel)
         self._update_label_timer.start(40)
+
     def trigger_configuration(self):
         self._dialog.exec_()
         self.setupSubscriber(self._dialog.value)
+
     def updateLabel(self):
         if not self._rosdata:
             return
@@ -88,6 +126,7 @@ class StringLabelWidget(QWidget):
             self.label.setText(self.string)
         except TypeError, e:
             rospy.logwarn(e)
+
     def updateTopics(self):
         need_to_update = False
         for (topic, topic_type) in rospy.get_published_topics():
@@ -107,7 +146,9 @@ class StringLabelWidget(QWidget):
                 if self._active_topic not in self._string_topics:
                     self._string_topics.append(self._active_topic)
                     self._dialog.combo_box.addItem(self._active_topic)
-                self._dialog.combo_box.setCurrentIndex(self._string_topics.index(self._active_topic))
+                self._dialog.combo_box.setCurrentIndex(
+                    self._string_topics.index(self._active_topic))
+
     def setupSubscriber(self, topic):
         if not self._rosdata:
             self._rosdata = ROSData(topic, self._start_time)
@@ -118,24 +159,16 @@ class StringLabelWidget(QWidget):
             else:
                 rospy.logwarn("%s is already subscribed", topic)
         self._active_topic = topic
+
     def onActivated(self, number):
         self.setupSubscriber(self._string_topics[number])
+
     def save_settings(self, plugin_settings, instance_settings):
         if self._active_topic:
             instance_settings.set_value("active_topic", self._active_topic)
+
     def restore_settings(self, plugin_settings, instance_settings):
         if instance_settings.value("active_topic"):
             topic = instance_settings.value("active_topic")
             self._dialog.combo_box.addItem(topic)
             self.setupSubscriber(topic)
-
-    
-
-
-
-
-
-
-
-
-
