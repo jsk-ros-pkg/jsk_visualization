@@ -360,24 +360,30 @@ namespace jsk_rviz_plugins
     const Ogre::PixelBox& pixelBox 
       = bottom_texture_->getBuffer()->getCurrentLock();
     Ogre::uint8* pDest = static_cast<Ogre::uint8*> (pixelBox.data);
-    memset(pDest, 0, bottom_texture_->getWidth() * bottom_texture_->getHeight());
-    QImage Hud(pDest, bottom_texture_->getWidth(), bottom_texture_->getHeight(), QImage::Format_ARGB32 );
-    for (size_t j = 0; j < bottom_texture_->getHeight(); j++) {
-      for (size_t i = 0; i < bottom_texture_->getWidth(); i++) {
-        if (use_image_ && !image_.empty() &&
-            bottom_texture_->getHeight() == image_.rows &&
-            bottom_texture_->getWidth() == image_.cols) {
-          ROS_DEBUG("bottom_texture_->getHeight(): %lu", bottom_texture_->getHeight());
-          ROS_DEBUG("bottom_texture_->getWidth(): %lu", bottom_texture_->getWidth());
-          ROS_DEBUG("image_.rows: %d", image_.rows);
-          ROS_DEBUG("image_.cols: %d", image_.cols);
-          QColor color(image_.data[j * image_.step + i * image_.elemSize() + 0],
-                       image_.data[j * image_.step + i * image_.elemSize() + 1],
-                       image_.data[j * image_.step + i * image_.elemSize() + 2],
-                       alpha_ * 255.0);
-          Hud.setPixel(i, j, color.rgba());
-        }
-        else {
+
+    // Don't copy pixel-by-pixel image matrices.
+    // Just split matrix into channels, add needed alpha channel and merge back directly into buffer.
+    if (use_image_ && !image_.empty() &&
+        bottom_texture_->getHeight() == image_.rows &&
+        bottom_texture_->getWidth() == image_.cols) {
+      ROS_DEBUG("bottom_texture_->getHeight(): %lu", bottom_texture_->getHeight());
+      ROS_DEBUG("bottom_texture_->getWidth(): %lu", bottom_texture_->getWidth());
+      ROS_DEBUG("image_.rows: %d", image_.rows);
+      ROS_DEBUG("image_.cols: %d", image_.cols);
+
+      std::vector<cv::Mat> splitted;
+      cv::split(image_, splitted);
+      // Swap channels RGB -> BGR for cv::merge.
+      std::swap(splitted[0], splitted[2]);
+      cv::Mat alpha(image_.rows, image_.cols, CV_8U, cv::Scalar(alpha_ * 255.0));
+      splitted.push_back(alpha);
+      cv::Mat boxMat(image_.rows, image_.cols, CV_8UC4, pDest);
+      cv::merge(splitted, boxMat);
+    } else {
+      memset(pDest, 0, bottom_texture_->getWidth() * bottom_texture_->getHeight());
+      QImage Hud(pDest, bottom_texture_->getWidth(), bottom_texture_->getHeight(), QImage::Format_ARGB32);
+      for (size_t j = 0; j < bottom_texture_->getHeight(); j++) {
+        for (size_t i = 0; i < bottom_texture_->getWidth(); i++) {
           Hud.setPixel(i, j, color_.rgba());
         }
       }
