@@ -194,6 +194,10 @@ namespace jsk_rviz_plugins
   void CameraInfoDisplay::processMessage(
     const sensor_msgs::CameraInfo::ConstPtr& msg)
   {
+    if (!isValidCameraInfo(msg)) {
+      ROS_WARN("camera info is not valid. Please check the specified camera info has a valid projection matrix");
+      return;
+    }
     if (!isSameCameraInfo(msg)) {
       createCameraInfoShapes(msg);
     }
