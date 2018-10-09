@@ -250,7 +250,18 @@ namespace jsk_rviz_plugins
       return false;
     }
   }
-  
+
+  bool CameraInfoDisplay::isValidCameraInfo(
+    const sensor_msgs::CameraInfo::ConstPtr& msg) {
+    // check fx and fy are not zero.
+    if (msg->P[0] == 0.0 &&
+        msg->P[5] == 0.0) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   void CameraInfoDisplay::addPointToEdge(
     const cv::Point3d& point)
   {

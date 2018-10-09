@@ -102,6 +102,8 @@ namespace jsk_rviz_plugins
     virtual void update(float wall_dt, float ros_dt);
     virtual bool isSameCameraInfo(
       const sensor_msgs::CameraInfo::ConstPtr& camera_info);
+    virtual bool isValidCameraInfo(
+      const sensor_msgs::CameraInfo::ConstPtr& camera_info);
     virtual void createCameraInfoShapes(
       const sensor_msgs::CameraInfo::ConstPtr& camera_info);
     virtual void addPointToEdge(
