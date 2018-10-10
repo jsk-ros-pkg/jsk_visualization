@@ -428,9 +428,16 @@ namespace jsk_rviz_plugins
     image_geometry::PinholeCameraModel model;
     bool model_success_p = model.fromCameraInfo(msg);
     if (!model_success_p) {
+      setStatus(rviz::StatusProperty::Error, "Camera Info", "Failed to create camera model from msg");
       ROS_ERROR("failed to create camera model");
       return;
     }
+    if (cv::countNonZero(model.intrinsicMatrix()) < 1) {
+      setStatus(rviz::StatusProperty::Error, "Camera Info", "Invalid intrinsic matrix");
+      ROS_ERROR_STREAM("camera model have invalid intrinsic matrix " << model.intrinsicMatrix());
+      return;
+    }
+    setStatus(rviz::StatusProperty::Ok, "Camera Info", "OK");
     
     ////////////////////////////////////////////////////////
     // initialize BillboardLine
