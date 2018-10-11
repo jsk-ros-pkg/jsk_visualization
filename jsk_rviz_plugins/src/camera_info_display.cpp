@@ -432,7 +432,8 @@ namespace jsk_rviz_plugins
       ROS_ERROR("failed to create camera model");
       return;
     }
-    if (cv::countNonZero(model.intrinsicMatrix()) < 1) {
+    // fx and fy should not be equal 0.
+    if (model.fx() == 0.0 || model.fy() == 0.0) {
       setStatus(rviz::StatusProperty::Error, "Camera Info", "Invalid intrinsic matrix");
       ROS_ERROR_STREAM("camera model have invalid intrinsic matrix " << model.intrinsicMatrix());
       return;
