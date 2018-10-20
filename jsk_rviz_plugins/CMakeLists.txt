@@ -192,6 +192,7 @@ install(TARGETS jsk_rviz_plugins
 
 install(DIRECTORY scripts/
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  USE_SOURCE_PERMISSIONS
 )
 
 install(FILES plugin_description.xml
