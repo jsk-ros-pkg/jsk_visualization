@@ -198,7 +198,7 @@ install(DIRECTORY scripts/
 install(FILES plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(DIRECTORY cfg config icons launch samples
+install(DIRECTORY cfg config icons launch samples test
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS
 )

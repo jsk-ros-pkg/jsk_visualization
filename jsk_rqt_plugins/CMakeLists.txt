@@ -15,7 +15,7 @@ install(DIRECTORY bin/
 install(FILES plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(DIRECTORY launch resource sample sample_scripts
+install(DIRECTORY launch resource sample sample_scripts test
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS
 )
