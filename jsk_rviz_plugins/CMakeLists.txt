@@ -203,7 +203,7 @@ install(DIRECTORY cfg config icons launch samples test
   USE_SOURCE_PERMISSIONS
 )
 
-install(DIRECTORY ./src/
+install(DIRECTORY src/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
 )
