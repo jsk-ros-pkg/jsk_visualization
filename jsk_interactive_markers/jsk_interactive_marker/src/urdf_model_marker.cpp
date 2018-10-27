@@ -1019,7 +1019,7 @@ void UrdfModelMarker::addChildLinkNames(boost::shared_ptr<const Link> link, bool
     }
 
     //link_array
-    std::vector<boost ::shared_ptr<Visual> > visual_array;
+    std::vector<boost::shared_ptr<Visual> > visual_array;
     if (link->visual_array.size() != 0) {
       visual_array = link->visual_array;
     }
