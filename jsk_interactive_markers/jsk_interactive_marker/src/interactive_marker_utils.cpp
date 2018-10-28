@@ -162,7 +162,7 @@ namespace im_utils {
 
     geometry_msgs::PoseStamped ps;
     //link_array
-    std::vector<boost ::shared_ptr<Visual> > visual_array;
+    std::vector<boost::shared_ptr<Visual> > visual_array;
     if(link->visual_array.size() != 0){
       visual_array = link->visual_array;
     }else if(link->visual.get() != NULL){
