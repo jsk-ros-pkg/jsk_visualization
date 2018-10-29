@@ -73,7 +73,7 @@ namespace jsk_interactive_marker {
     output->points.clear();
     for (size_t i = 0; i < input->points.size(); i++) {
       pcl::PointXYZ p = input->points[i];
-      if (!isnan(p.x) && !isnan(p.y) && !isnan(p.z)) {
+      if (!std::isnan(p.x) && !std::isnan(p.y) && !std::isnan(p.z)) {
         if (isInside(p)) {
           output->points.push_back(p);
         }
