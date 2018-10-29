@@ -25,8 +25,21 @@
 #include <kdl/frames_io.hpp>
 #include <tf_conversions/tf_kdl.h>
 
+#if ROS_VERSION_MINIMUM(1,12,0) // kinetic
 #include <urdf_model/types.h>
 #include <urdf_world/types.h>
+#else
+namespace urdf {
+typedef boost::shared_ptr<ModelInterface> ModelInterfaceSharedPtr;
+typedef boost::shared_ptr<Link> LinkSharedPtr;
+typedef boost::shared_ptr<const Link> LinkConstSharedPtr;
+typedef boost::shared_ptr<Visual> VisualSharedPtr;
+typedef boost::shared_ptr<const Mesh> MeshConstSharedPtr;
+typedef boost::shared_ptr<const Cylinder> CylinderConstSharedPtr;
+typedef boost::shared_ptr<const Box> BoxConstSharedPtr;
+typedef boost::shared_ptr<const Sphere> SphereConstSharedPtr;
+}
+#endif
 
 
 using namespace urdf;

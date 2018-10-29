@@ -36,8 +36,16 @@
 
 #include <jsk_topic_tools/time_accumulator.h>
 
+#if ROS_VERSION_MINIMUM(1,12,0) // kinetic
 #include <urdf_model/types.h>
 #include <urdf_world/types.h>
+#else
+namespace urdf {
+typedef boost::shared_ptr<ModelInterface> ModelInterfaceSharedPtr;
+typedef boost::shared_ptr<const Link> LinkConstSharedPtr;
+typedef boost::shared_ptr<Joint> JointSharedPtr;
+}
+#endif
 
 using namespace urdf;
 using namespace std;

@@ -16,7 +16,13 @@
 
 #include <std_msgs/Int8.h>
 #include "urdf_parser/urdf_parser.h"
+#if ROS_VERSION_MINIMUM(1,12,0) // kinetic
 #include <urdf_world/types.h>
+#else
+namespace urdf {
+typedef boost::shared_ptr<ModelInterface> ModelInterfaceSharedPtr;
+}
+#endif
 
 class InteractiveMarkerInterface {
  private:
