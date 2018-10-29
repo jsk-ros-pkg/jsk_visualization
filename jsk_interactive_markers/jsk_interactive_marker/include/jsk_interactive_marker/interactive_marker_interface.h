@@ -28,7 +28,7 @@ class InteractiveMarkerInterface {
   };
 
   struct UrdfProperty{
-    std::shared_ptr<urdf::ModelInterface> model;
+    urdf::ModelInterfaceSharedPtr model;
     std::string root_link_name;
     geometry_msgs::Pose pose;
     double scale;
