@@ -36,6 +36,9 @@
 
 #include <jsk_topic_tools/time_accumulator.h>
 
+#include <urdf_model/types.h>
+#include <urdf_world/types.h>
+
 using namespace urdf;
 using namespace std;
 

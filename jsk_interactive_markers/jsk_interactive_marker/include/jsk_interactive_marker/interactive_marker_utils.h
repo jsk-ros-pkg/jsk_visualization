@@ -25,6 +25,9 @@
 #include <kdl/frames_io.hpp>
 #include <tf_conversions/tf_kdl.h>
 
+#include <urdf_model/types.h>
+#include <urdf_world/types.h>
+
 
 using namespace urdf;
 

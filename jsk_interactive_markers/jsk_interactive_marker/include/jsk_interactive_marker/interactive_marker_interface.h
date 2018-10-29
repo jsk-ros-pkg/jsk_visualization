@@ -16,6 +16,7 @@
 
 #include <std_msgs/Int8.h>
 #include "urdf_parser/urdf_parser.h"
+#include <urdf_world/types.h>
 
 class InteractiveMarkerInterface {
  private:
