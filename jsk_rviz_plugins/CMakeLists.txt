@@ -185,9 +185,13 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set_target_properties(jsk_rviz_plugins PROPERTIES LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")
 endif()
 
-# Install header files directly into ${CATKIN_PACKAGE_INCLUDE_DESTINATION}, and
-# executable programs directly into ${CATKIN_PACKAGE_BIN_DESTINATION}.
-# However, other directories like 'launch' or 'sample' must be installed
+# From https://github.com/jsk-ros-pkg/jsk_recognition/pull/2345
+# Install header files directly into ${CATKIN_PACKAGE_INCLUDE_DESTINATION}.
+# If the package has setup.py and modules under src/${PROJECT_NAME}/,
+# install python executables directly into ${CATKIN_PACKAGE_BIN_DESTINATION}.
+# However, if it doesn't have setup.py, directories including python executables
+# should be installed recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
+# Also, other directories like 'launch' or 'sample' must be installed
 # recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
 # Be careful that 'launch' and 'launch/' are different: the former is directory
 # and the latter is each content.
