@@ -208,8 +208,8 @@ install(TARGETS jsk_interactive_marker
 
 install(DIRECTORY config euslisp launch models scripts urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  PATTERN ".svn" EXCLUDE
   USE_SOURCE_PERMISSIONS
+  PATTERN ".svn" EXCLUDE
 )
 
 install(DIRECTORY include/${PROJECT_NAME}/
