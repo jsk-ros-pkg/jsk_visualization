@@ -185,16 +185,35 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set_target_properties(jsk_rviz_plugins PROPERTIES LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")
 endif()
 
+# From https://github.com/jsk-ros-pkg/jsk_recognition/pull/2345
+# Install header files directly into ${CATKIN_PACKAGE_INCLUDE_DESTINATION}.
+# If the package has setup.py and modules under src/${PROJECT_NAME}/,
+# install python executables directly into ${CATKIN_PACKAGE_BIN_DESTINATION}.
+# However, if it doesn't have setup.py, directories including python executables
+# should be installed recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
+# Also, other directories like 'launch' or 'sample' must be installed
+# recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
+# Be careful that 'launch' and 'launch/' are different: the former is directory
+# and the latter is each content.
+install(TARGETS jsk_rviz_plugins
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+
+install(DIRECTORY scripts/
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  USE_SOURCE_PERMISSIONS
+)
+
 install(FILES plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(TARGETS jsk_rviz_plugins
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-
-install(DIRECTORY cfg icons launch samples scripts
+install(DIRECTORY cfg config icons launch samples test
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  USE_SOURCE_PERMISSIONS)
-install(DIRECTORY ./src/
+  USE_SOURCE_PERMISSIONS
+)
+
+install(DIRECTORY src/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h")
+  FILES_MATCHING PATTERN "*.h"
+)

@@ -187,25 +187,34 @@ if(${yaml_cpp_VERSION} VERSION_LESS "0.5.0")
   add_definitions("-DUSE_OLD_YAML")
 endif()
 
-
+# From https://github.com/jsk-ros-pkg/jsk_recognition/pull/2345
+# Install header files directly into ${CATKIN_PACKAGE_INCLUDE_DESTINATION}.
+# If the package has setup.py and modules under src/${PROJECT_NAME}/,
+# install python executables directly into ${CATKIN_PACKAGE_BIN_DESTINATION}.
+# However, if it doesn't have setup.py, directories including python executables
+# should be installed recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
+# Also, other directories like 'launch' or 'sample' must be installed
+# recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
+# Be careful that 'launch' and 'launch/' are different: the former is directory
+# and the latter is each content.
 install(FILES plugin_description.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
 install(TARGETS jsk_interactive_marker
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-
-install(DIRECTORY scripts/
-        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        USE_SOURCE_PERMISSIONS
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
-install(DIRECTORY launch euslisp urdf
+install(DIRECTORY config euslisp launch models scripts urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  PATTERN ".svn" EXCLUDE)
+  USE_SOURCE_PERMISSIONS
+  PATTERN ".svn" EXCLUDE
+)
 
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
 
 install(TARGETS
   jsk_interactive_marker
@@ -226,8 +235,8 @@ install(TARGETS
   transformable_server_sample
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
 
 # copy *.rviz.default to *.rviz
 macro(copy_rviz_files _rviz_files)
