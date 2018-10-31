@@ -68,7 +68,7 @@ namespace jsk_rviz_plugins
   class PictogramObject: public FacingTexturedObject
   {
   public:
-    typedef boost::shared_ptr<PictogramObject> Ptr;
+    typedef std::shared_ptr<PictogramObject> Ptr;
     PictogramObject(Ogre::SceneManager* manager,
                     Ogre::SceneNode* parent,
                     double size);

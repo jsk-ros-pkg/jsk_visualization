@@ -16,6 +16,13 @@
 
 #include <std_msgs/Int8.h>
 #include "urdf_parser/urdf_parser.h"
+#if ROS_VERSION_MINIMUM(1,12,0) // kinetic
+#include <urdf_world/types.h>
+#else
+namespace urdf {
+typedef boost::shared_ptr<ModelInterface> ModelInterfaceSharedPtr;
+}
+#endif
 
 class InteractiveMarkerInterface {
  private:
@@ -28,7 +35,7 @@ class InteractiveMarkerInterface {
   };
 
   struct UrdfProperty{
-    boost::shared_ptr<urdf::ModelInterface> model;
+    urdf::ModelInterfaceSharedPtr model;
     std::string root_link_name;
     geometry_msgs::Pose pose;
     double scale;
@@ -147,7 +154,7 @@ class InteractiveMarkerInterface {
 
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   ros::Publisher pub_;
   ros::Publisher pub_update_;
   ros::Publisher pub_move_;

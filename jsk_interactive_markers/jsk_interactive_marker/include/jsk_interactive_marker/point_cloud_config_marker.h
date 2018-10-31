@@ -56,7 +56,7 @@ class PointCloudConfigMarker{
  private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   visualization_msgs::InteractiveMarkerFeedbackConstPtr latest_feedback_;
   ros::Publisher pub_;
   ros::Publisher current_pose_pub_;

@@ -73,7 +73,7 @@ namespace jsk_interactive_marker {
     output->points.clear();
     for (size_t i = 0; i < input->points.size(); i++) {
       pcl::PointXYZ p = input->points[i];
-      if (!isnan(p.x) && !isnan(p.y) && !isnan(p.z)) {
+      if (!std::isnan(p.x) && !std::isnan(p.y) && !std::isnan(p.z)) {
         if (isInside(p)) {
           output->points.push_back(p);
         }
@@ -214,8 +214,8 @@ namespace jsk_interactive_marker {
   {
     tf_listener_.reset(new tf::TransformListener);
     // initialize cropper_candidates_
-    cropper_candidates_.push_back(boost::make_shared<SphereCropper>());
-    cropper_candidates_.push_back(boost::make_shared<CubeCropper>());
+    cropper_candidates_.push_back(std::make_shared<SphereCropper>());
+    cropper_candidates_.push_back(std::make_shared<CubeCropper>());
     cropper_ = cropper_candidates_[0];
     point_pub_ = pnh.advertise<sensor_msgs::PointCloud2>("output", 1);
     point_visualization_pub_ = pnh.advertise<sensor_msgs::PointCloud2>(
@@ -223,7 +223,7 @@ namespace jsk_interactive_marker {
     server_.reset(new interactive_markers::InteractiveMarkerServer(
                     ros::this_node::getName()));
     initializeInteractiveMarker();
-    srv_ = boost::make_shared <dynamic_reconfigure::Server<Config> > (pnh);
+    srv_ = std::make_shared <dynamic_reconfigure::Server<Config> > (pnh);
     dynamic_reconfigure::Server<Config>::CallbackType f =
       boost::bind (&PointCloudCropper::configCallback, this, _1, _2);
     srv_->setCallback (f);

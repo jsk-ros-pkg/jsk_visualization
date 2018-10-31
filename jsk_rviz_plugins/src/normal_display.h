@@ -56,7 +56,7 @@ protected:
 
   virtual void reset();
 
-  boost::circular_buffer<boost::shared_ptr<NormalVisual> > visuals_;
+  boost::circular_buffer<std::shared_ptr<NormalVisual> > visuals_;
 
   // Function to handle an incoming ROS message.
 private Q_SLOTS:

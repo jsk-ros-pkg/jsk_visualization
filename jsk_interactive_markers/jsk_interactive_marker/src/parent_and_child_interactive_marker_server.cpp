@@ -250,7 +250,7 @@ namespace jsk_interactive_marker
   bool ParentAndChildInteractiveMarkerServer::setCallback(const std::string &name, FeedbackCallback feedback_cb, uint8_t feedback_type)
   {
     // synthesize cbs
-    callback_map_[name] = boost::make_shared<FeedbackSynthesizer> (boost::bind(&ParentAndChildInteractiveMarkerServer::selfFeedbackCb, this, _1), feedback_cb);
+    callback_map_[name] = std::make_shared<FeedbackSynthesizer> (boost::bind(&ParentAndChildInteractiveMarkerServer::selfFeedbackCb, this, _1), feedback_cb);
     return interactive_markers::InteractiveMarkerServer::setCallback(name, boost::bind(&FeedbackSynthesizer::call_func, *callback_map_[name], _1), feedback_type);
   }
   void ParentAndChildInteractiveMarkerServer::insert(const visualization_msgs::InteractiveMarker &int_marker)

@@ -61,7 +61,7 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
-    typedef boost::shared_ptr<rviz::Arrow> ArrowPtr;
+    typedef std::shared_ptr<rviz::Arrow> ArrowPtr;
     PolygonArrayDisplay();
     virtual ~PolygonArrayDisplay();
   protected:

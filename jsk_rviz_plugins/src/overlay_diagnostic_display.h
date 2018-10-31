@@ -115,7 +115,7 @@ namespace jsk_rviz_plugins
     boost::mutex mutex_;
     OverlayObject::Ptr overlay_;
     
-    diagnostic_msgs::DiagnosticStatus::Ptr latest_status_;
+    std::shared_ptr<diagnostic_msgs::DiagnosticStatus> latest_status_;
     State previous_state_;
     ros::WallTime latest_message_time_;
     ros::WallTime animation_start_time_;

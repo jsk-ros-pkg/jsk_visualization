@@ -1134,7 +1134,7 @@ void InteractiveMarkerInterface::addHandMarker(visualization_msgs::InteractiveMa
         KDL::Frame origin_frame;
         tf::poseMsgToKDL(up.pose, origin_frame);
 
-        boost::shared_ptr<const Link> hand_root_link;
+        LinkConstSharedPtr hand_root_link;
         hand_root_link = up.model->getLink(up.root_link_name);
         if(!hand_root_link){
           hand_root_link = up.model->getRoot();

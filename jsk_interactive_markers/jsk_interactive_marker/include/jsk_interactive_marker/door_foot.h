@@ -35,7 +35,7 @@ class DoorFoot{
   int footstep_index_;
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
 
   std::string server_name;
   std::string marker_name;

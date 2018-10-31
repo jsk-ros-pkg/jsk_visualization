@@ -316,7 +316,7 @@ protected:
     publishTF(pose);
   }
 
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   interactive_markers::MenuHandler menu_handler_;
   ros::Subscriber pose_stamped_sub_;
   ros::Publisher pose_pub_;
@@ -337,7 +337,7 @@ protected:
   std::string tf_frame_;
   ros::Timer timer_pose_;
   ros::Timer timer_tf_;
-  boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster_;
+  std::shared_ptr<tf::TransformBroadcaster> tf_broadcaster_;
   boost::mutex mutex_;
   interactive_markers::MenuHandler::EntryHandle circle_menu_entry_;
   geometry_msgs::PoseStamped latest_pose_;

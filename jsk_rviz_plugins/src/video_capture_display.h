@@ -49,7 +49,7 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
-    typedef boost::shared_ptr<VideoCaptureDisplay> Ptr;
+    typedef std::shared_ptr<VideoCaptureDisplay> Ptr;
     VideoCaptureDisplay();
     virtual ~VideoCaptureDisplay();
   protected:

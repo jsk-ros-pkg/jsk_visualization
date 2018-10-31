@@ -32,7 +32,7 @@ private:
   tf::TransformListener tf_listener_;
   ros::ServiceClient dynamic_tf_publisher_client_;
   ros::Subscriber sub_set_pose_, sub_show_marker_;
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
   ros::NodeHandle nh_, pnh_;
   ros::Publisher pub_pose_, pub_selected_pose_;
   std::string frame_id_, marker_frame_id_, fixed_frame_id_;

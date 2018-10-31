@@ -86,7 +86,7 @@ namespace jsk_rviz_plugins
   class OverlayObject
   {
   public:
-    typedef boost::shared_ptr<OverlayObject> Ptr;
+    typedef std::shared_ptr<OverlayObject> Ptr;
     
     OverlayObject(const std::string& name);
     virtual ~OverlayObject();

@@ -143,11 +143,11 @@ namespace im_utils {
     return makeMeshMarkerControl(mesh_resource, stamped, scale, color, true);
   }
   
-  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, double scale){
+  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, LinkConstSharedPtr link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, double scale){
     addMeshLinksControl(im, link, previous_frame, use_color, color, scale, true);
   }
 
-  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, boost::shared_ptr<const Link> link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, double scale, bool root){
+  void addMeshLinksControl(visualization_msgs::InteractiveMarker &im, LinkConstSharedPtr link, KDL::Frame previous_frame, bool use_color, std_msgs::ColorRGBA color, double scale, bool root){
     if(!root && link->parent_joint){
       KDL::Frame parent_to_joint_frame;
       geometry_msgs::Pose parent_to_joint_pose = UrdfPose2Pose(link->parent_joint->parent_to_joint_origin_transform);
@@ -162,18 +162,22 @@ namespace im_utils {
 
     geometry_msgs::PoseStamped ps;
     //link_array
-    std::vector<boost::shared_ptr<Visual> > visual_array;
+    std::vector<VisualSharedPtr> visual_array;
     if(link->visual_array.size() != 0){
       visual_array = link->visual_array;
     }else if(link->visual.get() != NULL){
       visual_array.push_back(link->visual);
     }
     for(int i=0; i<visual_array.size(); i++){
-      boost::shared_ptr<Visual> link_visual = visual_array[i];
+      VisualSharedPtr link_visual = visual_array[i];
       if(link_visual.get() != NULL && link_visual->geometry.get() != NULL){
 	visualization_msgs::InteractiveMarkerControl meshControl;
 	if(link_visual->geometry->type == Geometry::MESH){
-	  boost::shared_ptr<const Mesh> mesh = boost::static_pointer_cast<const Mesh>(link_visual->geometry);
+#if ROS_VERSION_MINIMUM(1,14,0) // melodic
+	  MeshConstSharedPtr mesh = std::static_pointer_cast<const Mesh>(link_visual->geometry);
+#else
+        MeshConstSharedPtr mesh = boost::static_pointer_cast<const Mesh>(link_visual->geometry);
+#endif
 	  string model_mesh_ = mesh->filename;
           model_mesh_ = getRosPathFromModelPath(model_mesh_);
           
@@ -198,7 +202,11 @@ namespace im_utils {
 	    meshControl = makeMeshMarkerControl(model_mesh_, ps, mesh_scale);
 	  }
 	}else if(link_visual->geometry->type == Geometry::CYLINDER){
-	  boost::shared_ptr<const Cylinder> cylinder = boost::static_pointer_cast<const Cylinder>(link_visual->geometry);
+#if ROS_VERSION_MINIMUM(1,14,0) // melodic
+    CylinderConstSharedPtr cylinder = std::static_pointer_cast<const Cylinder>(link_visual->geometry);
+#else
+    CylinderConstSharedPtr cylinder = boost::static_pointer_cast<const Cylinder>(link_visual->geometry);
+#endif
 	  std::cout << "cylinder " << link->name;
 	  ps.pose = UrdfPose2Pose(link_visual->origin);
 	  double length = cylinder->length;
@@ -210,7 +218,11 @@ namespace im_utils {
 	    meshControl = makeCylinderMarkerControl(ps, length, radius, color, true);
 	  }
 	}else if(link_visual->geometry->type == Geometry::BOX){
-	  boost::shared_ptr<const Box> box = boost::static_pointer_cast<const Box>(link_visual->geometry);
+#if ROS_VERSION_MINIMUM(1,14,0) // melodic
+    BoxConstSharedPtr box = std::static_pointer_cast<const Box>(link_visual->geometry);
+#else
+    BoxConstSharedPtr box = boost::static_pointer_cast<const Box>(link_visual->geometry);
+#endif
 	  std::cout << "box " << link->name;
 	  ps.pose = UrdfPose2Pose(link_visual->origin);
 	  Vector3 dim = box->dim;
@@ -221,7 +233,11 @@ namespace im_utils {
 	    meshControl = makeBoxMarkerControl(ps, dim, color, true);
 	  }
 	}else if(link_visual->geometry->type == Geometry::SPHERE){
-	  boost::shared_ptr<const Sphere> sphere = boost::static_pointer_cast<const Sphere>(link_visual->geometry);
+#if ROS_VERSION_MINIMUM(1,14,0) // melodic
+    SphereConstSharedPtr sphere = std::static_pointer_cast<const Sphere>(link_visual->geometry);
+#else
+    SphereConstSharedPtr sphere = boost::static_pointer_cast<const Sphere>(link_visual->geometry);
+#endif
 	  ps.pose = UrdfPose2Pose(link_visual->origin);
 	  double rad = sphere->radius;
 	  if(use_color){
@@ -234,13 +250,13 @@ namespace im_utils {
 
       }
     }
-    for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
+    for (std::vector<LinkSharedPtr>::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
       addMeshLinksControl(im, *child, previous_frame, use_color, color, scale, false);
     }
   }
 
-  boost::shared_ptr<ModelInterface> getModelInterface(std::string model_file){
-    boost::shared_ptr<ModelInterface> model;
+  ModelInterfaceSharedPtr getModelInterface(std::string model_file){
+    ModelInterfaceSharedPtr model;
     model_file = getFilePathFromRosPath(model_file);
     model_file = getFullPathFromModelPath(model_file);
     std::string xml_string;
@@ -262,7 +278,7 @@ namespace im_utils {
   }
 
   //sample program
-  visualization_msgs::InteractiveMarker makeLinksMarker(boost::shared_ptr<const Link> link, bool use_color, std_msgs::ColorRGBA color, geometry_msgs::PoseStamped marker_ps, geometry_msgs::Pose origin_pose)
+  visualization_msgs::InteractiveMarker makeLinksMarker(LinkConstSharedPtr link, bool use_color, std_msgs::ColorRGBA color, geometry_msgs::PoseStamped marker_ps, geometry_msgs::Pose origin_pose)
   {
     visualization_msgs::InteractiveMarker int_marker;
     int_marker.header = marker_ps.header;

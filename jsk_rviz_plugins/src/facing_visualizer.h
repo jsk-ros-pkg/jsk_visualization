@@ -57,7 +57,7 @@ namespace jsk_rviz_plugins
   class SquareObject
   {
   public:
-    typedef boost::shared_ptr<SquareObject> Ptr;
+    typedef std::shared_ptr<SquareObject> Ptr;
     SquareObject(Ogre::SceneManager* manager,
                  double outer_radius,
                  double inner_radius,
@@ -86,7 +86,7 @@ namespace jsk_rviz_plugins
   class TextureObject           // utility class for texture
   {
   public:
-    typedef boost::shared_ptr<TextureObject> Ptr;
+    typedef std::shared_ptr<TextureObject> Ptr;
     TextureObject(const int width, const int height, const std::string name);
     virtual ~TextureObject();
     virtual int getWidth() { return width_; };
@@ -106,7 +106,7 @@ namespace jsk_rviz_plugins
   class FacingObject
   {
   public:
-    typedef boost::shared_ptr<FacingObject> Ptr;
+    typedef std::shared_ptr<FacingObject> Ptr;
     FacingObject(Ogre::SceneManager* manager,
                  Ogre::SceneNode* parent,
                  double size);
@@ -137,7 +137,7 @@ namespace jsk_rviz_plugins
   class SimpleCircleFacingVisualizer: public FacingObject
   {
   public:
-    typedef boost::shared_ptr<SimpleCircleFacingVisualizer> Ptr;
+    typedef std::shared_ptr<SimpleCircleFacingVisualizer> Ptr;
     SimpleCircleFacingVisualizer(Ogre::SceneManager* manager,
                                  Ogre::SceneNode* parent,
                                  rviz::DisplayContext* context,
@@ -184,7 +184,7 @@ namespace jsk_rviz_plugins
   class FacingTexturedObject: public FacingObject
   {
   public:
-    typedef boost::shared_ptr<FacingTexturedObject> Ptr;
+    typedef std::shared_ptr<FacingTexturedObject> Ptr;
     FacingTexturedObject(Ogre::SceneManager* manager,
                          Ogre::SceneNode* parent,
                          double size);
@@ -200,7 +200,7 @@ namespace jsk_rviz_plugins
   class GISCircleVisualizer: public FacingTexturedObject
   {
   public:
-    typedef boost::shared_ptr<GISCircleVisualizer> Ptr;
+    typedef std::shared_ptr<GISCircleVisualizer> Ptr;
     GISCircleVisualizer(Ogre::SceneManager* manager,
                         Ogre::SceneNode* parent,
                         double size,

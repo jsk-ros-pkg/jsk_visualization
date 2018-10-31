@@ -135,7 +135,7 @@ namespace jsk_interactive_marker
     ros::Publisher marker_dimensions_pub_;
     ros::ServiceServer request_marker_operate_srv_;
 
-    boost::shared_ptr <dynamic_reconfigure::Server<InteractiveSettingConfig> > config_srv_;
+    std::shared_ptr <dynamic_reconfigure::Server<InteractiveSettingConfig> > config_srv_;
 
     ros::Subscriber setrad_sub_;
     ros::Publisher focus_name_text_pub_;
@@ -145,14 +145,14 @@ namespace jsk_interactive_marker
     ros::Publisher pose_with_name_pub_;
     interactive_markers::InteractiveMarkerServer* server_;
     map<string, TransformableObject*> transformable_objects_map_;
-    boost::shared_ptr<tf::TransformListener> tf_listener_;
+    std::shared_ptr<tf::TransformListener> tf_listener_;
     int torus_udiv_;
     int torus_vdiv_;
     jsk_interactive_marker::InteractiveSettingConfig config_;
     bool strict_tf_;
     int interactive_manipulator_orientation_;
     ros::Timer tf_timer;
-    boost::shared_ptr <YamlMenuHandler> yaml_menu_handler_ptr_;
+    std::shared_ptr <YamlMenuHandler> yaml_menu_handler_ptr_;
   };
 }
 

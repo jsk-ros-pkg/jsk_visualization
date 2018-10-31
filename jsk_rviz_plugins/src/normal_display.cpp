@@ -232,7 +232,7 @@ namespace jsk_rviz_plugins
 
         if (validateFloats(Ogre::Vector3(x, y, z)) && validateFloats(Ogre::Vector3(normal_x, normal_y, normal_z)))
           {
-            boost::shared_ptr<NormalVisual> visual;
+            std::shared_ptr<NormalVisual> visual;
             if(visuals_.full()){
               visual = visuals_.front();
             }else{

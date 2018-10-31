@@ -40,7 +40,7 @@
 #include <boost/algorithm/string.hpp>
 
 
-boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
+std::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
 boost::mutex mutex;
 ros::Publisher pub, box_pub, box_arr_pub;
 jsk_recognition_msgs::BoundingBoxArray::ConstPtr box_msg;

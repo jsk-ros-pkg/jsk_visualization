@@ -61,7 +61,7 @@ namespace jsk_interactive_marker
   class Cropper
   {
   public:
-    typedef boost::shared_ptr<Cropper> Ptr;
+    typedef std::shared_ptr<Cropper> Ptr;
     Cropper(const unsigned int nr_parameter);
     virtual ~Cropper();
     
@@ -87,7 +87,7 @@ namespace jsk_interactive_marker
   class SphereCropper: public Cropper
   {
   public:
-    typedef boost::shared_ptr<SphereCropper> Ptr;
+    typedef std::shared_ptr<SphereCropper> Ptr;
     
     SphereCropper();
     virtual ~SphereCropper();
@@ -104,7 +104,7 @@ namespace jsk_interactive_marker
   class CubeCropper: public Cropper
   {
   public:
-    typedef boost::shared_ptr<CubeCropper> Ptr;
+    typedef std::shared_ptr<CubeCropper> Ptr;
     
     CubeCropper();
     virtual ~CubeCropper();
@@ -151,15 +151,15 @@ namespace jsk_interactive_marker
     ros::Subscriber point_sub_;
     ros::Publisher point_pub_;
     ros::Publisher point_visualization_pub_;
-    boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+    std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
     //pcl::PointCloud<pcl::PointXYZ>::Ptr latest_pointcloud_;
     sensor_msgs::PointCloud2::ConstPtr latest_pointcloud_;
-    boost::shared_ptr <dynamic_reconfigure::Server<Config> > srv_;
+    std::shared_ptr <dynamic_reconfigure::Server<Config> > srv_;
     interactive_markers::MenuHandler menu_handler_;
     Cropper::Ptr cropper_;
     std::vector<Cropper::Ptr> cropper_candidates_;
     EntryHandleVector cropper_entries_;
-    boost::shared_ptr<tf::TransformListener> tf_listener_;
+    std::shared_ptr<tf::TransformListener> tf_listener_;
     
   private:
   };

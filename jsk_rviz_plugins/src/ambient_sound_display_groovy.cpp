@@ -234,7 +234,7 @@ namespace jsk_rviz_plugins
 
         // We are keeping a circular buffer of visual pointers.  This gets
         // the next one, or creates and stores it if it was missing.
-        boost::shared_ptr<AmbientSoundVisual> visual;
+        std::shared_ptr<AmbientSoundVisual> visual;
         //AmbientSoundVisual* visual_ptr;
         if( visuals_.full())
         {

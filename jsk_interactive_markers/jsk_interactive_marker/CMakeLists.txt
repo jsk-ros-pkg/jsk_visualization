@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_interactive_marker)
 
+add_compile_options(-std=c++11)
 
 # Use ccache if installed to make it fast to generate object files
 find_program(CCACHE_FOUND ccache)

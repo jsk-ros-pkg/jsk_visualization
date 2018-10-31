@@ -61,7 +61,7 @@ plan_run_(false), lleg_first_(true) {
   tf_listener_.reset(new tf::TransformListener);
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
-  srv_ = boost::make_shared <dynamic_reconfigure::Server<Config> > (pnh);
+  srv_ = std::make_shared <dynamic_reconfigure::Server<Config> > (pnh);
   typename dynamic_reconfigure::Server<Config>::CallbackType f =
     boost::bind (&FootstepMarker::configCallback, this, _1, _2);
   srv_->setCallback (f);
