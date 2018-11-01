@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.4 (2018-11-01)
+------------------
 * Fix install destination (`#717 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/717>`_)
   * Update comment about installation
   * Install 'scripts' into SHARE_DESTINATION
