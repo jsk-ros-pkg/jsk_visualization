@@ -129,6 +129,7 @@ namespace jsk_rviz_plugins
 
   void TargetVisualizerDisplay::onInitialize()
   {
+    visualizer_initialized_ = false;
     MFDClass::onInitialize();
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
     
@@ -186,7 +187,8 @@ namespace jsk_rviz_plugins
   
   void TargetVisualizerDisplay::updateShapeType()
   {
-    if (current_type_ != shape_type_property_->getOptionInt()) {
+    if (!visualizer_initialized_ ||
+        current_type_ != shape_type_property_->getOptionInt()) {
       {
         boost::mutex::scoped_lock lock(mutex_);
         if (shape_type_property_->getOptionInt() == SimpleCircle) {
@@ -207,8 +209,8 @@ namespace jsk_rviz_plugins
             radius_);
           v->setAnonymous(false);
           visualizer_.reset(v);
-          
         }
+        visualizer_initialized_ = true;
       }
       updateTargetName();
       updateColor();
