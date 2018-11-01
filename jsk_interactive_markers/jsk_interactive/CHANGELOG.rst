@@ -2,6 +2,13 @@
 Changelog for package jsk_interactive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix install destination (`#717 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/717>`_)
+  * Update comment about installation
+  * Add comment for install destination
+* Contributors: Yuto Uchimi
+
 2.1.3 (2017-10-26)
 ------------------
 

@@ -2,6 +2,53 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_rviz_plugins/target_visualize] Add visualizer\_ initilized flags (`#720 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/720>`_)
+* replace boost::shared_ptr by std::shared_ptr (`#710 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/710>`_)
+  * enable C++11
+  * replace boost pointers by std pointers
+
+* add error message to status (`#715 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/715>`_)
+* Fix install destination (`#717 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/717>`_)
+  * Update comment about installation
+  * Add comment for install destination
+  * Fix path to headers for installation
+  * Install missing test/ as well
+  * Use source permission when installing executables
+  * Fix installation destination
+
+* [jsk_rviz_plugins/camera_info_display] Check fx and fy are not equal to zero. (`#1 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/1>`_)
+* [jsk_rviz_plugins] Optimize camera info displaying (`#709 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/709>`_)
+  * Split and merge image matrix channels instead of slow pixel-by-pixel copying while renderind camera info.
+
+* [jsk_rviz_plugins] add segment_array_display (`#666 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/666>`_)
+  * Add doc and sample of segment_array
+  * add segment_array_display rviz plugin.
+
+* [jsk_rviz_plugins] use QScreen::grabWindow() instead of QPixmap::grabWindow (`#700 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/700>`_)
+  * [jsk_rviz_plugins] use QScreen::grabWindow() instead of QPixmap::grabWindow
+
+* add enable lighitng property in polygon_array_display (`#686 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/686>`_)
+* add jsk_rviz_plugins library to catkin_package LIBRARIES, use  instea… (`#696 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/696>`_)
+  * add jsk_rviz_plugins library to catkin_package LIBRARIES
+* Add #include <boost/format.hpp> (`#695 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/695>`_)
+
+* jsk_rviz_plugins: warn on missing frame_id (`#698 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/698>`_)
+* Suppress warnings of jsk_rviz_plugins for non-existent targets (`#693 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/693>`_)
+  Support `catkin_make` also.
+  Ref: https://github.com/jsk-ros-pkg/jsk_visualization/pull/692#issuecomment-390873758
+
+* [jsk_rviz_plugins] fix std::isnan to make it compile under Ubuntu 16.04 / gcc 5 (`#687 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/687>`_)
+  * fix std::isnan to make it compile under Ubuntu 16.04 / gcc 5
+  * revert whitespace changes (adding trailing whitespace again)
+
+* add enable lighitng property in polygon_array_display
+* jsk_rviz_plugins: class_result_vis: add more types to vislalize (`#684 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/684>`_)
+* jsk_rviz_plugins: add missing deps (`#683 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/683>`_)
+* Add <url> to package.xml to add link to README (`#681 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/681>`_)
+* Contributors: Aleksandr Rozhdestvenskii, Christian Rauch, Daniel Neumann, Yuki Furuta, Jan Carius, Kei Okada, Kentaro Wada, Laurenz, Masaki Murooka, Tamaki Nishino, Yuto Uchimi, Iori Yanokura
+
 2.1.3 (2017-10-26)
 ------------------
 * [jsk_rviz_plugins] Rviz default font is changed from Arial to LiberationSans (See: https://github.com/ros-visualization/rviz/pull/1141) (`#676 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/676>`_)

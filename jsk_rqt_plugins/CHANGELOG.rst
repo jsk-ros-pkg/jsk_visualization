@@ -2,6 +2,47 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix install destination (`#717 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/717>`_)
+  * Update comment about installation
+  * Add comment for install destination
+  * Install missing test/ as well
+  * Use source permission when installing executables
+  * Fix installation destination
+* [jsk_rqt_plugins] Fix for working correctly on kinetic + qt5 (`#708 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/708>`_)
+  * Add sample for rqt_image_view2
+  * Update test for rqt_drc_mini_maxwell
+  * Add sample for rqt_drc_mini_maxwell
+  * Update test for rqt_3d_plot
+  * Add sample for rqt_3d_plot
+  * Fix for substituting to 'intercept'
+  * Specify version of image_pipeline
+  * Support matplotlib backend for qt5
+  * Support qt>=5 in rqt plugins
+  * Add dependency for test
+  * Set retry=3 for test
+  * Install all programs in jsk_rqt_plugins/bin/
+  * Add test for program in jsk_rqt_plugins
+  * use matplotlib.backends.backend_qt5agg in Qt5
+  * add queue_size in publishers
+  * check opencv version for kinetic
+  * follow new sklearn ranac linear regression
+  * use correct module for qt5
+  * refactor plot_2d.py
+
+* [jsk_rqt_plugins] fix hist.py to work on kinetic (`#707 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/707>`_)
+* Revert "[jsk_rqt_plugins/HistogramPlot] modify to correctly run on kinetic (`#688 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/688>`_)" (`#704 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/704>`_)
+  This reverts commit 79dcedf7fd761fc638f1cffc1cfaa46a7bb4f1a2.
+* [jsk_rqt_plugins/HistogramPlot] modify to correctly run on kinetic (`#688 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/688>`_)
+  * refactor codes in hist.py
+  * use correct module of qt5 for kinetic
+  * check opencv version for kinetic
+  * add queue_size in publisher
+* [jsk_rqt_plugins] Add dependency of sklearn (`#701 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/701>`_)
+* Add <url> to package.xml to add link to README (`#681 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/681>`_)
+* Contributors: Kei Okada, Kentaro Wada, Masaki Murooka, Shingo Kitagawa, Yuto Uchimi, Iory Yanokura
+
 2.1.3 (2017-10-26)
 ------------------
 * PR `#672 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/672>`_ needs jsk_gui_msgs 4.3.0 (https://github.com/jsk-ros-pkg/jsk_common_msgs/pull/18) (`#673 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/673>`_)

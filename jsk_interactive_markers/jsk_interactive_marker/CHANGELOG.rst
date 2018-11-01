@@ -2,6 +2,36 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* replace boost::shared_ptr by std::shared_ptr (`#710 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/710>`_)
+  * manual urdf typedefs
+  * add headers for urdf shared_ptr typedefs
+  * use 'isnan' from 'std' namespace
+  * use urdf typedefs for shared_ptr
+  * enable C++11
+  * replace boost pointers by std pointers
+
+* Fix install destination (`#717 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/717>`_)
+  * Call USE_SOURCE_PERMISSIONS before PATTERN
+  * Update comment about installation
+  * Install 'scripts' into SHARE_DESTINATION
+  * Add comment for install destination
+  * Fix installation destination
+
+* fix typo in jsk_interactive_marker (`#718 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/718>`_)
+* Remove newline and leading spaces from package.xml (`#706 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/706>`_)
+* Explicitly resolve dependency for jsk_recognition_utils in package.xml (`#699 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/699>`_)
+* Object 3d annotation using transformable interactive marker (`#668 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/668>`_)
+  * do not compile transformable_marker_operator.cpp for jsk_recognition_msgs < 1.2.0
+  * need 1.2.0 of jsk_recognition_msgs for Objects.msg
+  * Update for updated Object.msg
+  * Make object array topic editable and searched automatically
+  * Insert mesh models dynamically by rviz panel
+  * Change interactive_mode using dynamic reconfigure
+
+* Contributors: Christian Rauch, Kei Okada, Kentaro Wada, Masaki Murooka, Shingo Kitagawa, Yuto Uchimi, Naoki Mizuno
+
 2.1.3 (2017-10-26)
 ------------------
 
