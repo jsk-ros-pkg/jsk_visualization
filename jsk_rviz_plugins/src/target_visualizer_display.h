@@ -94,6 +94,7 @@ namespace jsk_rviz_plugins
     double radius_;
     bool message_recieved_;
     ShapeType current_type_;        
+    bool visualizer_initialized_;
   private Q_SLOTS:
     void updateTargetName();
     void updateAlpha();
