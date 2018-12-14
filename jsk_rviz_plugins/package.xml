@@ -40,6 +40,7 @@
   <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>image_geometry</run_depend>
+  <run_depend>image_publisher</run_depend>
   <run_depend>jsk_footstep_msgs</run_depend>
   <run_depend>jsk_gui_msgs</run_depend>
   <run_depend>jsk_hark_msgs</run_depend>

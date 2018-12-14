@@ -4,7 +4,7 @@ import rospy
 from jsk_rviz_plugins.msg import OverlayMenu
 
 rospy.init_node("test_menu")
-p = rospy.Publisher("test_menu", OverlayMenu)
+p = rospy.Publisher("test_menu", OverlayMenu, queue_size=1)
 r = rospy.Rate(5)
 counter = 0
 while not rospy.is_shutdown():
