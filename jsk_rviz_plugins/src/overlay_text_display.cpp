@@ -41,6 +41,7 @@
 #include <QFontDatabase>
 #include <QPainter>
 #include <QStaticText>
+#include <QTextDocument>
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 #include <jsk_topic_tools/log_utils.h>
@@ -67,8 +68,12 @@ namespace jsk_rviz_plugins
       this, SLOT(updateOvertakePositionProperties()));
     overtake_color_properties_property_ = new rviz::BoolProperty(
       "Overtake Color Properties", false,
-      "overtake color properties specified by message such as left, top and font",
+      "overtake color properties specified by message such as foreground/background color and alpha",
       this, SLOT(updateOvertakeColorProperties()));
+    align_bottom_property_ = new rviz::BoolProperty(
+      "Align Bottom", false,
+      "align text with the bottom of the overlay region",
+      this, SLOT(updateAlignBottom()));
     top_property_ = new rviz::IntProperty(
       "top", 0,
       "top position",
@@ -136,6 +141,7 @@ namespace jsk_rviz_plugins
     delete update_topic_property_;
     delete overtake_color_properties_property_;
     delete overtake_position_properties_property_;
+    delete align_bottom_property_;
     delete top_property_;
     delete left_property_;
     delete width_property_;
@@ -191,6 +197,7 @@ namespace jsk_rviz_plugins
     updateTopic();
     updateOvertakePositionProperties();
     updateOvertakeColorProperties();
+    updateAlignBottom();
     updateTop();
     updateLeft();
     updateWidth();
@@ -245,7 +252,16 @@ namespace jsk_rviz_plugins
         QStaticText static_text(
           boost::algorithm::replace_all_copy(color_wrapped_text, "\n", "<br >").c_str());
         static_text.setTextWidth(w);
-        painter.drawStaticText(0, 0, static_text);
+        if (!align_bottom_) {
+          painter.drawStaticText(0, 0, static_text);
+        } else {
+          QStaticText only_wrapped_text(color_wrapped_text.c_str());
+          QFontMetrics fm(painter.fontMetrics());
+          QRect text_rect = fm.boundingRect(0, 0, w, h,
+                                            Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
+                                            only_wrapped_text.text().remove(QRegExp("<[^>]*>")));
+          painter.drawStaticText(0, h - text_rect.height(), static_text);
+        }
       }
       painter.end();
     }
@@ -362,6 +378,14 @@ namespace jsk_rviz_plugins
       line_width_property_->hide();
       font_property_->hide();
     }
+  }
+
+  void OverlayTextDisplay::updateAlignBottom()
+  {
+    if (align_bottom_ != align_bottom_property_->getBool()) {
+      require_update_texture_ = true;
+    }
+    align_bottom_ = align_bottom_property_->getBool();
   }
 
   void OverlayTextDisplay::updateTop()

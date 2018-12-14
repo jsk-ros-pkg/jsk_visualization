@@ -73,6 +73,7 @@ namespace jsk_rviz_plugins
     
     bool overtake_color_properties_;
     bool overtake_position_properties_;
+    bool align_bottom_;
     QColor bg_color_;
     QColor fg_color_;
     int text_size_;
@@ -96,6 +97,7 @@ namespace jsk_rviz_plugins
     rviz::RosTopicProperty* update_topic_property_;
     rviz::BoolProperty* overtake_position_properties_property_;
     rviz::BoolProperty* overtake_color_properties_property_;
+    rviz::BoolProperty* align_bottom_property_;
     rviz::IntProperty* top_property_;
     rviz::IntProperty* left_property_;
     rviz::IntProperty* width_property_;
@@ -111,6 +113,7 @@ namespace jsk_rviz_plugins
     void updateTopic();
     void updateOvertakePositionProperties();
     void updateOvertakeColorProperties();
+    void updateAlignBottom();
     void updateTop();
     void updateLeft();
     void updateWidth();
