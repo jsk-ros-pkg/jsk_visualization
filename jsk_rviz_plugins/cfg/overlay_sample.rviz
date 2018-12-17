@@ -66,7 +66,7 @@ Visualization Manager:
       left: 0
       line width: 2
       text size: 12
-      top: 300
+      top: 400
       width: 350
     - Buffer length: 100
       Class: jsk_rviz_plugin/Plotter2D
@@ -136,7 +136,7 @@ Visualization Manager:
       Topic: /rosconsole_overlay_text/output
       Value: true
       font: DejaVu Sans Mono
-      height: 200
+      height: 380
       left: 0
       line width: 2
       text size: 12
