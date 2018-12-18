@@ -4,7 +4,7 @@ jsk_rviz_plugins
 
 jsk\_rviz\_plugins is a package to provide original rviz plugins.
 
-You can use this rviz plugins just launch rviz.
+You can use these rviz plugins, panels and tools just by launching rviz.
 
 
 .. toctree::
@@ -20,9 +20,17 @@ You can use this rviz plugins just launch rviz.
    :caption: panels
 
    ./panels/*
+
 .. toctree::
    :glob:
    :maxdepth: 1
    :caption: tools
 
    ./tools/*
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :caption: nodes
+
+   ./nodes/*

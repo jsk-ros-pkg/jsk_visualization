@@ -45,5 +45,15 @@ by using <span style="font-style: italic;">css</style>.
   text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.2)
   text_pub.publish(text)
   value_pub.publish(math.sin(counter * math.pi * 2 / 100))
+  if int(counter % 500) == 0:
+    rospy.logdebug('This is ROS_DEBUG.')
+  elif int(counter % 500) == 100:
+    rospy.loginfo('This is ROS_INFO.')
+  elif int(counter % 500) == 200:
+    rospy.logwarn('This is ROS_WARN.')
+  elif int(counter % 500) == 300:
+    rospy.logerr('This is ROS_ERROR.')
+  elif int(counter % 500) == 400:
+    rospy.logfatal('This is ROS_FATAL.')
   r.sleep()
 
