@@ -18,7 +18,7 @@ notifications:
   slack: jsk-robotics:Av7tc8wj3IWkLYvlTzHE7x2g
 env:
   global:
-    - ROS_PARALLEL_JOBS='-j8'
+    - ROS_PARALLEL_JOBS='-j2'
     - USE_JENKINS=false
     - USE_TRAVIS=true
     - USE_DOCKER=true
@@ -31,7 +31,6 @@ env:
 matrix:
   allow_failures:
     - env: ROS_DISTRO=lunar   USE_DEB=true
-    - env: ROS_DISTRO=melodic USE_DEB=true
 script:
   - source .travis/travis.sh
   # test building sphinx documentation
