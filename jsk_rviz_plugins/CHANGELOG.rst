@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.5 (2019-02-18)
+------------------
 * [jsk_rviz_plugins] Add "Align Bottom" option to OverlayText (`#723 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/723>`_ )
 
   * Update config for easily understanding the effect of AlignBottom
