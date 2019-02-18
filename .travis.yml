@@ -31,7 +31,6 @@ env:
 matrix:
   allow_failures:
     - env: ROS_DISTRO=lunar   USE_DEB=true
-    - env: ROS_DISTRO=melodic USE_DEB=true
 script:
   - source .travis/travis.sh
   # test building sphinx documentation
