@@ -2,6 +2,17 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.5 (2019-02-18)
+------------------
+* [jsk_rviz_plugins] Add "Align Bottom" option to OverlayText (`#723 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/723>`_ )
+
+  * Update config for easily understanding the effect of AlignBottom
+  * Update overlay_sample.launch
+  * Add rosparam to enable/disable reversing lines
+  * Add "Align Bottom" option to overlay_text plugin
+
+* Contributors: Yuto Uchimi
+
 2.1.4 (2018-11-01)
 ------------------
 * [jsk_rviz_plugins/target_visualize] Add visualizer\_ initilized flags (`#720 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/720>`_)
