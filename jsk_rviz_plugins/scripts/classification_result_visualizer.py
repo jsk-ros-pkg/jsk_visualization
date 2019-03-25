@@ -16,15 +16,24 @@ from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker, MarkerArray
 
 
+def is_valid_pose(pose):
+    return pose.position.x == 0.0 and\
+           pose.position.y == 0.0 and\
+           pose.position.z == 0.0
+
+
 class ClassificationResultVisualizer(ConnectionBasedTransport):
     def __init__(self):
         super(ClassificationResultVisualizer, self).__init__()
-        self.queue_size = rospy.get_param("~queue_size", 100)
         self.srv = Server(ClassificationResultVisualizerConfig,
                           self.config_callback)
         self.pub_marker = self.advertise("~output", MarkerArray, queue_size=10)
 
     def subscribe(self):
+        approximate_sync = rospy.get_param("~approximate_sync", False)
+        queue_size = rospy.get_param("~queue_size", 100)
+        slop = rospy.get_param("~slop", 0.1)
+
         sub_cls = MF.Subscriber(
             "~input/classes", ClassificationResult, queue_size=1)
         sub_box = MF.Subscriber(
@@ -35,21 +44,36 @@ class ClassificationResultVisualizer(ConnectionBasedTransport):
             "~input/people", PeoplePoseArray, queue_size=1)
         sub_od = MF.Subscriber(
             "~input/ObjectDetection", ObjectDetection, queue_size=1)
-        sync_box = MF.TimeSynchronizer([sub_box, sub_cls], self.queue_size)
+
+        if approximate_sync:
+            sync_box = MF.ApproximateTimeSynchronizer(
+                [sub_box, sub_cls], queue_size=queue_size, slop=slop)
+            sync_pose = MF.ApproximateTimeSynchronizer(
+                [sub_pose, sub_cls], queue_size=queue_size, slop=slop)
+            sync_people = MF.ApproximateTimeSynchronizer(
+                [sub_people, sub_cls], queue_size=queue_size, slop=slop)
+            sync_od = MF.ApproximateTimeSynchronizer(
+                [sub_od, sub_cls], queue_size=queue_size, slop=slop)
+        else:
+            sync_box = MF.TimeSynchronizer(
+                [sub_box, sub_cls], queue_size=queue_size)
+            sync_pose = MF.TimeSynchronizer(
+                [sub_pose, sub_cls], queue_size=queue_size)
+            sync_people = MF.TimeSynchronizer(
+                [sub_people, sub_cls], queue_size=queue_size)
+            sync_od = MF.TimeSynchronizer(
+                [sub_od, sub_cls], queue_size=queue_size)
+
         sync_box.registerCallback(self.box_msg_callback)
-        sync_pose = MF.TimeSynchronizer([sub_pose, sub_cls], self.queue_size)
         sync_pose.registerCallback(self.pose_msg_callback)
-        sync_people = MF.TimeSynchronizer([sub_people, sub_cls], self.queue_size)
         sync_people.registerCallback(self.people_msg_callback)
-        sync_od = MF.TimeSynchronizer([sub_od, sub_cls], self.queue_size)
         sync_od.registerCallback(self.od_msg_callback)
-        self.syncs = [sync_box, sync_pose, sync_people, sync_od]
+
         self.subscribers = [sub_cls, sub_box, sub_pose, sub_people, sub_od]
 
     def unsubscribe(self):
         for sub in self.subscribers:
             sub.unregister()
-        self.syncs = []
 
     def config_callback(self, config, level):
         self.text_color = {'r': config.text_color_red,
@@ -61,6 +85,7 @@ class ClassificationResultVisualizer(ConnectionBasedTransport):
                             config.text_offset_z]
         self.text_size = config.text_size
         self.marker_lifetime = config.marker_lifetime
+        self.show_proba = config.show_proba
         return config
 
     def pose_msg_callback(self, pose, classes):
@@ -94,9 +119,20 @@ class ClassificationResultVisualizer(ConnectionBasedTransport):
 
     def box_msg_callback(self, bboxes, classes):
         msg = MarkerArray()
-        for i, data in enumerate(zip(bboxes.boxes, zip(classes.label_names, classes.label_proba))):
+        show_proba = self.show_proba and len(classes.label_names) == len(classes.label_proba)
+        if show_proba:
+            cls_iter = zip(classes.label_names, classes.label_proba)
+        else:
+            cls_iter = classes.label_names
+        for i, data in enumerate(zip(bboxes.boxes, cls_iter)):
             bbox, cls = data
-            text = "%s (%.3f)" % cls
+            if show_proba:
+                text = "%s (%.3f)" % cls
+            else:
+                text = cls
+
+            if is_valid_pose(bbox.pose):
+                continue
 
             m = Marker(type=Marker.TEXT_VIEW_FACING,
                        action=Marker.MODIFY,
