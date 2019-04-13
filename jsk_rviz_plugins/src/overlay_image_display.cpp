@@ -58,13 +58,9 @@ namespace jsk_rviz_plugins
       ros::message_traits::datatype<sensor_msgs::Image>(),
       "sensor_msgs::Image topic to subscribe to.",
       this, SLOT( updateTopic() ));
-    transport_hint_property_ = new rviz::EditableEnumProperty("transport hint", "raw",
+    transport_hint_property_ = new ImageTransportHintsProperty("transport hint",
                                                               "transport hint to subscribe topic",
                                                               this, SLOT(updateTopic()));
-    transport_hint_property_->addOptionStd("raw");
-    // whell known image transports
-    transport_hint_property_->addOptionStd("compressed");
-    transport_hint_property_->addOptionStd("theora");
     keep_aspect_ratio_property_ = new rviz::BoolProperty("keep aspect ratio", false,
                                                          "keep aspect ratio of original image",
                                                          this, SLOT(updateKeepAspectRatio()));
@@ -137,7 +133,8 @@ namespace jsk_rviz_plugins
     std::string topic_name = update_topic_property_->getTopicStd();
     
     if (topic_name.length() > 0 && topic_name != "/") {
-      const image_transport::TransportHints transport_hint(transport_hint_property_->getStdString());
+      const image_transport::TransportHints transport_hint =
+        transport_hint_property_->getTransportHints();
       sub_ = it_->subscribe(topic_name, 1, &OverlayImageDisplay::processMessage, this,
                             transport_hint);
     }
