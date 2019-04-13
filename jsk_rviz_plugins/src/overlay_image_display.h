@@ -47,6 +47,7 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/bool_property.h>
+#include <rviz/properties/editable_enum_property.h>
 
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
@@ -74,6 +75,7 @@ namespace jsk_rviz_plugins
     boost::mutex mutex_;
     OverlayObject::Ptr overlay_;
     rviz::RosTopicProperty* update_topic_property_;
+    rviz::EditableEnumProperty* transport_hint_property_;
     rviz::BoolProperty* keep_aspect_ratio_property_;
     rviz::IntProperty* width_property_;
     rviz::IntProperty* height_property_;
