@@ -583,6 +583,7 @@ namespace jsk_rviz_plugins
       subscribeImage(topic);
     } else {
       image_sub_.shutdown();
+      image_updated_ = true;
     }
   }
 
@@ -591,11 +592,11 @@ namespace jsk_rviz_plugins
     use_image_ = use_image_property_->getBool();
     if (use_image_) {
       image_topic_property_->show();
-      updateImageTopic();
     }
     else {
       image_topic_property_->hide();
     }
+    updateImageTopic();
   }
   void CameraInfoDisplay::updateNotShowSidePolygons()
   {
