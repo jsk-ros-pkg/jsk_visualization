@@ -126,10 +126,12 @@ namespace jsk_rviz_plugins
 
   void OverlayImageDisplay::subscribe()
   {
-    std::string topic_name = update_topic_property_->getTopicStd();
-    
-    if (topic_name.length() > 0 && topic_name != "/") {
-      sub_ = it_->subscribe(topic_name, 1, &OverlayImageDisplay::processMessage, this);
+    if (isEnabled()) {
+      std::string topic_name = update_topic_property_->getTopicStd();
+
+      if (topic_name.length() > 0 && topic_name != "/") {
+        sub_ = it_->subscribe(topic_name, 1, &OverlayImageDisplay::processMessage, this);
+      }
     }
   }
 
