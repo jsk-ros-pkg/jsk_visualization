@@ -34,6 +34,7 @@
  *********************************************************************/
 
 #include <rviz/uniform_string_stream.h>
+#include <image_transport/image_transport.h>
 #include "camera_info_display.h"
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMaterial.h>
@@ -55,7 +56,7 @@ namespace jsk_rviz_plugins
     bool upper_triangle)
   {
     // uniq string is requred for name
-    
+
     manual_ = manager->createManualObject();
     manual_->clear();
     manual_->begin(name,
@@ -99,7 +100,7 @@ namespace jsk_rviz_plugins
     manual_->detachFromParent();
     //manager_->destroyManualObject(manual_); // this crashes rviz
   }
-  
+
   CameraInfoDisplay::CameraInfoDisplay(): image_updated_(true)
   {
     ////////////////////////////////////////////////////////
@@ -136,6 +137,12 @@ namespace jsk_rviz_plugins
       "sensor_msgs::Image topic to subscribe to.",
       this, SLOT( updateImageTopic() ));
     image_topic_property_->hide();
+    image_transport_hints_property_ = new ImageTransportHintsProperty(
+      "transport hints",
+      "transport hint for image subscription",
+      this, SLOT( updateImageTopic() ));
+    image_transport_hints_property_->hide();
+
     color_property_ = new rviz::ColorProperty(
       "color",
       QColor(85, 255, 255),
@@ -152,7 +159,7 @@ namespace jsk_rviz_plugins
       "alpha blending value",
       this, SLOT(updateAlpha()));
   }
-  
+
   CameraInfoDisplay::~CameraInfoDisplay()
   {
     if (edges_) {
@@ -190,7 +197,7 @@ namespace jsk_rviz_plugins
     updateUseImage();
     updateEdgeColor();
   }
-  
+
   void CameraInfoDisplay::processMessage(
     const sensor_msgs::CameraInfo::ConstPtr& msg)
   {
@@ -229,7 +236,7 @@ namespace jsk_rviz_plugins
     const sensor_msgs::CameraInfo::ConstPtr& msg)
   {
     if (camera_info_) {
-      bool meta_same_p = 
+      bool meta_same_p =
         msg->header.frame_id == camera_info_->header.frame_id &&
         msg->height == camera_info_->height &&
         msg->width == camera_info_->width &&
@@ -250,7 +257,7 @@ namespace jsk_rviz_plugins
       return false;
     }
   }
-  
+
   void CameraInfoDisplay::addPointToEdge(
     const cv::Point3d& point)
   {
@@ -278,7 +285,7 @@ namespace jsk_rviz_plugins
 
   void CameraInfoDisplay::createTextureForBottom(int width, int height)
   {
-    if (bottom_texture_.isNull() 
+    if (bottom_texture_.isNull()
         || bottom_texture_->getWidth() != width
         || bottom_texture_->getHeight() != height) {
       static uint32_t count = 0;
@@ -302,7 +309,7 @@ namespace jsk_rviz_plugins
       material_bottom_->getTechnique(0)->getPass(0)->setLightingEnabled(false);
       material_bottom_->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
       material_bottom_->getTechnique(0)->getPass(0)->setDepthCheckEnabled(true);
-    
+
       material_bottom_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
       material_bottom_->getTechnique(0)->getPass(0)->createTextureUnitState(bottom_texture_->getName());
       material_bottom_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
@@ -334,7 +341,7 @@ namespace jsk_rviz_plugins
       material_->getTechnique(0)->getPass(0)->setLightingEnabled(false);
       material_->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
       material_->getTechnique(0)->getPass(0)->setDepthCheckEnabled(true);
-      
+
       material_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
       material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_->getName());
       material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
@@ -344,20 +351,21 @@ namespace jsk_rviz_plugins
 
   void CameraInfoDisplay::subscribeImage(std::string topic)
   {
-    
+
     image_sub_.shutdown();
     if (topic.empty()) {
       ROS_WARN("topic name is empty");
     }
     ros::NodeHandle nh;
-    image_sub_ = nh.subscribe(topic, 1, 
-                              &CameraInfoDisplay::imageCallback, this);
+    image_transport::ImageTransport it(nh);
+    image_sub_ = it.subscribe(topic, 1, &CameraInfoDisplay::imageCallback, this,
+                              image_transport_hints_property_->getTransportHints());
   }
-  
+
   void CameraInfoDisplay::drawImageTexture()
   {
     bottom_texture_->getBuffer()->lock( Ogre::HardwareBuffer::HBL_NORMAL );
-    const Ogre::PixelBox& pixelBox 
+    const Ogre::PixelBox& pixelBox
       = bottom_texture_->getBuffer()->getCurrentLock();
     Ogre::uint8* pDest = static_cast<Ogre::uint8*> (pixelBox.data);
 
@@ -439,7 +447,7 @@ namespace jsk_rviz_plugins
       return;
     }
     setStatus(rviz::StatusProperty::Ok, "Camera Info", "OK");
-    
+
     ////////////////////////////////////////////////////////
     // initialize BillboardLine
     ////////////////////////////////////////////////////////
@@ -448,7 +456,7 @@ namespace jsk_rviz_plugins
                                            scene_node_));
       edges_->setLineWidth(0.01);
     }
-    
+
     cv::Point2d a(0, 0), b(msg->width, 0),
       c(msg->width, msg->height), d(0, msg->height);
     // all the z = 1.0
@@ -476,9 +484,9 @@ namespace jsk_rviz_plugins
       prepareMaterial();
       if (!not_show_side_polygons_) {
         material_->getTechnique(0)->getPass(0)->setAmbient(color);
-        {      
+        {
           texture_->getBuffer()->lock( Ogre::HardwareBuffer::HBL_NORMAL );
-          const Ogre::PixelBox& pixelBox 
+          const Ogre::PixelBox& pixelBox
             = texture_->getBuffer()->getCurrentLock();
           Ogre::uint8* pDest = static_cast<Ogre::uint8*> (pixelBox.data);
           memset(pDest, 0, 1);
@@ -593,9 +601,11 @@ namespace jsk_rviz_plugins
     use_image_ = use_image_property_->getBool();
     if (use_image_) {
       image_topic_property_->show();
+      image_transport_hints_property_->show();
     }
     else {
       image_topic_property_->hide();
+      image_transport_hints_property_->hide();
     }
     updateImageTopic();
   }
