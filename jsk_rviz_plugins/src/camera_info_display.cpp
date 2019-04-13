@@ -581,6 +581,8 @@ namespace jsk_rviz_plugins
     if (use_image_) {
       std::string topic = image_topic_property_->getStdString();
       subscribeImage(topic);
+    } else {
+      image_sub_.shutdown();
     }
   }
 
