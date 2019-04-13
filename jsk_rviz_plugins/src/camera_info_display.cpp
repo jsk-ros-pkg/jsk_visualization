@@ -366,8 +366,8 @@ namespace jsk_rviz_plugins
     if (use_image_ && !image_.empty() &&
         bottom_texture_->getHeight() == image_.rows &&
         bottom_texture_->getWidth() == image_.cols) {
-      ROS_DEBUG("bottom_texture_->getHeight(): %lu", bottom_texture_->getHeight());
-      ROS_DEBUG("bottom_texture_->getWidth(): %lu", bottom_texture_->getWidth());
+      ROS_DEBUG("bottom_texture_->getHeight(): %u", bottom_texture_->getHeight());
+      ROS_DEBUG("bottom_texture_->getWidth(): %u", bottom_texture_->getWidth());
       ROS_DEBUG("image_.rows: %d", image_.rows);
       ROS_DEBUG("image_.cols: %d", image_.cols);
 
