@@ -583,6 +583,7 @@ namespace jsk_rviz_plugins
       subscribeImage(topic);
     } else {
       image_sub_.shutdown();
+      // Set image_updated_ true in order to clear the bottom texture in update() method.
       image_updated_ = true;
     }
   }
