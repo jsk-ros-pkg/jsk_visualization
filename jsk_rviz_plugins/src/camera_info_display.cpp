@@ -34,6 +34,7 @@
  *********************************************************************/
 
 #include <rviz/uniform_string_stream.h>
+#include <image_transport/image_transport.h>
 #include "camera_info_display.h"
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreMaterial.h>
@@ -136,6 +137,12 @@ namespace jsk_rviz_plugins
       "sensor_msgs::Image topic to subscribe to.",
       this, SLOT( updateImageTopic() ));
     image_topic_property_->hide();
+    image_transport_hints_property_ = new ImageTransportHintsProperty(
+      "transport hints",
+      "transport hint for image subscription",
+      this, SLOT( updateImageTopic() ));
+    image_transport_hints_property_->hide();
+
     color_property_ = new rviz::ColorProperty(
       "color",
       QColor(85, 255, 255),
@@ -350,8 +357,9 @@ namespace jsk_rviz_plugins
       ROS_WARN("topic name is empty");
     }
     ros::NodeHandle nh;
-    image_sub_ = nh.subscribe(topic, 1, 
-                              &CameraInfoDisplay::imageCallback, this);
+    image_transport::ImageTransport it(nh);
+    image_sub_ = it.subscribe(topic, 1, &CameraInfoDisplay::imageCallback, this,
+                              image_transport_hints_property_->getTransportHints());
   }
   
   void CameraInfoDisplay::drawImageTexture()
@@ -589,10 +597,12 @@ namespace jsk_rviz_plugins
     use_image_ = use_image_property_->getBool();
     if (use_image_) {
       image_topic_property_->show();
+      image_transport_hints_property_->show();
       updateImageTopic();
     }
     else {
       image_topic_property_->hide();
+      image_transport_hints_property_->hide();
     }
   }
   void CameraInfoDisplay::updateNotShowSidePolygons()
