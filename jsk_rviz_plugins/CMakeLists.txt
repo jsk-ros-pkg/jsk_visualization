@@ -110,6 +110,7 @@ set(HEADER_FILES
   src/tf_trajectory_display.h
   src/yes_no_button_interface.h
   src/segment_array_display.h
+  src/image_transport_hints_property.h
 )
 
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -164,6 +165,7 @@ set(SOURCE_FILES
   src/tf_trajectory_display.cpp
   src/yes_no_button_interface.cpp
   src/segment_array_display.cpp
+  src/image_transport_hints_property.cpp
   ${MOC_FILES}
 )
 
