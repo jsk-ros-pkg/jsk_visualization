@@ -58,6 +58,13 @@ namespace jsk_rviz_plugins
       ros::message_traits::datatype<sensor_msgs::Image>(),
       "sensor_msgs::Image topic to subscribe to.",
       this, SLOT( updateTopic() ));
+    transport_hint_property_ = new rviz::EditableEnumProperty("transport hint", "raw",
+                                                              "transport hint to subscribe topic",
+                                                              this, SLOT(updateTopic()));
+    transport_hint_property_->addOptionStd("raw");
+    // whell known image transports
+    transport_hint_property_->addOptionStd("compressed");
+    transport_hint_property_->addOptionStd("theora");
     keep_aspect_ratio_property_ = new rviz::BoolProperty("keep aspect ratio", false,
                                                          "keep aspect ratio of original image",
                                                          this, SLOT(updateKeepAspectRatio()));
@@ -81,6 +88,7 @@ namespace jsk_rviz_plugins
   OverlayImageDisplay::~OverlayImageDisplay()
   {
     delete update_topic_property_;
+    delete transport_hint_property_;
     delete keep_aspect_ratio_property_;
     delete width_property_;
     delete height_property_;
@@ -88,12 +96,12 @@ namespace jsk_rviz_plugins
     delete top_property_;
     delete alpha_property_;
   }
-  
+
   void OverlayImageDisplay::onInitialize()
   {
     ros::NodeHandle nh;
     it_ = std::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
-    
+
     updateWidth();
     updateHeight();
     updateKeepAspectRatio();
@@ -102,7 +110,7 @@ namespace jsk_rviz_plugins
     updateAlpha();
     updateTopic();
   }
-  
+
   void OverlayImageDisplay::onEnable()
   {
     if (overlay_) {
@@ -130,7 +138,9 @@ namespace jsk_rviz_plugins
       std::string topic_name = update_topic_property_->getTopicStd();
 
       if (topic_name.length() > 0 && topic_name != "/") {
-        sub_ = it_->subscribe(topic_name, 1, &OverlayImageDisplay::processMessage, this);
+        const image_transport::TransportHints transport_hint(transport_hint_property_->getStdString());
+        sub_ = it_->subscribe(topic_name, 1, &OverlayImageDisplay::processMessage, this,
+                              transport_hint);
       }
     }
   }
@@ -148,7 +158,7 @@ namespace jsk_rviz_plugins
       updateHeight();
     }
   }
-  
+
 
   void OverlayImageDisplay::update(float wall_dt, float ros_dt)
   {
@@ -157,7 +167,7 @@ namespace jsk_rviz_plugins
     if (!isEnabled()) {
       return;
     }
-    
+
     if (require_update_ && is_msg_available_) {
       if (!overlay_) {
         static int count = 0;
@@ -261,14 +271,14 @@ namespace jsk_rviz_plugins
     }
 
   }
-  
+
   void OverlayImageDisplay::updateWidth()
   {
     boost::mutex::scoped_lock lock(mutex_);
     width_ = width_property_->getInt();
     require_update_ = true;
   }
-  
+
   void OverlayImageDisplay::updateHeight()
   {
     boost::mutex::scoped_lock lock(mutex_);
@@ -287,7 +297,7 @@ namespace jsk_rviz_plugins
     boost::mutex::scoped_lock lock(mutex_);
     left_ = left_property_->getInt();
   }
-  
+
   void OverlayImageDisplay::updateAlpha()
   {
     boost::mutex::scoped_lock lock(mutex_);
@@ -318,7 +328,7 @@ namespace jsk_rviz_plugins
     top_property_->setValue(y);
     left_property_->setValue(x);
   }
-  
+
 }
 
 #include <pluginlib/class_list_macros.h>
