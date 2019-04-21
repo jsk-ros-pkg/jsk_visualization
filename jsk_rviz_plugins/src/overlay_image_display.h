@@ -53,6 +53,7 @@
 #include <sensor_msgs/Image.h>
 
 #include "overlay_utils.h"
+#include "image_transport_hints_property.h"
 #endif
 
 namespace jsk_rviz_plugins
@@ -75,7 +76,7 @@ namespace jsk_rviz_plugins
     boost::mutex mutex_;
     OverlayObject::Ptr overlay_;
     rviz::RosTopicProperty* update_topic_property_;
-    rviz::EditableEnumProperty* transport_hint_property_;
+    ImageTransportHintsProperty* transport_hint_property_;
     rviz::BoolProperty* keep_aspect_ratio_property_;
     rviz::IntProperty* width_property_;
     rviz::IntProperty* height_property_;
