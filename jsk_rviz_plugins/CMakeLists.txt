@@ -119,6 +119,7 @@ set(HEADER_FILES
   src/segment_array_display.h
   src/image_transport_hints_property.h
   src/string_display.h
+  src/human_skelton_array_display.h
 )
 
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -176,6 +177,7 @@ set(SOURCE_FILES
   src/segment_array_display.cpp
   src/image_transport_hints_property.cpp
   src/string_display.cpp
+  src/human_skelton_array_display.cpp
   ${MOC_FILES}
 )
 
