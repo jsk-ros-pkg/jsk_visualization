@@ -33,11 +33,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef JSK_RVIZ_PLUGINS_HUMAN_SKELTON_ARRAY_DISPLAY_H_
-#define JSK_RVIZ_PLUGINS_HUMAN_SKELTON_ARRAY_DISPLAY_H_
+#ifndef JSK_RVIZ_PLUGINS_HUMAN_SKELETON_ARRAY_DISPLAY_H_
+#define JSK_RVIZ_PLUGINS_HUMAN_SKELETON_ARRAY_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
-#include <jsk_recognition_msgs/HumanSkeltonArray.h>
+#include <jsk_recognition_msgs/HumanSkeletonArray.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
@@ -51,21 +51,21 @@
 
 namespace jsk_rviz_plugins
 {
-  class HumanSkeltonArrayDisplay:
-    public rviz::MessageFilterDisplay<jsk_recognition_msgs::HumanSkeltonArray>
+  class HumanSkeletonArrayDisplay:
+    public rviz::MessageFilterDisplay<jsk_recognition_msgs::HumanSkeletonArray>
   {
     Q_OBJECT
   public:
     typedef std::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
-    HumanSkeltonArrayDisplay();
-    virtual ~HumanSkeltonArrayDisplay();
+    HumanSkeletonArrayDisplay();
+    virtual ~HumanSkeletonArrayDisplay();
   protected:
     virtual void onInitialize();
     virtual void reset();
     void allocateBillboardLines(int num);
     QColor getColor(size_t index);
     virtual void showEdges(
-      const jsk_recognition_msgs::HumanSkeltonArray::ConstPtr& msg);
+      const jsk_recognition_msgs::HumanSkeletonArray::ConstPtr& msg);
 
     rviz::EnumProperty* coloring_property_;
     rviz::ColorProperty* color_property_;
@@ -77,7 +77,7 @@ namespace jsk_rviz_plugins
     double line_width_;
     std::vector<BillboardLinePtr> edges_;
 
-    jsk_recognition_msgs::HumanSkeltonArray::ConstPtr latest_msg_;
+    jsk_recognition_msgs::HumanSkeletonArray::ConstPtr latest_msg_;
   private Q_SLOTS:
     void updateColor();
     void updateAlpha();
@@ -85,7 +85,7 @@ namespace jsk_rviz_plugins
     void updateLineWidth();
   private:
     void processMessage(
-      const jsk_recognition_msgs::HumanSkeltonArray::ConstPtr& msg);
+      const jsk_recognition_msgs::HumanSkeletonArray::ConstPtr& msg);
   };
 
 }
