@@ -32,11 +32,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "human_skelton_array_display.h"
+#include "human_skeleton_array_display.h"
 #include <jsk_topic_tools/color_utils.h>
 namespace jsk_rviz_plugins
 {
-  HumanSkeltonArrayDisplay::HumanSkeltonArrayDisplay()
+  HumanSkeletonArrayDisplay::HumanSkeletonArrayDisplay()
   {
     coloring_property_ = new rviz::EnumProperty(
       "coloring", "Auto",
@@ -59,14 +59,14 @@ namespace jsk_rviz_plugins
       this, SLOT(updateLineWidth()));
   }
 
-  HumanSkeltonArrayDisplay::~HumanSkeltonArrayDisplay()
+  HumanSkeletonArrayDisplay::~HumanSkeletonArrayDisplay()
   {
     delete color_property_;
     delete alpha_property_;
     delete coloring_property_;
   }
 
-  QColor HumanSkeltonArrayDisplay::getColor(size_t index)
+  QColor HumanSkeletonArrayDisplay::getColor(size_t index)
   {
     if (coloring_method_ == "auto") {
       std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(index);
@@ -80,7 +80,7 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void HumanSkeltonArrayDisplay::onInitialize()
+  void HumanSkeletonArrayDisplay::onInitialize()
   {
     MFDClass::onInitialize();
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -91,7 +91,7 @@ namespace jsk_rviz_plugins
     updateLineWidth();
   }
 
-  void HumanSkeltonArrayDisplay::updateLineWidth()
+  void HumanSkeletonArrayDisplay::updateLineWidth()
   {
     line_width_ = line_width_property_->getFloat();
     if (latest_msg_) {
@@ -99,7 +99,7 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void HumanSkeltonArrayDisplay::updateColor()
+  void HumanSkeletonArrayDisplay::updateColor()
   {
     color_ = color_property_->getColor();
     if (latest_msg_) {
@@ -107,7 +107,7 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void HumanSkeltonArrayDisplay::updateAlpha()
+  void HumanSkeletonArrayDisplay::updateAlpha()
   {
     alpha_ = alpha_property_->getFloat();
     if (latest_msg_) {
@@ -115,7 +115,7 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void HumanSkeltonArrayDisplay::updateColoring()
+  void HumanSkeletonArrayDisplay::updateColoring()
   {
     if (coloring_property_->getOptionInt() == 0) {
       coloring_method_ = "auto";
@@ -131,14 +131,14 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void HumanSkeltonArrayDisplay::reset()
+  void HumanSkeletonArrayDisplay::reset()
   {
     MFDClass::reset();
     edges_.clear();
     latest_msg_.reset();
   }
 
-  void HumanSkeltonArrayDisplay::allocateBillboardLines(int num)
+  void HumanSkeletonArrayDisplay::allocateBillboardLines(int num)
   {
     if (num > edges_.size()) {
       for (size_t i = edges_.size(); i < num; i++) {
@@ -153,18 +153,18 @@ namespace jsk_rviz_plugins
       }
   }
 
-  void HumanSkeltonArrayDisplay::showEdges(
-    const jsk_recognition_msgs::HumanSkeltonArray::ConstPtr& msg)
+  void HumanSkeletonArrayDisplay::showEdges(
+    const jsk_recognition_msgs::HumanSkeletonArray::ConstPtr& msg)
   {
     int line_num = 0;
-    for (size_t i = 0; i < msg->skeltons.size(); i++) {
-      line_num = line_num + msg->skeltons[i].bones.size();
+    for (size_t i = 0; i < msg->skeletons.size(); i++) {
+      line_num = line_num + msg->skeletons[i].bones.size();
     }
     allocateBillboardLines(line_num);
     int line_i = 0;
-    for (size_t i = 0; i < msg->skeltons.size(); i++) {
-      for (size_t j = 0; j < msg->skeltons[i].bones.size(); j++) {
-        jsk_recognition_msgs::Segment edge_msg = msg->skeltons[i].bones[j];
+    for (size_t i = 0; i < msg->skeletons.size(); i++) {
+      for (size_t j = 0; j < msg->skeletons[i].bones.size(); j++) {
+        jsk_recognition_msgs::Segment edge_msg = msg->skeletons[i].bones[j];
         BillboardLinePtr edge = edges_[line_i];
         edge->clear();
 
@@ -202,8 +202,8 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void HumanSkeltonArrayDisplay::processMessage(
-    const jsk_recognition_msgs::HumanSkeltonArray::ConstPtr& msg)
+  void HumanSkeletonArrayDisplay::processMessage(
+    const jsk_recognition_msgs::HumanSkeletonArray::ConstPtr& msg)
   {
     // Store latest message
     latest_msg_ = msg;
@@ -214,4 +214,4 @@ namespace jsk_rviz_plugins
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(
-  jsk_rviz_plugins::HumanSkeltonArrayDisplay, rviz::Display)
+  jsk_rviz_plugins::HumanSkeletonArrayDisplay, rviz::Display)

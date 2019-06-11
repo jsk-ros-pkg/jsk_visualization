@@ -237,11 +237,11 @@
     </description>
   </class>
 
-  <class name="jsk_rviz_plugin/HumanSkeltonArray"
-         type="jsk_rviz_plugins::HumanSkeltonArrayDisplay"
+  <class name="jsk_rviz_plugin/HumanSkeletonArray"
+         type="jsk_rviz_plugins::HumanSkeletonArrayDisplay"
          base_class_type="rviz::Display">
     <description>
-      visualize jsk_recognition_msgs/HumanSkeltonArray
+      visualize jsk_recognition_msgs/HumanSkeletonArray
     </description>
   </class>
 
