@@ -64,7 +64,11 @@ namespace jsk_rviz_plugins
   class TrianglePolygon
   {
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<TrianglePolygon> Ptr;
+#else
+    typedef boost::shared_ptr<TrianglePolygon> Ptr;
+#endif
     TrianglePolygon(Ogre::SceneManager* manager,
                     Ogre::SceneNode* node,
                     const cv::Point3d& O,
@@ -87,8 +91,13 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<rviz::Shape> ShapePtr;
     typedef std::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
+#else
+    typedef boost::shared_ptr<rviz::Shape> ShapePtr;
+    typedef boost::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
+#endif
     CameraInfoDisplay();
     virtual ~CameraInfoDisplay();
     

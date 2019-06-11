@@ -57,7 +57,11 @@ namespace jsk_rviz_plugins
   class SquareObject
   {
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<SquareObject> Ptr;
+#else
+    typedef boost::shared_ptr<SquareObject> Ptr;
+#endif
     SquareObject(Ogre::SceneManager* manager,
                  double outer_radius,
                  double inner_radius,
@@ -86,7 +90,11 @@ namespace jsk_rviz_plugins
   class TextureObject           // utility class for texture
   {
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<TextureObject> Ptr;
+#else
+    typedef boost::shared_ptr<TextureObject> Ptr;
+#endif
     TextureObject(const int width, const int height, const std::string name);
     virtual ~TextureObject();
     virtual int getWidth() { return width_; };
@@ -106,7 +114,11 @@ namespace jsk_rviz_plugins
   class FacingObject
   {
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<FacingObject> Ptr;
+#else
+    typedef boost::shared_ptr<FacingObject> Ptr;
+#endif
     FacingObject(Ogre::SceneManager* manager,
                  Ogre::SceneNode* parent,
                  double size);
@@ -137,7 +149,11 @@ namespace jsk_rviz_plugins
   class SimpleCircleFacingVisualizer: public FacingObject
   {
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<SimpleCircleFacingVisualizer> Ptr;
+#else
+    typedef boost::shared_ptr<SimpleCircleFacingVisualizer> Ptr;
+#endif
     SimpleCircleFacingVisualizer(Ogre::SceneManager* manager,
                                  Ogre::SceneNode* parent,
                                  rviz::DisplayContext* context,
@@ -184,7 +200,11 @@ namespace jsk_rviz_plugins
   class FacingTexturedObject: public FacingObject
   {
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<FacingTexturedObject> Ptr;
+#else
+    typedef boost::shared_ptr<FacingTexturedObject> Ptr;
+#endif
     FacingTexturedObject(Ogre::SceneManager* manager,
                          Ogre::SceneNode* parent,
                          double size);
@@ -200,7 +220,11 @@ namespace jsk_rviz_plugins
   class GISCircleVisualizer: public FacingTexturedObject
   {
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<GISCircleVisualizer> Ptr;
+#else
+    typedef boost::shared_ptr<GISCircleVisualizer> Ptr;
+#endif
     GISCircleVisualizer(Ogre::SceneManager* manager,
                         Ogre::SceneNode* parent,
                         double size,

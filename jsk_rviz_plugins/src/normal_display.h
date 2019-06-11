@@ -56,7 +56,12 @@ protected:
 
   virtual void reset();
 
+#if ROS_VERSION_MINIMUM(1,12,0)
   boost::circular_buffer<std::shared_ptr<NormalVisual> > visuals_;
+#else
+  boost::circular_buffer<boost::shared_ptr<NormalVisual> > visuals_;
+#endif
+
 
   // Function to handle an incoming ROS message.
 private Q_SLOTS:
