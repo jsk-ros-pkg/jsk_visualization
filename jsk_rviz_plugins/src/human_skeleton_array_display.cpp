@@ -138,6 +138,20 @@ namespace jsk_rviz_plugins
     latest_msg_.reset();
   }
 
+  void HumanSkeletonArrayDisplay::allocateSpheres(int num) {
+    if (num > shapes_.size()) {
+      for (size_t i = shapes_.size(); i < num; i++) {
+        ShapePtr shape;
+        shape.reset(new rviz::Shape(rviz::Shape::Sphere, context_->getSceneManager(),
+                                    scene_node_));
+        shapes_.push_back(shape);
+      }
+    }
+    else if (num < shapes_.size()) {
+      shapes_.resize(num);
+    }
+  }
+
   void HumanSkeletonArrayDisplay::allocateBillboardLines(int num)
   {
     if (num > edges_.size()) {
@@ -161,11 +175,14 @@ namespace jsk_rviz_plugins
       line_num = line_num + msg->skeletons[i].bones.size();
     }
     allocateBillboardLines(line_num);
+    allocateSpheres(2 * line_num);
     int line_i = 0;
     for (size_t i = 0; i < msg->skeletons.size(); i++) {
       for (size_t j = 0; j < msg->skeletons[i].bones.size(); j++) {
         jsk_recognition_msgs::Segment edge_msg = msg->skeletons[i].bones[j];
         BillboardLinePtr edge = edges_[line_i];
+        ShapePtr start_shape = shapes_[2 * line_i];
+        ShapePtr end_shape = shapes_[2 * line_i + 1];
         edge->clear();
 
         geometry_msgs::Pose start_pose_local;
@@ -197,6 +214,25 @@ namespace jsk_rviz_plugins
                        color.green() / 255.0,
                        color.blue() / 255.0,
                        alpha_);
+
+        Ogre::Vector3 scale;
+        scale[0] = 2.0 * line_width_;
+        scale[1] = 2.0 * line_width_;
+        scale[2] = 2.0 * line_width_;
+        start_shape->setPosition(start_point);
+        start_shape->setScale(scale);
+        start_shape->setOrientation(quaternion);
+        start_shape->setColor(color.red() / 255.0,
+                              color.green() / 255.0,
+                              color.blue() / 255.0,
+                              alpha_);
+        end_shape->setPosition(end_point);
+        end_shape->setScale(scale);
+        end_shape->setOrientation(quaternion);
+        end_shape->setColor(color.red() / 255.0,
+                            color.green() / 255.0,
+                            color.blue() / 255.0,
+                            alpha_);
         line_i++;
       }
     }
