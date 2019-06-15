@@ -57,11 +57,13 @@ namespace jsk_rviz_plugins
     Q_OBJECT
   public:
     typedef std::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
+    typedef std::shared_ptr<rviz::Shape> ShapePtr;
     HumanSkeletonArrayDisplay();
     virtual ~HumanSkeletonArrayDisplay();
   protected:
     virtual void onInitialize();
     virtual void reset();
+    void allocateSpheres(int num);
     void allocateBillboardLines(int num);
     QColor getColor(size_t index);
     virtual void showEdges(
@@ -76,6 +78,7 @@ namespace jsk_rviz_plugins
     std::string coloring_method_;
     double line_width_;
     std::vector<BillboardLinePtr> edges_;
+    std::vector<ShapePtr> shapes_;
 
     jsk_recognition_msgs::HumanSkeletonArray::ConstPtr latest_msg_;
   private Q_SLOTS:
