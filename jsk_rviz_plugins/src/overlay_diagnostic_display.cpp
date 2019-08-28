@@ -148,8 +148,13 @@ namespace jsk_rviz_plugins
     for (size_t i = 0; i < msg->status.size(); i++) {
       diagnostic_msgs::DiagnosticStatus status = msg->status[i];
       if (status.name == diagnostics_namespace_) {
+#if ROS_VERSION_MINIMUM(1,12,0)
         latest_status_
           = std::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
+#else
+        latest_status_
+          = boost::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
+#endif
         latest_message_time_ = ros::WallTime::now();
         break;
       }

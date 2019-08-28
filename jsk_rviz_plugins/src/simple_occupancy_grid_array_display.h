@@ -54,7 +54,11 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<rviz::PointCloud> PointCloudPtr;
+#else
+    typedef boost::shared_ptr<rviz::PointCloud> PointCloudPtr;
+#endif
     SimpleOccupancyGridArrayDisplay();
     virtual ~SimpleOccupancyGridArrayDisplay();
   protected:

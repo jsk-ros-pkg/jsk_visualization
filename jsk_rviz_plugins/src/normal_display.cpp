@@ -232,7 +232,11 @@ namespace jsk_rviz_plugins
 
         if (validateFloats(Ogre::Vector3(x, y, z)) && validateFloats(Ogre::Vector3(normal_x, normal_y, normal_z)))
           {
+#if ROS_VERSION_MINIMUM(1,12,0)
             std::shared_ptr<NormalVisual> visual;
+#else
+            boost::shared_ptr<NormalVisual> visual;
+#endif
             if(visuals_.full()){
               visual = visuals_.front();
             }else{

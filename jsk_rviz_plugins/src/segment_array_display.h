@@ -56,7 +56,11 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
+#else
+    typedef boost::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
+#endif
     SegmentArrayDisplay();
     virtual ~SegmentArrayDisplay();
   protected:
