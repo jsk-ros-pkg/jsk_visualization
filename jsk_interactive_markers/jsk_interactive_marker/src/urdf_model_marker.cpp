@@ -1409,7 +1409,6 @@ bool UrdfModelMarker::unlockJointStates(std_srvs::EmptyRequest& req,
 void UrdfModelMarker::updateDiagnostic(
   diagnostic_updater::DiagnosticStatusWrapper &stat)
 {
-  boost::mutex::scoped_lock(mutex_);
   stat.summary(diagnostic_msgs::DiagnosticStatus::OK, "UrdfModelMarker running");
   stat.add("Time to set dynamic tf (Avg.)",
            dynamic_tf_check_time_acc_.mean());
