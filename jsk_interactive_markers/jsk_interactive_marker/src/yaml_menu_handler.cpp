@@ -3,7 +3,6 @@
 
 using namespace jsk_interactive_marker;
 YamlMenuHandler::YamlMenuHandler(ros::NodeHandle* node_ptr, std::string file_name) {
-  ROS_INFO("hoge %s ", file_name.c_str());
   _node_ptr = node_ptr;
   initMenu(file_name);
 }
