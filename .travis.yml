@@ -18,7 +18,7 @@ notifications:
   slack: jsk-robotics:Av7tc8wj3IWkLYvlTzHE7x2g
 env:
   global:
-    - ROS_PARALLEL_JOBS='-j2'
+    - ROS_PARALLEL_JOBS='-j4'
     - USE_JENKINS=false
     - USE_TRAVIS=true
     - USE_DOCKER=true
