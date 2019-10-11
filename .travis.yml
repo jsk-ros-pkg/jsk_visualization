@@ -1,8 +1,7 @@
 language: c++
 cache:
-  directories:
-    - $HOME/.ccache
-    - $HOME/.cache/pip
+  - ccache
+  - pip
 python:
   - "2.7"
 compiler:
