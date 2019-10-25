@@ -43,13 +43,19 @@
 #include <rviz/properties/float_property.h>
 #include <opencv2/opencv.hpp>
 
+#include <ros/ros.h>
+
 namespace jsk_rviz_plugins
 {
   class VideoCaptureDisplay: public rviz::Display
   {
     Q_OBJECT
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<VideoCaptureDisplay> Ptr;
+#else
+    typedef boost::shared_ptr<VideoCaptureDisplay> Ptr;
+#endif
     VideoCaptureDisplay();
     virtual ~VideoCaptureDisplay();
   protected:

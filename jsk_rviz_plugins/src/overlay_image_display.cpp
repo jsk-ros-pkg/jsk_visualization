@@ -96,7 +96,11 @@ namespace jsk_rviz_plugins
   void OverlayImageDisplay::onInitialize()
   {
     ros::NodeHandle nh;
+#if ROS_VERSION_MINIMUM(1,12,0)
     it_ = std::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
+#else
+    it_ = boost::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
+#endif
 
     updateWidth();
     updateHeight();

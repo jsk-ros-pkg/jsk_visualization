@@ -9,6 +9,7 @@
 #include <rviz/ogre_helpers/arrow.h>
 #include <geometry_msgs/Vector3.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <ros/ros.h>
 
 namespace jsk_rviz_plugins
 {
@@ -27,7 +28,11 @@ namespace jsk_rviz_plugins
     void setScale( float scale );
 
   private:
+#if ROS_VERSION_MINIMUM(1,12,0)
     std::shared_ptr<rviz::Arrow> normal_arrow_;
+#else
+    boost::shared_ptr<rviz::Arrow> normal_arrow_;
+#endif
     Ogre::SceneNode* frame_node_;
     Ogre::SceneManager* scene_manager_;
   };
