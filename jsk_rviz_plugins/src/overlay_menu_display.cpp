@@ -60,13 +60,24 @@ namespace jsk_rviz_plugins
       ros::message_traits::datatype<jsk_rviz_plugins::OverlayMenu>(),
       "jsk_rviz_plugins::OverlayMenu topic to subscribe to.",
       this, SLOT( updateTopic() ));
- 
+    left_property_ = new rviz::IntProperty("left", 128,
+                                           "left of the image window",
+                                           this, SLOT(updateLeft()));
+    top_property_ = new rviz::IntProperty("top", 128,
+                                          "top of the image window",
+                                          this, SLOT(updateTop()));
+    keep_centered_property_ = new rviz::BoolProperty("keep centered", true,
+                                                     "enable automatic center adjustment",
+                                                     this, SLOT(updateKeepCentered()));
   }
 
   OverlayMenuDisplay::~OverlayMenuDisplay()
   {
     onDisable();
     delete update_topic_property_;
+    delete left_property_;
+    delete top_property_;
+    delete keep_centered_property_;
   }
 
   void OverlayMenuDisplay::onInitialize()
@@ -330,13 +341,7 @@ namespace jsk_rviz_plugins
         }
       }
     }
-    overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
-    int window_width = context_->getViewManager()->getRenderPanel()->width();
-    int window_height = context_->getViewManager()->getRenderPanel()->height();
-    double window_left = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
-    double window_top = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
-    overlay_->setPosition(window_left, window_top);
-                          
+    setMenuLocation();
     current_menu_ = next_menu_;
   }
   
@@ -389,18 +394,72 @@ namespace jsk_rviz_plugins
       painter.end();
       current_menu_ = next_menu_;
     }
+    setMenuLocation();
+  }
+
+  void OverlayMenuDisplay::setMenuLocation()
+  {
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     int window_width = context_->getViewManager()->getRenderPanel()->width();
     int window_height = context_->getViewManager()->getRenderPanel()->height();
-    double window_left = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
-    double window_top = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
-    overlay_->setPosition(window_left, window_top);
+    if (keep_centered_)
+    {
+      left_ = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
+      top_ = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
+    }
+    left_ = std::max(0, std::min(window_width - (int)overlay_->getTextureWidth(), left_));
+    top_  = std::max(0, std::min(window_height - (int)overlay_->getTextureHeight(), top_));
+    overlay_->setPosition(left_, top_);
   }
   
   void OverlayMenuDisplay::updateTopic()
   {
+    boost::mutex::scoped_lock lock(mutex_);
     unsubscribe();
     subscribe();
+  }
+
+  void OverlayMenuDisplay::updateLeft()
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    left_ = left_property_->getInt();
+  }
+
+  void OverlayMenuDisplay::updateTop()
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    top_ = top_property_->getInt();
+  }
+
+  void OverlayMenuDisplay::updateKeepCentered()
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    keep_centered_ = keep_centered_property_->getBool();
+  }
+
+  bool OverlayMenuDisplay::isInRegion(int x, int y)
+  {
+    return (overlay_ && overlay_->isTextureReady() &&
+            top_ < y && top_ + overlay_->getTextureHeight() > y &&
+            left_ < x && left_ + overlay_->getTextureWidth() > x);
+  }
+
+  void OverlayMenuDisplay::movePosition(int x, int y)
+  {
+    if (!keep_centered_)
+    {
+      top_ = y;
+      left_ = x;
+    }
+  }
+
+  void OverlayMenuDisplay::setPosition(int x, int y)
+  {
+    if (!keep_centered_)
+    {
+      top_property_->setValue(y);
+      left_property_->setValue(x);
+    }
   }
 }
 

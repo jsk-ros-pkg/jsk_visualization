@@ -44,6 +44,8 @@
 #include <QPainter>
 
 #include <rviz/properties/ros_topic_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/bool_property.h>
 
 #include <jsk_rviz_plugins/OverlayMenu.h>
 
@@ -66,16 +68,30 @@ namespace jsk_rviz_plugins
       OPENING,
       CLOSING,
     };
-    
+
+    // methods for OverlayPickerTool
+    virtual bool isInRegion(int x, int y);
+    virtual void movePosition(int x, int y);
+    virtual void setPosition(int x, int y);
+    virtual int getX() { return left_; };
+    virtual int getY() { return top_; };
+
   protected:
+    boost::mutex mutex_;
     OverlayObject::Ptr overlay_;
     ros::Subscriber sub_;
     rviz::RosTopicProperty* update_topic_property_;
+    rviz::IntProperty* left_property_;
+    rviz::IntProperty* top_property_;
+    rviz::BoolProperty* keep_centered_property_;
     AnimationState animation_state_;
     bool require_update_texture_;
+    bool keep_centered_;
+    int left_, top_;
     jsk_rviz_plugins::OverlayMenu::ConstPtr current_menu_;
     jsk_rviz_plugins::OverlayMenu::ConstPtr next_menu_;
     double animation_t_;
+
     virtual void prepareOverlay();
     virtual void openingAnimation();
     virtual std::string getMenuString(
@@ -98,9 +114,12 @@ namespace jsk_rviz_plugins
     virtual void unsubscribe();
     virtual void processMessage
     (const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
+    virtual void setMenuLocation();
   protected Q_SLOTS:
     void updateTopic();
-    
+    void updateLeft();
+    void updateTop();
+    void updateKeepCentered();
   };
 
 }
