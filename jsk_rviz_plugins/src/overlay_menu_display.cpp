@@ -53,7 +53,8 @@ namespace jsk_rviz_plugins
   const int menu_padding_y = 5;
   const int menu_last_padding_y = 30;
   const double animate_duration = 0.2;
-  OverlayMenuDisplay::OverlayMenuDisplay() : Display()
+  OverlayMenuDisplay::OverlayMenuDisplay() : Display(),
+                                             require_update_texture_(false)
   {
     update_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "",
@@ -61,16 +62,36 @@ namespace jsk_rviz_plugins
       "jsk_rviz_plugins::OverlayMenu topic to subscribe to.",
       this, SLOT( updateTopic() ));
  
+    overtake_position_properties_property_ = new rviz::BoolProperty(
+      "Overtake Position Properties", false,
+      "overtake position properties specified by message such as left, top and font",
+      this, SLOT(updateOvertakePositionProperties()));
+    top_property_ = new rviz::IntProperty(
+      "top", -1,
+      "top position",
+      this, SLOT(updateTop()));
+    top_property_->setMin(-1);
+    left_property_ = new rviz::IntProperty(
+      "left", -1,
+      "left position",
+      this, SLOT(updateLeft()));
+    left_property_->setMin(-1);
   }
 
   OverlayMenuDisplay::~OverlayMenuDisplay()
   {
     onDisable();
     delete update_topic_property_;
+    delete overtake_position_properties_property_;
+    delete top_property_;
+    delete left_property_;
   }
 
   void OverlayMenuDisplay::onInitialize()
   {
+    updateOvertakePositionProperties();
+    updateTop();
+    updateLeft();
     require_update_texture_ = false;
     animation_state_ = CLOSED;
   }
@@ -331,10 +352,16 @@ namespace jsk_rviz_plugins
       }
     }
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
-    int window_width = context_->getViewManager()->getRenderPanel()->width();
-    int window_height = context_->getViewManager()->getRenderPanel()->height();
-    double window_left = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
-    double window_top = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
+    double window_left = left_;
+    if (window_left < 0) {
+      int window_width = context_->getViewManager()->getRenderPanel()->width();
+      window_left = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
+    }
+    double window_top = top_;
+    if (window_top < 0) {
+      int window_height = context_->getViewManager()->getRenderPanel()->height();
+      window_top = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
+    }
     overlay_->setPosition(window_left, window_top);
                           
     current_menu_ = next_menu_;
@@ -390,10 +417,16 @@ namespace jsk_rviz_plugins
       current_menu_ = next_menu_;
     }
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
-    int window_width = context_->getViewManager()->getRenderPanel()->width();
-    int window_height = context_->getViewManager()->getRenderPanel()->height();
-    double window_left = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
-    double window_top = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
+    double window_left = left_;
+    if (window_left < 0) {
+      int window_width = context_->getViewManager()->getRenderPanel()->width();
+      window_left = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
+    }
+    double window_top = top_;
+    if (window_top < 0) {
+      int window_height = context_->getViewManager()->getRenderPanel()->height();
+      window_top = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
+    }
     overlay_->setPosition(window_left, window_top);
   }
   
@@ -402,6 +435,43 @@ namespace jsk_rviz_plugins
     unsubscribe();
     subscribe();
   }
+
+  void OverlayMenuDisplay::updateOvertakePositionProperties()
+  {
+    if (!overtake_position_properties_ &&
+        overtake_position_properties_property_->getBool()) {
+      updateTop();
+      updateLeft();
+      require_update_texture_ = true;
+    }
+    overtake_position_properties_
+      = overtake_position_properties_property_->getBool();
+    if (overtake_position_properties_) {
+      top_property_->show();
+      left_property_->show();
+    }
+    else {
+      top_property_->hide();
+      left_property_->hide();
+    }
+  }
+
+  void OverlayMenuDisplay::updateTop()
+  {
+    top_ = top_property_->getInt();
+    if (overtake_position_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayMenuDisplay::updateLeft()
+  {
+    left_ = left_property_->getInt();
+    if (overtake_position_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
 }
 
 #include <pluginlib/class_list_macros.h>

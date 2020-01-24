@@ -44,6 +44,8 @@
 #include <QPainter>
 
 #include <rviz/properties/ros_topic_property.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/int_property.h>
 
 #include <jsk_rviz_plugins/OverlayMenu.h>
 
@@ -69,8 +71,17 @@ namespace jsk_rviz_plugins
     
   protected:
     OverlayObject::Ptr overlay_;
+    bool overtake_position_properties_;
+    int left_;
+    int top_;
+
     ros::Subscriber sub_;
+
     rviz::RosTopicProperty* update_topic_property_;
+    rviz::BoolProperty* overtake_position_properties_property_;
+    rviz::IntProperty* top_property_;
+    rviz::IntProperty* left_property_;
+
     AnimationState animation_state_;
     bool require_update_texture_;
     jsk_rviz_plugins::OverlayMenu::ConstPtr current_menu_;
@@ -100,7 +111,9 @@ namespace jsk_rviz_plugins
     (const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
   protected Q_SLOTS:
     void updateTopic();
-    
+    void updateOvertakePositionProperties();
+    void updateTop();
+    void updateLeft();
   };
 
 }
