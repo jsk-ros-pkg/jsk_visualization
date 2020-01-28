@@ -353,12 +353,12 @@ namespace jsk_rviz_plugins
     }
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     double window_left = left_;
-    if (window_left < 0) {
+    if (!overtake_position_properties_ || window_left < 0) {
       int window_width = context_->getViewManager()->getRenderPanel()->width();
       window_left = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
     }
     double window_top = top_;
-    if (window_top < 0) {
+    if (!overtake_position_properties_ || window_top < 0) {
       int window_height = context_->getViewManager()->getRenderPanel()->height();
       window_top = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
     }
@@ -418,12 +418,12 @@ namespace jsk_rviz_plugins
     }
     overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
     double window_left = left_;
-    if (window_left < 0) {
+    if (!overtake_position_properties_ || window_left < 0) {
       int window_width = context_->getViewManager()->getRenderPanel()->width();
       window_left = (window_width - (int)overlay_->getTextureWidth()) / 2.0;
     }
     double window_top = top_;
-    if (window_top < 0) {
+    if (!overtake_position_properties_ || window_top < 0) {
       int window_height = context_->getViewManager()->getRenderPanel()->height();
       window_top = (window_height - (int)overlay_->getTextureHeight()) / 2.0;
     }
