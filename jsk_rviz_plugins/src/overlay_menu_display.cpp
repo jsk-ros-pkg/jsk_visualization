@@ -63,9 +63,11 @@ namespace jsk_rviz_plugins
     left_property_ = new rviz::IntProperty("left", 128,
                                            "left of the image window",
                                            this, SLOT(updateLeft()));
+    left_property_->setMin(0);
     top_property_ = new rviz::IntProperty("top", 128,
                                           "top of the image window",
                                           this, SLOT(updateTop()));
+    top_property_->setMin(0);
     keep_centered_property_ = new rviz::BoolProperty("keep centered", true,
                                                      "enable automatic center adjustment",
                                                      this, SLOT(updateKeepCentered()));
@@ -82,6 +84,9 @@ namespace jsk_rviz_plugins
 
   void OverlayMenuDisplay::onInitialize()
   {
+    updateKeepCentered();
+    updateLeft();
+    updateTop();
     require_update_texture_ = false;
     animation_state_ = CLOSED;
   }
@@ -433,6 +438,11 @@ namespace jsk_rviz_plugins
 
   void OverlayMenuDisplay::updateKeepCentered()
   {
+    if (keep_centered_ &&
+        !keep_centered_property_->getBool()) {
+      updateLeft();
+      updateTop();
+    }
     boost::mutex::scoped_lock lock(mutex_);
     keep_centered_ = keep_centered_property_->getBool();
   }
