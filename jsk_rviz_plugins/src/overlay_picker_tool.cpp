@@ -49,6 +49,7 @@
 #include "pie_chart_display.h"
 #include "overlay_image_display.h"
 #include "overlay_diagnostic_display.h"
+#include "overlay_menu_display.h"
 
 namespace jsk_rviz_plugins
 {
@@ -112,6 +113,9 @@ namespace jsk_rviz_plugins
       else if (startMovement<OverlayDiagnosticDisplay>(property, event, "overlay_diagnostic_display")) {
         return true;
       }
+      else if (startMovement<OverlayMenuDisplay>(property, event, "overlay_menu_display")) {
+        return true;
+      }
       else {
         return false;
       }
@@ -149,6 +153,9 @@ namespace jsk_rviz_plugins
       else if (target_property_type_ == "overlay_diagnostic_display") {
         movePosition<OverlayDiagnosticDisplay>(event);
       }
+      else if (target_property_type_ == "overlay_menu_display") {
+        movePosition<OverlayMenuDisplay>(event);
+      }
     }
   }
   
@@ -172,6 +179,9 @@ namespace jsk_rviz_plugins
       }
       else if (target_property_type_ == "overlay_diagnostic_display") {
         setPosition<OverlayDiagnosticDisplay>(event);
+      }
+      else if (target_property_type_ == "overlay_menu_display") {
+        setPosition<OverlayMenuDisplay>(event);
       }
     }
     // clear cache
