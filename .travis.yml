@@ -25,7 +25,9 @@ env:
   matrix:
     - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
     - ROS_DISTRO=indigo USE_DEB=true
-    - ROS_DISTRO=kinetic USE_DEB=true
+    # FIXME: kinetic test fails because of matplotlib
+    # see: https://github.com/matplotlib/matplotlib/issues/9789
+    - ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --user matplotlib==2.2.5" USE_DEB=true
     - ROS_DISTRO=lunar   USE_DEB=true
     - ROS_DISTRO=melodic USE_DEB=true
 matrix:
