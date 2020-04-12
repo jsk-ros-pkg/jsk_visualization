@@ -50,6 +50,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <sensor_msgs/Image.h>
 #include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreTextureManager.h>
 #include <OGRE/OgreTexture.h>
 #include <cv_bridge/cv_bridge.h>

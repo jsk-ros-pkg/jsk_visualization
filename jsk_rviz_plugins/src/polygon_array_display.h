@@ -43,6 +43,7 @@
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/shape.h>
 
+#include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
