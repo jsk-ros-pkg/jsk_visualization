@@ -47,6 +47,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/arrow.h>
+#include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #endif
 
@@ -59,9 +60,15 @@ namespace jsk_rviz_plugins
 public:
     BoundingBoxDisplayCommon() {};
     ~BoundingBoxDisplayCommon() {};
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<rviz::Shape> ShapePtr;
     typedef std::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
     typedef std::shared_ptr<rviz::Arrow> ArrowPtr;
+#else
+    typedef boost::shared_ptr<rviz::Shape> ShapePtr;
+    typedef boost::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
+    typedef boost::shared_ptr<rviz::Arrow> ArrowPtr;
+#endif
 
 protected:
     QColor color_;

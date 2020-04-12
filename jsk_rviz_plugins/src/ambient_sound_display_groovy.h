@@ -10,6 +10,8 @@
 #include <rviz/message_filter_display.h>
 #endif
 
+#include <ros/ros.h>
+
 namespace Ogre
 {
 class SceneNode;
@@ -109,7 +111,11 @@ private:
   // adjustable history length, so we need one visual per history
   // item.
   //boost::circular_buffer<AmbientSoundVisual*> visuals_;
+#if ROS_VERSION_MINIMUM(1,12,0)
   boost::circular_buffer<std::shared_ptr<AmbientSoundVisual> > visuals_;
+#else
+  boost::circular_buffer<boost::shared_ptr<AmbientSoundVisual> > visuals_;
+#endif
 
   // A node in the Ogre scene tree to be the parent of all our visuals.
   //Ogre::SceneNode* scene_node_;

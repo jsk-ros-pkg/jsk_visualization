@@ -46,6 +46,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/mesh_shape.h>
 #include <rviz/ogre_helpers/arrow.h>
+#include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #endif
 
@@ -60,8 +61,13 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<rviz::Arrow> ArrowPtr;
     typedef std::shared_ptr<rviz::MeshShape> ShapePtr;
+#else
+    typedef boost::shared_ptr<rviz::Arrow> ArrowPtr;
+    typedef boost::shared_ptr<rviz::MeshShape> ShapePtr;
+#endif
     TorusArrayDisplay();
     virtual ~TorusArrayDisplay();
   protected:

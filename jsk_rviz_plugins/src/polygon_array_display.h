@@ -43,6 +43,7 @@
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/shape.h>
 
+#include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
@@ -53,6 +54,8 @@
 #include <rviz/ogre_helpers/arrow.h>
 #endif
 
+#include <ros/ros.h>
+
 namespace jsk_rviz_plugins
 {
   
@@ -61,7 +64,11 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<rviz::Arrow> ArrowPtr;
+#else
+    typedef boost::shared_ptr<rviz::Arrow> ArrowPtr;
+#endif
     PolygonArrayDisplay();
     virtual ~PolygonArrayDisplay();
   protected:

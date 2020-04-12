@@ -19,13 +19,13 @@ def allocatePublishers(num):
     global g_publishers
     if num > len(g_publishers):
         for i in range(len(g_publishers), num):
-            pub = rospy.Publisher('temperature_%02d' % (i), Float32)
+            pub = rospy.Publisher('temperature_%02d' % (i), Float32, queue_size=1)
             g_publishers.append(pub)
 def allocateEffortPublishers(names):
     global g_effort_publishers
     for name in names:
         if not g_effort_publishers.has_key(name):
-            g_effort_publishers[name] = rospy.Publisher('effort_%s' % (name), Float32)
+            g_effort_publishers[name] = rospy.Publisher('effort_%s' % (name), Float32, queue_size=1)
         
 def motorStatesCallback(msg):
     global g_publishers, g_text_publisher
@@ -75,7 +75,7 @@ def jointStatesCallback(msg):
 if __name__ == "__main__":
     rospy.init_node("motor_state_temperature_decomposer")
     robot_model = URDF.from_xml_string(rospy.get_param("/robot_description"))
-    g_text_publisher = rospy.Publisher("max_temparature_text", OverlayText)
+    g_text_publisher = rospy.Publisher("max_temparature_text", OverlayText, queue_size=1)
     s = rospy.Subscriber("/motor_states", MotorStates, motorStatesCallback, queue_size=1)
     s_joint_states = rospy.Subscriber("/joint_states", JointState, jointStatesCallback, queue_size=1)
     #s = rospy.Subscriber("joint_states", MotorStates, motorStatesCallback)

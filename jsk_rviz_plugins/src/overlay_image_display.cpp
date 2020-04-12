@@ -50,7 +50,7 @@ namespace jsk_rviz_plugins
 
   OverlayImageDisplay::OverlayImageDisplay()
     : Display(), width_(128), height_(128), left_(128), top_(128), alpha_(0.8),
-      is_msg_available_(false), require_update_(false)
+      is_msg_available_(false), require_update_(false), overwrite_alpha_(false)
   {
     // setup properties
     update_topic_property_ = new rviz::RosTopicProperty(
@@ -79,6 +79,10 @@ namespace jsk_rviz_plugins
     alpha_property_ = new rviz::FloatProperty("alpha", 0.8,
                                               "alpha belnding value",
                                               this, SLOT(updateAlpha()));
+    overwrite_alpha_property_ = new rviz::BoolProperty("overwrite alpha value", false,
+                                                       "overwrite alpha value by alpha property "
+                                                       "and ignore alpha channel of the image",
+                                                       this, SLOT(updateOverwriteAlpha()));
   }
 
   OverlayImageDisplay::~OverlayImageDisplay()
@@ -86,6 +90,7 @@ namespace jsk_rviz_plugins
     delete update_topic_property_;
     delete transport_hint_property_;
     delete keep_aspect_ratio_property_;
+    delete overwrite_alpha_property_;
     delete width_property_;
     delete height_property_;
     delete left_property_;
@@ -96,11 +101,16 @@ namespace jsk_rviz_plugins
   void OverlayImageDisplay::onInitialize()
   {
     ros::NodeHandle nh;
+#if ROS_VERSION_MINIMUM(1,12,0)
     it_ = std::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
+#else
+    it_ = boost::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
+#endif
 
     updateWidth();
     updateHeight();
     updateKeepAspectRatio();
+    updateOverwriteAlpha();
     updateTop();
     updateLeft();
     updateAlpha();
@@ -188,7 +198,6 @@ namespace jsk_rviz_plugins
 
   void OverlayImageDisplay::redraw()
   {
-    cv_bridge::CvImagePtr cv_ptr;
     try
     {
       if (msg_->width == 0 || msg_->height == 0) {
@@ -196,36 +205,35 @@ namespace jsk_rviz_plugins
         // but they are not when input image width/height is 0
         return;
       }
-      else if (msg_->encoding == sensor_msgs::image_encodings::RGBA8 ||
-          msg_->encoding == sensor_msgs::image_encodings::BGRA8) {
-        cv_ptr = cv_bridge::toCvCopy(msg_, sensor_msgs::image_encodings::RGBA8);
-        cv::Mat mat = cv_ptr->image;
-        ScopedPixelBuffer buffer = overlay_->getBuffer();
-        QImage Hud = buffer.getQImage(*overlay_);
-        for (int i = 0; i < overlay_->getTextureWidth(); i++) {
-          for (int j = 0; j < overlay_->getTextureHeight(); j++) {
-            QColor color(mat.data[j * mat.step + i * mat.elemSize() + 0],
-                         mat.data[j * mat.step + i * mat.elemSize() + 1],
-                         mat.data[j * mat.step + i * mat.elemSize() + 2],
-                         mat.data[j * mat.step + i * mat.elemSize() + 3]);
-            Hud.setPixel(i, j, color.rgba());
-          }
-        }
-      }
       else {
-        cv_ptr = cv_bridge::toCvCopy(msg_, sensor_msgs::image_encodings::RGB8);
-        cv::Mat mat = cv_ptr->image;
+        cv::Mat mat;  // mat should be BGRA8 image
+
+        if ((msg_->encoding == sensor_msgs::image_encodings::BGRA8 ||
+             msg_->encoding == sensor_msgs::image_encodings::RGBA8) &&
+            !overwrite_alpha_) {
+          const cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(
+                  msg_, sensor_msgs::image_encodings::BGRA8);
+          cv_ptr->image.copyTo(mat);
+        } else {
+            // If the image does not have alpha channel, use alpha_ value.
+            const cv_bridge::CvImagePtr cv_ptr =
+                    cv_bridge::toCvCopy(msg_, sensor_msgs::image_encodings::BGR8);
+            const cv::Mat bgr_image = cv_ptr->image;
+            std::vector<cv::Mat> channels;
+            // Split BGR image to each channel because cv::merge requires 4 images to create
+            // B-G-R-A image. The each 4 image represents each channel.
+            cv::split(bgr_image, channels);
+            // Create single alpha channel image
+            const cv::Mat alpha(bgr_image.rows, bgr_image.cols, CV_8UC1,
+                                cv::Scalar(alpha_ * 255.0));
+            channels.push_back(alpha);
+            cv::merge(channels, mat);
+        }
+
         ScopedPixelBuffer buffer = overlay_->getBuffer();
         QImage Hud = buffer.getQImage(*overlay_);
-        for (int i = 0; i < overlay_->getTextureWidth(); i++) {
-          for (int j = 0; j < overlay_->getTextureHeight(); j++) {
-            QColor color(mat.data[j * mat.step + i * mat.elemSize() + 0],
-                         mat.data[j * mat.step + i * mat.elemSize() + 1],
-                         mat.data[j * mat.step + i * mat.elemSize() + 2],
-                         alpha_ * 255.0);
-            Hud.setPixel(i, j, color.rgba());
-          }
-        }
+        // QImage created from ScopedPixelBuffer has no padding between each line.
+        memcpy(Hud.scanLine(0), mat.data, mat.cols * mat.rows * mat.elemSize());
       }
     }
     catch (cv_bridge::Exception& e)
@@ -305,6 +313,13 @@ namespace jsk_rviz_plugins
   {
     boost::mutex::scoped_lock lock(mutex_);
     keep_aspect_ratio_ = keep_aspect_ratio_property_->getBool();
+    require_update_ = true;
+  }
+
+  void OverlayImageDisplay::updateOverwriteAlpha()
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    overwrite_alpha_ = overwrite_alpha_property_->getBool();
     require_update_ = true;
   }
 

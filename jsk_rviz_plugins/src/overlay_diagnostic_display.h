@@ -115,7 +115,11 @@ namespace jsk_rviz_plugins
     boost::mutex mutex_;
     OverlayObject::Ptr overlay_;
     
+#if ROS_VERSION_MINIMUM(1,12,0)
     std::shared_ptr<diagnostic_msgs::DiagnosticStatus> latest_status_;
+#else
+    boost::shared_ptr<diagnostic_msgs::DiagnosticStatus> latest_status_;
+#endif
     State previous_state_;
     ros::WallTime latest_message_time_;
     ros::WallTime animation_start_time_;

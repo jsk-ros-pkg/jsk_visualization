@@ -44,6 +44,7 @@
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/movable_text.h>
+#include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #endif
 
@@ -75,7 +76,11 @@ namespace jsk_rviz_plugins
     rviz::BoolProperty* show_name_property_;
     rviz::BoolProperty* use_group_coloring_property_;
     jsk_footstep_msgs::FootstepArray::ConstPtr latest_footstep_;
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<rviz::Shape> ShapePtr;
+#else
+    typedef boost::shared_ptr<rviz::Shape> ShapePtr;
+#endif
     std::vector<ShapePtr> shapes_;
     std::vector<rviz::MovableText*> texts_;
     std::vector<Ogre::SceneNode*> text_nodes_;
