@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.6 (2020-04-13)
+------------------
 * Remove unnecessary ROS_INFO (`#755 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/755>`_)
 * Contributors: Yuto Uchimi
 

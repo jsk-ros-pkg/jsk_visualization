@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.6 (2020-04-13)
+------------------
 * [jsk_rviz_plugins] Add FontAwesome 5 (`#759 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/759>`_)
 
   * Display FontAwesome 5 icons from pictogram.py and pictogram_all.py

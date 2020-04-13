@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.6 (2020-04-13)
+------------------
 * fix test failure in jsk_rqt_plugins (`#766 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/766>`_)
 
   * disable jsk_rqt_plugins test in indigo
