@@ -2,6 +2,23 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix test failure in jsk_rqt_plugins (`#766 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/766>`_)
+
+  * disable jsk_rqt_plugins test in indigo
+    this is because indigo does not support matplotlib
+    liner_model.RANSACRegressor.
+
+* [jsk_rqt_plugins] load rosparam correctly in button_general.py (`#746 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/746>`_)
+* Replace image_pipeline with image_publisher (`#729 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/729>`_)
+
+  * Replace image_pipeline with image_publisher
+    * image_pipeline is a meta package and normal ros packages are not
+    intended to depend on meta packages.
+
+* Contributors: Ryohei Ueda, Shingo Kitagawa
+
 2.1.5 (2019-02-18)
 ------------------
 
