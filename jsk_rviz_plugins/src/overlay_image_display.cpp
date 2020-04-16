@@ -50,7 +50,7 @@ namespace jsk_rviz_plugins
 
   OverlayImageDisplay::OverlayImageDisplay()
     : Display(), width_(128), height_(128), left_(128), top_(128), alpha_(0.8),
-      is_msg_available_(false), require_update_(false)
+      is_msg_available_(false), require_update_(false), overwrite_alpha_(false)
   {
     // setup properties
     update_topic_property_ = new rviz::RosTopicProperty(
@@ -79,6 +79,10 @@ namespace jsk_rviz_plugins
     alpha_property_ = new rviz::FloatProperty("alpha", 0.8,
                                               "alpha belnding value",
                                               this, SLOT(updateAlpha()));
+    overwrite_alpha_property_ = new rviz::BoolProperty("overwrite alpha value", false,
+                                                       "overwrite alpha value by alpha property "
+                                                       "and ignore alpha channel of the image",
+                                                       this, SLOT(updateOverwriteAlpha()));
   }
 
   OverlayImageDisplay::~OverlayImageDisplay()
@@ -86,6 +90,7 @@ namespace jsk_rviz_plugins
     delete update_topic_property_;
     delete transport_hint_property_;
     delete keep_aspect_ratio_property_;
+    delete overwrite_alpha_property_;
     delete width_property_;
     delete height_property_;
     delete left_property_;
@@ -105,6 +110,7 @@ namespace jsk_rviz_plugins
     updateWidth();
     updateHeight();
     updateKeepAspectRatio();
+    updateOverwriteAlpha();
     updateTop();
     updateLeft();
     updateAlpha();
@@ -202,8 +208,9 @@ namespace jsk_rviz_plugins
       else {
         cv::Mat mat;  // mat should be BGRA8 image
 
-        if (msg_->encoding == sensor_msgs::image_encodings::BGRA8 ||
-            msg_->encoding == sensor_msgs::image_encodings::RGBA8) {
+        if ((msg_->encoding == sensor_msgs::image_encodings::BGRA8 ||
+             msg_->encoding == sensor_msgs::image_encodings::RGBA8) &&
+            !overwrite_alpha_) {
           const cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(
                   msg_, sensor_msgs::image_encodings::BGRA8);
           cv_ptr->image.copyTo(mat);
@@ -306,6 +313,13 @@ namespace jsk_rviz_plugins
   {
     boost::mutex::scoped_lock lock(mutex_);
     keep_aspect_ratio_ = keep_aspect_ratio_property_->getBool();
+    require_update_ = true;
+  }
+
+  void OverlayImageDisplay::updateOverwriteAlpha()
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    overwrite_alpha_ = overwrite_alpha_property_->getBool();
     require_update_ = true;
   }
 
