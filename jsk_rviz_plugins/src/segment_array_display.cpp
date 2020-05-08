@@ -78,6 +78,7 @@ namespace jsk_rviz_plugins
     else if (coloring_method_ == "flat") {
       return color_;
     }
+    return QColor(255, 255, 255, 255);
   }
 
   void SegmentArrayDisplay::onInitialize()

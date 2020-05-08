@@ -229,7 +229,7 @@ namespace jsk_rviz_plugins
       QImage Hud = buffer.getQImage(*overlay_, bg_color_);
       QPainter painter( &Hud );
       painter.setRenderHint(QPainter::Antialiasing, true);
-      painter.setPen(QPen(fg_color_, line_width_ || 1, Qt::SolidLine));
+      painter.setPen(QPen(fg_color_, std::max(line_width_,1), Qt::SolidLine));
       uint16_t w = overlay_->getTextureWidth();
       uint16_t h = overlay_->getTextureHeight();
 

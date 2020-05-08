@@ -155,7 +155,7 @@ namespace jsk_rviz_plugins
   void OverlayImageDisplay::processMessage(
     const sensor_msgs::Image::ConstPtr& msg)
   {
-    boost::mutex::scoped_lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
     msg_ = msg;
     is_msg_available_ = true;
     require_update_ = true;
@@ -169,7 +169,7 @@ namespace jsk_rviz_plugins
 
   void OverlayImageDisplay::update(float wall_dt, float ros_dt)
   {
-    boost::mutex::scoped_lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
 
     if (!isEnabled()) {
       return;

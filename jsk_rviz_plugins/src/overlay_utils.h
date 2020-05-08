@@ -101,7 +101,7 @@ namespace jsk_rviz_plugins
     virtual void hide();
     virtual void show();
     virtual bool isTextureReady();
-    virtual bool updateTextureSize(unsigned int width, unsigned int height);
+    virtual void updateTextureSize(unsigned int width, unsigned int height);
     virtual ScopedPixelBuffer getBuffer();
     virtual void setPosition(double left, double top);
     virtual void setDimensions(double width, double height);
