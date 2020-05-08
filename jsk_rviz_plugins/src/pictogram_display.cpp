@@ -61,10 +61,8 @@ namespace jsk_rviz_plugins
     if (id == -1) {
       ROS_WARN("failed to load font");
     }
-    else {
-      return id;
-    }
-  }  
+    return id;
+  }
   
   bool epsEqual(double a, double b)
   {
@@ -406,7 +404,7 @@ namespace jsk_rviz_plugins
 
   void PictogramDisplay::processMessage(const jsk_rviz_plugins::Pictogram::ConstPtr& msg)
   {
-    boost::mutex::scoped_lock (mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
 
     pictogram_->setEnable(isEnabled());
     if (!isEnabled()) {
@@ -437,7 +435,7 @@ namespace jsk_rviz_plugins
 
   void PictogramDisplay::update(float wall_dt, float ros_dt)
   {
-    boost::mutex::scoped_lock (mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
     if (pictogram_) {
       pictogram_->update(wall_dt, ros_dt);
     }

@@ -112,10 +112,8 @@ protected:
                         ros_color.b * 255.0,
                         ros_color.a * 255.0);
         }
-        else {
-          return QColor(255.0, 255.0, 255.0, 255.0);
-        }
       }
+      return QColor(255.0, 255.0, 255.0, 255.0);
     }
 
     bool isValidBoundingBox(
