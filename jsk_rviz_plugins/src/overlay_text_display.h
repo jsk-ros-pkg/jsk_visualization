@@ -66,14 +66,16 @@ namespace jsk_rviz_plugins
     virtual int getX() { return left_; };
     virtual int getY() { return top_; };
   protected:
-    OverlayObject::Ptr overlay_;
+    jsk_rviz_plugins::OverlayObject::Ptr overlay_;
 
     int texture_width_;
     int texture_height_;
     
-    bool overtake_color_properties_;
+    bool overtake_fg_color_properties_;
+    bool overtake_bg_color_properties_;
     bool overtake_position_properties_;
     bool align_bottom_;
+    bool invert_shadow_;
     QColor bg_color_;
     QColor fg_color_;
     int text_size_;
@@ -96,8 +98,10 @@ namespace jsk_rviz_plugins
     bool require_update_texture_;
     rviz::RosTopicProperty* update_topic_property_;
     rviz::BoolProperty* overtake_position_properties_property_;
-    rviz::BoolProperty* overtake_color_properties_property_;
+    rviz::BoolProperty* overtake_fg_color_properties_property_;
+    rviz::BoolProperty* overtake_bg_color_properties_property_;
     rviz::BoolProperty* align_bottom_property_;
+    rviz::BoolProperty* invert_shadow_property_;
     rviz::IntProperty* top_property_;
     rviz::IntProperty* left_property_;
     rviz::IntProperty* width_property_;
@@ -112,8 +116,10 @@ namespace jsk_rviz_plugins
   protected Q_SLOTS:
     void updateTopic();
     void updateOvertakePositionProperties();
-    void updateOvertakeColorProperties();
+    void updateOvertakeFGColorProperties();
+    void updateOvertakeBGColorProperties();
     void updateAlignBottom();
+    void updateInvertShadow();
     void updateTop();
     void updateLeft();
     void updateWidth();
