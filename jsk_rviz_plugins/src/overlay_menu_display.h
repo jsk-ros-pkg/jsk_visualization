@@ -46,7 +46,10 @@
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/bool_property.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/float_property.h>
 
+#include <std_msgs/ColorRGBA.h>
 #include <jsk_rviz_plugins/OverlayMenu.h>
 
 #include "overlay_utils.h"
@@ -84,6 +87,12 @@ namespace jsk_rviz_plugins
     rviz::IntProperty* left_property_;
     rviz::IntProperty* top_property_;
     rviz::BoolProperty* keep_centered_property_;
+    rviz::BoolProperty* overtake_fg_color_properties_property_;
+    rviz::BoolProperty* overtake_bg_color_properties_property_;
+    rviz::ColorProperty* bg_color_property_;
+    rviz::FloatProperty* bg_alpha_property_;
+    rviz::ColorProperty* fg_color_property_;
+    rviz::FloatProperty* fg_alpha_property_;
     AnimationState animation_state_;
     bool require_update_texture_;
     bool keep_centered_;
@@ -91,6 +100,10 @@ namespace jsk_rviz_plugins
     jsk_rviz_plugins::OverlayMenu::ConstPtr current_menu_;
     jsk_rviz_plugins::OverlayMenu::ConstPtr next_menu_;
     double animation_t_;
+    bool overtake_fg_color_properties_;
+    bool overtake_bg_color_properties_;
+    QColor bg_color_;
+    QColor fg_color_;
 
     virtual void prepareOverlay();
     virtual void openingAnimation();
@@ -120,6 +133,12 @@ namespace jsk_rviz_plugins
     void updateLeft();
     void updateTop();
     void updateKeepCentered();
+    void updateOvertakeFGColorProperties();
+    void updateOvertakeBGColorProperties();
+    void updateFGColor();
+    void updateFGAlpha();
+    void updateBGColor();
+    void updateBGAlpha();
   };
 
 }
