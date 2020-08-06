@@ -48,7 +48,11 @@
 # include <sensor_msgs/CameraInfo.h>
 
 # include <message_filters/subscriber.h>
+#if ROS_VERSION_MINIMUM(1, 15, 0) // noetic and greater
+# include <tf2_ros/message_filter.h>
+#else
 # include <tf/message_filter.h>
+#endif
 
 # include "rviz/image/image_display_base.h"
 # include "rviz/image/ros_image_texture.h"
@@ -139,7 +143,11 @@ private:
   Ogre::MaterialPtr fg_material_;
 
   message_filters::Subscriber<sensor_msgs::CameraInfo> caminfo_sub_;
+#if ROS_VERSION_MINIMUM(1, 15, 0) // noetic and greater
+  tf2_ros::MessageFilter<sensor_msgs::CameraInfo>* caminfo_tf_filter_;
+#else
   tf::MessageFilter<sensor_msgs::CameraInfo>* caminfo_tf_filter_;
+#endif
 
   FloatProperty* alpha_property_;
   EnumProperty* image_position_property_;
