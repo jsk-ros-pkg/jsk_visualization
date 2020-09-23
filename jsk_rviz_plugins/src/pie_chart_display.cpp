@@ -111,6 +111,11 @@ namespace jsk_rviz_plugins
                                 "only used if auto color change is set to True.",
                                 this, SLOT(updateMaxColor()));
 
+    clockwise_rotate_property_
+      = new rviz::BoolProperty("clockwise rotate direction",
+                               false,
+                               "change the rotate direction",
+                               this, SLOT(updateClockwiseRotate()));
   }
 
   PieChartDisplay::~PieChartDisplay()
@@ -154,6 +159,7 @@ namespace jsk_rviz_plugins
     updateShowCaption();
     updateAutoColorChange();
     updateMaxColor();
+    updateClockwiseRotate();
     overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
     overlay_->hide();
   }
@@ -236,7 +242,8 @@ namespace jsk_rviz_plugins
                           height - value_aabb_offset * 2 - caption_offset_);
 
       const double ratio = (val - min_value_) / (max_value_ - min_value_);
-      const double ratio_angle = ratio * 360.0;
+      const double rotate_direction = clockwise_rotate_ ? -1.0 : 1.0;
+      const double ratio_angle = ratio * 360.0 * rotate_direction;
       const double start_angle_offset = -90;
       painter.setPen(QPen(fg_color, value_line_width, Qt::SolidLine));
       painter.drawArc(QRectF(value_aabb_offset, value_aabb_offset,
@@ -387,7 +394,12 @@ namespace jsk_rviz_plugins
     max_color_ = max_color_property_->getColor();
   }
 
-  bool PieChartDisplay::isInRegion(int x, int y)
+  void PieChartDisplay::updateClockwiseRotate()
+  {
+    clockwise_rotate_ = clockwise_rotate_property_->getBool();
+  }
+
+   bool PieChartDisplay::isInRegion(int x, int y)
   {
     return (top_ < y && top_ + texture_size_ > y &&
             left_ < x && left_ + texture_size_ > x);
