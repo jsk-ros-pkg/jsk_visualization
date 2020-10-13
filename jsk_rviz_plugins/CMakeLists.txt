@@ -107,6 +107,7 @@ set(HEADER_FILES
   src/view_controller/tablet_view_controller.h
   src/tablet_controller_panel.h
   src/video_capture_display.h
+  src/rviz_scene_publisher.h
   src/twist_stamped_display.h
   src/pose_array_display.h
   src/tf_trajectory_display.h
@@ -162,6 +163,7 @@ set(SOURCE_FILES
   src/view_controller/tablet_view_controller.cpp
   src/tablet_controller_panel.cpp
   src/video_capture_display.cpp
+  src/rviz_scene_publisher.cpp
   src/twist_stamped_display.cpp
   src/pose_array_display.cpp
   src/tf_trajectory_display.cpp
