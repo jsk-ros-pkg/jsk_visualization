@@ -23,6 +23,7 @@ env:
     - USE_TRAVIS=true
     - USE_DOCKER=true
   matrix:
+    - CHECK_PYTHON3_COMPILE=true
     - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
     - ROS_DISTRO=indigo USE_DEB=true
     # FIXME: kinetic test fails because of matplotlib
@@ -35,6 +36,7 @@ matrix:
   allow_failures:
     - env: ROS_DISTRO=lunar   USE_DEB=true
 script:
+  - if [ "${CHECK_PYTHON3_COMPILE}" == "true" ]; then python3 -m compileall .; exit $?; fi
   - source .travis/travis.sh
   # test building sphinx documentation
   - which virtualenv 2>/dev/null || pip install --user virtualenv
