@@ -5,7 +5,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_rviz_plugins)
 if("$ENV{ROS_DISTRO}" STRGREATER "indigo")
-  add_compile_options(-std=c++11)
+  if("$ENV{ROS_DISTRO}" STRGREATER "melodic")
+    add_compile_options(-std=c++14)
+  else()
+    add_compile_options(-std=c++11)
+  endif()
 endif()
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
