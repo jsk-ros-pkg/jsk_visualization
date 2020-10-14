@@ -31,7 +31,7 @@ env:
     - ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --user matplotlib==2.2.5" USE_DEB=true
     - ROS_DISTRO=lunar   USE_DEB=true
     - ROS_DISTRO=melodic USE_DEB=true
-    - ROS_DISTRO=noetic  USE_DEB=true
+    - ROS_DISTRO=noetic  USE_DEB=true TEST_PKGS="jsk_rviz_plugins"
 matrix:
   allow_failures:
     - env: ROS_DISTRO=lunar   USE_DEB=true
