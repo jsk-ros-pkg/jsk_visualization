@@ -8,7 +8,7 @@ python:
 compiler:
   - gcc
 sudo: required
-dist: trusty
+dist: boinc
 services:
   - docker
 notifications:
@@ -23,17 +23,20 @@ env:
     - USE_TRAVIS=true
     - USE_DOCKER=true
   matrix:
-    - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
-    - ROS_DISTRO=indigo USE_DEB=true
+    - CHECK_PYTHON3_COMPILE=true
+    - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu' ROS_PYTHON_VERSION=2
+    - ROS_DISTRO=indigo USE_DEB=true ROS_PYTHON_VERSION=2
     # FIXME: kinetic test fails because of matplotlib
     # see: https://github.com/matplotlib/matplotlib/issues/9789
     - ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --user matplotlib==2.2.5" USE_DEB=true
     - ROS_DISTRO=lunar   USE_DEB=true
     - ROS_DISTRO=melodic USE_DEB=true
+    - ROS_DISTRO=noetic  USE_DEB=true TEST_PKGS="jsk_rviz_plugins"
 matrix:
   allow_failures:
     - env: ROS_DISTRO=lunar   USE_DEB=true
 script:
+  - if [ "${CHECK_PYTHON3_COMPILE}" == "true" ]; then python3 -m compileall .; exit $?; fi
   - source .travis/travis.sh
   # test building sphinx documentation
   - which virtualenv 2>/dev/null || pip install --user virtualenv
