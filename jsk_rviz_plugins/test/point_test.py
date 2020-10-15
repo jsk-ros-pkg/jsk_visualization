@@ -25,7 +25,7 @@ while not rospy.is_shutdown():
     msg.point.x = 2*sin(t);
     msg.point.y = 2*cos(t);
     msg.point.z = 0;
-    print msg
+    print(msg)
     pub.publish(msg);
     r.sleep()
     count += 1;
