@@ -2,6 +2,56 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.6 (2020-04-13)
+------------------
+* [jsk_rviz_plugins] Add FontAwesome 5 (`#759 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/759>`_)
+
+  * Display FontAwesome 5 icons from pictogram.py and pictogram_all.py
+  * Add FontAwesome 5
+  * Add property to set position of overlay menu
+
+* Add option to specify width and height in VideoCapture plugin (`#748 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/748>`_)
+* Add a script that convert String to OverlayText (`#753 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/753>`_)
+* fix build failure of OgreSceneManager this block latest Melodic builds (`#766 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/766>`_)
+* Add property to set position of overlay menu (`#758 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/758>`_)
+* [jsk_rviz_plugins/OverlayImage] Add property to ignore alpha channel of the image (`#752 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/752>`_)
+* [motor_states_temperature_decomposer.py] add queue_size (`#756 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/756>`_)
+* support jsk_rviz_plugin to be loaded in indigo (`#739 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/739>`_)
+* [jsk_rviz_plugins/OverlayImageDisplay] Use memcpy to copy image data (`#737 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/737>`_)
+
+  * Use memcpy to copy image data from cv::Mat to QImagee instead of use QImage::setPixel() many times for optimization.
+
+* Transport hint for camera info (`#736 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/736>`_)
+
+  * Add field to select transport hint of CameraInfo display
+    * Use ImageTransport to create subscriber to subscribe image topic in CameraInfoDisplay.
+    * Use ImageTransportHintsProperty to choose image transport hints when subscribing image topic to visualize sensor_msgs/CameraInfo.
+  * Use ImageTransportHintsProperty in OverlayImageDisplay class
+  * Add ImageTransportHintsProperty class
+    * ImageTransportHintsProperty is an rviz property class specialized for image_transport::TransportHints.
+
+* Add transport hint field to OverlayImage display (`#730 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/730>`_)
+
+  * Add transport hint field to OverlayImage display
+    * Add an editable enum field to specify transport hint on OverlayImage display.
+    * raw, compressed and theora are listed as pre-defined transport  hints.
+
+* Unsubscribe image topic when "use image" is unchecked in CameraInfo display (`#732 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/732>`_)
+* Fix format specifier (`#731 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/731>`_)
+
+  * Use %u instead of %lu to print Ogre::Texture::getWidth() and Ogre::Texture::getHeight() because they return uint32.
+
+* Do not subscribe image topic when rviz startups in OverlayImage display (`#733 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/733>`_)
+  * Do not subscribe image topic when rviz startups in OverlayImage display
+    * In order not to subscribe image topic when rviz startups with OverlayImage display disabled, always verify if the display is enabled before the display subscribes topic.
+  * Unsubscribe image topic when "use image" is unchecked in CameraInfo display
+
+* Support classification result visualization with approximate sync (`#725 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/725>`_)
+
+  * classification_result_visualizer: add option to use approximate synchronizer
+
+* Contributors: Yuki Furuta, Iki Yo, Naoki Mizuno, Naoki Hiraoka, Ryohei Ueda, Shingo Kitagawa, Yuto Uchimi, Iory Yanokura
+
 2.1.5 (2019-02-18)
 ------------------
 * [jsk_rviz_plugins] Add "Align Bottom" option to OverlayText (`#723 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/723>`_ )

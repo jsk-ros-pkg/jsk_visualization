@@ -4,7 +4,9 @@
 # http://ros.org/doc/groovy/api/catkin/html/user_guide/supposed.html
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_rviz_plugins)
-if("$ENV{ROS_DISTRO}" STRGREATER "indigo")
+if("$ENV{ROS_DISTRO}" STRGREATER "melodic")
+  add_compile_options(-std=c++14)
+else()
   add_compile_options(-std=c++11)
 endif()
 # Load catkin and all dependencies required for this package
@@ -107,6 +109,7 @@ set(HEADER_FILES
   src/view_controller/tablet_view_controller.h
   src/tablet_controller_panel.h
   src/video_capture_display.h
+  src/rviz_scene_publisher.h
   src/twist_stamped_display.h
   src/pose_array_display.h
   src/tf_trajectory_display.h
@@ -162,6 +165,7 @@ set(SOURCE_FILES
   src/view_controller/tablet_view_controller.cpp
   src/tablet_controller_panel.cpp
   src/video_capture_display.cpp
+  src/rviz_scene_publisher.cpp
   src/twist_stamped_display.cpp
   src/pose_array_display.cpp
   src/tf_trajectory_display.cpp

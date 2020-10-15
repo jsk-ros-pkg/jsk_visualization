@@ -17,7 +17,7 @@ rviz上に自由にロボットを配置し、可視化するには`moveit_msgs/
   * `/robot_description_semantic`
 
     moveitで利用される、マニピュレータ情報等を保持するパラメータ。一般には`srdf`というファイルで管理されることが多い。
-    仮想上院とを追加することができるため、これを利用してルートリンクに6自由度の仮想ジョイントを追加してrviz上にロボットを配置させる。
+    仮想ジョイントを追加することができるため、これを利用してルートリンクに6自由度の仮想ジョイントを追加してrviz上にロボットを配置させる。
 * topic
   * `Robot State Topic` (`moveit_msgs/DisplayRobotState`)
 

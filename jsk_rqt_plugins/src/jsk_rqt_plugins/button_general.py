@@ -210,7 +210,7 @@ class ServiceButtonGeneralWidget(QWidget):
         srv = rospy.ServiceProxy(service_name, Empty)
         try:
             srv()
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             self.showError("Failed to call %s" % service_name)
 
     def save_settings(self, plugin_settings, instance_settings):

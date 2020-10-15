@@ -66,14 +66,22 @@ namespace jsk_rviz_plugins
       "Overtake Position Properties", false,
       "overtake position properties specified by message such as left, top and font",
       this, SLOT(updateOvertakePositionProperties()));
-    overtake_color_properties_property_ = new rviz::BoolProperty(
-      "Overtake Color Properties", false,
-      "overtake color properties specified by message such as foreground/background color and alpha",
-      this, SLOT(updateOvertakeColorProperties()));
+    overtake_fg_color_properties_property_ = new rviz::BoolProperty(
+      "Overtake FG Color Properties", false,
+      "overtake color properties specified by message such as foreground color and alpha",
+      this, SLOT(updateOvertakeFGColorProperties()));
+    overtake_bg_color_properties_property_ = new rviz::BoolProperty(
+      "Overtake BG Color Properties", false,
+      "overtake color properties specified by message such as background color and alpha",
+      this, SLOT(updateOvertakeBGColorProperties()));
     align_bottom_property_ = new rviz::BoolProperty(
       "Align Bottom", false,
       "align text with the bottom of the overlay region",
       this, SLOT(updateAlignBottom()));
+    invert_shadow_property_ = new rviz::BoolProperty(
+      "Invert Shadow", false,
+      "make shadow lighter than original text",
+      this, SLOT(updateInvertShadow()));
     top_property_ = new rviz::IntProperty(
       "top", 0,
       "top position",
@@ -139,9 +147,11 @@ namespace jsk_rviz_plugins
     onDisable();
     //delete overlay_;
     delete update_topic_property_;
-    delete overtake_color_properties_property_;
+    delete overtake_fg_color_properties_property_;
+    delete overtake_bg_color_properties_property_;
     delete overtake_position_properties_property_;
     delete align_bottom_property_;
+    delete invert_shadow_property_;
     delete top_property_;
     delete left_property_;
     delete width_property_;
@@ -196,8 +206,10 @@ namespace jsk_rviz_plugins
     onEnable();
     updateTopic();
     updateOvertakePositionProperties();
-    updateOvertakeColorProperties();
+    updateOvertakeFGColorProperties();
+    updateOvertakeBGColorProperties();
     updateAlignBottom();
+    updateInvertShadow();
     updateTop();
     updateLeft();
     updateWidth();
@@ -225,11 +237,11 @@ namespace jsk_rviz_plugins
     }
     overlay_->updateTextureSize(texture_width_, texture_height_);
     {
-      ScopedPixelBuffer buffer = overlay_->getBuffer();
+      jsk_rviz_plugins::ScopedPixelBuffer buffer = overlay_->getBuffer();
       QImage Hud = buffer.getQImage(*overlay_, bg_color_);
       QPainter painter( &Hud );
       painter.setRenderHint(QPainter::Antialiasing, true);
-      painter.setPen(QPen(fg_color_, line_width_ || 1, Qt::SolidLine));
+      painter.setPen(QPen(fg_color_, std::max(line_width_,1), Qt::SolidLine));
       uint16_t w = overlay_->getTextureWidth();
       uint16_t h = overlay_->getTextureHeight();
 
@@ -242,17 +254,34 @@ namespace jsk_rviz_plugins
         painter.setFont(font);
       }
       if (text_.length() > 0) {
-        // painter.drawText(0, 0, w, h,
-        //                  Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
-        //                  text_.c_str());
-        std::string color_wrapped_text
+
+	QColor shadow_color;
+	if (invert_shadow_)
+	  shadow_color = Qt::white; //fg_color_.lighter();
+	else
+	  shadow_color = Qt::black; //fg_color_.darker();
+	shadow_color.setAlpha(fg_color_.alpha());
+	
+	std::string color_wrapped_text
           = (boost::format("<span style=\"color: rgba(%2%, %3%, %4%, %5%)\">%1%</span>")
              % text_ % fg_color_.red() % fg_color_.green() % fg_color_.blue() %
              fg_color_.alpha()).str();
+
+        std::string color_wrapped_shadow
+          = (boost::format("<span style=\"color: rgba(%2%, %3%, %4%, %5%)\">%1%</span>")
+             % text_ % shadow_color.red() % shadow_color.green() % shadow_color.blue() % shadow_color.alpha()).str();
+	
         QStaticText static_text(
           boost::algorithm::replace_all_copy(color_wrapped_text, "\n", "<br >").c_str());
         static_text.setTextWidth(w);
-        if (!align_bottom_) {
+
+	painter.setPen(QPen(shadow_color, std::max(line_width_,1), Qt::SolidLine));
+        QStaticText static_shadow(
+          boost::algorithm::replace_all_copy(color_wrapped_shadow, "\n", "<br >").c_str());
+        static_shadow.setTextWidth(w);
+
+	if (!align_bottom_) {
+	  painter.drawStaticText(1, 1, static_shadow);
           painter.drawStaticText(0, 0, static_text);
         } else {
           QStaticText only_wrapped_text(color_wrapped_text.c_str());
@@ -260,6 +289,7 @@ namespace jsk_rviz_plugins
           QRect text_rect = fm.boundingRect(0, 0, w, h,
                                             Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
                                             only_wrapped_text.text().remove(QRegExp("<[^>]*>")));
+          painter.drawStaticText(1, h - text_rect.height()+1, static_shadow);
           painter.drawStaticText(0, h - text_rect.height(), static_text);
         }
       }
@@ -279,7 +309,7 @@ namespace jsk_rviz_plugins
       static int count = 0;
       rviz::UniformStringStream ss;
       ss << "OverlayTextDisplayObject" << count++;
-      overlay_.reset(new OverlayObject(ss.str()));
+      overlay_.reset(new jsk_rviz_plugins::OverlayObject(ss.str()));
       overlay_->show();
     }
     if (overlay_) {
@@ -300,11 +330,12 @@ namespace jsk_rviz_plugins
       left_ = msg->left;
       top_ = msg->top;
     }
-    if (!overtake_color_properties_) {
+    if (!overtake_bg_color_properties_) 
       bg_color_ = QColor(msg->bg_color.r * 255.0,
                          msg->bg_color.g * 255.0,
                          msg->bg_color.b * 255.0,
                          msg->bg_color.a * 255.0);
+    if (!overtake_fg_color_properties_) {
       fg_color_ = QColor(msg->fg_color.r * 255.0,
                          msg->fg_color.g * 255.0,
                          msg->fg_color.b * 255.0,
@@ -348,38 +379,52 @@ namespace jsk_rviz_plugins
     }
   }
   
-  void OverlayTextDisplay::updateOvertakeColorProperties()
+  void OverlayTextDisplay::updateOvertakeFGColorProperties()
   {
-    if (!overtake_color_properties_ &&
-        overtake_color_properties_property_->getBool()) {
+    if (!overtake_fg_color_properties_ &&
+        overtake_fg_color_properties_property_->getBool()) {
       // read all the parameters from properties
       updateFGColor();
       updateFGAlpha();
-      updateBGColor();
-      updateBGAlpha();
       updateFont();
       updateLineWidth();
       require_update_texture_ = true;
     }
-    overtake_color_properties_ = overtake_color_properties_property_->getBool();
-    if (overtake_color_properties_) {
+    overtake_fg_color_properties_ = overtake_fg_color_properties_property_->getBool();
+    if (overtake_fg_color_properties_) {
       fg_color_property_->show();
       fg_alpha_property_->show();
-      bg_color_property_->show();
-      bg_alpha_property_->show();
       line_width_property_->show();
       font_property_->show();
     }
     else {
       fg_color_property_->hide();
       fg_alpha_property_->hide();
-      bg_color_property_->hide();
-      bg_alpha_property_->hide();
       line_width_property_->hide();
       font_property_->hide();
     }
   }
 
+  void OverlayTextDisplay::updateOvertakeBGColorProperties()
+  {
+    if (!overtake_bg_color_properties_ &&
+        overtake_bg_color_properties_property_->getBool()) {
+      // read all the parameters from properties
+      updateBGColor();
+      updateBGAlpha();
+      require_update_texture_ = true;
+    }
+    overtake_bg_color_properties_ = overtake_bg_color_properties_property_->getBool();
+    if (overtake_bg_color_properties_) {
+      bg_color_property_->show();
+      bg_alpha_property_->show();
+    }
+    else {
+      bg_color_property_->hide();
+      bg_alpha_property_->hide();
+    }
+  }
+  
   void OverlayTextDisplay::updateAlignBottom()
   {
     if (align_bottom_ != align_bottom_property_->getBool()) {
@@ -388,6 +433,15 @@ namespace jsk_rviz_plugins
     align_bottom_ = align_bottom_property_->getBool();
   }
 
+  void OverlayTextDisplay::updateInvertShadow()
+  {
+    if (invert_shadow_ != invert_shadow_property_->getBool()) {
+      require_update_texture_ = true;
+    }
+    invert_shadow_ = invert_shadow_property_->getBool();
+  }
+
+  
   void OverlayTextDisplay::updateTop()
   {
     top_ = top_property_->getInt();
@@ -434,7 +488,7 @@ namespace jsk_rviz_plugins
     bg_color_.setRed(c.red());
     bg_color_.setGreen(c.green());
     bg_color_.setBlue(c.blue());
-    if (overtake_color_properties_) {
+    if (overtake_bg_color_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -442,7 +496,7 @@ namespace jsk_rviz_plugins
   void OverlayTextDisplay::updateBGAlpha()
   {
     bg_color_.setAlpha(bg_alpha_property_->getFloat() * 255.0);
-    if (overtake_color_properties_) {
+    if (overtake_bg_color_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -453,7 +507,7 @@ namespace jsk_rviz_plugins
     fg_color_.setRed(c.red());
     fg_color_.setGreen(c.green());
     fg_color_.setBlue(c.blue());
-    if (overtake_color_properties_) {
+    if (overtake_fg_color_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -461,7 +515,7 @@ namespace jsk_rviz_plugins
   void OverlayTextDisplay::updateFGAlpha()
   {
     fg_color_.setAlpha(fg_alpha_property_->getFloat() * 255.0);
-    if (overtake_color_properties_) {
+    if (overtake_fg_color_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -475,7 +529,7 @@ namespace jsk_rviz_plugins
       ROS_FATAL("Unexpected error at selecting font index %d.", font_index);
       return;
     }
-    if (overtake_color_properties_) {
+    if (overtake_fg_color_properties_) {
       require_update_texture_ = true;
     }
   }
@@ -483,7 +537,7 @@ namespace jsk_rviz_plugins
   void OverlayTextDisplay::updateLineWidth()
   {
     line_width_ = line_width_property_->getInt();
-    if (overtake_color_properties_) {
+    if (overtake_fg_color_properties_) {
       require_update_texture_ = true;
     }
   }
