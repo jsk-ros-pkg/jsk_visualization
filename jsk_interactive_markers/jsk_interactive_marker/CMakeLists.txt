@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_interactive_marker)
 
-add_compile_options(-std=c++11)
+if("$ENV{ROS_DISTRO}" STRGREATER "melodic")
+  add_compile_options(-std=c++14)
+else()
+  add_compile_options(-std=c++11)
+endif()
 
 # Use ccache if installed to make it fast to generate object files
 find_program(CCACHE_FOUND ccache)
@@ -29,7 +33,7 @@ find_package(catkin REQUIRED COMPONENTS
   ${PCL_MSGS}
   jsk_topic_tools
   rviz
-  roseus)
+  )
 message("jsk_recognition_msgs : ${jsk_recognition_msgs_VERSION}")
 message("jsk_footstep_msgs    : ${jsk_footstep_msgs_VERSION}")
 find_package(orocos_kdl REQUIRED)

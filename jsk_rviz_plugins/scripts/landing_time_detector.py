@@ -38,7 +38,7 @@ def callback(ref, act):
                         picto.action = Pictogram.ADD
                         picto.color = ColorRGBA(0.0, 1.0, 0.0, 0.8)
                         rospy.loginfo("%s late taking off", ref_st.header.frame_id)
-                        print "oso hanare"
+                        print("oso hanare")
                     else:
                         continue
                 elif [ref_st.state.state, act_st.state.state] == [ContactState.ON, ContactState.OFF]:
