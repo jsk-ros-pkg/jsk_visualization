@@ -24,8 +24,8 @@ env:
     - USE_DOCKER=true
   matrix:
     - CHECK_PYTHON3_COMPILE=true
-    - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
-    - ROS_DISTRO=indigo USE_DEB=true
+    - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu' ROS_PYTHON_VERSION=2
+    - ROS_DISTRO=indigo USE_DEB=true ROS_PYTHON_VERSION=2
     # FIXME: kinetic test fails because of matplotlib
     # see: https://github.com/matplotlib/matplotlib/issues/9789
     - ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --user matplotlib==2.2.5" USE_DEB=true
