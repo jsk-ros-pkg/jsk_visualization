@@ -61,7 +61,7 @@ def get_gallery():
 
 
 def get_deb_status_table():
-    cmd = 'rosrun jsk_tools generate_deb_status_table.py jsk_visualization -f i -t k'
+    cmd = 'rosrun jsk_tools generate_deb_status_table.py jsk_visualization'
     return subprocess.check_output(cmd, shell=True).strip()
 
 
