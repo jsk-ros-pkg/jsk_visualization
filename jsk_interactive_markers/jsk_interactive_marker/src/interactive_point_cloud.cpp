@@ -72,7 +72,6 @@ InteractivePointCloud::~InteractivePointCloud(){};
 
 void InteractivePointCloud::configCallback(Config &config, uint32_t level)
 {
-  boost::mutex::scoped_lock(mutex_);
   point_size_ = config.point_size;
   if(display_interactive_manipulator_ != config.display_interactive_manipulator){
     display_interactive_manipulator_ = config.display_interactive_manipulator;
