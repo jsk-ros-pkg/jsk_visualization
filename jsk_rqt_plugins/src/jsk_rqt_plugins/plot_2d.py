@@ -269,7 +269,7 @@ class Plot2DWidget(QWidget):
             return
         try:
             data_x, data_y = self._rosdata.next()
-        except RosPlotException, e:
+        except RosPlotException as e:
             rospy.logerr("Exception in subscribing topic")
             rospy.logerr(e.message)
             return
