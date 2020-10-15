@@ -16,7 +16,7 @@ def callback(msg):
     pub.publish(output)
 
 if len(sys.argv) != 3:
-    print "Usage: twist_stamped_add_header frame_id topic"
+    print("Usage: twist_stamped_add_header frame_id topic")
 
 sub = rospy.Subscriber(sys.argv[2], Twist, callback)
 rospy.spin()

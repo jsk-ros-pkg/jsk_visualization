@@ -45,7 +45,7 @@ class InteractiveMarkerTest:
             response = urllib2.urlopen(req)
             data = json.loads(response.read())
             rospy.loginfo("======================================================")
-            rospy.loginfo("   http://jsk-db.herokuapp.com/interactive_marker_test
+            rospy.loginfo("   http://jsk-db.herokuapp.com/interactive_marker_test")
             rospy.loginfo("                user /  ui_type /    time")
             for d in data:
                 rospy.loginfo("%12s / %8s / %s sec", d['user'], d['ui_type'], d['time'])

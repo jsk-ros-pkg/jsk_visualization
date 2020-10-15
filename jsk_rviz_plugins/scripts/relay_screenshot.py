@@ -18,7 +18,7 @@ def callback(msg):
     try:
         screenshot_srv(file_format.format(counter))
         counter = counter + 1
-    except rospy.ServiceException, e:
+    except rospy.ServiceException as e:
         rospy.logerr('Failed to call screenshot service call. Have you add ScreenshotListener to rviz and file_format is correct? file_format is "{0}"'.format(file_format))
         
     

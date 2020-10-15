@@ -111,7 +111,7 @@ class StringLabelWidget(QWidget):
             return
         try:
             _, data_y = self._rosdata.next()
-        except rqt_plot.rosplot.RosPlotException, e:
+        except rqt_plot.rosplot.RosPlotException as e:
             self._rosdata = None
             return
         if len(data_y) == 0:
@@ -124,7 +124,7 @@ class StringLabelWidget(QWidget):
             self.string = latest
         try:
             self.label.setText(self.string)
-        except TypeError, e:
+        except TypeError as e:
             rospy.logwarn(e)
 
     def updateTopics(self):
