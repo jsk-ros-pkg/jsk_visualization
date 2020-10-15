@@ -56,8 +56,13 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
+#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
     typedef std::shared_ptr<rviz::Shape> ShapePtr;
+#else
+    typedef boost::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
+    typedef boost::shared_ptr<rviz::Shape> ShapePtr;
+#endif
     HumanSkeletonArrayDisplay();
     virtual ~HumanSkeletonArrayDisplay();
   protected:
