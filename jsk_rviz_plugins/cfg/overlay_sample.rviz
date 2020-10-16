@@ -6,7 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-      Splitter Ratio: 0.484513015
+      Splitter Ratio: 0.552777767
     Tree Height: 664
   - Class: rviz/Selection
     Name: Selection
@@ -28,6 +28,8 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: ""
+Toolbars:
+  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -56,7 +58,7 @@ Visualization Manager:
       Enabled: true
       Foreground Alpha: 0.800000012
       Foreground Color: 25; 255; 240
-      Name: sample text
+      Name: sample overlay text
       Overtake Color Properties: false
       Overtake Position Properties: true
       Topic: /text_sample
@@ -68,6 +70,25 @@ Visualization Manager:
       text size: 12
       top: 400
       width: 350
+    - Align Bottom: false
+      Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/String
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 85; 255; 127
+      Name: sample string
+      Overtake Color Properties: true
+      Overtake Position Properties: true
+      Topic: /sample_string
+      Value: true
+      font: DejaVu Sans Mono
+      height: 80
+      left: 350
+      line width: 2
+      text size: 12
+      top: 20
+      width: 250
     - Buffer length: 100
       Class: jsk_rviz_plugin/Plotter2D
       Enabled: true

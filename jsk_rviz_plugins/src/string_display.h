@@ -2,7 +2,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, JSK Lab
+ *  Copyright (c) 2019, JSK Lab
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,113 +32,102 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#ifndef JSK_RVIZ_PLUGINS_PIE_CHART_DISPLAY_H_
-#define JSK_RVIZ_PLUGINS_PIE_CHART_DISPLAY_H_
-#include "std_msgs/Float32.h"
+#ifndef JSK_RVIZ_PLUGIN_STRING_DISPLAY_H_
+#define JSK_RVIZ_PLUGIN_STRING_DISPLAY_H_
+
 #ifndef Q_MOC_RUN
-#include <rviz/display.h>
-#include "overlay_utils.h"
+#include <string>
+
 #include <OGRE/OgreColourValue.h>
-#include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
-#include <rviz/properties/int_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/color_property.h>
+#include <rviz/display.h>
 #include <rviz/properties/bool_property.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
 #include <rviz/properties/ros_topic_property.h>
+#include <std_msgs/String.h>
+#include "overlay_utils.h"
 #endif
 
 namespace jsk_rviz_plugins
 {
-  class PieChartDisplay
-    : public rviz::Display
+class StringDisplay : public rviz::Display
   {
     Q_OBJECT
   public:
-    PieChartDisplay();
-    virtual ~PieChartDisplay();
-    
+    StringDisplay();
+    virtual ~StringDisplay();
     // methods for OverlayPickerTool
     virtual bool isInRegion(int x, int y);
     virtual void movePosition(int x, int y);
     virtual void setPosition(int x, int y);
-    virtual int getX() { return left_; };
-    virtual int getY() { return top_; };
-
+    virtual int getX() { return left_; }
+    virtual int getY() { return top_; }
   protected:
+    OverlayObject::Ptr overlay_;
+
+    int texture_width_;
+    int texture_height_;
+
+    bool overtake_color_properties_;
+    bool overtake_position_properties_;
+    bool align_bottom_;
+    QColor bg_color_;
+    QColor fg_color_;
+    int text_size_;
+    int line_width_;
+    std::string text_;
+    QStringList font_families_;
+    std::string font_;
+    int left_;
+    int top_;
+
+    ros::Subscriber sub_;
+
+    virtual void onInitialize();
     virtual void subscribe();
     virtual void unsubscribe();
     virtual void onEnable();
     virtual void onDisable();
-    virtual void onInitialize();
-    virtual void processMessage(const std_msgs::Float32::ConstPtr& msg);
-    virtual void drawPlot(double val);
     virtual void update(float wall_dt, float ros_dt);
-    // properties
-    rviz::RosTopicProperty* update_topic_property_;
-    rviz::IntProperty* size_property_;
-    rviz::IntProperty* left_property_;
-    rviz::IntProperty* top_property_;
-    rviz::ColorProperty* fg_color_property_;
-    rviz::ColorProperty* bg_color_property_;
-    rviz::ColorProperty* text_color_property_;
-    rviz::FloatProperty* fg_alpha_property_;
-    rviz::FloatProperty* fg_alpha2_property_;
-    rviz::FloatProperty* bg_alpha_property_;
-    rviz::FloatProperty* text_alpha_property_;
-    rviz::IntProperty* text_size_property_;
-    rviz::FloatProperty* max_value_property_;
-    rviz::FloatProperty* min_value_property_;
-    rviz::BoolProperty* show_caption_property_;
-    rviz::BoolProperty* auto_color_change_property_;
-    rviz::ColorProperty* max_color_property_;
-    rviz::BoolProperty* clockwise_rotate_property_;
 
-    ros::Subscriber sub_;
-    int left_;
-    int top_;
-    uint16_t texture_size_;
-    QColor fg_color_;
-    QColor bg_color_;
-    QColor max_color_;
-    int text_size_;
-    bool show_caption_;
-    bool auto_color_change_;
-    int caption_offset_;
-    double fg_alpha_;
-    double fg_alpha2_;
-    double bg_alpha_;
-    double max_value_;
-    double min_value_;
-    float data_;
-    bool update_required_;
-    bool first_time_;
-    OverlayObject::Ptr overlay_;
-    bool clockwise_rotate_;
-    
-    boost::mutex mutex_;
-                       
+    bool require_update_texture_;
+    rviz::RosTopicProperty* update_topic_property_;
+    rviz::BoolProperty* overtake_position_properties_property_;
+    rviz::BoolProperty* overtake_color_properties_property_;
+    rviz::BoolProperty* align_bottom_property_;
+    rviz::IntProperty* top_property_;
+    rviz::IntProperty* left_property_;
+    rviz::IntProperty* width_property_;
+    rviz::IntProperty* height_property_;
+    rviz::IntProperty* text_size_property_;
+    rviz::IntProperty* line_width_property_;
+    rviz::ColorProperty* bg_color_property_;
+    rviz::FloatProperty* bg_alpha_property_;
+    rviz::ColorProperty* fg_color_property_;
+    rviz::FloatProperty* fg_alpha_property_;
+    rviz::EnumProperty* font_property_;
   protected Q_SLOTS:
     void updateTopic();
-    void updateSize();
+    void updateOvertakePositionProperties();
+    void updateOvertakeColorProperties();
+    void updateAlignBottom();
     void updateTop();
     void updateLeft();
-    void updateBGColor();
+    void updateWidth();
+    void updateHeight();
     void updateTextSize();
     void updateFGColor();
     void updateFGAlpha();
-    void updateFGAlpha2();
+    void updateBGColor();
     void updateBGAlpha();
-    void updateMinValue();
-    void updateMaxValue();
-    void updateShowCaption();
-    void updateAutoColorChange();
-    void updateMaxColor();
-    void updateClockwiseRotate();
-
+    void updateFont();
+    void updateLineWidth();
   private:
+    void processMessage(const std_msgs::String::ConstPtr& msg);
   };
+}  // namespace jsk_rviz_plugins
 
-}
-
-#endif
+#endif  // JSK_RVIZ_PLUGIN_STRING_DISPLAY_H_
