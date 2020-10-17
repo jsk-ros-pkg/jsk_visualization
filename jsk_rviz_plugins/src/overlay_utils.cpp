@@ -139,7 +139,7 @@ namespace jsk_rviz_plugins
     return !texture_.isNull();
   }
 
-  bool OverlayObject::updateTextureSize(unsigned int width, unsigned int height)
+  void OverlayObject::updateTextureSize(unsigned int width, unsigned int height)
   {
     const std::string texture_name = name_ + "Texture";
     if (width == 0) {

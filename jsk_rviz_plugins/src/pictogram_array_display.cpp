@@ -95,7 +95,7 @@ namespace jsk_rviz_plugins
   void PictogramArrayDisplay::processMessage(
     const jsk_rviz_plugins::PictogramArray::ConstPtr& msg)
   {
-    boost::mutex::scoped_lock (mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
     allocatePictograms(msg->pictograms.size());
     for (size_t i = 0; i < pictograms_.size(); i++) {
       pictograms_[i]->setEnable(isEnabled());
@@ -131,7 +131,7 @@ namespace jsk_rviz_plugins
 
   void PictogramArrayDisplay::update(float wall_dt, float ros_dt)
   {
-    boost::mutex::scoped_lock (mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
     for (size_t i = 0; i < pictograms_.size(); i++) {
       pictograms_[i]->update(wall_dt, ros_dt);
     }
