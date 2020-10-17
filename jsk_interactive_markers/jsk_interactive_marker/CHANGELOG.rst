@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.7 (2020-10-17)
+------------------
 
 * set property for ccache if cmake version < 3.4 (`#780 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/780>`_)
 * Remove meaningless lock (`#750 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/750>`_)

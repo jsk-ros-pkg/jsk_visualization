@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.7 (2020-10-17)
+------------------
 * Fix programming issues where functions were not getting return values, and variables were not being declared for types (`#783 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/783>`_)
 * Support custom color for OverlayMenu (`#775 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/775>`_)
 * add human skeleton rviz visualization(`#740 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/740>`_)
