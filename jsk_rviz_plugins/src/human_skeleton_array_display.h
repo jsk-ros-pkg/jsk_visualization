@@ -47,6 +47,7 @@
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/arrow.h>
 #include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 #endif
 
 namespace jsk_rviz_plugins
