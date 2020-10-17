@@ -455,7 +455,9 @@ namespace jsk_rviz_plugins
     if (show_normal_) {
       for (size_t i = 0; i < msg->polygons.size(); i++) {
         geometry_msgs::PolygonStamped polygon = msg->polygons[i];
-        processNormal(i, polygon);
+        if (polygon.polygon.points.size() >= 3) {
+          processNormal(i, polygon);
+        }
       }
     }
   }

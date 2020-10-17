@@ -112,7 +112,6 @@ namespace jsk_rviz_plugins
   void OverlayDiagnosticDisplay::processMessage(
     const diagnostic_msgs::DiagnosticArray::ConstPtr& msg)
   {
-    boost::mutex::scoped_lock(mutex_);
     //std::make_shared<diagnostic_msgs::DiagnosticStatus>
     // update namespaces_ if needed
     std::set<std::string> new_namespaces;
@@ -163,7 +162,6 @@ namespace jsk_rviz_plugins
 
   void OverlayDiagnosticDisplay::update(float wall_dt, float ros_dt)
   {
-    boost::mutex::scoped_lock(mutex_);
     if (!isEnabled()) {
       return;
     }

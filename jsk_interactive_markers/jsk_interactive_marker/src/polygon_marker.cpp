@@ -59,7 +59,6 @@ void publishClickedPolygon(jsk_recognition_msgs::Int32Stamped& msg)
 void processFeedback(
   const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  boost::mutex::scoped_lock(mutex);
   // control_name is "sec nsec index"
   if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN) {
     std::string control_name = feedback->control_name;
@@ -84,7 +83,6 @@ void processFeedback(
 
 void polygonCallback(const jsk_recognition_msgs::PolygonArray::ConstPtr& msg)
 {
-  boost::mutex::scoped_lock(mutex);
   polygon_msg = msg;
   server->clear();
   // create cube markers
