@@ -119,6 +119,7 @@ set(HEADER_FILES
   src/segment_array_display.h
   src/image_transport_hints_property.h
   src/string_display.h
+  src/human_skeleton_array_display.h
 )
 
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -176,8 +177,15 @@ set(SOURCE_FILES
   src/segment_array_display.cpp
   src/image_transport_hints_property.cpp
   src/string_display.cpp
+  src/human_skeleton_array_display.cpp
   ${MOC_FILES}
 )
+if(jsk_recognition_msgs_VERSION VERSION_LESS 1.2.15)
+  message(WARNING "jsk_recognition_msgs ${jsk_recognition_msgs_VERSION} < 1.2.15 does not support human_skeleton_array_display.cpp")
+  list(REMOVE_ITEM HEADER_FILES src/human_skeleton_array_display.h)
+  list(REMOVE_ITEM SOURCE_FILES src/human_skeleton_array_display.cpp)
+  list(REMOVE_ITEM SOURCE_FILES  ${PROJECT_BINARY_DIR}/src/moc_human_skeleton_array_display.cxx)
+endif()
 
 add_library(jsk_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 if(rviz_QT_VERSION VERSION_LESS "5")

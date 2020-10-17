@@ -237,6 +237,14 @@
     </description>
   </class>
 
+  <class name="jsk_rviz_plugin/HumanSkeletonArray"
+         type="jsk_rviz_plugins::HumanSkeletonArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize jsk_recognition_msgs/HumanSkeletonArray
+    </description>
+  </class>
+
   <class name="jsk_rviz_plugin/TabletControllerPanel"
          type="jsk_rviz_plugins::TabletControllerPanel"
          base_class_type="rviz::Panel">
