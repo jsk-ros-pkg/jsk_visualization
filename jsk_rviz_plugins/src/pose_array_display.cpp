@@ -70,6 +70,7 @@ PoseArrayDisplay::~PoseArrayDisplay()
 
 void PoseArrayDisplay::onInitialize()
 {
+  ROS_WARN("jsk_rviz_plugins/PoseArrayDisplay is deprecated. Please use rviz default PoseArrayDisplay plugin instead.");
   MFDClass::onInitialize();
   manual_object_ = scene_manager_->createManualObject();
   manual_object_->setDynamic( true );
@@ -152,6 +153,7 @@ bool validateFloats( const geometry_msgs::PoseArray& msg )
 
 void PoseArrayDisplay::processMessage( const geometry_msgs::PoseArray::ConstPtr& msg )
 {
+  ROS_WARN_THROTTLE(1.0, "jsk_rviz_plugins/PoseArrayDisplay is deprecated. Please use rviz default PoseArrayDisplay plugin instead.");
   if( !validateFloats( *msg ))
   {
     setStatus( rviz::StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
