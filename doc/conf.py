@@ -195,7 +195,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'jsk_visualization.tex', u'jsk_visualization Documentation',
+  (master_doc, 'jsk_visualization.tex', u'jsk\_visualization Documentation',
    author, 'manual'),
 ]
 
