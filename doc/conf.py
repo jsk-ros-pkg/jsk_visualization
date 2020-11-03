@@ -169,6 +169,8 @@ htmlhelp_basename = 'jsk_visualizationdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
+latex_engine = 'platex'
+latex_use_xindy = False
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
 #'papersize': 'letterpaper',
@@ -178,7 +180,6 @@ latex_elements = {
 
     # Additional stuff for the LaTeX preamble.
     'preamble': "".join((
-        "\\usepackage[utf8]{inputenc}",
         # NO-BREAK SPACE
         '\DeclareUnicodeCharacter{00A0}{ }',
         # BOX DRAWINGS LIGHT VERTICAL AND RIGHT
