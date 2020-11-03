@@ -10,6 +10,8 @@ from recommonmark.parser import CommonMarkParser
 
 
 extensions = [
+    'recommonmark',
+    'sphinx_markdown_tables',
     'sphinx.ext.mathjax',
 ]
 
