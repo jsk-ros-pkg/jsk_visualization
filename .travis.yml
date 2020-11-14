@@ -39,7 +39,7 @@ script:
   - if [ "${CHECK_PYTHON3_COMPILE}" == "true" ]; then python3 -m compileall .; exit $?; fi
   - source .travis/travis.sh
   # test building sphinx documentation
-  - which virtualenv 2>/dev/null || pip install --user virtualenv
+  - which virtualenv 2>/dev/null || pip3 install --user virtualenv
   - (cd $TRAVIS_BUILD_DIR/doc && source setup.sh && make html)
 after_success:
   # trigger build of jsk-docs.readthedocs.org
