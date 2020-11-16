@@ -26,6 +26,7 @@ from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
 from std_msgs.msg import Time
 from std_srvs.srv import Empty
+from std_srvs.srv import Trigger
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QAction
@@ -183,8 +184,18 @@ class ServiceButtonGeneralWidget(QWidget):
                 if button_data.has_key("name"):
                     name = button_data['name']
                     button.setText(name)
+                if button_data.has_key('service_type'):
+                    if button_data['service_type'] == 'Trigger':
+                        service_type = Trigger
+                    elif button_data['service_type'] == 'Empty':
+                        service_type = Empty
+                    else:
+                        raise Exception("Unsupported service type: {}".format(
+                            button_data['service_type']))
+                else:
+                    service_type = Empty
                 button.clicked.connect(
-                    self.buttonCallback(button_data['service']))
+                    self.buttonCallback(button_data['service'], service_type))
                 if self.button_type == "push":
                     button.setToolButtonStyle(
                         QtCore.Qt.ToolButtonTextUnderIcon)
@@ -200,14 +211,14 @@ class ServiceButtonGeneralWidget(QWidget):
                 self.layout.addWidget(group)
             self.setLayout(self.layout)
 
-    def buttonCallback(self, service_name):
+    def buttonCallback(self, service_name, service_type):
         """
         return function as callback
         """
-        return lambda x: self.buttonCallbackImpl(service_name)
+        return lambda x: self.buttonCallbackImpl(service_name, service_type)
 
-    def buttonCallbackImpl(self, service_name):
-        srv = rospy.ServiceProxy(service_name, Empty)
+    def buttonCallbackImpl(self, service_name, service_type=Empty):
+        srv = rospy.ServiceProxy(service_name, service_type)
         try:
             srv()
         except rospy.ServiceException as e:
