@@ -220,7 +220,13 @@ class ServiceButtonGeneralWidget(QWidget):
     def buttonCallbackImpl(self, service_name, service_type=Empty):
         srv = rospy.ServiceProxy(service_name, service_type)
         try:
-            srv()
+            res = srv()
+            if hasattr(res, 'success'):
+                success = res.success
+                if not success:
+                    self.showError(
+                        "Succeeded to call {}, but service response is res.success=False"
+                        .format(service_name))
         except rospy.ServiceException as e:
             self.showError("Failed to call %s" % service_name)
 
