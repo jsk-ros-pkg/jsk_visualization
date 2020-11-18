@@ -1,0 +1,6 @@
+<launch>
+  <node name="rqt_service_radio_buttons" pkg="rqt_gui" type="rqt_gui"
+        args="--perspective-file $(find jsk_rqt_plugins)/resource/rqt_service_radio_buttons.perspective" />
+  <node name="sample_service_buttons" pkg="jsk_rqt_plugins" type="sample_service_radio_buttons.py" 
+        output="screen"/>
+</launch>

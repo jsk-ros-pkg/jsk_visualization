@@ -1,0 +1,71 @@
+{
+  "keys": {},
+  "groups": {
+    "pluginmanager": {
+      "keys": {
+        "running-plugins": {
+          "type": "repr",
+          "repr": "{u'jsk_rqt_plugins/ServiceRadioButtons': [1]}"
+        }
+      },
+      "groups": {
+        "plugin__jsk_rqt_plugins__ServiceRadioButtons__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u''"
+                }
+              },
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "layout_param": {
+                  "type": "repr",
+                  "repr": "u'package://jsk_rqt_plugins/resource/service_radio_button_layout.yaml'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        }
+      }
+    },
+    "mainwindow": {
+      "keys": {
+        "geometry": {
+          "type": "repr(QByteArray.hex)",
+          "repr(QByteArray.hex)": "QtCore.QByteArray('01d9d0cb000200000000038f00000126000005e6000003050000038f00000144000005e60000030500000000000000000780')",
+          "pretty-print": "       &       D         "
+        },
+        "state": {
+          "type": "repr(QByteArray.hex)",
+          "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000000fd00000001000000030000025800000196fc0100000001fb00000052006a0073006b005f007200710074005f0070006c007500670069006e0073005f005f00530065007200760069006300650052006100640069006f0042007500740074006f006e0073005f005f0031005f005f0100000000000002580000015d00ffffff000002580000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720000000000ffffffff0000000000000000')",
+          "pretty-print": "                 Rjsk_rqt_plugins__ServiceRadioButtons__1__                            6MinimizedDockWidgetsToolbar        "
+        }
+      },
+      "groups": {
+        "toolbar_areas": {
+          "keys": {
+            "MinimizedDockWidgetsToolbar": {
+              "type": "repr",
+              "repr": "8"
+            }
+          },
+          "groups": {}
+        }
+      }
+    }
+  }
+}
