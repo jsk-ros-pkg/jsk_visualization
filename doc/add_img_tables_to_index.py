@@ -13,6 +13,7 @@ Usage::
 
 import hashlib
 import os
+import six
 import sys
 
 
@@ -33,7 +34,10 @@ def rst_image_table_data(url_prefix, img_files):
         if not any(map(os.path.exists, doc_candidates)):
             continue
         img_file = os.path.join(url_prefix, 'images', img_file)
-        label_name = hashlib.sha1(title).hexdigest()[:8]
+        if hasattr(title, 'encode'):
+            label_name = hashlib.sha1(title.encode('utf-8')).hexdigest()[:8]
+        else:
+            label_name = hashlib.sha1(title).hexdigest()[:8]
         labels.append('''\
 .. |{label}| image:: {img}
    :scale: 100%
@@ -47,7 +51,7 @@ def rst_image_table_data(url_prefix, img_files):
     # generate table
     table = []
     table.append('+------------+------------+------------+')
-    for i in xrange(0, len(blocks), N_COLUMN):
+    for i in six.moves.range(0, len(blocks), N_COLUMN):
         table.append('| ' + ' | '.join(blocks[i:i+N_COLUMN]) + ' |')
         table.append('+------------+------------+------------+')
     return '\n\n'.join(labels), '\n'.join(table)
@@ -82,4 +86,4 @@ def main(exclude_patterns):
 
 
 if __name__ == '__main__':
-    main()
+    main(['_build', 'venv'])
