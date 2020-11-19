@@ -166,7 +166,7 @@ class ServiceButtonGeneralWidget(QWidget):
                     raise Exception("service field is missed in yaml")
                 if self.button_type == "push":
                     button = QToolButton()
-                else:  # self.button_type == "Radio":
+                else:  # self.button_type == "radio":
                     button = QRadioButton()
                 button.setSizePolicy(
                     QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
