@@ -26,6 +26,7 @@ from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
 from std_msgs.msg import Time
 from std_srvs.srv import Empty
+from std_srvs.srv import SetBool
 from std_srvs.srv import Trigger
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
@@ -189,20 +190,24 @@ class ServiceButtonGeneralWidget(QWidget):
                         service_type = Trigger
                     elif button_data['service_type'] == 'Empty':
                         service_type = Empty
+                    elif button_data['service_type'] == 'SetBool':
+                        service_type = SetBool
                     else:
                         raise Exception("Unsupported service type: {}".format(
                             button_data['service_type']))
                 else:
                     service_type = Empty
+                if service_type == SetBool:
+                    button.setCheckable(True)
                 button.clicked.connect(
                     self.buttonCallback(button_data['service'], service_type))
                 if self.button_type == "push":
                     button.setToolButtonStyle(
                         QtCore.Qt.ToolButtonTextUnderIcon)
-                else:  # self.button_type == "Radio":
-                    if button_data.has_key("default_value") and \
-                       button_data['default_value']:
-                        button.setChecked(True)
+                if ((self.button_type == "radio" or service_type == SetBool)
+                        and ("default_value" in button_data
+                             and button_data['default_value'])):
+                    button.setChecked(True)
                 self.layout_boxes[button_data['column']].addWidget(button)
                 self.buttons.append(button)
             for i in range(len(self.button_groups)):
@@ -215,12 +220,15 @@ class ServiceButtonGeneralWidget(QWidget):
         """
         return function as callback
         """
-        return lambda x: self.buttonCallbackImpl(service_name, service_type)
+        return lambda checked: self.buttonCallbackImpl(checked, service_name, service_type)
 
-    def buttonCallbackImpl(self, service_name, service_type=Empty):
+    def buttonCallbackImpl(self, checked, service_name, service_type=Empty):
         srv = rospy.ServiceProxy(service_name, service_type)
         try:
-            res = srv()
+            if service_type == SetBool:
+                res = srv(checked)
+            else:
+                res = srv()
             if hasattr(res, 'success'):
                 success = res.success
                 if not success:
