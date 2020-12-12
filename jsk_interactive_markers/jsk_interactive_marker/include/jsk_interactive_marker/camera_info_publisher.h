@@ -43,6 +43,7 @@
 #include "jsk_interactive_marker/interactive_marker_helpers.h"
 #include <dynamic_reconfigure/server.h>
 #include "jsk_interactive_marker/CameraInfoPublisherConfig.h"
+#include <yaml-cpp/yaml.h>
 
 namespace jsk_interactive_marker
 {
@@ -87,6 +88,8 @@ namespace jsk_interactive_marker
     double width_;
     double height_;
     double f_;
+    std::string yaml_filename_;
+    YAML::Node camera_info_yaml_;
     geometry_msgs::Pose latest_pose_;
     
   private:

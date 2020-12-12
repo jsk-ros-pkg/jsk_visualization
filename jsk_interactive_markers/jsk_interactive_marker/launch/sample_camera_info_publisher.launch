@@ -1,0 +1,12 @@
+<launch>
+
+  <node pkg="jsk_interactive_marker" name="camera_info_publisher" type="camera_info_publisher" output="screen">
+  </node>
+
+  <node pkg="jsk_interactive_marker" name="camera_info_publisher_with_yaml" type="camera_info_publisher" output="screen">
+    <rosparam subst_value="true">
+      yaml_filename: $(find jsk_interactive_marker)/config/sample_camera_info.yaml
+    </rosparam>
+  </node>
+
+</launch>
