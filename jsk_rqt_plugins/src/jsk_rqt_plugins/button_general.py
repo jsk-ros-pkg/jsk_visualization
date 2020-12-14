@@ -200,7 +200,7 @@ class ServiceButtonGeneralWidget(QWidget):
                 if service_type == SetBool:
                     button.setCheckable(True)
                 button.clicked.connect(
-                    self.buttonCallback(button_data['service'], service_type))
+                    self.buttonCallback(button_data['service'], service_type, button))
                 if self.button_type == "push":
                     button.setToolButtonStyle(
                         QtCore.Qt.ToolButtonTextUnderIcon)
@@ -216,13 +216,13 @@ class ServiceButtonGeneralWidget(QWidget):
                 self.layout.addWidget(group)
             self.setLayout(self.layout)
 
-    def buttonCallback(self, service_name, service_type):
+    def buttonCallback(self, service_name, service_type, button):
         """
         return function as callback
         """
-        return lambda checked: self.buttonCallbackImpl(checked, service_name, service_type)
+        return lambda checked: self.buttonCallbackImpl(checked, service_name, service_type, button)
 
-    def buttonCallbackImpl(self, checked, service_name, service_type=Empty):
+    def buttonCallbackImpl(self, checked, service_name, service_type=Empty, button=None):
         srv = rospy.ServiceProxy(service_name, service_type)
         try:
             if service_type == SetBool:
@@ -235,8 +235,12 @@ class ServiceButtonGeneralWidget(QWidget):
                     self.showError(
                         "Succeeded to call {}, but service response is res.success=False"
                         .format(service_name))
+                    if service_type == SetBool and not button is None:
+                        button.setChecked(not checked)
         except rospy.ServiceException as e:
             self.showError("Failed to call %s" % service_name)
+            if service_type == SetBool and not button is None:
+                button.setChecked(not checked)
 
     def save_settings(self, plugin_settings, instance_settings):
         if self._layout_param:
