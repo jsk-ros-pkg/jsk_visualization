@@ -102,6 +102,10 @@ class ServiceButtonGeneralWidget(QWidget):
         self.button_type = button_type
         self._layout_param = None
         self._dialog = LineEditDialog()
+
+        if rospy.has_param("~layout_yaml_file"):
+            self.loadLayoutYaml(None)
+
         self.show()
 
     def showError(self, message):
