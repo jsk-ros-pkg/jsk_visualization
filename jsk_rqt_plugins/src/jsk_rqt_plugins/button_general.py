@@ -149,7 +149,10 @@ class ServiceButtonGeneralWidget(QWidget):
                     break
             # lookup column num
             column_indices = [d['column'] for d in yaml_data]
-            max_column_index = max(*column_indices)
+            if len(column_indices) > 1:
+                max_column_index = max(*column_indices)
+            else:
+                max_column_index = column_indices[0]
             if direction == 'vertical':
                 self.layout = QHBoxLayout()
                 self.layout_boxes = [QVBoxLayout()
