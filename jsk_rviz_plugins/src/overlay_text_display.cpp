@@ -45,6 +45,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 #include <jsk_topic_tools/log_utils.h>
+#include <regex>
 
 namespace jsk_rviz_plugins
 {
@@ -267,9 +268,12 @@ namespace jsk_rviz_plugins
              % text_ % fg_color_.red() % fg_color_.green() % fg_color_.blue() %
              fg_color_.alpha()).str();
 
+        // find a remove "color: XXX;" regex match to generate a proper shadow 
+        std::regex color_tag_re("color:.+?;");
+        std::string formatted_text_ = std::regex_replace(text_, color_tag_re, "");
         std::string color_wrapped_shadow
           = (boost::format("<span style=\"color: rgba(%2%, %3%, %4%, %5%)\">%1%</span>")
-             % text_ % shadow_color.red() % shadow_color.green() % shadow_color.blue() % shadow_color.alpha()).str();
+             % formatted_text_ % shadow_color.red() % shadow_color.green() % shadow_color.blue() % shadow_color.alpha()).str();
 	
         QStaticText static_text(
           boost::algorithm::replace_all_copy(color_wrapped_text, "\n", "<br >").c_str());
