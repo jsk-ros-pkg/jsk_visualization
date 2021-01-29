@@ -270,7 +270,8 @@ namespace jsk_rviz_plugins
 
         // find a remove "color: XXX;" regex match to generate a proper shadow 
         std::regex color_tag_re("color:.+?;");
-        std::string formatted_text_ = std::regex_replace(text_, color_tag_re, "");
+        std::string null_char("");
+        std::string formatted_text_ = std::regex_replace(text_, color_tag_re, null_char);
         std::string color_wrapped_shadow
           = (boost::format("<span style=\"color: rgba(%2%, %3%, %4%, %5%)\">%1%</span>")
              % formatted_text_ % shadow_color.red() % shadow_color.green() % shadow_color.blue() % shadow_color.alpha()).str();
