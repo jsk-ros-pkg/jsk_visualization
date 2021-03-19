@@ -1,0 +1,8 @@
+<launch>
+  <node name="$(anon sample_buttons)"
+        pkg="jsk_rqt_plugins" type="rqt_service_buttons" output="screen" clear_params="true">
+    <param name="~layout_yaml_file" value="package://jsk_rqt_plugins/resource/service_button_layout.yaml" />
+  </node>
+  <node name="sample_service_buttons" pkg="jsk_rqt_plugins" type="sample_service_buttons.py"
+        output="screen"/>
+</launch>

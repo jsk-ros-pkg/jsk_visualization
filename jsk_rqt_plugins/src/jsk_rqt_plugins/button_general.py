@@ -26,6 +26,8 @@ from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
 from std_msgs.msg import Time
 from std_srvs.srv import Empty
+from std_srvs.srv import SetBool
+from std_srvs.srv import Trigger
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QAction
@@ -100,6 +102,10 @@ class ServiceButtonGeneralWidget(QWidget):
         self.button_type = button_type
         self._layout_param = None
         self._dialog = LineEditDialog()
+
+        if rospy.has_param("~layout_yaml_file"):
+            self.loadLayoutYaml(None)
+
         self.show()
 
     def showError(self, message):
@@ -143,7 +149,10 @@ class ServiceButtonGeneralWidget(QWidget):
                     break
             # lookup column num
             column_indices = [d['column'] for d in yaml_data]
-            max_column_index = max(*column_indices)
+            if len(column_indices) > 1:
+                max_column_index = max(*column_indices)
+            else:
+                max_column_index = column_indices[0]
             if direction == 'vertical':
                 self.layout = QHBoxLayout()
                 self.layout_boxes = [QVBoxLayout()
@@ -164,7 +173,7 @@ class ServiceButtonGeneralWidget(QWidget):
                     raise Exception("service field is missed in yaml")
                 if self.button_type == "push":
                     button = QToolButton()
-                else:  # self.button_type == "Radio":
+                else:  # self.button_type == "radio":
                     button = QRadioButton()
                 button.setSizePolicy(
                     QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
@@ -183,15 +192,29 @@ class ServiceButtonGeneralWidget(QWidget):
                 if button_data.has_key("name"):
                     name = button_data['name']
                     button.setText(name)
+                if button_data.has_key('service_type'):
+                    if button_data['service_type'] == 'Trigger':
+                        service_type = Trigger
+                    elif button_data['service_type'] == 'Empty':
+                        service_type = Empty
+                    elif button_data['service_type'] == 'SetBool':
+                        service_type = SetBool
+                    else:
+                        raise Exception("Unsupported service type: {}".format(
+                            button_data['service_type']))
+                else:
+                    service_type = Empty
+                if service_type == SetBool:
+                    button.setCheckable(True)
                 button.clicked.connect(
-                    self.buttonCallback(button_data['service']))
+                    self.buttonCallback(button_data['service'], service_type, button))
                 if self.button_type == "push":
                     button.setToolButtonStyle(
                         QtCore.Qt.ToolButtonTextUnderIcon)
-                else:  # self.button_type == "Radio":
-                    if button_data.has_key("default_value") and \
-                       button_data['default_value']:
-                        button.setChecked(True)
+                if ((self.button_type == "radio" or service_type == SetBool)
+                        and ("default_value" in button_data
+                             and button_data['default_value'])):
+                    button.setChecked(True)
                 self.layout_boxes[button_data['column']].addWidget(button)
                 self.buttons.append(button)
             for i in range(len(self.button_groups)):
@@ -200,18 +223,31 @@ class ServiceButtonGeneralWidget(QWidget):
                 self.layout.addWidget(group)
             self.setLayout(self.layout)
 
-    def buttonCallback(self, service_name):
+    def buttonCallback(self, service_name, service_type, button):
         """
         return function as callback
         """
-        return lambda x: self.buttonCallbackImpl(service_name)
+        return lambda checked: self.buttonCallbackImpl(checked, service_name, service_type, button)
 
-    def buttonCallbackImpl(self, service_name):
-        srv = rospy.ServiceProxy(service_name, Empty)
+    def buttonCallbackImpl(self, checked, service_name, service_type=Empty, button=None):
+        srv = rospy.ServiceProxy(service_name, service_type)
         try:
-            srv()
+            if service_type == SetBool:
+                res = srv(checked)
+            else:
+                res = srv()
+            if hasattr(res, 'success'):
+                success = res.success
+                if not success:
+                    self.showError(
+                        "Succeeded to call {}, but service response is res.success=False"
+                        .format(service_name))
+                    if service_type == SetBool and not button is None:
+                        button.setChecked(not checked)
         except rospy.ServiceException as e:
             self.showError("Failed to call %s" % service_name)
+            if service_type == SetBool and not button is None:
+                button.setChecked(not checked)
 
     def save_settings(self, plugin_settings, instance_settings):
         if self._layout_param:

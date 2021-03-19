@@ -6,8 +6,8 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-      Splitter Ratio: 0.484513015
-    Tree Height: 664
+      Splitter Ratio: 0.4845130145549774
+    Tree Height: 648
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -16,7 +16,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679016
+    Splitter Ratio: 0.5886790156364441
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -28,6 +28,10 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: ""
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -37,7 +41,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.029999999329447746
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -50,14 +54,16 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Align Bottom: false
-      Background Alpha: 0.800000012
+      Background Alpha: 0.800000011920929
       Background Color: 0; 0; 0
       Class: jsk_rviz_plugin/OverlayText
       Enabled: true
-      Foreground Alpha: 0.800000012
+      Foreground Alpha: 0.800000011920929
       Foreground Color: 25; 255; 240
+      Invert Shadow: false
       Name: sample text
-      Overtake Color Properties: false
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
       Overtake Position Properties: true
       Topic: /text_sample
       Value: true
@@ -68,6 +74,25 @@ Visualization Manager:
       text size: 12
       top: 400
       width: 350
+    - Align Bottom: false
+      Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/String
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 85; 255; 127
+      Name: sample string
+      Overtake Color Properties: true
+      Overtake Position Properties: true
+      Topic: /sample_string
+      Value: true
+      font: DejaVu Sans Mono
+      height: 80
+      left: 350
+      line width: 2
+      text size: 12
+      top: 20
+      width: 250
     - Buffer length: 100
       Class: jsk_rviz_plugin/Plotter2D
       Enabled: true
@@ -80,7 +105,7 @@ Visualization Manager:
       background color: 0; 0; 0
       backround alpha: 0
       border: true
-      foreground alpha: 0.699999988
+      foreground alpha: 0.699999988079071
       foreground color: 25; 255; 240
       height: 128
       left: 495
@@ -91,7 +116,7 @@ Visualization Manager:
       show caption: true
       text size: 12
       top: 111
-      update interval: 0.0399999991
+      update interval: 0.03999999910593033
       width: 128
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
@@ -101,8 +126,8 @@ Visualization Manager:
       auto color change: false
       background color: 0; 0; 0
       backround alpha: 0
-      foreground alpha: 0.699999988
-      foreground alpha 2: 0.400000006
+      foreground alpha: 0.699999988079071
+      foreground alpha 2: 0.4000000059604645
       foreground color: 25; 255; 240
       left: 700
       max color: 255; 0; 0
@@ -117,21 +142,25 @@ Visualization Manager:
       Name: rviz startup image
       Topic: /image_publisher/image_raw
       Value: true
-      alpha: 0.800000012
+      alpha: 0.800000011920929
       height: 128
       keep aspect ratio: true
       left: 620
+      overwrite alpha value: false
       top: 550
+      transport hint: raw
       width: 128
     - Align Bottom: true
-      Background Alpha: 0.800000012
+      Background Alpha: 0.800000011920929
       Background Color: 0; 0; 0
       Class: jsk_rviz_plugin/OverlayText
       Enabled: true
-      Foreground Alpha: 0.800000012
+      Foreground Alpha: 0.800000011920929
       Foreground Color: 25; 255; 240
+      Invert Shadow: false
       Name: ros console output
-      Overtake Color Properties: true
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
       Overtake Position Properties: true
       Topic: /rosconsole_overlay_text/output
       Value: true
@@ -142,11 +171,20 @@ Visualization Manager:
       text size: 12
       top: 0
       width: 300
-    - Class: jsk_rviz_plugin/OverlayMenu
+    - Background Alpha: 0.5
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayMenu
       Enabled: true
+      Foreground Alpha: 1
+      Foreground Color: 25; 255; 240
       Name: menu
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
       Topic: /test_menu
       Value: true
+      keep centered: true
+      left: 128
+      top: 128
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -162,7 +200,10 @@ Visualization Manager:
     - Class: rviz/FocusCamera
     - Class: rviz/Measure
     - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
       Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
     - Class: rviz/SetGoal
       Topic: /move_base_simple/goal
     - Class: rviz/PublishPoint
@@ -173,25 +214,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.71087003
+      Distance: 2.7108700275421143
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.0599999987
+        Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.657525003
-        Y: -0.596540987
-        Z: 0.393615007
+        X: 0.6575250029563904
+        Y: -0.5965409874916077
+        Z: 0.3936150074005127
       Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.00999999978
-      Pitch: 0.59979701
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.5997970104217529
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.925848007
+      Yaw: 0.9258480072021484
     Saved: ~
 Window Geometry:
   Displays:
@@ -199,7 +240,7 @@ Window Geometry:
   Height: 945
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000327fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000327000000d700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000002befc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000034000002be000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000005b10000003efc0100000002fb0000000800540069006d00650100000000000005b10000030000fffffffb0000000800540069006d00650100000000000004500000000000000000000004410000032700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000313fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000313000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000002befc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000034000002be000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000005b10000003efc0100000002fb0000000800540069006d00650100000000000005b1000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000004410000031300000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -210,4 +251,4 @@ Window Geometry:
     collapsed: false
   Width: 1457
   X: 134
-  Y: 24
+  Y: 35

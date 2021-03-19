@@ -2,6 +2,37 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.7 (2020-10-17)
+------------------
+* Fix programming issues where functions were not getting return values, and variables were not being declared for types (`#783 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/783>`_)
+* Support custom color for OverlayMenu (`#775 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/775>`_)
+* add human skeleton rviz visualization(`#740 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/740>`_)
+
+  * jsk_recognition_msgs < 1.2.15 does not support human_skeleton_array_display.cpp
+  * meloidc needs to include OGRE/OgreSceneManager.h
+  * human_skeleton_array_display supports indigo build
+  * add sphere at all edge ends
+  * fix typo: skelton -> skeleton
+  * add human skelton rviz visualization
+
+* Add fg_color/bg_color to OverlayMenu.msg (`#776 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/776>`_)
+* [jsk_rviz_plugins] Add StringDisplay as a new display plugin (`#728 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/728>`_)
+* set property for ccache if cmake version < 3.4 (`#780 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/780>`_)
+* [jsk_rviz_plugin/PieChart] add clock wise rotate option for pie chart (`#782 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/782>`_)
+* Remove meaningless lock (`#750 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/750>`_)
+* call processNormal when polygon points has more than 3 point (`#771 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/771>`_)
+* add noetic test (`#774 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/774>`_)
+
+  * fix typo CV_VERSION_MAJOR -> CV_MAJOR_VERSION
+  * run 2to3 -f except
+  * run 2to3 -f print
+  * support noetic, use c++14, convert to package format 3
+  * Merge remote-tracking branch 'ruvu/fix/noetic' into add_noetic
+
+* Add Rviz scene publisher (`#773 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/773>`_)
+* Improve Overlay Visibility (`#769 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/769>`_)
+* Contributors: Kei Okada, Patrick Beeson, Ramon Wijnands, Ryohei Ueda, Shingo Kitagawa, Yuki Furuta, Yuto Uchimi, Iory Yanokura, Taichi Hagashide
+
 2.1.6 (2020-04-13)
 ------------------
 * [jsk_rviz_plugins] Add FontAwesome 5 (`#759 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/759>`_)

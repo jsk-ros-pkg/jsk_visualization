@@ -92,6 +92,7 @@ namespace jsk_rviz_plugins
     rviz::BoolProperty* show_caption_property_;
     rviz::BoolProperty* auto_color_change_property_;
     rviz::ColorProperty* max_color_property_;
+    rviz::BoolProperty* clockwise_rotate_property_;
 
     ros::Subscriber sub_;
     int left_;
@@ -113,6 +114,7 @@ namespace jsk_rviz_plugins
     bool update_required_;
     bool first_time_;
     OverlayObject::Ptr overlay_;
+    bool clockwise_rotate_;
     
     boost::mutex mutex_;
                        
@@ -132,6 +134,7 @@ namespace jsk_rviz_plugins
     void updateShowCaption();
     void updateAutoColorChange();
     void updateMaxColor();
+    void updateClockwiseRotate();
 
   private:
   };

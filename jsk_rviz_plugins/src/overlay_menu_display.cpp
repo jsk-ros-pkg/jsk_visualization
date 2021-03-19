@@ -71,6 +71,36 @@ namespace jsk_rviz_plugins
     keep_centered_property_ = new rviz::BoolProperty("keep centered", true,
                                                      "enable automatic center adjustment",
                                                      this, SLOT(updateKeepCentered()));
+
+    // NOTE: Overtaking FG/BG Color Properties defaults to TRUE for backward compatibility.
+    overtake_fg_color_properties_property_ = new rviz::BoolProperty(
+      "Overtake FG Color Properties", true,
+      "overtake color properties specified by message such as foreground color and alpha",
+      this, SLOT(updateOvertakeFGColorProperties()));
+    overtake_bg_color_properties_property_ = new rviz::BoolProperty(
+      "Overtake BG Color Properties", true,
+      "overtake color properties specified by message such as background color and alpha",
+      this, SLOT(updateOvertakeBGColorProperties()));
+
+    fg_color_property_ = new rviz::ColorProperty(
+      "Foreground Color", QColor(25, 255, 240),
+      "Foreground Color",
+      this, SLOT(updateFGColor()));
+    fg_alpha_property_ = new rviz::FloatProperty(
+      "Foreground Alpha", 1.0, "Foreground Alpha",
+      this, SLOT(updateFGAlpha()));
+    fg_alpha_property_->setMin(0.0);
+    fg_alpha_property_->setMax(1.0);
+
+    bg_color_property_ = new rviz::ColorProperty(
+      "Background Color", QColor(0, 0, 0),
+      "Background Color",
+      this, SLOT(updateBGColor()));
+    bg_alpha_property_ = new rviz::FloatProperty(
+      "Background Alpha", 0.5, "Background Alpha",
+      this, SLOT(updateBGAlpha()));
+    bg_alpha_property_->setMin(0.0);
+    bg_alpha_property_->setMax(1.0);
   }
 
   OverlayMenuDisplay::~OverlayMenuDisplay()
@@ -80,6 +110,12 @@ namespace jsk_rviz_plugins
     delete left_property_;
     delete top_property_;
     delete keep_centered_property_;
+    delete overtake_fg_color_properties_property_;
+    delete overtake_bg_color_properties_property_;
+    delete bg_color_property_;
+    delete bg_alpha_property_;
+    delete fg_color_property_;
+    delete fg_alpha_property_;
   }
 
   void OverlayMenuDisplay::onInitialize()
@@ -87,6 +123,12 @@ namespace jsk_rviz_plugins
     updateKeepCentered();
     updateLeft();
     updateTop();
+    updateOvertakeFGColorProperties();
+    updateOvertakeBGColorProperties();
+    updateFGColor();
+    updateFGAlpha();
+    updateBGColor();
+    updateBGAlpha();
     require_update_texture_ = false;
     animation_state_ = CLOSED;
   }
@@ -98,6 +140,7 @@ namespace jsk_rviz_plugins
     }
     subscribe();
   }
+
   void OverlayMenuDisplay::onDisable()
   {
     if (overlay_) {
@@ -125,6 +168,16 @@ namespace jsk_rviz_plugins
   (const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg)
   {
     next_menu_ = msg;
+    if (!overtake_bg_color_properties_)
+      bg_color_ = QColor(msg->bg_color.r * 255.0,
+                         msg->bg_color.g * 255.0,
+                         msg->bg_color.b * 255.0,
+                         msg->bg_color.a * 255.0);
+    if (!overtake_fg_color_properties_)
+      fg_color_ = QColor(msg->fg_color.r * 255.0,
+                         msg->fg_color.g * 255.0,
+                         msg->fg_color.b * 255.0,
+                         msg->fg_color.a * 255.0);
   }
 
   bool OverlayMenuDisplay::isNeedToResize()
@@ -329,7 +382,6 @@ namespace jsk_rviz_plugins
     int current_height = animation_t_ / animate_duration * overlay_->getTextureHeight();
     {
       ScopedPixelBuffer buffer = overlay_->getBuffer();
-      QColor bg_color(0, 0, 0, 255.0 / 2.0);
       QColor transparent(0, 0, 0, 0.0);
       QImage Hud = buffer.getQImage(*overlay_);
       for (int i = 0; i < overlay_->getTextureWidth(); i++) {
@@ -338,7 +390,7 @@ namespace jsk_rviz_plugins
               i < overlay_->getTextureWidth() - (overlay_->getTextureWidth() - current_width) / 2.0 &&
               j > (overlay_->getTextureHeight() - current_height) / 2.0 &&
               j < overlay_->getTextureHeight() - (overlay_->getTextureHeight() - current_height) / 2.0) {
-            Hud.setPixel(i, j, bg_color.rgba());
+            Hud.setPixel(i, j, bg_color_.rgba());
           }
           else {
             Hud.setPixel(i, j, transparent.rgba());
@@ -356,12 +408,10 @@ namespace jsk_rviz_plugins
     prepareOverlay();
     {
       ScopedPixelBuffer buffer = overlay_->getBuffer();
-      QColor bg_color(0, 0, 0, 255.0 / 2.0);
-      QColor fg_color(25, 255, 240, 255.0);
-      QImage Hud = buffer.getQImage(*overlay_, bg_color);
+      QImage Hud = buffer.getQImage(*overlay_, bg_color_);
       QPainter painter( &Hud );
       painter.setRenderHint(QPainter::Antialiasing, true);
-      painter.setPen(QPen(fg_color, 1, Qt::SolidLine));
+      painter.setPen(QPen(fg_color_, 1, Qt::SolidLine));
       painter.setFont(font());
       int line_height = fontMetrics().height();
       int w = drawAreaWidth(next_menu_);
@@ -445,6 +495,84 @@ namespace jsk_rviz_plugins
     }
     boost::mutex::scoped_lock lock(mutex_);
     keep_centered_ = keep_centered_property_->getBool();
+  }
+
+  void OverlayMenuDisplay::updateOvertakeFGColorProperties()
+  {
+    if (!overtake_fg_color_properties_ &&
+        overtake_fg_color_properties_property_->getBool()) {
+      // read all the parameters from properties
+      updateFGColor();
+      updateFGAlpha();
+      require_update_texture_ = true;
+    }
+    overtake_fg_color_properties_ = overtake_fg_color_properties_property_->getBool();
+    if (overtake_fg_color_properties_) {
+      fg_color_property_->show();
+      fg_alpha_property_->show();
+    }
+    else {
+      fg_color_property_->hide();
+      fg_alpha_property_->hide();
+    }
+  }
+
+  void OverlayMenuDisplay::updateOvertakeBGColorProperties()
+  {
+    if (!overtake_bg_color_properties_ &&
+        overtake_bg_color_properties_property_->getBool()) {
+      // read all the parameters from properties
+      updateBGColor();
+      updateBGAlpha();
+      require_update_texture_ = true;
+    }
+    overtake_bg_color_properties_ = overtake_bg_color_properties_property_->getBool();
+    if (overtake_bg_color_properties_) {
+      bg_color_property_->show();
+      bg_alpha_property_->show();
+    }
+    else {
+      bg_color_property_->hide();
+      bg_alpha_property_->hide();
+    }
+  }
+
+  void OverlayMenuDisplay::updateFGColor()
+  {
+    QColor c = fg_color_property_->getColor();
+    fg_color_.setRed(c.red());
+    fg_color_.setGreen(c.green());
+    fg_color_.setBlue(c.blue());
+    if (overtake_fg_color_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayMenuDisplay::updateFGAlpha()
+  {
+    fg_color_.setAlpha(fg_alpha_property_->getFloat() * 255.0);
+    if (overtake_fg_color_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayMenuDisplay::updateBGColor()
+  {
+    QColor c = bg_color_property_->getColor();
+    bg_color_.setRed(c.red());
+    bg_color_.setGreen(c.green());
+    bg_color_.setBlue(c.blue());
+    if (overtake_bg_color_properties_) {
+      require_update_texture_ = true;
+    }
+  }
+
+  void OverlayMenuDisplay::updateBGAlpha()
+  {
+    bg_color_.setAlpha(bg_alpha_property_->getFloat() * 255.0);
+    if (overtake_bg_color_properties_) {
+      require_update_texture_ = true;
+    }
   }
 
   bool OverlayMenuDisplay::isInRegion(int x, int y)

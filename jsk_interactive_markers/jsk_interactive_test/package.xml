@@ -1,6 +1,6 @@
 <package>
   <name>jsk_interactive_test</name>
-  <version>2.1.6</version>
+  <version>2.1.7</version>
   <description>jsk_interactive_test</description>
 
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>

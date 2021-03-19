@@ -2,6 +2,14 @@
 Changelog for package jsk_interactive_test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.7 (2020-10-17)
+------------------
+* add noetic test (e`#774 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/774>`_)
+
+  * fix python to pass python3 -m compileall
+
+* Contributors: Kei Okada
+
 2.1.6 (2020-04-13)
 ------------------
 

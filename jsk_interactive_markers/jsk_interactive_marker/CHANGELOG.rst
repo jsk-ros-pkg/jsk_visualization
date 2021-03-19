@@ -2,6 +2,18 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.7 (2020-10-17)
+------------------
+
+* set property for ccache if cmake version < 3.4 (`#780 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/780>`_)
+* Remove meaningless lock (`#750 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/750>`_)
+* add noetic test (`#774 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/774>`_)
+
+  * run 2to3 -f print
+  * support noetic, use c++14, convert to package format 3
+
+* Contributors: Kei Okada, Ryohei Ueda, Yuki Furuta
+
 2.1.6 (2020-04-13)
 ------------------
 * Remove unnecessary ROS_INFO (`#755 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/755>`_)

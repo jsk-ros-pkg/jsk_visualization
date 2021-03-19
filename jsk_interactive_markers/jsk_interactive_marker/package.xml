@@ -1,7 +1,7 @@
 <package>
   <name>jsk_interactive_marker</name>
   <description>jsk interactive markers</description>
-  <version>2.1.6</version>
+  <version>2.1.7</version>
   <author email="furuta@jsk.t.u-tokyo.ac.jp">furuta</author>
   <maintainer email="furuta@jsk.t.u-tokyo.ac.jp">furuta</maintainer>
   <license>BSD</license>

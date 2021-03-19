@@ -2,6 +2,15 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.7 (2020-10-17)
+------------------
+* add noetic test (`#774 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/774>`_)
+
+  * run 2to3 -f except
+  * support noetic, conver to package format 3
+
+* Contributors: Kei Okada
+
 2.1.6 (2020-04-13)
 ------------------
 * fix test failure in jsk_rqt_plugins (`#766 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/766>`_)
