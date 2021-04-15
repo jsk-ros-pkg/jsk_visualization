@@ -24,9 +24,9 @@ def allocatePublishers(num):
 def allocateEffortPublishers(names):
     global g_effort_publishers
     for name in names:
-        if not g_effort_publishers.has_key(name):
+        if name not in g_effort_publishers:
             g_effort_publishers[name] = rospy.Publisher('effort_%s' % (name), Float32, queue_size=1)
-        
+
 def motorStatesCallback(msg):
     global g_publishers, g_text_publisher
     #values = msg.position
