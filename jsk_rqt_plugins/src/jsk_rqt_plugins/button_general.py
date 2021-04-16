@@ -136,7 +136,7 @@ class ServiceButtonGeneralWidget(QWidget):
         """
         self.buttons = []
         with open(yaml_file) as f:
-            yaml_data = yaml.load(f)
+            yaml_data = yaml.safe_load(f)
             # lookup colum direction
             direction = 'vertical'
             for d in yaml_data:
