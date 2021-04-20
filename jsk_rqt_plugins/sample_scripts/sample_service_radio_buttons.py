@@ -16,9 +16,10 @@ class SampleServiceRadioButtons(object):
             rospy.Service('dummy/buttonE', Empty, self._empty_cb),
             rospy.Service('dummy/buttonF', Empty, self._empty_cb),
         ]
+        self._name = rospy.get_name()
 
     def _empty_cb(self, req):
-        rospy.loginfo('Empty service called')
+        rospy.loginfo('{} | Empty service called'.format(self._name))
         return EmptyResponse()
 
 
