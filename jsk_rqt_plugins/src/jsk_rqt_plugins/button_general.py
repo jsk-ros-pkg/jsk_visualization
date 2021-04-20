@@ -127,7 +127,15 @@ class ServiceButtonGeneralWidget(QWidget):
 
     def setupButtons(self, yaml_file):
         """
-        Parse yaml file and setup Buttons. Format of the yaml file should be:
+        Parse yaml file and setup Buttons.
+        """
+        with open(yaml_file) as f:
+            yaml_data = yaml.load(f)
+            self.setupButtons_with_yaml_data(yaml_data)
+
+    def setupButtons_with_yaml_data(self, yaml_data, namespace=None):
+        """
+        Setup Buttons with yaml_data which is loaded in setupButtons. Format of the yaml file should be:
         - name: 'button name' (required)
           image: 'path to image for icon' (optional)
           image_size: 'width and height of icon' (optional)
@@ -135,8 +143,7 @@ class ServiceButtonGeneralWidget(QWidget):
           column: 'column index' (optional, defaults to 0)
         """
         self.buttons = []
-        with open(yaml_file) as f:
-            yaml_data = yaml.load(f)
+        if True:
             # lookup colum direction
             direction = 'vertical'
             for d in yaml_data:
@@ -206,8 +213,17 @@ class ServiceButtonGeneralWidget(QWidget):
                     service_type = Empty
                 if service_type == SetBool:
                     button.setCheckable(True)
-                button.clicked.connect(
-                    self.buttonCallback(button_data['service'], service_type, button))
+                if namespace:
+                    sname = button_data['service']
+                    if sname[0] == '/' or sname[0] == '~':
+                        sname = sname
+                    else:
+                        sname = namespace + '/' + sname
+                    button.clicked.connect(
+                        self.buttonCallback(sname, service_type, button))
+                else:
+                    button.clicked.connect(
+                        self.buttonCallback(button_data['service'], service_type, button))
                 if self.button_type == "push":
                     button.setToolButtonStyle(
                         QtCore.Qt.ToolButtonTextUnderIcon)
