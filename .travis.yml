@@ -1,14 +1,18 @@
-language: c++
+sudo: true
+dist: bionic
+language: python
 cache:
+  apt: true
+  pip: true
   directories:
     - $HOME/.ccache
     - $HOME/.cache/pip
+    - $HOME/apt-cacher-ng
+    - $HOME/.ros/data
 python:
   - "2.7"
 compiler:
   - gcc
-sudo: required
-dist: boinc
 services:
   - docker
 notifications:
