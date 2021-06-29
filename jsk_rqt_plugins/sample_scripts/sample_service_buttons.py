@@ -20,17 +20,18 @@ class SampleServiceButtons(object):
             rospy.Service('dummy/buttonE', Empty, self._empty_cb),
             rospy.Service('dummy/buttonF', Empty, self._empty_cb),
         ]
+        self._name = rospy.get_name()
 
     def _set_bool_cb(self, req):
-        rospy.loginfo('SetBool service called: req.data={}'.format(req.data))
+        rospy.loginfo('{} | SetBool service called: req.data={}'.format(self._name,req.data))
         return SetBoolResponse(success=True)
 
     def _trigger_cb(self, req):
-        rospy.loginfo('Trigger service called')
+        rospy.loginfo('{} | Trigger service called'.format(self._name))
         return TriggerResponse(success=True)
 
     def _empty_cb(self, req):
-        rospy.loginfo('Empty service called')
+        rospy.loginfo('{} | Empty service called'.format(self._name))
         return EmptyResponse()
 
 
