@@ -230,7 +230,7 @@ class Plot2DWidget(QWidget):
         self.enable_timer(not checked)
 
     def plot_one(self, msg, axes):
-        concatenated_data = zip(msg.xs, msg.ys)
+        concatenated_data = list(zip(msg.xs, msg.ys))
         if self.sort_x:
             concatenated_data.sort(key=lambda x: x[0])
         xs = [d[0] for d in concatenated_data]

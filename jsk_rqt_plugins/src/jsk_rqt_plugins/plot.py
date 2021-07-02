@@ -219,7 +219,7 @@ class MatDataPlot3D(QWidget):
                 verts.append([(xmin, ymin)] + list(zip(data_x, data_y))
                              + [(xmax, ymin)])
             else:
-                verts.append(zip(data_x, data_y))
+                verts.append(list(zip(data_x, data_y)))
         line_num = len(self._curves.keys())
         if self._use_poly:
             poly = PolyCollection(verts, facecolors=colors, closed=False)
