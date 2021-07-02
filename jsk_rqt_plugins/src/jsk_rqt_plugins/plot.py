@@ -151,7 +151,7 @@ class MatDataPlot3D(QWidget):
     def _update_legend(self):
         if self._no_legend:
             return
-        labels = self._curves.keys()
+        labels = list(self._curves.keys())
         handles = [
             plt.Rectangle((0, 0), 1, 1, fc=self._curves[labels[i]][4])
             for i in range(len(labels))]
