@@ -4,6 +4,8 @@ import argparse
 from distutils.version import LooseVersion
 import os
 import sys
+if not hasattr(sys, 'maxint'): ## In python3, sys.maxint changed to sys.maxsize
+    sys.maxint = sys.maxsize
 
 import matplotlib
 from matplotlib.collections import LineCollection
