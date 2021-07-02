@@ -29,4 +29,3 @@ jobs:
         with:
           ROS_DISTRO : noetic
           ROS_PARALLEL_TEST_JOBS: "-j8"
-          TEST_PKGS: "jsk_rviz_plugins"
