@@ -1,6 +1,10 @@
 sudo: true
 dist: bionic
 language: python
+addons:
+  apt:
+    packages:
+    - 2to3
 cache:
   apt: true
   pip: true
