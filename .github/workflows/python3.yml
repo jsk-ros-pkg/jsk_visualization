@@ -17,4 +17,4 @@ jobs:
       - name: Check Python3
         run: |
           apt update -q && apt install -y -q python3 git 2to3
-          bash -c "ret=0; trap 'ret=1' ERR; python3 -m compileall .; 2to3 -w -f except -f execfile -f has_key -f import -f raw_input -f zip .; git diff --exit-code . > /dev/null; echo Exitting with \$ret; exit \$ret"
+          bash -c "ret=0; trap 'ret=1' ERR; python3 -m compileall .; 2to3 -w -f except -f execfile -f has_key -f import -f raw_input -f zip .; git diff --exit-code . :^.travis > /dev/null; echo Exitting with \$ret; exit \$ret"

@@ -44,7 +44,7 @@ matrix:
   allow_failures:
     - env: ROS_DISTRO=lunar   USE_DEB=true
 script:
-  - if [ "${CHECK_PYTHON3_COMPILE}" == "true" ]; then bash -c "ret=0; trap 'ret=1' ERR; python3 -m compileall .; 2to3 -w -f except -f execfile -f has_key -f import -f raw_input -f zip .; git diff --exit-code . > /dev/null; echo Exitting with \$ret; exit \$ret"; exit $?; fi
+  - if [ "${CHECK_PYTHON3_COMPILE}" == "true" ]; then bash -c "ret=0; trap 'ret=1' ERR; python3 -m compileall .; 2to3 -w -f except -f execfile -f has_key -f import -f raw_input -f zip .; git diff --exit-code . :^.travis > /dev/null; echo Exitting with \$ret; exit \$ret"; exit $?; fi
   - source .travis/travis.sh
   # test building sphinx documentation
   - which virtualenv 2>/dev/null || pip3 install --user virtualenv
