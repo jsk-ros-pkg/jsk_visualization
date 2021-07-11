@@ -147,7 +147,7 @@ class ServiceButtonGeneralWidget(QWidget):
             # lookup colum direction
             direction = 'vertical'
             for d in yaml_data:
-                if d.has_key('direction'):
+                if 'direction' in d:
                     if d['direction'] == 'horizontal':
                         direction = 'horizontal'
                     else: # d['direction'] == 'vertical':
@@ -172,10 +172,10 @@ class ServiceButtonGeneralWidget(QWidget):
                                   for i in range(max_column_index + 1)]
             for button_data in yaml_data:
                 # check if all the field is available
-                if not button_data.has_key("name"):
+                if "name" not in button_data:
                     self.showError("name field is missed in yaml")
                     raise Exception("name field is missed in yaml")
-                if not button_data.has_key("service"):
+                if "service" not in button_data:
                     self.showError("service field is missed in yaml")
                     raise Exception("service field is missed in yaml")
                 if self.button_type == "push":
@@ -184,22 +184,22 @@ class ServiceButtonGeneralWidget(QWidget):
                     button = QRadioButton()
                 button.setSizePolicy(
                     QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
-                if button_data.has_key("image"):
+                if "image" in button_data:
                     image_file = get_filename(
                         button_data["image"])[len("file://"):]
                     if os.path.exists(image_file):
                         icon = QtGui.QIcon(image_file)
                         button.setIcon(icon)
-                        if button_data.has_key("image_size"):
+                        if "image_size" in button_data:
                             button.setIconSize(QSize(
                                 button_data["image_size"][0],
                                 button_data["image_size"][1]))
                         else:
                             button.setIconSize(QSize(100, 100))
-                if button_data.has_key("name"):
+                if "name" in button_data:
                     name = button_data['name']
                     button.setText(name)
-                if button_data.has_key('service_type'):
+                if 'service_type' in button_data:
                     if button_data['service_type'] == 'Trigger':
                         service_type = Trigger
                     elif button_data['service_type'] == 'Empty':
