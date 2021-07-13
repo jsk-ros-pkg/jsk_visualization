@@ -130,7 +130,7 @@ class ServiceButtonGeneralWidget(QWidget):
         Parse yaml file and setup Buttons.
         """
         with open(yaml_file) as f:
-            yaml_data = yaml.load(f)
+            yaml_data = yaml.safe_load(f)
             self.setupButtons_with_yaml_data(yaml_data)
 
     def setupButtons_with_yaml_data(self, yaml_data, namespace=None):
