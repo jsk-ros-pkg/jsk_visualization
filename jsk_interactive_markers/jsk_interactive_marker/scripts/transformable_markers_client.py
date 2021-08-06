@@ -36,7 +36,7 @@ class TransformableMarkersClient(object):
             rospy.logfatal("config_file '{}' does not exist"
                            .format(self.config_file))
             sys.exit(1)
-        self.config = yaml.load(open(self.config_file))
+        self.config = yaml.safe_load(open(self.config_file))
 
         self.req_marker = rospy.ServiceProxy(
             osp.join(self.server, 'request_marker_operate'),

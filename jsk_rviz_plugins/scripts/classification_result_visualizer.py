@@ -121,7 +121,7 @@ class ClassificationResultVisualizer(ConnectionBasedTransport):
         msg = MarkerArray()
         show_proba = self.show_proba and len(classes.label_names) == len(classes.label_proba)
         if show_proba:
-            cls_iter = zip(classes.label_names, classes.label_proba)
+            cls_iter = list(zip(classes.label_names, classes.label_proba))
         else:
             cls_iter = classes.label_names
         for i, data in enumerate(zip(bboxes.boxes, cls_iter)):

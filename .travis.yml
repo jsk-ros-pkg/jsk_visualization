@@ -1,14 +1,22 @@
-language: c++
+sudo: true
+dist: bionic
+language: python
+addons:
+  apt:
+    packages:
+    - 2to3
 cache:
+  apt: true
+  pip: true
   directories:
     - $HOME/.ccache
     - $HOME/.cache/pip
+    - $HOME/apt-cacher-ng
+    - $HOME/.ros/data
 python:
   - "2.7"
 compiler:
   - gcc
-sudo: required
-dist: boinc
 services:
   - docker
 notifications:
@@ -31,12 +39,12 @@ env:
     - ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --user matplotlib==2.2.5" USE_DEB=true
     - ROS_DISTRO=lunar   USE_DEB=true
     - ROS_DISTRO=melodic USE_DEB=true
-    - ROS_DISTRO=noetic  USE_DEB=true TEST_PKGS="jsk_rviz_plugins"
+    - ROS_DISTRO=noetic  USE_DEB=true
 matrix:
   allow_failures:
     - env: ROS_DISTRO=lunar   USE_DEB=true
 script:
-  - if [ "${CHECK_PYTHON3_COMPILE}" == "true" ]; then python3 -m compileall .; exit $?; fi
+  - if [ "${CHECK_PYTHON3_COMPILE}" == "true" ]; then bash -c "ret=0; trap 'ret=1' ERR; python3 -m compileall .; 2to3 -w -f except -f execfile -f has_key -f import -f raw_input -f zip .; git diff --exit-code . :^.travis > /dev/null; echo Exitting with \$ret; exit \$ret"; exit $?; fi
   - source .travis/travis.sh
   # test building sphinx documentation
   - which virtualenv 2>/dev/null || pip3 install --user virtualenv

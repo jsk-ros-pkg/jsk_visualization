@@ -4,6 +4,8 @@ import argparse
 from distutils.version import LooseVersion
 import os
 import sys
+if not hasattr(sys, 'maxint'): ## In python3, sys.maxint changed to sys.maxsize
+    sys.maxint = sys.maxsize
 
 import matplotlib
 from matplotlib.collections import LineCollection
@@ -151,7 +153,7 @@ class MatDataPlot3D(QWidget):
     def _update_legend(self):
         if self._no_legend:
             return
-        labels = self._curves.keys()
+        labels = list(self._curves.keys())
         handles = [
             plt.Rectangle((0, 0), 1, 1, fc=self._curves[labels[i]][4])
             for i in range(len(labels))]
@@ -217,7 +219,7 @@ class MatDataPlot3D(QWidget):
                 verts.append([(xmin, ymin)] + list(zip(data_x, data_y))
                              + [(xmax, ymin)])
             else:
-                verts.append(zip(data_x, data_y))
+                verts.append(list(zip(data_x, data_y)))
         line_num = len(self._curves.keys())
         if self._use_poly:
             poly = PolyCollection(verts, facecolors=colors, closed=False)

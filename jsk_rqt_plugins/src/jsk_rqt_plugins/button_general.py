@@ -127,7 +127,15 @@ class ServiceButtonGeneralWidget(QWidget):
 
     def setupButtons(self, yaml_file):
         """
-        Parse yaml file and setup Buttons. Format of the yaml file should be:
+        Parse yaml file and setup Buttons.
+        """
+        with open(yaml_file) as f:
+            yaml_data = yaml.safe_load(f)
+            self.setupButtons_with_yaml_data(yaml_data)
+
+    def setupButtons_with_yaml_data(self, yaml_data, namespace=None):
+        """
+        Setup Buttons with yaml_data which is loaded in setupButtons. Format of the yaml file should be:
         - name: 'button name' (required)
           image: 'path to image for icon' (optional)
           image_size: 'width and height of icon' (optional)
@@ -135,12 +143,11 @@ class ServiceButtonGeneralWidget(QWidget):
           column: 'column index' (optional, defaults to 0)
         """
         self.buttons = []
-        with open(yaml_file) as f:
-            yaml_data = yaml.load(f)
+        if True:
             # lookup colum direction
             direction = 'vertical'
             for d in yaml_data:
-                if d.has_key('direction'):
+                if 'direction' in d:
                     if d['direction'] == 'horizontal':
                         direction = 'horizontal'
                     else: # d['direction'] == 'vertical':
@@ -165,10 +172,10 @@ class ServiceButtonGeneralWidget(QWidget):
                                   for i in range(max_column_index + 1)]
             for button_data in yaml_data:
                 # check if all the field is available
-                if not button_data.has_key("name"):
+                if "name" not in button_data:
                     self.showError("name field is missed in yaml")
                     raise Exception("name field is missed in yaml")
-                if not button_data.has_key("service"):
+                if "service" not in button_data:
                     self.showError("service field is missed in yaml")
                     raise Exception("service field is missed in yaml")
                 if self.button_type == "push":
@@ -177,22 +184,22 @@ class ServiceButtonGeneralWidget(QWidget):
                     button = QRadioButton()
                 button.setSizePolicy(
                     QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
-                if button_data.has_key("image"):
+                if "image" in button_data:
                     image_file = get_filename(
                         button_data["image"])[len("file://"):]
                     if os.path.exists(image_file):
                         icon = QtGui.QIcon(image_file)
                         button.setIcon(icon)
-                        if button_data.has_key("image_size"):
+                        if "image_size" in button_data:
                             button.setIconSize(QSize(
                                 button_data["image_size"][0],
                                 button_data["image_size"][1]))
                         else:
                             button.setIconSize(QSize(100, 100))
-                if button_data.has_key("name"):
+                if "name" in button_data:
                     name = button_data['name']
                     button.setText(name)
-                if button_data.has_key('service_type'):
+                if 'service_type' in button_data:
                     if button_data['service_type'] == 'Trigger':
                         service_type = Trigger
                     elif button_data['service_type'] == 'Empty':
@@ -206,8 +213,17 @@ class ServiceButtonGeneralWidget(QWidget):
                     service_type = Empty
                 if service_type == SetBool:
                     button.setCheckable(True)
-                button.clicked.connect(
-                    self.buttonCallback(button_data['service'], service_type, button))
+                if namespace:
+                    sname = button_data['service']
+                    if sname[0] == '/' or sname[0] == '~':
+                        sname = sname
+                    else:
+                        sname = namespace + '/' + sname
+                    button.clicked.connect(
+                        self.buttonCallback(sname, service_type, button))
+                else:
+                    button.clicked.connect(
+                        self.buttonCallback(button_data['service'], service_type, button))
                 if self.button_type == "push":
                     button.setToolButtonStyle(
                         QtCore.Qt.ToolButtonTextUnderIcon)

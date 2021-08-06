@@ -28,7 +28,7 @@ from std_msgs.msg import Bool
 from std_msgs.msg import Time
 from std_msgs.msg import UInt8
 
-from image_view2_wrapper import ComboBoxDialog
+from .image_view2_wrapper import ComboBoxDialog
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QAction
