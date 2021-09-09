@@ -2,7 +2,7 @@
 
   <arg name="gui" default="true" />
 
-  <node name="polygon_array_sample"
+  <node name="segment_array_sample"
         pkg="jsk_rviz_plugins" type="segment_array_sample.py" />
 
   <group if="$(arg gui)" >
