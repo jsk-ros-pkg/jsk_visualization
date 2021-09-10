@@ -169,10 +169,10 @@ namespace jsk_rviz_plugins
     if (update_required_) {
       update_required_ = false;
       overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
-      drawPlot(data_);
       overlay_->setPosition(left_, top_);
       overlay_->setDimensions(overlay_->getTextureWidth(),
                               overlay_->getTextureHeight());
+      drawPlot(data_);
     }
   }
   
@@ -308,52 +308,69 @@ namespace jsk_rviz_plugins
   {
     boost::mutex::scoped_lock lock(mutex_);
     texture_size_ = size_property_->getInt();
+    update_required_ = true;
   }
   
   void PieChartDisplay::updateTop()
   {
     top_ = top_property_->getInt();
+    update_required_ = true;
   }
   
   void PieChartDisplay::updateLeft()
   {
     left_ = left_property_->getInt();
+    update_required_ = true;
   }
   
   void PieChartDisplay::updateBGColor()
   {
     bg_color_ = bg_color_property_->getColor();
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateFGColor()
   {
     fg_color_ = fg_color_property_->getColor();
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateFGAlpha()
   {
     fg_alpha_ = fg_alpha_property_->getFloat() * 255.0;
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateFGAlpha2()
   {
     fg_alpha2_ = fg_alpha2_property_->getFloat() * 255.0;
+    update_required_ = true;
+
   }
 
   
   void PieChartDisplay::updateBGAlpha()
   {
     bg_alpha_ = bg_alpha_property_->getFloat() * 255.0;
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateMinValue()
   {
     min_value_ = min_value_property_->getFloat();
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateMaxValue()
   {
     max_value_ = max_value_property_->getFloat();
+    update_required_ = true;
+
   }
   
   void PieChartDisplay::updateTextSize()
@@ -363,12 +380,15 @@ namespace jsk_rviz_plugins
     QFont font;
     font.setPointSize(text_size_);
     caption_offset_ = QFontMetrics(font).height();
-    
+    update_required_ = true;
+
   }
   
   void PieChartDisplay::updateShowCaption()
   {
     show_caption_ = show_caption_property_->getBool();
+    update_required_ = true;
+
   }
 
   
@@ -387,16 +407,22 @@ namespace jsk_rviz_plugins
     else {
       max_color_property_->hide();
     }
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateMaxColor()
   {
     max_color_ = max_color_property_->getColor();
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateClockwiseRotate()
   {
     clockwise_rotate_ = clockwise_rotate_property_->getBool();
+    update_required_ = true;
+
   }
 
    bool PieChartDisplay::isInRegion(int x, int y)
