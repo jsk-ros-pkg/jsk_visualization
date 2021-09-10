@@ -40,5 +40,5 @@
   </group>
 
 
-  <node pkg="rviz" name="rviz" type="rviz" args="-d $(find jsk_rviz_plugins)/cfg/normal_sample.rviz"/>
+  <node pkg="rviz" name="rviz" type="rviz" args="-d $(find jsk_rviz_plugins)/config/normal_sample.rviz"/>
 </launch>
