@@ -57,6 +57,8 @@
   <exec_depend>urdfdom_py</exec_depend>
   <exec_depend>view_controller_msgs</exec_depend>
 
+  <test_depend>rostest</test_depend>
+
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>

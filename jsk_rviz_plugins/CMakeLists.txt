@@ -238,3 +238,20 @@ install(DIRECTORY src/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
 )
+
+if (CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  if("$ENV{ROS_DISTRO}" STRGREATER "luner") # test uses http://wiki.ros.org/rostest/Nodes#advertisetest, which is available from Melodic
+    file(GLOB TEST_FILES test/*.test)
+    foreach(TEST_FILE ${TEST_FILES})
+      if(${TEST_FILE} STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}/test/face_detector.test") # face_detector is not found
+	continue()
+      endif()
+      if(${TEST_FILE} STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}/test/normal.test") # openni can not run on tests
+	continue()
+      endif()
+      message(STATUS "Run test for ${TEST_FILE}")
+      add_rostest(${TEST_FILE})
+    endforeach()
+  endif()
+endif()
