@@ -1,0 +1,11 @@
+<launch>
+  <env name="DISPLAY" value="$(optenv DISPLAY :0.0)" /> <!-- force set DISPLAY if not found -->
+
+  <include file="$(find jsk_rviz_plugins)/launch/face_detector_sample.launch" />
+  <!-- check if rviz started -->
+  <test test-name="face_detector_rviz_crash_test" pkg="rostest" type="advertisetest" time-limit="10" retry="3">
+    <rosparam>
+      test_duration: 5.0
+    </rosparam>
+  </test>
+</launch>
