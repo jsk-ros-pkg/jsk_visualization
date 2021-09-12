@@ -59,6 +59,8 @@
 
   <test_depend>rostest</test_depend>
   <test_depend>pr2_description</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires pr2_description -->
+  <test_depend>joint_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires joint_state_publisher -->
+  <test_depend>robot_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires robot_state_publisher -->
 
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
