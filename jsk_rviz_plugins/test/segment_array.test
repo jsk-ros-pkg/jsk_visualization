@@ -7,7 +7,7 @@
     <rosparam>
       test_duration: 5.0
       topics:
-      - name: /polygon_array_sample/output
+      - name: /segment_array_sample/output
     </rosparam>
   </test>
 </launch>

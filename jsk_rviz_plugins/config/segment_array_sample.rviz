@@ -52,7 +52,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/SegmentArray
       Enabled: true
       Name: SegmentArray
-      Topic: /polygon_array_sample/output
+      Topic: /segment_array_sample/output
       Unreliable: false
       Value: true
       alpha: 0.8
