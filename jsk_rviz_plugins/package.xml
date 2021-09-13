@@ -61,6 +61,9 @@
   <test_depend>pr2_description</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires pr2_description -->
   <test_depend>joint_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires joint_state_publisher -->
   <test_depend>robot_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires robot_state_publisher -->
+  <test_depend>openni2_launch</test_depend> <!-- normal.test, face_detector.test requires openni2_launch -->
+  <test_depend>image_transport</test_depend> <!-- normal.test, face_detector.test requires image_transport -->
+  <test_depend>face_detector</test_depend> <!-- face_detector.test requires face_detector -->
 
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
