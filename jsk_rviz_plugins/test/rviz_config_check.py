@@ -90,7 +90,7 @@ class RvizConfigCheck(unittest.TestCase):
                 use_sim_time and (rospy.Time.now() == rospy.Time(0)):
             rospy.logwarn_throttle(
                 1, '/use_sim_time is specified and rostime is 0, /clock is published?')
-            if time.time() - t_start > 10:
+            if time.time() - self.t_start > 10:
                 self.fail('Timed out (10s) of /clock publication.')
             # must use time.sleep because /clock isn't yet published, so rospy.sleep hangs.
             time.sleep(0.1)
