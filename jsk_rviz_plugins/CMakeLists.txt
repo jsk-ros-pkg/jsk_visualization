@@ -240,6 +240,10 @@ install(DIRECTORY src/
 )
 
 if (CATKIN_ENABLE_TESTING)
+  # download and install sample data
+  add_custom_target(${PROJECT_NAME}_install_sample_data COMMAND python$ENV{ROS_PYTHON_VERSION} ${PROJECT_SOURCE_DIR}/test/install_sample_data.py)
+  add_dependencies(tests ${PROJECT_NAME}_install_sample_data)
+  # run rostest for melodic+
   find_package(rostest REQUIRED)
   if("$ENV{ROS_DISTRO}" STRGREATER "luner") # test uses http://wiki.ros.org/rostest/Nodes#advertisetest, which is available from Melodic
     file(GLOB TEST_FILES test/*.test)
