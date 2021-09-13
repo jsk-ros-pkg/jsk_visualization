@@ -62,8 +62,10 @@
   <test_depend>joint_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires joint_state_publisher -->
   <test_depend>robot_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires robot_state_publisher -->
   <test_depend>jsk_data</test_depend> <!-- install_sample_data requries jsk_data -->
+  <test_depend>python-gdown-pip</test_depend> <!-- install_sample_data requries gdown -->
   <test_depend>openni2_launch</test_depend> <!-- normal.test, face_detector.test requires openni2_launch -->
   <test_depend>image_transport</test_depend> <!-- normal.test, face_detector.test requires image_transport -->
+  <test_depend>jsk_pcl_ros_utils</test_depend> <!-- normal.test requires jsk_pcl/NormalConcatenater -->
   <test_depend>face_detector</test_depend> <!-- face_detector.test requires face_detector -->
 
   <export>
