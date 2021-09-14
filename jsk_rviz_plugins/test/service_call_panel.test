@@ -3,7 +3,7 @@
 
   <include file="$(find jsk_rviz_plugins)/launch/service_call_panel.launch" />
   <!-- check if rviz started -->
-  <test test-name="service_call_panel_rviz_crash_test" pkg="jsk_rviz_plugins" type="rviz_config_check.py" time-limit="20" retry="2">
+  <test test-name="service_call_panel_rviz_crash_test" pkg="jsk_rviz_plugins" type="rviz_config_check.py" time-limit="30" retry="2">
     <rosparam>
       test_duration: 5.0
     </rosparam>

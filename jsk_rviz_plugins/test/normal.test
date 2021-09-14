@@ -36,7 +36,7 @@
     <arg name="launch_openni" value="false" />
   </include>
   <!-- check if rviz started -->
-  <test test-name="normal_rviz_crash_test" pkg="jsk_rviz_plugins" type="rviz_config_check.py" time-limit="20" retry="2">
+  <test test-name="normal_rviz_crash_test" pkg="jsk_rviz_plugins" type="rviz_config_check.py" time-limit="30" retry="2">
     <rosparam>
       test_duration: 5.0
       topics:

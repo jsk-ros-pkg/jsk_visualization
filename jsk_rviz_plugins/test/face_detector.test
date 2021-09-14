@@ -34,7 +34,7 @@
 
   <include file="$(find jsk_rviz_plugins)/launch/face_detector_sample.launch" />
   <!-- check if rviz started -->
-  <test test-name="face_detector_rviz_crash_test" pkg="jsk_rviz_plugins" type="rviz_config_check.py" time-limit="20" retry="2">
+  <test test-name="face_detector_rviz_crash_test" pkg="jsk_rviz_plugins" type="rviz_config_check.py" time-limit="30" retry="2">
     <rosparam>
       test_duration: 5.0
       topics:
