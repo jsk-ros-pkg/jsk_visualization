@@ -51,6 +51,7 @@ see example below
 Author: Kei Okada <kei.okada@gmail.com>
 """
 
+import os
 import sys
 import time
 import unittest
@@ -101,6 +102,9 @@ class RvizConfigCheck(unittest.TestCase):
             rviz_service_names = rosservice.rosservice_find('rviz/SendFilePath')
             if len(rviz_service_names) == 0:
                 rospy.logwarn("Waiting for rviz service (rviz/SendFilePath)")
+                # rviz/SendFilePath only available >melodic
+                if os.environ['ROS_DISTRO'] < 'melodic':
+                    rviz_service_names = rosservice.rosservice_find('std_srvs/Empty')
             time.sleep(0.1)
         rospy.loginfo("Found rviz service names {}".format(rviz_service_names))
         rviz_node_names = set(map(rosservice.get_service_node, rviz_service_names))
