@@ -86,12 +86,12 @@ class RvizConfigCheck(unittest.TestCase):
     def setUp(self):
         # warn on /use_sim_time is true
         use_sim_time = rospy.get_param('/use_sim_time', False)
-        self.t_start = time.time()
+        t_start = time.time()
         while not rospy.is_shutdown() and \
                 use_sim_time and (rospy.Time.now() == rospy.Time(0)):
             rospy.logwarn_throttle(
                 1, '/use_sim_time is specified and rostime is 0, /clock is published?')
-            if time.time() - self.t_start > 10:
+            if time.time() - t_start > 10:
                 self.fail('Timed out (10s) of /clock publication.')
             # must use time.sleep because /clock isn't yet published, so rospy.sleep hangs.
             time.sleep(0.1)
@@ -101,22 +101,26 @@ class RvizConfigCheck(unittest.TestCase):
         while not rospy.is_shutdown() and len(rviz_service_names) == 0:
             rviz_service_names = rosservice.rosservice_find('rviz/SendFilePath')
             if len(rviz_service_names) == 0:
-                rospy.logwarn("Waiting for rviz service (rviz/SendFilePath)")
+                rospy.logwarn("[{}] Waiting rviz service (rviz/SendFilePath) for {:.3f} sec".format(rospy.get_name(), time.time() - t_start))
                 # rviz/SendFilePath only available >melodic
                 if os.environ['ROS_DISTRO'] < 'melodic':
                     rviz_service_names = rosservice.rosservice_find('std_srvs/Empty')
             time.sleep(0.1)
-        rospy.loginfo("Found rviz service names {}".format(rviz_service_names))
+
+        # check if
+        rospy.logwarn("[{}] Found rviz service names {}".format(rospy.get_name(), rviz_service_names))
         rviz_node_names = set(map(rosservice.get_service_node, rviz_service_names))
-        rospy.loginfo("Found rviz node names {}".format(rviz_node_names))
+        rospy.logwarn("[{}] Found rviz node names {}".format(rospy.get_name(), rviz_node_names))
         if len(rviz_node_names) == 0:
-            rospy.logerr("Could not find rviz nodes")
+            rospy.logerr("[{}] Could not find rviz nodes".format(rospy.get_name()))
             raise AssertionError
 
         self.rviz_node_name = list(rviz_node_names)[0]
 
     def test_rviz_exists(self):
-        t_start = self.t_start
+        rospy.logwarn("[{}] Check rviz node exists {}".format(rospy.get_name(), self.rviz_node_name))
+        subs = []
+        t_start = time.time()
         while not rospy.is_shutdown():
             t_now = time.time()
             t_elapsed = t_now - t_start
@@ -126,26 +130,29 @@ class RvizConfigCheck(unittest.TestCase):
             # info = rosnode.rosnode_info(self.rviz_node_name) does not return values, so we need to expand functions
             node_api = rosnode.rosnode_ping(self.rviz_node_name, max_count=1, skip_cache=True)
             if not node_api:
-                rospy.logerr("Could not find rviz node api on rosmaster")
+                rospy.logerr("[{}] Could not find rviz node api on rosmaster".format(rospy.get_name()))
                 raise AssertionError
 
-            rospy.loginfo("{:.3f} Rviz node found at {}".format(t_elapsed, node_api))
+            rospy.logwarn("[{}] {:.3f} Rviz node found at {}".format(rospy.get_name(), t_elapsed, node_api))
+
+            # check if topic exists
+            master = rosgraph.Master('/rosnode')
+
+            state = master.getSystemState()
+            subs.extend(sorted([t for t, l in state[1] if self.rviz_node_name in l]))
+            subs = list(set(subs))
+            rospy.logwarn('[{}] rviz subscribes {}'.format(rospy.get_name(), subs))
             time.sleep(0.5)
-        self.assertTrue("rviz keep alive for {}[sec]".format(self.test_duration))
-
-        # check if topic exists
-        master = rosgraph.Master('/rosnode')
-
-        state = master.getSystemState()
-        pub_topics = master.getPublishedTopics('/')
-        subs = sorted([t for t, l in state[1] if self.rviz_node_name in l])
 
         for topic in self.topics:
             if topic in subs:
-                rospy.loginfo('rviz subscribes {}'.format(topic))
+                rospy.logwarn('[{}] rviz subscribes {}'.format(rospy.get_name(), topic))
             else:
-                rospy.logerr('rviz did not subscribes {}'.format(topic))
+                rospy.logerr('[{}] rviz did not subscribes {}'.format(rospy.get_name(), topic))
                 raise AssertionError
+
+        rospy.logwarn("[{}] rviz keep alive for {}[sec] and found {}".format(rospy.get_name(), self.test_duration, self.topics))
+        self.assertTrue(True, "check {}/rviz alives".format(rospy.get_name()))
 
 
 if __name__ == '__main__':
