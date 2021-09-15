@@ -246,12 +246,12 @@ if (CATKIN_ENABLE_TESTING)
   # run rostest for melodic+
   find_package(rostest REQUIRED)
   if("$ENV{ROS_DISTRO}" STRGREATER "indigo") # support from kinetic
-    file(GLOB TEST_FILES test/*.test)
+    file(GLOB TEST_FILES test/*.test test/*.xml)
     foreach(TEST_FILE ${TEST_FILES})
       # if we failed to install sample data, skip testing face_detect and normal
       if((NOT EXISTS "${PROJECT_SOURCE_DIR}/test/data/2017-06-20-12-00-00_people_images_in_lab.bag") AND
-	  ((${TEST_FILE} STREQUAL "${PROJECT_SOURCE_DIR}/test/face_detector.test") OR
-	    (${TEST_FILE} STREQUAL "${PROJECT_SOURCE_DIR}/test/normal.test")))
+	  ((${TEST_FILE} STREQUAL "${PROJECT_SOURCE_DIR}/test/face_detector.xml") OR
+	    (${TEST_FILE} STREQUAL "${PROJECT_SOURCE_DIR}/test/normal.xml")))
 	message(STATUS "Skip test for ${TEST_FILE} due to missing bag file")
 	continue()
       endif()
