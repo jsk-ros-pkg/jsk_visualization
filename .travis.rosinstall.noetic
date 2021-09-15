@@ -1,0 +1,3 @@
+- tar:
+    local-name: face_detector
+    uri: https://github.com/OSUrobotics/people-release/archive/refs/tags/debian/ros-noetic-face-detector_1.4.0-1_focal.tar.gz
