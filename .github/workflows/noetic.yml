@@ -29,3 +29,4 @@ jobs:
         with:
           ROS_DISTRO : noetic
           ROS_PARALLEL_TEST_JOBS: "-j8"
+          USE_DEB : false # to use .travis.rosinstall.noetic for face_detector

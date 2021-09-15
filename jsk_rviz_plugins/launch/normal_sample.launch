@@ -1,5 +1,7 @@
 <launch>
-  <include file="$(find openni_launch)/launch/openni.launch">
+  <arg name="launch_openni" default="true" />
+  <include file="$(find openni_launch)/launch/openni.launch"
+           if="$(arg launch_openni)">
     <arg name="depth_registration" value="true"/>
   </include>
 
@@ -36,6 +38,9 @@
           clear_params="true">
       <remap from="~input" to="voxel_grid/output"/>
       <remap from="~normal" to="normal_estimate/output"/>
+      <rosparam>
+        use_async: true
+      </rosparam>
     </node>
   </group>
 

@@ -127,7 +127,8 @@ namespace jsk_rviz_plugins
         std::stringstream ss;
         ss << "PolygonArrayMaterial" << count++;
         Ogre::MaterialPtr material
-          = Ogre::MaterialManager::getSingleton().create(ss.str(), "rviz");
+          = Ogre::MaterialManager::getSingleton().create(
+              ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         material->setReceiveShadows(false);
         material->getTechnique(0)->setLightingEnabled(enable_lighting_);
         material->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
