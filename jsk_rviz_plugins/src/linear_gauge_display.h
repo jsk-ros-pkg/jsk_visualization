@@ -127,6 +127,8 @@ namespace jsk_rviz_plugins
     int caption_offset_;
     double min_value_;
     double max_value_;
+    int width_padding_;
+    int height_padding_;
 
     float data_;
     bool first_time_;

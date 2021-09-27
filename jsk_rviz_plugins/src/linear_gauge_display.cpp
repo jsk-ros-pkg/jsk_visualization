@@ -41,7 +41,8 @@
 namespace jsk_rviz_plugins
 {
   LinearGaugeDisplay::LinearGaugeDisplay()
-    : rviz::Display(), data_(0.0), first_time_(true)
+    : rviz::Display(), data_(0.0), first_time_(true), 
+    width_padding_(5), height_padding_(5)
   {
     update_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "",
@@ -201,15 +202,12 @@ namespace jsk_rviz_plugins
   {
     QColor fg_color(fg_color_);
     QColor bg_color(bg_color_);
-    int width_padding = 5; //TO BE TRANSFERED IN CLASS MEMBERS
-    int height_padding = 5;
     double max_gauge_length = 0.0;
     
     fg_color.setAlpha(fg_alpha_);
     bg_color.setAlpha(bg_alpha_);
 
     if (auto_color_change_) {
-        //TO CHANGE ACCORDING TO VALUE
       double r 
         = std::min(std::max(data_ / (max_value_ - min_value_),
                             0.0), 1.0);
@@ -242,18 +240,17 @@ namespace jsk_rviz_plugins
       uint16_t w = overlay_->getTextureWidth();
       uint16_t h = overlay_->getTextureHeight() - caption_offset_;
 
+    //draw gauge
     if(vertical_gauge_)
     {
-        double normalised_value = std::min(std::max((double)data_, 0.0), max_value_)*(h-2*height_padding)/max_value_;
-        painter.fillRect(width_padding, h-normalised_value-height_padding, w-2*width_padding, normalised_value, fg_color);
+        double normalised_value = std::min(std::max((double)data_, 0.0), max_value_)*(h-2*height_padding_)/max_value_;
+        painter.fillRect(width_padding_, h-normalised_value-height_padding_, w-2*width_padding_, normalised_value, fg_color);
     }
     else
     {   
-        double normalised_value = std::min(std::max((double)data_, 0.0), max_value_)*(w-2*width_padding)/max_value_;
-        painter.fillRect(width_padding, height_padding, normalised_value, h-(2*height_padding), fg_color);
+        double normalised_value = std::min(std::max((double)data_, 0.0), max_value_)*(w-2*width_padding_)/max_value_;
+        painter.fillRect(width_padding_, height_padding_, normalised_value, h-(2*height_padding_), fg_color);
     }
-
-
   
       // draw border
       if (show_border_) {
@@ -272,15 +269,17 @@ namespace jsk_rviz_plugins
                          Qt::AlignCenter | Qt::AlignVCenter,
                          getName());
       }
+
+      //draw value
       if (show_value_) {
         QFont font = painter.font();
-        font.setPointSize(std::min(w-2*width_padding, h-2*height_padding));
+        font.setPointSize(std::min(w-2*width_padding_, h-2*height_padding_));
         font.setBold(true);
         painter.setFont(font);
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2) << data_;
 
-        if(w<h)
+        if(w<h) //rotate text to fit gauge if needed
         {
             painter.translate(0, h);
             painter.rotate(-90);
@@ -296,9 +295,6 @@ namespace jsk_rviz_plugins
                          Qt::AlignCenter | Qt::AlignVCenter,
                          ss.str().c_str());
         }
-
-
-
       }
       
       // done
