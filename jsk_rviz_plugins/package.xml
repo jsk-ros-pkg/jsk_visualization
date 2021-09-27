@@ -65,8 +65,8 @@
   <test_depend>python-gdown-pip</test_depend> <!-- install_sample_data requries gdown -->
   <test_depend>openni2_launch</test_depend> <!-- normal.test, face_detector.test requires openni2_launch -->
   <test_depend>image_transport</test_depend> <!-- normal.test, face_detector.test requires image_transport -->
-  <test_depend>jsk_pcl_ros_utils</test_depend> <!-- normal.test requires jsk_pcl/NormalConcatenater -->
-  <test_depend>jsk_pcl_ros</test_depend> <!-- normal.test requires jsk_pcl/NormalConcatenater (for kinetic) -->
+  <!--test_depend>jsk_pcl_ros_utils</test_depend--> <!-- normal.test requires jsk_pcl/NormalConcatenater -->
+  <!-- test_depend>jsk_pcl_ros</test_depend--> <!-- normal.test requires jsk_pcl/NormalConcatenater (for kinetic) -->
   <test_depend>face_detector</test_depend> <!-- face_detector.test requires face_detector -->
 
   <export>
