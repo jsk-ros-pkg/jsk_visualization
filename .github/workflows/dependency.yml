@@ -1,0 +1,28 @@
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: check_dependency
+
+    container: ubuntu:20.04
+
+    steps:
+      - name: Install latest git to download .git directory in actions/checkout@v2 ( use sudo for ros-ubuntu )
+        run: apt-get update && apt-get install -y software-properties-common && apt-get update && add-apt-repository -y ppa:git-core/ppa && apt-get update && apt-get install -y git
+      - name: Chcekout
+        uses: actions/checkout@v2
+      - name: Setup catkin
+        run: |
+          # set non interactive tzdata https://stackoverflow.com/questions/8671308/non-interactive-method-for-dpkg-reconfigure-tzdata
+          echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+          CI_SOURCE_PATH=$PWD
+          apt install -y -qq catkin
+          mkdir -p ~/catkin_ws/src
+          cd ~/catkin_ws/src
+          cp -r $CI_SOURCE_PATH ./
+          git clone --depth=1 https://github.com/jsk-ros-pkg/jsk_recognition.git
+      - name: Check circular dependency
+        run: |
+          cd ~/catkin_ws
+          /usr/bin/catkin_topological_order

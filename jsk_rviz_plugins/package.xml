@@ -57,6 +57,18 @@
   <exec_depend>urdfdom_py</exec_depend>
   <exec_depend>view_controller_msgs</exec_depend>
 
+  <test_depend>rostest</test_depend>
+  <test_depend>pr2_description</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires pr2_description -->
+  <test_depend>joint_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires joint_state_publisher -->
+  <test_depend>robot_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires robot_state_publisher -->
+  <test_depend>jsk_data</test_depend> <!-- install_sample_data requries jsk_data -->
+  <test_depend>python-gdown-pip</test_depend> <!-- install_sample_data requries gdown -->
+  <test_depend>openni2_launch</test_depend> <!-- normal.test, face_detector.test requires openni2_launch -->
+  <test_depend>image_transport</test_depend> <!-- normal.test, face_detector.test requires image_transport -->
+  <!--test_depend>jsk_pcl_ros_utils</test_depend--> <!-- normal.test requires jsk_pcl/NormalConcatenater -->
+  <!-- test_depend>jsk_pcl_ros</test_depend--> <!-- normal.test requires jsk_pcl/NormalConcatenater (for kinetic) -->
+  <test_depend>face_detector</test_depend> <!-- face_detector.test requires face_detector -->
+
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>
