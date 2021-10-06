@@ -63,7 +63,7 @@ catkin_package(
     DEPENDS rviz
     CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
     jsk_recognition_utils cv_bridge people_msgs image_geometry
-    INCLUDE_DIRS src ${QT_INCLUDE_DIR}
+    INCLUDE_DIRS include ${QT_INCLUDE_DIR}
     LIBRARIES ${PROJECT_NAME} ${QT_LIBRARIES}
     CFG_EXTRAS jsk_rviz_plugins.cmake.in
 )
