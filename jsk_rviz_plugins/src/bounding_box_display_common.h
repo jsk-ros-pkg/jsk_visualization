@@ -212,7 +212,7 @@ protected:
         Ogre::Vector3 position;
         Ogre::Quaternion orientation;
         if(!this->context_->getFrameManager()->transform(
-            box.header, box.pose, position, orientation)) {
+            box.header.frame_id, msg->header.stamp, box.pose, position, orientation)) {
           std::ostringstream oss;
           oss << "Error transforming pose";
           oss << " from frame '" << box.header.frame_id << "'";
@@ -270,7 +270,7 @@ protected:
         edge->clear();
         Ogre::Vector3 position;
         Ogre::Quaternion quaternion;
-        if(!this->context_->getFrameManager()->transform(box.header, box.pose,
+        if(!this->context_->getFrameManager()->transform(box.header.frame_id, msg->header.stamp, box.pose,
                                                   position,
                                                   quaternion)) {
           std::ostringstream oss;
@@ -348,7 +348,7 @@ protected:
         Ogre::Vector3 position;
         Ogre::Quaternion orientation;
         if(!this->context_->getFrameManager()->getTransform(
-            box.header, position, orientation)) {
+            box.header.frame_id, msg->header.stamp, position, orientation)) {
           ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
                     box.header.frame_id.c_str(), qPrintable(this->fixed_frame_));
           return;
