@@ -9,7 +9,7 @@
               (angle-vector-to-display-robot-state
                 *robot*
                 (send (send *robot* :link "base_footprint") :copy-worldcoords)
-                :multi-dof-link-name nil
+                :virtual-world-joint-name "world_joint"
                 :global-frame "base_footprint"))
 (objects (list *robot*))
 (send *robot* :reset-manip-pose)
@@ -18,7 +18,7 @@
               (angle-vector-to-display-robot-state
                 *robot*
                 (send (send *robot* :link "base_footprint") :copy-worldcoords)
-                :multi-dof-link-name nil
+                :virtual-world-joint-name "world_joint"
                 :global-frame "base_footprint"))
   (dotimes (i 360)
     (let* ((r 0.2)
@@ -31,7 +31,7 @@
               (angle-vector-to-display-robot-state
                 *robot*
                 (send (send *robot* :link "base_footprint") :copy-worldcoords)
-                :multi-dof-link-name nil
+                :virtual-world-joint-name "world_joint"
                 :global-frame "base_footprint"))
         (send *irtviewer* :draw-objects)
         (x::window-main-one)
