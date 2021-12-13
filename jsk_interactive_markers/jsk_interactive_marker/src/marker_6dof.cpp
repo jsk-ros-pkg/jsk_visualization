@@ -287,7 +287,7 @@ protected:
         tf_listener_->transformPose(frame_id_, pose, latest_pose_);
       }
       catch (tf2::TransformException& e) {
-        ROS_ERROR("Failed to transform %s to %s: %s", pose.header.frame_id, frame_id_, e.what());
+        ROS_ERROR_STREAM("Failed to transform " << pose.header.frame_id << " to " << frame_id_ << ": " << e.what());
         return;
       }
     }
