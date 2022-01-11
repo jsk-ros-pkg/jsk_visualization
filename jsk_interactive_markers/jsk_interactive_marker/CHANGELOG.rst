@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.8 (2022-01-11)
+------------------
 * Resolve fixed frame of rviz (`#842 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/842>`_)
 
   * frame_id\_ is std::string, so we need to use c_str() or ROS_ERROR_STREAM

@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.8 (2022-01-11)
+------------------
 * Fix font name for pictgram (`#835 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/835>`_)
 
   * add launch/pictogram_sample.launch config/pictogram_sample.rviz
