@@ -2,6 +2,29 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Resolve fixed frame of rviz (`#842 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/842>`_)
+
+  * frame_id\_ is std::string, so we need to use c_str() or ROS_ERROR_STREAM
+  * Resolve fixed frame of rviz
+    * The pose in callback function of interactive marker is represented
+    respect to fixed frame of rviz.
+    * In order to publish consistent tf transformation, the pose should be
+    transformed respect to the frame_id which is specified as ros
+    parameter.
+
+* Fix sample display robot state demo (`#838 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/838>`_)
+
+  * [jsk_interactive_marker] fix bugs
+  * [jsk_interactive_marker] change the robot of
+    sample_display_robot_state from JAXON to PR2
+
+* [jsk_interactive_markers][jsk_rqt_plugins] fix yaml load (`#818 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/818>`_)
+* Enable to publish camera info from yaml file (`#793 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/793>`_)
+
+* Contributors: Adi Vardi, Kei Okada, Koki Shinjo, Naoya Yamaguchi, Ryohei Ueda
+
 2.1.7 (2020-10-17)
 ------------------
 

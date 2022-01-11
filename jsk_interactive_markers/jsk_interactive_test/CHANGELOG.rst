@@ -2,6 +2,9 @@
 Changelog for package jsk_interactive_test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.1.7 (2020-10-17)
 ------------------
 * add noetic test (e`#774 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/774>`_)

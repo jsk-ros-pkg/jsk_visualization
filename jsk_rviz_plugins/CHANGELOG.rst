@@ -2,6 +2,69 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix font name for pictgram (`#835 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/835>`_)
+
+  * add launch/pictogram_sample.launch config/pictogram_sample.rviz
+  * Add FontAwesome5: `#759 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/759>`_ need to update Font Name too
+    PR `#579 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/579>`_ reported fa-mendeley is not displayed correctly. This because of the plugin uses system font, which is installed by fonts-font-awesome deb package, not font defined in fontawesome.dat. So if you remove fonts-font-awesome, you can not display most of font correctly. This PR update getFont function to return the correct font family
+
+* Change pie chart color at your custom threshold (`#840 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/840>`_)
+* [jsk_rviz_plugins] added new Linear Gauge rviz plugin (`#831 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/831>`_)
+* add dependency.yml to check resolve circular dependency in jsk_rviz_plugins/package.xml (`#830 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/830>`_)
+
+* add test code for jsk_rviz_plugins (`#825 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/825>`_)
+
+  * fix `#799 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/799>`_
+  * move normal.test and face_detecotr.test to xml because of missing bag files
+  * skip if it failed to download bag file, due to 'could not download file. maximum download trial exceeded.'
+  * add more info on rviz_config_check.py
+    - fix bugs when waiting rviz service takes more than 5 sec
+    - rviz_config_check.py: check subscribing topic of rviz while rosnode ping rviz
+  * increase time-limit to 30
+  * skip install test on indigo
+  * jsk_rviz_plugins : enable add_rostest for all DISTRO
+  * normal.test requires jsk_pcl/NormalConcatenater whcih needs jsk_pcl_ros on kinetic
+  * on <meloidc, rviz/SendFilePath is not found, use std_srvs/Empty for rviz/reload_shaders
+  * install gdown / jsk_pcl_ros_utils for install_sample_data
+  * install_sample_data requries jsk_data
+  * enable normal.test, face_detector.test
+  * fix normal_sample.launch to suport launch_openni arg and use async
+  * fix face_detector_sample.launch to work with 2017-06-20-12-00-00_people_images_in_lab.bag
+  * fix typo t_start -> self.t_start
+  * add install_sample_data.py to download 2017-06-20-12-00-00_people_images_in_lab.bag for test
+  * add joint_state_publisher and robot_state_publisher to test_depend
+  * add robot_command_interface_sample.rviz and service_call_panel.rviz
+  * [test/segmen_array.test, config/segment_array_sample.rviz] fix wrong Topic /polygon_array_sample/output -> /segment_array_sample/output
+  * jsk_rviz_plugins: add test codes
+  * link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires pr2_description
+  * add rostest to package.xml, run test code from catkin
+  * rviz_config_check.py : node to check if rviz arives
+
+* [jsk_rviz_plugins] move rviz config from cfg/ to config/ and fix typo (`#823 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/823>`_)
+* [jsk_rviz_plugins] add piechart sample (`#824 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/824>`_)
+* Resize and repositioning of PieChart wasn't working, corrected. (`#822 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/822>`_)
+* fix with '2to3 -w -f zip .' (`#817 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/817>`_)
+* Use multiple billboard lines when exceeding max elements per line (`#808 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/808>`_)
+* Updating the URLs of the jsk_rviz_plugins and jsk_rqt_plugins so the generated README points to working links (closes #805 ). (`#806 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/806>`_)
+* added a regex for "color: XXX;" pattern to have a properly colored shadow (`#802 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/802>`_)
+
+  * fix
+    [jsk_rviz_plugins:make] /home/user/ws_jsk_visualization/src/jsk_visualization/jsk_rviz_plugins/src/overlay_text_display.cpp:274:81: error: no matching function for call to ‘regex_replace(std::string&, std::regex&, const char [1])’
+    [jsk_rviz_plugins:make]          std::string formatted_text\_ = std::regex_replace(text\_, color_tag_re, );
+    [jsk_rviz_plugins:make]                                                                                  ^
+    [jsk_rviz_plugins:make] /home/user/ws_jsk_visualization/src/jsk_visualization/jsk_rviz_plugins/src/overlay_text_display.cpp:274:81: note: candidates are:
+    [jsk_rviz_plugins:make] In file included from /usr/include/c++/4.8/regex:62:0,
+    [jsk_rviz_plugins:make]                  from /home/user/ws_jsk_visualization/src/jsk_visualization/jsk_rviz_plugins/src/overlay_text_display.cpp:48:
+    [jsk_rviz_plugins:make] /usr/include/c++/4.8/bits/regex.h:2162:5: note: template<class _Out_iter, class _Bi_iter, class _Rx_traits, class _Ch_type> _Out_iter std::regex_replace(_Out_iter, _Bi_iter, _Bi_iter, const std::basic_regex<_Ch_type, _Rx_traits>&, const std::basic_string<
+    _Ch_type>&, std::regex_constants::match_flag_type)
+    error, for compile on ubuntu 12.04
+
+* [jsk_rviz_plugins] add warn for deprecated jsk_rviz_plugins/PoseArrayDisplay (`#786 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/786>`_)
+
+* Contributors: Adi Vardi, Andres Kushnir, Francois Teyssere, Francois Teyssere, Jan Krieglstein, Kei Okada, Sam Pfeiffer, Shingo Kitagawa, Shumpei Wakabayashi
+
 2.1.7 (2020-10-17)
 ------------------
 * Fix programming issues where functions were not getting return values, and variables were not being declared for types (`#783 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/783>`_)
