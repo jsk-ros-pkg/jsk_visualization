@@ -90,7 +90,7 @@ namespace jsk_rviz_plugins
       return QFont("Entypo");
     }
     else {
-      return QFont("FontAwesome");
+      return QFont("Font Awesome 5 Free");
     }
   }
   
