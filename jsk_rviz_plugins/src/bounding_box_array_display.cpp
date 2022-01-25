@@ -63,6 +63,14 @@ namespace jsk_rviz_plugins
       "alpha", 0.8,
       "alpha value to draw the bounding boxes",
       this, SLOT(updateAlpha()));
+    alpha_min_property_ = new rviz::FloatProperty(
+      "alpha min", 0.0,
+      "alpha value corresponding to value = 0",
+      this, SLOT(updateAlphaMin()));
+    alpha_max_property_ = new rviz::FloatProperty(
+      "alpha max", 1.0,
+      "alpha value corresponding to value = 1",
+      this, SLOT(updateAlphaMax()));
     only_edge_property_ = new rviz::BoolProperty(
       "only edge", false,
       "show only the edges of the boxes",
@@ -81,6 +89,8 @@ namespace jsk_rviz_plugins
   {
     delete color_property_;
     delete alpha_property_;
+    delete alpha_min_property_;
+    delete alpha_max_property_;
     delete only_edge_property_;
     delete coloring_property_;
     delete alpha_method_property_;
@@ -94,6 +104,8 @@ namespace jsk_rviz_plugins
 
     updateColor();
     updateAlpha();
+    updateAlphaMin();
+    updateAlphaMax();
     updateOnlyEdge();
     updateColoring();
     updateAlphaMethod();
@@ -120,6 +132,34 @@ namespace jsk_rviz_plugins
   void BoundingBoxArrayDisplay::updateAlpha()
   {
     alpha_ = alpha_property_->getFloat();
+    if (latest_msg_) {
+      processMessage(latest_msg_);
+    }
+  }
+
+  void BoundingBoxArrayDisplay::updateAlphaMin()
+  {
+    if (alpha_min_property_->getFloat() > alpha_max_)
+    {
+      ROS_WARN("alpha_min must be <= alpha_max");
+      alpha_min_property_->setFloat(alpha_min_);
+      return;
+    }
+    alpha_min_ = alpha_min_property_->getFloat();
+    if (latest_msg_) {
+      processMessage(latest_msg_);
+    }
+  }
+
+  void BoundingBoxArrayDisplay::updateAlphaMax()
+  {
+    if (alpha_max_property_->getFloat() < alpha_min_)
+    {
+      ROS_WARN("alpha_min must be <= alpha_max");
+      alpha_max_property_->setFloat(alpha_max_);
+      return;
+    }
+    alpha_max_ = alpha_max_property_->getFloat();
     if (latest_msg_) {
       processMessage(latest_msg_);
     }

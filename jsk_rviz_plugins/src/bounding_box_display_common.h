@@ -74,6 +74,8 @@ protected:
     QColor color_;
     std::string coloring_method_;
     double alpha_;
+    double alpha_min_;
+    double alpha_max_;
     std::string alpha_method_;
     double line_width_;
 
@@ -124,7 +126,7 @@ protected:
       }
       else if (alpha_method_ == "value")
       {
-        return box.value;
+        return alpha_min_ + box.value * (alpha_max_ - alpha_min_);
       }
       ROS_WARN_THROTTLE(10, "unknown alpha method");
       return 1.0;
