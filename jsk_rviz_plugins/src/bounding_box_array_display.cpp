@@ -214,10 +214,14 @@ namespace jsk_rviz_plugins
     if (alpha_method_property_->getOptionInt() == 0) {
       alpha_method_ = "flat";
       alpha_property_->show();
+      alpha_min_property_->hide();
+      alpha_max_property_->hide();
     }
     else if (alpha_method_property_->getOptionInt() == 1) {
       alpha_method_ = "value";
       alpha_property_->hide();
+      alpha_min_property_->show();
+      alpha_max_property_->show();
     }
 
     if (latest_msg_) {
