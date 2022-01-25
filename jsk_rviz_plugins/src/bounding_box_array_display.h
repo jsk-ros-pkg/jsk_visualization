@@ -70,6 +70,8 @@ namespace jsk_rviz_plugins
     rviz::ColorProperty* color_property_;
     rviz::EnumProperty* alpha_method_property_;
     rviz::FloatProperty* alpha_property_;
+    rviz::FloatProperty* alpha_min_property_;
+    rviz::FloatProperty* alpha_max_property_;
     rviz::BoolProperty* only_edge_property_;
     rviz::FloatProperty* line_width_property_;
     rviz::BoolProperty* show_coords_property_;
@@ -78,6 +80,8 @@ namespace jsk_rviz_plugins
   protected Q_SLOTS:
     void updateColor();
     void updateAlpha();
+    void updateAlphaMin();
+    void updateAlphaMax();
     void updateOnlyEdge();
     void updateColoring();
     void updateAlphaMethod();
