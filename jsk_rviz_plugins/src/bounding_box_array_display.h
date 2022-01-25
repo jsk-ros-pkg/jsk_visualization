@@ -68,6 +68,7 @@ namespace jsk_rviz_plugins
     // Properties
     rviz::EnumProperty* coloring_property_;
     rviz::ColorProperty* color_property_;
+    rviz::EnumProperty* alpha_method_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::BoolProperty* only_edge_property_;
     rviz::FloatProperty* line_width_property_;
@@ -79,6 +80,7 @@ namespace jsk_rviz_plugins
     void updateAlpha();
     void updateOnlyEdge();
     void updateColoring();
+    void updateAlphaMethod();
     void updateLineWidth();
     void updateShowCoords();
   private:

@@ -49,6 +49,12 @@ namespace jsk_rviz_plugins
     coloring_property_->addOption("Label", 2);
     coloring_property_->addOption("Value", 3);
 
+    alpha_method_property_ = new rviz::EnumProperty(
+      "alpha_method", "flat", "alpha method",  
+      this, SLOT(updateAlphaMethod()));
+    alpha_method_property_->addOption("flat", 0);
+    alpha_method_property_->addOption("value", 1);
+
     color_property_ = new rviz::ColorProperty(
       "color", QColor(25, 255, 0),
       "color to draw the bounding boxes",
@@ -77,6 +83,7 @@ namespace jsk_rviz_plugins
     delete alpha_property_;
     delete only_edge_property_;
     delete coloring_property_;
+    delete alpha_method_property_;
     delete show_coords_property_;
   }
 
@@ -89,6 +96,7 @@ namespace jsk_rviz_plugins
     updateAlpha();
     updateOnlyEdge();
     updateColoring();
+    updateAlphaMethod();
     updateLineWidth();
     updateShowCoords();
   }
@@ -154,6 +162,22 @@ namespace jsk_rviz_plugins
     else if (coloring_property_->getOptionInt() == 3) {
       coloring_method_ = "value";
       color_property_->hide();
+    }
+
+    if (latest_msg_) {
+      processMessage(latest_msg_);
+    }
+  }
+
+  void BoundingBoxArrayDisplay::updateAlphaMethod()
+  {
+    if (alpha_method_property_->getOptionInt() == 0) {
+      alpha_method_ = "flat";
+      alpha_property_->show();
+    }
+    else if (alpha_method_property_->getOptionInt() == 1) {
+      alpha_method_ = "value";
+      alpha_property_->hide();
     }
 
     if (latest_msg_) {
