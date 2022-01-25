@@ -74,6 +74,7 @@ protected:
     QColor color_;
     std::string coloring_method_;
     double alpha_;
+    std::string alpha_method_;
     double line_width_;
 
     std::vector<std::vector<ArrowPtr> > coords_objects_;
@@ -114,6 +115,19 @@ protected:
         }
       }
       return QColor(255.0, 255.0, 255.0, 255.0);
+    }
+
+    double getAlpha(const jsk_recognition_msgs::BoundingBox& box)
+    {
+      if (alpha_method_ == "flat") {
+        return alpha_;
+      }
+      else if (alpha_method_ == "value")
+      {
+        return box.value;
+      }
+      ROS_WARN_THROTTLE(10, "unknown alpha method");
+      return 1.0;
     }
 
     bool isValidBoundingBox(
@@ -245,7 +259,7 @@ protected:
         shape->setColor(color.red() / 255.0,
                         color.green() / 255.0,
                         color.blue() / 255.0,
-                        alpha_);
+                        getAlpha(box));
       }
     }
 
@@ -300,7 +314,7 @@ protected:
         edge->setColor(color.red() / 255.0,
                       color.green() / 255.0,
                       color.blue() / 255.0,
-                      alpha_);
+                      getAlpha(box));
 
         Ogre::Vector3 A, B, C, D, E, F, G, H;
         A[0] = dimensions.x / 2.0;
