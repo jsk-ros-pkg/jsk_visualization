@@ -83,6 +83,10 @@ namespace jsk_rviz_plugins
       "show coords", false,
       "show coordinate of bounding box",
       this, SLOT(updateShowCoords()));
+    value_threshold_property_ = new rviz::FloatProperty(
+      "value threshold", 0.0,
+      "filter all boxes with value < threshold",
+      this, SLOT(updateValueThreshold()));
   }
 
   BoundingBoxDisplay::~BoundingBoxDisplay()
@@ -95,6 +99,7 @@ namespace jsk_rviz_plugins
     delete coloring_property_;
     delete alpha_method_property_;
     delete show_coords_property_;
+    delete value_threshold_property_;
   }
 
   void BoundingBoxDisplay::onInitialize()
@@ -111,6 +116,7 @@ namespace jsk_rviz_plugins
     updateAlphaMethod();
     updateLineWidth();
     updateShowCoords();
+    updateValueThreshold();
   }
 
   void BoundingBoxDisplay::updateLineWidth()
@@ -266,6 +272,20 @@ namespace jsk_rviz_plugins
     }
     else {
       hideCoords();
+    }
+  }
+
+  void BoundingBoxDisplay::updateValueThreshold()
+  {
+    if (value_threshold_property_->getFloat() < 0.0 || value_threshold_property_->getFloat() > 1.0)
+    {
+      ROS_WARN("value threshold must be in [0,1]");
+      value_threshold_property_->setFloat(value_threshold_);
+      return;
+    }
+    value_threshold_ = value_threshold_property_->getFloat();
+    if (latest_msg_) {
+      processMessage(latest_msg_);
     }
   }
 

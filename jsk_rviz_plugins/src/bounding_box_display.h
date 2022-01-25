@@ -75,6 +75,7 @@ namespace jsk_rviz_plugins
     rviz::BoolProperty* only_edge_property_;
     rviz::FloatProperty* line_width_property_;
     rviz::BoolProperty* show_coords_property_;
+    rviz::FloatProperty* value_threshold_property_;
 
     jsk_recognition_msgs::BoundingBox::ConstPtr latest_msg_;
   protected Q_SLOTS:
@@ -87,6 +88,7 @@ namespace jsk_rviz_plugins
     void updateAlphaMethod();
     void updateLineWidth();
     void updateShowCoords();
+    void updateValueThreshold();
   private:
     void processMessage(
       const jsk_recognition_msgs::BoundingBox::ConstPtr& msg);
