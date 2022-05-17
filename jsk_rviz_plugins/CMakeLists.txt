@@ -9,9 +9,19 @@ if("$ENV{ROS_DISTRO}" STRGREATER "melodic")
 else()
   add_compile_options(-std=c++11)
 endif()
+
+# support environment dow not have rviz, such as embedded environment
+set(USE_RVIZ ON CACHE BOOL "compile with rviz package")
+if(USE_RVIZ)
+  set(RVIZ "rviz")
+else()
+  set(RVIZ "")
+  message(WARNING "Compile without RVIZ package")
+endif()
+
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_recognition_utils
+find_package(catkin REQUIRED COMPONENTS ${RVIZ} jsk_hark_msgs jsk_footstep_msgs jsk_recognition_utils
   people_msgs
   message_generation std_msgs diagnostic_msgs cv_bridge
   jsk_topic_tools
@@ -47,7 +57,7 @@ generate_dynamic_reconfigure_options(
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 catkin_package(
-    DEPENDS rviz
+    DEPENDS ${RVIZ}
     CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
     jsk_recognition_utils cv_bridge people_msgs image_geometry
     INCLUDE_DIRS # TODO include
@@ -124,7 +134,10 @@ set(HEADER_FILES
   src/human_skeleton_array_display.h
 )
 
-if(rviz_QT_VERSION VERSION_LESS "5")
+message(STATUS "Check rviz_FOUND: [${rviz_FOUND}], rviz_QT_VERSION: [${rviz_QT_VERSION}]")
+if("${rviz_QT_VERSION}" STREQUAL "")
+  message(WARNING "Compile without RVIZ package : skip qt_wrap_cpp")
+elseif(rviz_QT_VERSION VERSION_LESS "5")
   qt4_wrap_cpp(MOC_FILES ${HEADER_FILES})
 else()
   qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
@@ -190,6 +203,7 @@ if(jsk_recognition_msgs_VERSION VERSION_LESS 1.2.15)
   list(REMOVE_ITEM SOURCE_FILES  ${PROJECT_BINARY_DIR}/src/moc_human_skeleton_array_display.cxx)
 endif()
 
+if(rviz_FOUND)
 add_library(jsk_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 if(rviz_QT_VERSION VERSION_LESS "5")
   target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
@@ -224,6 +238,7 @@ install(TARGETS jsk_rviz_plugins
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
+endif(rviz_FOUND)
 
 install(DIRECTORY scripts/
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
