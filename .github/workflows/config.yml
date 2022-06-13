@@ -60,6 +60,12 @@ jobs:
       - name: Chcekout
         uses: actions/checkout@v2
 
+      - name: Cache Download Data
+        uses: actions/cache@v3
+        with:
+          path: /github/home/.ros/data/jsk_rviz_plugins
+          key: jsk_rviz_plugins
+
       - name: Start X server
         run: |
           echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections || echo "failing on ros-ubuntu is OK" # set non interactive tzdata https://stackoverflow.com/questions/8671308/non-interactive-method-for-dpkg-reconfigure-tzdata
