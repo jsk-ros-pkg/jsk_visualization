@@ -10,18 +10,20 @@ else()
   add_compile_options(-std=c++11)
 endif()
 
-# support environment dow not have rviz, such as embedded environment
-set(USE_RVIZ ON CACHE BOOL "compile with rviz package")
-if(USE_RVIZ)
+# support environment does not have visualization such as VTK or Rviz (i.e embedded environment)
+set(USE_VISUALIZATION ON CACHE BOOL "compile with rviz package")
+if(USE_VISUALIZATION)
   set(RVIZ "rviz")
+  set(JSK_RECOGNITION_UTILS "jsk_recognition_utils") # jsk_recognition_utils depends on pcl/visualization (https://github.com/jsk-ros-pkg/jsk_recognition/blob/09cbce5f0ce7102331f6e48b9f9befc2b1fda869/jsk_recognition_utils/src/pcl_conversion_util.cpp#L37)
 else()
   set(RVIZ "")
-  message(WARNING "Compile without RVIZ package")
+  set(JSK_RECOGNITION_UTILS "")
+  message(WARNING "Compile without RVIZ/jsk_recognition_utils package")
 endif()
 
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS ${RVIZ} jsk_hark_msgs jsk_footstep_msgs jsk_recognition_utils
+find_package(catkin REQUIRED COMPONENTS ${RVIZ} jsk_hark_msgs jsk_footstep_msgs ${JSK_RECOGNITION_UTILS}
   people_msgs
   message_generation std_msgs diagnostic_msgs cv_bridge
   jsk_topic_tools
@@ -59,7 +61,7 @@ generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 catkin_package(
     DEPENDS ${RVIZ}
     CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
-    jsk_recognition_utils cv_bridge people_msgs image_geometry
+    ${JSK_RECOGNITION_UTILS} cv_bridge people_msgs image_geometry
     INCLUDE_DIRS # TODO include
     LIBRARIES ${PROJECT_NAME}
 )
@@ -201,6 +203,14 @@ if(jsk_recognition_msgs_VERSION VERSION_LESS 1.2.15)
   list(REMOVE_ITEM HEADER_FILES src/human_skeleton_array_display.h)
   list(REMOVE_ITEM SOURCE_FILES src/human_skeleton_array_display.cpp)
   list(REMOVE_ITEM SOURCE_FILES  ${PROJECT_BINARY_DIR}/src/moc_human_skeleton_array_display.cxx)
+endif()
+
+if(NOT USE_VISUALIZATION)
+  message(WARNING "polygon_array_display, simple_occupancy_grid_array_display requries jsk_recognition_utils")
+  list(REMOVE_ITEM HEADER_FILES src/polygon_array_display.h)
+  list(REMOVE_ITEM SOURCE_FILES src/polygon_array_display.cpp)
+  list(REMOVE_ITEM HEADER_FILES src/simple_occupancy_grid_array_display.h)
+  list(REMOVE_ITEM SOURCE_FILES src/simple_occupancy_grid_array_display.cpp)
 endif()
 
 if(rviz_FOUND)
