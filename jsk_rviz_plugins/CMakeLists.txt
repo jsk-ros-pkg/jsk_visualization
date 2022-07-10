@@ -81,10 +81,10 @@ include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 
-if(rviz_QT_VERSION VERSION_LESS "5")
+if(USE_VISUALIZATION AND rviz_QT_VERSION VERSION_LESS "5")
   find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
   include(${QT_USE_FILE})
-else()
+elseif(USE_VISUALIZATION)
   find_package(Qt5Widgets REQUIRED)
 endif()
 add_definitions(-DQT_NO_KEYWORDS -g)
