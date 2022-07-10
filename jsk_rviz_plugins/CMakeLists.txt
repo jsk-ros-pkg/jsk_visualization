@@ -58,12 +58,17 @@ generate_dynamic_reconfigure_options(
   cfg/OverlayTextInterface.cfg)
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
+if(USE_VISUALIZATION)
+  set(${LIBRARIES_PROJECT_NAME} ${PROJECT_NAME})
+else()
+  set(${LIBRARIES_PROJECT_NAME} "")
+endif()
 catkin_package(
     DEPENDS ${RVIZ}
     CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
     ${JSK_RECOGNITION_UTILS} cv_bridge people_msgs image_geometry
     INCLUDE_DIRS # TODO include
-    LIBRARIES ${PROJECT_NAME}
+    LIBRARIES ${LIBRARIES_PROJECT_NAME}
 )
 
 
