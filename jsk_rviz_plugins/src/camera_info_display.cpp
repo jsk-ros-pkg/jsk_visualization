@@ -415,6 +415,13 @@ namespace jsk_rviz_plugins
     try
     {
       cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
+      if (cv_ptr->image.cols != camera_info_->width
+          || cv_ptr->image.rows != camera_info_->height) {
+        ROS_ERROR("Invalid image size (w, h) = (%d, %d), expected (w, h) = (%d, %d)",
+                  cv_ptr->image.cols, cv_ptr->image.rows,
+                  camera_info_->width, camera_info_->height);
+        return;
+      }
       cv::Rect roi(camera_info_->roi.x_offset, camera_info_->roi.y_offset,
                    camera_info_->roi.width ? camera_info_->roi.width : camera_info_->width,
                    camera_info_->roi.height ? camera_info_->roi.height : camera_info_->height);
