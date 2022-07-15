@@ -240,7 +240,11 @@ namespace jsk_rviz_plugins
         msg->header.frame_id == camera_info_->header.frame_id &&
         msg->height == camera_info_->height &&
         msg->width == camera_info_->width &&
-        msg->distortion_model == camera_info_->distortion_model;
+        msg->distortion_model == camera_info_->distortion_model &&
+        msg->roi.x_offset == camera_info_->roi.x_offset &&
+        msg->roi.y_offset == camera_info_->roi.y_offset &&
+        msg->roi.height == camera_info_->roi.height &&
+        msg->roi.width == camera_info_->roi.width;
       if (meta_same_p) {
         for (size_t i = 0; i < msg->P.size(); i++) {
           if (msg->P[i] != camera_info_->P[i]) {
@@ -405,10 +409,16 @@ namespace jsk_rviz_plugins
   {
     boost::mutex::scoped_lock lock(mutex_);
     cv_bridge::CvImagePtr cv_ptr;
+    if (!camera_info_) {
+      return;
+    }
     try
     {
       cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
-      image_ = cv_ptr->image;
+      cv::Rect roi(camera_info_->roi.x_offset, camera_info_->roi.y_offset,
+                   camera_info_->roi.width ? camera_info_->roi.width : camera_info_->width,
+                   camera_info_->roi.height ? camera_info_->roi.height : camera_info_->height);
+      image_ = cv::Mat(cv_ptr->image, roi).clone();
       // check the size of bottom texture
       if (bottom_texture_.isNull()
           || bottom_texture_->getWidth() != image_.cols
@@ -457,8 +467,17 @@ namespace jsk_rviz_plugins
       edges_->setLineWidth(0.01);
     }
 
-    cv::Point2d a(0, 0), b(msg->width, 0),
-      c(msg->width, msg->height), d(0, msg->height);
+    int height = msg->roi.height ? msg->roi.height : msg->height;
+    int width = msg->roi.width ? msg->roi.width : msg->width;
+    if (msg->binning_y > 0) {
+      height /= msg->binning_y;
+    }
+    if (msg->binning_x > 0) {
+      width /= msg->binning_x;
+    }
+
+    cv::Point2d a(0, 0), b(width, 0),
+      c(width, height), d(0, height);
     // all the z = 1.0
     cv::Point3d A = model.projectPixelTo3dRay(a);
     cv::Point3d B = model.projectPixelTo3dRay(b);
