@@ -408,24 +408,34 @@ namespace jsk_rviz_plugins
       const sensor_msgs::Image::ConstPtr& msg)
   {
     boost::mutex::scoped_lock lock(mutex_);
-    cv_bridge::CvImagePtr cv_ptr;
+    cv_bridge::CvImageConstPtr cv_ptr;
     if (!camera_info_) {
       return;
     }
     try
     {
-      cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
-      if (cv_ptr->image.cols != camera_info_->width
-          || cv_ptr->image.rows != camera_info_->height) {
+      cv_ptr = cv_bridge::toCvShare(msg);
+      cv::Mat im = cv_ptr->image.clone();
+      int bitDepth = sensor_msgs::image_encodings::bitDepth(msg->encoding);
+      int numChannels = sensor_msgs::image_encodings::numChannels(msg->encoding);
+      if (bitDepth != 8) {
+        im.convertTo(im, CV_8U, 255.0);
+      }
+      if (numChannels == 1) {
+        cvtColor(im, im, CV_GRAY2RGB);
+      }
+
+      if (im.cols != camera_info_->width
+          || im.rows != camera_info_->height) {
         ROS_ERROR("Invalid image size (w, h) = (%d, %d), expected (w, h) = (%d, %d)",
-                  cv_ptr->image.cols, cv_ptr->image.rows,
+                  im.cols, im.rows,
                   camera_info_->width, camera_info_->height);
         return;
       }
       cv::Rect roi(camera_info_->roi.x_offset, camera_info_->roi.y_offset,
                    camera_info_->roi.width ? camera_info_->roi.width : camera_info_->width,
                    camera_info_->roi.height ? camera_info_->roi.height : camera_info_->height);
-      image_ = cv::Mat(cv_ptr->image, roi).clone();
+      image_ = cv::Mat(im, roi).clone();
       // check the size of bottom texture
       if (bottom_texture_.isNull()
           || bottom_texture_->getWidth() != image_.cols
