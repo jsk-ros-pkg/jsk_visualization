@@ -41,6 +41,9 @@
 #include <OGRE/OgreBlendMode.h>
 #include <QImage>
 #include <OGRE/OgreHardwarePixelBuffer.h>
+#include <sensor_msgs/image_encodings.h>
+
+namespace enc = sensor_msgs::image_encodings;
 
 namespace jsk_rviz_plugins
 {
@@ -207,7 +210,11 @@ namespace jsk_rviz_plugins
     // move scene_node according to tf
      Ogre::Vector3 position;
      Ogre::Quaternion quaternion;
-     if(!context_->getFrameManager()->getTransform(msg->header.frame_id,
+     std::string frame_id = msg->header.frame_id;
+     if (frame_id[0] == '/') {
+       frame_id = frame_id.substr(1, frame_id.size());
+     }
+     if(!context_->getFrameManager()->getTransform(frame_id,
                                                    msg->header.stamp,
                                                    position,
                                                    quaternion)) {
@@ -416,26 +423,45 @@ namespace jsk_rviz_plugins
     {
       cv_ptr = cv_bridge::toCvShare(msg);
       cv::Mat im = cv_ptr->image.clone();
-      int bitDepth = sensor_msgs::image_encodings::bitDepth(msg->encoding);
-      int numChannels = sensor_msgs::image_encodings::numChannels(msg->encoding);
-      if (bitDepth != 8) {
-        im.convertTo(im, CV_8U, 255.0);
-      }
-      if (numChannels == 1) {
-        cvtColor(im, im, CV_GRAY2RGB);
-      }
-
-      if (im.cols != camera_info_->width
-          || im.rows != camera_info_->height) {
-        ROS_ERROR("Invalid image size (w, h) = (%d, %d), expected (w, h) = (%d, %d)",
-                  im.cols, im.rows,
-                  camera_info_->width, camera_info_->height);
+      if (msg->encoding == enc::BGRA8 || msg->encoding == enc::BGRA16) {
+        cv::cvtColor(im, im, cv::COLOR_BGRA2RGB);
+      } else if (msg->encoding == enc::BGR8 || msg->encoding == enc::BGR16) {
+        cv::cvtColor(im, im, cv::COLOR_BGR2RGB);
+      } else if (msg->encoding == enc::RGBA8 || msg->encoding == enc::RGBA16) {
+        cv::cvtColor(im, im, cv::COLOR_RGBA2RGB);
+      } else if (msg->encoding == enc::BGR8 || msg->encoding == enc::BGR16) {
+        // nothing
+      } else if (msg->encoding == enc::MONO8) {
+        cv::cvtColor(im, im, cv::COLOR_GRAY2RGB);
+      } else {
+        ROS_ERROR("[CameraInfoDisplay] Not supported image encodings %s.", msg->encoding.c_str());
         return;
       }
-      cv::Rect roi(camera_info_->roi.x_offset, camera_info_->roi.y_offset,
-                   camera_info_->roi.width ? camera_info_->roi.width : camera_info_->width,
-                   camera_info_->roi.height ? camera_info_->roi.height : camera_info_->height);
-      image_ = cv::Mat(im, roi).clone();
+
+      int roi_height = camera_info_->roi.height ? camera_info_->roi.height : camera_info_->height;
+      int roi_width = camera_info_->roi.width ? camera_info_->roi.width : camera_info_->width;
+      if (camera_info_->binning_y > 0) {
+        roi_height /= camera_info_->binning_y;
+      }
+      if (camera_info_->binning_x > 0) {
+        roi_width /= camera_info_->binning_x;
+      }
+
+      if (im.cols == camera_info_->width && im.rows == camera_info_->height) {
+        cv::Rect roi(camera_info_->roi.x_offset, camera_info_->roi.y_offset,
+                     camera_info_->roi.width ? camera_info_->roi.width : camera_info_->width,
+                     camera_info_->roi.height ? camera_info_->roi.height : camera_info_->height);
+        image_ = cv::Mat(im, roi).clone();
+      } else if (im.cols == roi_width && im.rows == roi_height) {
+        image_ = im.clone();
+      } else {
+        ROS_ERROR("[CameraInfoDisplay] Invalid image size (w, h) = (%d, %d), expected (w, h) = (%d, %d) or (%d, %d) (ROI size)",
+                  im.cols, im.rows,
+                  camera_info_->width, camera_info_->height,
+                  roi_width, roi_height);
+        return;
+      }
+
       // check the size of bottom texture
       if (bottom_texture_.isNull()
           || bottom_texture_->getWidth() != image_.cols
