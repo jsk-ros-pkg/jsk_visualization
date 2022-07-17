@@ -429,7 +429,7 @@ namespace jsk_rviz_plugins
         cv::cvtColor(im, im, cv::COLOR_BGR2RGB);
       } else if (msg->encoding == enc::RGBA8 || msg->encoding == enc::RGBA16) {
         cv::cvtColor(im, im, cv::COLOR_RGBA2RGB);
-      } else if (msg->encoding == enc::BGR8 || msg->encoding == enc::BGR16) {
+      } else if (msg->encoding == enc::RGB8 || msg->encoding == enc::RGB16) {
         // nothing
       } else if (msg->encoding == enc::MONO8) {
         cv::cvtColor(im, im, cv::COLOR_GRAY2RGB);
