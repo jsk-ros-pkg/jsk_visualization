@@ -423,15 +423,29 @@ namespace jsk_rviz_plugins
     {
       cv_ptr = cv_bridge::toCvShare(msg);
       cv::Mat im = cv_ptr->image.clone();
-      if (msg->encoding == enc::BGRA8 || msg->encoding == enc::BGRA16) {
+      if (msg->encoding == enc::BGRA8) {
         cv::cvtColor(im, im, cv::COLOR_BGRA2RGB);
-      } else if (msg->encoding == enc::BGR8 || msg->encoding == enc::BGR16) {
+      } else if (msg->encoding == enc::BGRA16) {
+        im.convertTo(im, CV_8U, 1 / 256.0);
+        cv::cvtColor(im, im, cv::COLOR_BGRA2RGB);
+      } else if (msg->encoding == enc::BGR8) {
         cv::cvtColor(im, im, cv::COLOR_BGR2RGB);
-      } else if (msg->encoding == enc::RGBA8 || msg->encoding == enc::RGBA16) {
+      } else if (msg->encoding == enc::BGR16) {
+        im.convertTo(im, CV_8U, 1 / 256.0);
+        cv::cvtColor(im, im, cv::COLOR_BGR2RGB);
+      } else if (msg->encoding == enc::RGBA8) {
         cv::cvtColor(im, im, cv::COLOR_RGBA2RGB);
-      } else if (msg->encoding == enc::RGB8 || msg->encoding == enc::RGB16) {
+      } else if (msg->encoding == enc::RGBA16) {
+        im.convertTo(im, CV_8U, 1 / 256.0);
+        cv::cvtColor(im, im, cv::COLOR_RGBA2RGB);
+      } else if (msg->encoding == enc::RGB8) {
         // nothing
+      } else if (msg->encoding == enc::RGB16) {
+        im.convertTo(im, CV_8U, 1 / 256.0);
       } else if (msg->encoding == enc::MONO8) {
+        cv::cvtColor(im, im, cv::COLOR_GRAY2RGB);
+      } else if (msg->encoding == enc::MONO16) {
+        im.convertTo(im, CV_8U, 1 / 256.0);
         cv::cvtColor(im, im, cv::COLOR_GRAY2RGB);
       } else {
         ROS_ERROR("[CameraInfoDisplay] Not supported image encodings %s.", msg->encoding.c_str());
