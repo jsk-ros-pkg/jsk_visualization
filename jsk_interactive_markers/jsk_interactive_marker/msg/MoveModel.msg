@@ -1,8 +1,0 @@
-std_msgs/Header header
-string name
-string description
-sensor_msgs/JointState joint_state_origin
-sensor_msgs/JointState joint_state_goal
-geometry_msgs/PoseStamped pose_origin
-geometry_msgs/PoseStamped pose_goal
-

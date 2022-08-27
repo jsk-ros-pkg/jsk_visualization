@@ -1,4 +1,0 @@
-r_hand:
-  - link: "/r_hand"
-    mesh: "package://atlas/meshes/r_hand.dae"
-  

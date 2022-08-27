@@ -1,4 +1,0 @@
-geometry_msgs/PoseStamped pose
-visualization_msgs/Marker[] markers
----
-geometry_msgs/PoseStamped pose

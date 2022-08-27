@@ -74,11 +74,34 @@ add_library(jsk_rviz_plugins SHARED
   src/pictogram_array_display.cpp
   src/segment_array_display.cpp
   src/tf_trajectory_display.cpp
-  # src/people_position_measurement_array_display.cpp
   src/target_visualizer_display.cpp
   src/polygon_array_display.cpp
   src/overlay_menu_display.cpp
   # src/overlay_camera_display.cpp
+  # src/ambient_sound_display_groovy.cpp
+  # src/ambient_sound_visual.cpp
+# src/publish_topic.cpp
+# src/cancel_action.cpp
+# src/record_action.cpp
+  # src/select_point_cloud_publish_action.cpp
+  # src/quiet_interactive_marker_display.cpp
+  # src/simple_occupancy_grid_array_display.cpp
+  # src/people_position_measurement_array_display.cpp
+  # src/camera_info_display.cpp
+# src/close_all_tool.cpp
+# src/open_all_tool.cpp
+  # src/overlay_picker_tool.cpp
+# src/screenshot_listener_tool.cpp
+# src/object_fit_operator.cpp
+  # src/robot_command_interface.cpp
+  # src/empty_service_call_interface.cpp
+  # src/view_controller/tablet_view_controller.cpp
+  # src/tablet_controller_panel.cpp
+  # src/video_capture_display.cpp
+  # src/rviz_scene_publisher.cpp
+  # src/pose_array_display.cpp
+# src/yes_no_button_interface.cpp
+  # src/image_transport_hints_property.cpp
 )
 
 # Link ament packages
