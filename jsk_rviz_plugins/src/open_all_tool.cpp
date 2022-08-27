@@ -35,69 +35,57 @@
 
 // #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
-//#include <rviz/tool_manager.h>
 #include <rviz_common/tool.hpp>
 #include <rviz_common/display_context.hpp>
 #include <rviz_common/view_manager.hpp>
 #include <rviz_common/display_group.hpp>
 #include <rviz_common/display.hpp>
-#include <rviz_common/render_panel.hpp>
-#include <rviz_rendering/render_window.hpp>
-#include <QImageWriter>
-#include "screenshot_listener_tool.hpp"
+#include "open_all_tool.hpp"
+
 
 namespace jsk_rviz_plugins
 {
-  ScreenshotListenerTool::ScreenshotListenerTool()
-    : rviz_common::Tool()//, Node("ScreenshotListenerTool")
-  {
-
-  }
-  ScreenshotListenerTool::~ScreenshotListenerTool()
+  OpenAllTool::OpenAllTool()
+    : rviz_common::Tool()
   {
 
   }
 
-  void ScreenshotListenerTool::onInitialize()
+  OpenAllTool::~OpenAllTool()
   {
-    //ros::NodeHandle nh;
-    nh_ = context_->getRosNodeAbstraction().lock()->get_raw_node();
-    // screenshot_service_ = nh.advertiseService(
-    //   "/rviz/screenshot",
-    //   &ScreenshotListenerTool::takeScreenShot, this);
-    RCLCPP_INFO(nh_->get_logger(), "create srv");
-    using namespace std::placeholders;
-    screenshot_service_ = nh_->create_service<jsk_rviz_plugin_msgs::srv::Screenshot>(
-        "/rviz/screenshot",
-        std::bind(&ScreenshotListenerTool::takeScreenShot, this, _1, _2, _3));
+  }
+
+  void OpenAllTool::onInitialize()
+  {
+
+  }
+
+  void OpenAllTool::openProperty(
+    rviz_common::properties::Property* property)
+  {
+    property->expand();
+    if (property->numChildren() > 0) {
+      for (size_t i = 0; i < property->numChildren(); i++) {
+        openProperty(property->childAt(i));
+      }
+      context_->queueRender();
+    }
   }
   
-  void ScreenshotListenerTool::activate()
+  void OpenAllTool::activate()
   {
-    RCLCPP_INFO(nh_->get_logger(), "activate");
+    rviz_common::DisplayGroup* display_group = context_->getRootDisplayGroup();
+    openProperty(display_group);
+    // rviz_common::ToolManager* tool_manager = context_->getToolManager();
+    // tool_manager->setCurrentTool(tool_manager->getTool(0));
   }
 
-  void ScreenshotListenerTool::deactivate()
+  void OpenAllTool::deactivate()
   {
-    RCLCPP_INFO(nh_->get_logger(), "deactivate");
-  }
-
-  bool ScreenshotListenerTool::takeScreenShot(
-    const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<jsk_rviz_plugin_msgs::srv::Screenshot::Request> req,
-    const std::shared_ptr<jsk_rviz_plugin_msgs::srv::Screenshot::Response> res)
-  {
-    RCLCPP_INFO(nh_->get_logger(), "take picture: " + req->file_name);
-    //QPixmap screenshot = QPixmap::grabWindow(context_->getViewManager()->getRenderPanel()->winId());
-    // QPixmap screenshot = ->windowHandle()->screen()->grabWindow(context_->getViewManager()->getRenderPanel()->winId());
-    // QString output_file = QString::fromStdString(req->file_name);
-    // QImageWriter writer(output_file);
-    // writer.write(screenshot.toImage());
-    context_->getViewManager()->getRenderPanel()->getRenderWindow()->captureScreenShot(req->file_name);
-    return true;
+    
   }
 
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::ScreenshotListenerTool, rviz_common::Tool )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OpenAllTool, rviz_common::Tool )

@@ -6,26 +6,26 @@
     </description>
   </class> -->
 
-  <!-- <class name="jsk_rviz_plugin/ScreenshotListener" type="jsk_rviz_plugins::ScreenshotListenerTool" base_class_type="rviz_common::Tool">
+  <class name="jsk_rviz_plugin/ScreenshotListener" type="jsk_rviz_plugins::ScreenshotListenerTool" base_class_type="rviz_common::Tool">
     <description>
       screenshot utility
     </description>
-  </class> -->
+  </class>
   <!-- <class name="jsk_rviz_plugin/OverlayPicker" type="jsk_rviz_plugins::OverlayPickerTool" base_class_type="rviz_common::Tool">
     <description>
       Overlay picker by dragging
     </description>
   </class> -->
-  <!-- <class name="jsk_rviz_plugin/CloseAll" type="jsk_rviz_plugins::CloseAllTool" base_class_type="rviz_common::Tool">
+  <class name="jsk_rviz_plugin/CloseAll" type="jsk_rviz_plugins::CloseAllTool" base_class_type="rviz_common::Tool">
     <description>
       close all displays
     </description>
-  </class> -->
-  <!-- <class name="jsk_rviz_plugin/OpenAll" type="jsk_rviz_plugins::OpenAllTool" base_class_type="rviz_common::Tool">
+  </class>
+  <class name="jsk_rviz_plugin/OpenAll" type="jsk_rviz_plugins::OpenAllTool" base_class_type="rviz_common::Tool">
     <description>
       open all displays
     </description>
-  </class> -->
+  </class>
 
   <!-- jsk_rviz_plugins/PoseArrayDisplay is deprecated. Please use rviz default PoseArrayDisplay plugin instead. -->
   <!-- <class name="jsk_rviz_plugin/PoseArray"
@@ -170,6 +170,14 @@
     </description>
     <message_type>std_msgs/msg/Float32</message_type>
   </class>
+  <class name="jsk_rviz_plugin/LinearGauge"
+         type="jsk_rviz_plugins::LinearGaugeDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Linear gauge on rviz
+    </description>
+    <message_type>std_msgs/msg/Float32</message_type>
+  </class>
   <class name="jsk_rviz_plugin/OverlayText"
          type="jsk_rviz_plugins::OverlayTextDisplay"
          base_class_type="rviz_common::Display">
@@ -275,29 +283,29 @@
     </description>
   </class> -->
 
-  <!-- <class name="jsk_rviz_plugin/PublishTopic"
+  <class name="jsk_rviz_plugin/PublishTopic"
          type="jsk_rviz_plugins::PublishTopic"
          base_class_type="rviz_common::Panel">
     <description>
       A panel widget to publish a topic.
     </description>
-  </class> -->
+  </class>
 
-  <!-- <class name="jsk_rviz_plugin/CancelAction"
+  <class name="jsk_rviz_plugin/CancelAction"
          type="jsk_rviz_plugins::CancelAction"
          base_class_type="rviz_common::Panel">
     <description>
       A panel widget to cancel action
     </description>
-  </class> -->
+  </class>
 
-  <!-- <class name="jsk_rviz_plugin/RecordAction"
+  <class name="jsk_rviz_plugin/RecordAction"
          type="jsk_rviz_plugins::RecordAction"
          base_class_type="rviz_common::Panel">
     <description>
       A panel widget to record action
     </description>
-  </class> -->
+  </class>
 
   <!-- <class name="jsk_rviz_plugin/SelectPointCloudPublishAction"
          type="jsk_rviz_plugins::SelectPointCloudPublishAction"
@@ -307,13 +315,13 @@
     </description>
   </class> -->
 
-  <!-- <class name="jsk_rviz_plugin/ObjectFitOperatorAction"
+  <class name="jsk_rviz_plugin/ObjectFitOperatorAction"
          type="jsk_rviz_plugins::ObjectFitOperatorAction"
          base_class_type="rviz_common::Panel">
     <description>
       A panel widget to ObjectFitOperator action
     </description>
-  </class> -->
+  </class>
 
   <!-- <class name="jsk_rviz_plugin/RobotCommandInterfaceAction"
          type="jsk_rviz_plugins::RobotCommandInterfaceAction"
@@ -330,12 +338,12 @@
     </description>
   </class> -->
 
-  <!-- <class name="jsk_rviz_plugin/YesNoButton"
+  <class name="jsk_rviz_plugin/YesNoButton"
          type="jsk_rviz_plugins::YesNoButtonInterface"
          base_class_type="rviz_common::Panel">
     <description>
       A panel widget for yes/no button
     </description>
-  </class> -->
+  </class>
 
 </library>

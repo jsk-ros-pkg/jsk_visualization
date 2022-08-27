@@ -28,7 +28,7 @@
 | TFTrajectory | ✅ | ✅ | |
 | TargetVisualizer | ✅ | ✅ | |
 | Diagnostics | ✅ | ✅ | |
-| LinearGauge | | | | |
+| LinearGauge | ✅ | ✅ | ✅ | |
 | CameraInfo |  |  |  |
 | PoseArray | | | | (default pluginに実装済み) |
 | OverlayCamera | | | | (Panelを含む? )|
@@ -40,32 +40,32 @@
 | PolygonArray  | | | | (#include "jsk_recognition_utils/geo/polygon.hpp") |
 | SimpleOccupancyGridArray  | | | | (#include "jsk_recognition_utils/geo/plane.h") |
 
-<!-- ### Panel
+### Panel
 | プラグイン | 実装着手 | ビルド | 動作確認 | 備考 |
 | :----- | :----- | :----- | :----- |  :----- | 
-| ObjectFitOperatorAction | ✅ | ✅ | ✅ | |
-| RecordAction | ✅ | ✅ | ✅ | |
-| TabletControllerPanel | ✅ | | | |
-| PublishTopic | ✅ | ✅ | ✅ | |
-| CancelAction | ✅ | ✅ |  |(トピックの取得) |
+| ObjectFitOperatorAction | ✅ | ✅ | | |
+| RecordAction | ✅ | ✅ | | |
+| YesNoButton | ✅ | ✅ | | |
+| PublishTopic | ✅ | ✅ | | |
+| CancelAction | ✅ | ✅ | | |
+| TabletControllerPanel | | | | |
 | SelectPointCloudPublishAction | | | | |
 | RobotCommandInterfaceAction | | | | |
 | EmptyServiceCallInterfaceAction | | | | |
-| YesNoButton | ✅ | ✅ | ✅ | |
-| TransformableMarkerOperatorAction | | | | | -->
+| TransformableMarkerOperatorAction | | | | |
 
-<!-- ### Tool
+### Tool
 | プラグイン | 実装着手 | ビルド | 動作確認 | 備考 |
 | :----- | :----- | :----- | :----- | :----- | 
-| ScreenshotListener | ✅ | ✅ | ✅ | (範囲があってるか確認してない) |
-| OverlayPickerTool | | | | |
 | CloseAll | ✅ | ✅ | ✅ | |
-| OpenAll | ✅ | ✅ | ✅ | | -->
+| OpenAll | ✅ | ✅ | ✅ | |
+| ScreenshotListener | ✅ | ✅ | | |
+| OverlayPickerTool | | | | |
 
-<!-- ### ViewController
+### ViewController
 | プラグイン | 実装着手 | ビルド | 動作確認 | 備考 |
 | :----- | :----- | :----- | :----- | :----- |
-| TabletViewController | | | | | -->
+| TabletViewController | | | | |
 
 ## jsk_rqt_plugins
 | プラグイン | 実装着手 | ビルド | 動作確認 | 備考 |

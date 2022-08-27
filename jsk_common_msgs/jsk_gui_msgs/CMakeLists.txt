@@ -20,6 +20,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/VoiceMessage.msg
   
   srv/Query.srv
+  srv/YesNo.srv
 
   DEPENDENCIES std_msgs geometry_msgs sensor_msgs
  )
