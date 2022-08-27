@@ -34,27 +34,28 @@
  *********************************************************************/
 
 #include <boost/format.hpp>
-#include "tf_trajectory_display.h"
+#include "tf_trajectory_display.hpp"
+
+#include <iomanip>
 
 namespace jsk_rviz_plugins
 {
-  #define MAX_ELEMENTS_PER_LINE (65536 / 4) // from ros-visualization/rviz/src/rviz/ogre_helpers/billboard_line.cpp
   TFTrajectoryDisplay::TFTrajectoryDisplay()
-    : Display()
+    : Display(), clock_(RCL_SYSTEM_TIME)
   {
-    frame_property_ = new rviz::TfFrameProperty("frame", "",
+    frame_property_ = new rviz_common::properties::TfFrameProperty("frame", "",
                                                 "frame to visualize trajectory",
                                                 this,
                                                 NULL,
                                                 false,
                                                 SLOT(updateFrame()));
-    duration_property_ = new rviz::FloatProperty("duration", 10.0,
+    duration_property_ = new rviz_common::properties::FloatProperty("duration", 10.0,
                                                  "duration to visualize trajectory",
                                                  this, SLOT(updateDuration()));
-    line_width_property_ = new rviz::FloatProperty("line_width", 0.01,
+    line_width_property_ = new rviz_common::properties::FloatProperty("line_width", 0.01,
                                                    "line width",
                                                    this, SLOT(updateLineWidth()));
-    color_property_ = new rviz::ColorProperty("color", QColor(25, 255, 240),
+    color_property_ = new rviz_common::properties::ColorProperty("color", QColor(25, 255, 240),
                                               "color of trajectory",
                                               this, SLOT(updateColor()));
     duration_property_->setMin(0.0);
@@ -73,7 +74,7 @@ namespace jsk_rviz_plugins
   void TFTrajectoryDisplay::onInitialize()
   {
     frame_property_->setFrameManager( context_->getFrameManager() );
-    line_ = new rviz::BillboardLine(context_->getSceneManager(), scene_node_);
+    line_ = new rviz_rendering::BillboardLine(context_->getSceneManager(), scene_node_);
     updateFrame();
     updateDuration();
     updateColor();
@@ -126,31 +127,31 @@ namespace jsk_rviz_plugins
       return;
     }
     fixed_frame_ = fixed_frame_id;
-    ros::Time now = context_->getFrameManager()->getTime();
-    std_msgs::Header header;
-    header.stamp = ros::Time(0.0);
+    rclcpp::Time now = context_->getFrameManager()->getTime();
+    std_msgs::msg::Header header;
+    header.stamp = rclcpp::Time(0.0);
     header.frame_id = frame_;
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
     if(!context_->getFrameManager()->getTransform(
          header, position, orientation)) {
-      setStatus(rviz::StatusProperty::Error, "transformation",
+      setStatus(rviz_common::properties::StatusProperty::Error, "transformation",
                 (boost::format("Failed transforming from frame '%s' to frame '%s'")
                  % header.frame_id.c_str() % fixed_frame_id.c_str()).str().c_str());
       return;
     }
-    setStatus(rviz::StatusProperty::Ok, "transformation", "Ok");
-    geometry_msgs::PointStamped new_point;
+    setStatus(rviz_common::properties::StatusProperty::Ok, "transformation", "Ok");
+    geometry_msgs::msg::PointStamped new_point;
     new_point.header.stamp = now;
     new_point.point.x = position[0];
     new_point.point.y = position[1];
     new_point.point.z = position[2];
     trajectory_.push_back(new_point);
     // check old data, is it too slow??
-    for (std::vector<geometry_msgs::PointStamped>::iterator it = trajectory_.begin();
+    for (std::vector<geometry_msgs::msg::PointStamped>::iterator it = trajectory_.begin();
          it != trajectory_.end();) {
-      ros::Duration duration = now - it->header.stamp;
-      if (duration.toSec() > duration_) {
+      rclcpp::Duration duration = now - it->header.stamp;
+      if (duration.seconds() > duration_) {
         it = trajectory_.erase(it);
       }
       else {
@@ -158,9 +159,8 @@ namespace jsk_rviz_plugins
       }
     }
     line_->clear();
-    // split into multiple lines if the trajectory size exceeds MAX_ELEMENTS_PER_LINE (https://github.com/ros-visualization/rviz/issues/1107)
-    line_->setNumLines(trajectory_.size() / MAX_ELEMENTS_PER_LINE + 1);
-    line_->setMaxPointsPerLine(trajectory_.size() > MAX_ELEMENTS_PER_LINE ? MAX_ELEMENTS_PER_LINE : trajectory_.size());
+    line_->setNumLines(1);
+    line_->setMaxPointsPerLine(trajectory_.size());
     line_->setLineWidth(line_width_);
     line_->setColor(color_.red() * 255.0, color_.green() * 255.0, color_.blue() * 255.0, 255.0);
     for (size_t i = 0; i < trajectory_.size(); i++) {
@@ -173,5 +173,5 @@ namespace jsk_rviz_plugins
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TFTrajectoryDisplay, rviz::Display )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TFTrajectoryDisplay, rviz_common::Display )

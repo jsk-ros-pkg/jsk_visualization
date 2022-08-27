@@ -33,7 +33,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "pictogram_array_display.h"
+#include "pictogram_array_display.hpp"
 
 namespace jsk_rviz_plugins
 {
@@ -48,13 +48,13 @@ namespace jsk_rviz_plugins
 
   void PictogramArrayDisplay::onInitialize()
   {
-    MFDClass::onInitialize();
+    RTDClass::onInitialize();
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   }
 
   void PictogramArrayDisplay::reset()
   {
-    MFDClass::reset();
+    RTDClass::reset();
     for (size_t i = 0; i < pictograms_.size(); i++) {
       pictograms_[i]->setEnable(false);
     }
@@ -62,6 +62,7 @@ namespace jsk_rviz_plugins
   
   void PictogramArrayDisplay::onEnable()
   {
+    RTDClass::onEnable();
     subscribe();
     for (size_t i = 0; i < pictograms_.size(); i++) {
       pictograms_[i]->setEnable(false);
@@ -93,9 +94,9 @@ namespace jsk_rviz_plugins
   }
   
   void PictogramArrayDisplay::processMessage(
-    const jsk_rviz_plugins::PictogramArray::ConstPtr& msg)
+    jsk_rviz_plugin_msgs::msg::PictogramArray::ConstSharedPtr msg)
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     allocatePictograms(msg->pictograms.size());
     for (size_t i = 0; i < pictograms_.size(); i++) {
       pictograms_[i]->setEnable(isEnabled());
@@ -106,7 +107,7 @@ namespace jsk_rviz_plugins
     for (size_t i = 0; i < msg->pictograms.size(); i++) {
       PictogramObject::Ptr pictogram = pictograms_[i];
       pictogram->setAction(msg->pictograms[i].action);
-      if (msg->pictograms[i].action == jsk_rviz_plugins::Pictogram::DELETE) {
+      if (msg->pictograms[i].action == jsk_rviz_plugin_msgs::msg::Pictogram::DELETE) {
         continue;
       }
     
@@ -131,12 +132,12 @@ namespace jsk_rviz_plugins
 
   void PictogramArrayDisplay::update(float wall_dt, float ros_dt)
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     for (size_t i = 0; i < pictograms_.size(); i++) {
       pictograms_[i]->update(wall_dt, ros_dt);
     }
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::PictogramArrayDisplay, rviz::Display);
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::PictogramArrayDisplay, rviz_common::Display);

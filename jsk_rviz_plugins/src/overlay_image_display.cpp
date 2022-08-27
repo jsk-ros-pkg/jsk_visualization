@@ -33,53 +33,50 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "overlay_image_display.h"
+#include "overlay_image_display.hpp"
 
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreHardwarePixelBuffer.h>
-#include <OGRE/OgreTechnique.h>
+#include <OgreMaterialManager.h>
+#include <OgreTextureManager.h>
+#include <OgreTexture.h>
+#include <OgreHardwarePixelBuffer.h>
+#include <OgreTechnique.h>
 
-#include <rviz/uniform_string_stream.h>
+#include <rviz_common/uniform_string_stream.hpp>
 #include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/image_encodings.hpp>
+#include "rviz_utils.hpp"
+
 
 namespace jsk_rviz_plugins
 {
 
   OverlayImageDisplay::OverlayImageDisplay()
-    : Display(), width_(128), height_(128), left_(128), top_(128), alpha_(0.8),
+    : width_(128), height_(128), left_(128), top_(128), alpha_(0.8),
       is_msg_available_(false), require_update_(false), overwrite_alpha_(false)
   {
     // setup properties
-    update_topic_property_ = new rviz::RosTopicProperty(
-      "Topic", "",
-      ros::message_traits::datatype<sensor_msgs::Image>(),
-      "sensor_msgs::Image topic to subscribe to.",
-      this, SLOT( updateTopic() ));
-    transport_hint_property_ = new ImageTransportHintsProperty("transport hint",
-                                                              "transport hint to subscribe topic",
-                                                              this, SLOT(updateTopic()));
-    keep_aspect_ratio_property_ = new rviz::BoolProperty("keep aspect ratio", false,
+    // transport_hint_property_ = new ImageTransportHintsProperty("transport hint",
+    //                                                           "transport hint to subscribe topic",
+    //                                                           this, SLOT(updateTopic()));
+    keep_aspect_ratio_property_ = new rviz_common::properties::BoolProperty("keep aspect ratio", false,
                                                          "keep aspect ratio of original image",
                                                          this, SLOT(updateKeepAspectRatio()));
-    width_property_ = new rviz::IntProperty("width", 128,
+    width_property_ = new rviz_common::properties::IntProperty("width", 128,
                                             "width of the image window",
                                             this, SLOT(updateWidth()));
-    height_property_ = new rviz::IntProperty("height", 128,
+    height_property_ = new rviz_common::properties::IntProperty("height", 128,
                                              "height of the image window",
                                              this, SLOT(updateHeight()));
-    left_property_ = new rviz::IntProperty("left", 128,
+    left_property_ = new rviz_common::properties::IntProperty("left", 128,
                                            "left of the image window",
                                            this, SLOT(updateLeft()));
-    top_property_ = new rviz::IntProperty("top", 128,
+    top_property_ = new rviz_common::properties::IntProperty("top", 128,
                                           "top of the image window",
                                           this, SLOT(updateTop()));
-    alpha_property_ = new rviz::FloatProperty("alpha", 0.8,
+    alpha_property_ = new rviz_common::properties::FloatProperty("alpha", 0.8,
                                               "alpha belnding value",
                                               this, SLOT(updateAlpha()));
-    overwrite_alpha_property_ = new rviz::BoolProperty("overwrite alpha value", false,
+    overwrite_alpha_property_ = new rviz_common::properties::BoolProperty("overwrite alpha value", false,
                                                        "overwrite alpha value by alpha property "
                                                        "and ignore alpha channel of the image",
                                                        this, SLOT(updateOverwriteAlpha()));
@@ -87,8 +84,7 @@ namespace jsk_rviz_plugins
 
   OverlayImageDisplay::~OverlayImageDisplay()
   {
-    delete update_topic_property_;
-    delete transport_hint_property_;
+        // delete transport_hint_property_;
     delete keep_aspect_ratio_property_;
     delete overwrite_alpha_property_;
     delete width_property_;
@@ -100,12 +96,10 @@ namespace jsk_rviz_plugins
 
   void OverlayImageDisplay::onInitialize()
   {
-    ros::NodeHandle nh;
-#if ROS_VERSION_MINIMUM(1,12,0)
-    it_ = std::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
-#else
-    it_ = boost::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
-#endif
+    overlay_->prepareOverlays(scene_manager_);
+    RTDClass::onInitialize();
+    //it_ = std::shared_ptr<image_transport::msg::ImageTransport>(new image_transport::msg::ImageTransport(nh));
+
 
     updateWidth();
     updateHeight();
@@ -119,6 +113,7 @@ namespace jsk_rviz_plugins
 
   void OverlayImageDisplay::onEnable()
   {
+    RTDClass::onEnable();
     if (overlay_) {
       overlay_->show();
     }
@@ -132,28 +127,9 @@ namespace jsk_rviz_plugins
     unsubscribe();
   }
 
-  void OverlayImageDisplay::unsubscribe()
-  {
-    sub_.shutdown();
-    // clear clear clear...
-  }
 
-  void OverlayImageDisplay::subscribe()
-  {
-    if (isEnabled()) {
-      std::string topic_name = update_topic_property_->getTopicStd();
 
-      if (topic_name.length() > 0 && topic_name != "/") {
-        const image_transport::TransportHints transport_hint =
-          transport_hint_property_->getTransportHints();
-        sub_ = it_->subscribe(topic_name, 1, &OverlayImageDisplay::processMessage, this,
-                              transport_hint);
-      }
-    }
-  }
-
-  void OverlayImageDisplay::processMessage(
-    const sensor_msgs::Image::ConstPtr& msg)
+  void OverlayImageDisplay::processMessage(sensor_msgs::msg::Image::ConstSharedPtr msg)
   {
     msg_ = msg;
     is_msg_available_ = true;
@@ -175,7 +151,7 @@ namespace jsk_rviz_plugins
     if (require_update_ && is_msg_available_) {
       if (!overlay_) {
         static int count = 0;
-        rviz::UniformStringStream ss;
+        rviz_common::UniformStringStream ss;
         ss << "OverlayImageDisplayObject" << count++;
         overlay_.reset(new OverlayObject(ss.str()));
         overlay_->show();
@@ -191,6 +167,11 @@ namespace jsk_rviz_plugins
       overlay_->setDimensions(width_, height_);
       overlay_->setPosition(left_, top_);
     }
+  }
+
+  void OverlayImageDisplay::reset()
+  {
+    RTDClass::reset();
   }
 
   void OverlayImageDisplay::redraw()
@@ -235,7 +216,7 @@ namespace jsk_rviz_plugins
     }
     catch (cv_bridge::Exception& e)
     {
-      ROS_ERROR("cv_bridge exception: %s", e.what());
+      JSK_LOG_ERROR("cv_bridge exception: %s", e.what());
     }
   }
 
@@ -276,46 +257,46 @@ namespace jsk_rviz_plugins
 
   void OverlayImageDisplay::updateWidth()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     width_ = width_property_->getInt();
     require_update_ = true;
   }
 
   void OverlayImageDisplay::updateHeight()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     height_ = height_property_->getInt();
     require_update_ = true;
   }
 
   void OverlayImageDisplay::updateTop()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     top_ = top_property_->getInt();
   }
 
   void OverlayImageDisplay::updateLeft()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     left_ = left_property_->getInt();
   }
 
   void OverlayImageDisplay::updateAlpha()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     alpha_ = alpha_property_->getFloat();
   }
 
   void OverlayImageDisplay::updateKeepAspectRatio()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     keep_aspect_ratio_ = keep_aspect_ratio_property_->getBool();
     require_update_ = true;
   }
 
   void OverlayImageDisplay::updateOverwriteAlpha()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     overwrite_alpha_ = overwrite_alpha_property_->getBool();
     require_update_ = true;
   }
@@ -340,5 +321,5 @@ namespace jsk_rviz_plugins
 
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayImageDisplay, rviz::Display )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayImageDisplay, rviz_common::Display )

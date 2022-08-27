@@ -32,13 +32,15 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#include <rviz/view_manager.h>
-#include <rviz/render_panel.h>
-#include <rviz/uniform_string_stream.h>
-#include <OGRE/OgreCamera.h>
-#include <OGRE/OgreMaterialManager.h>
-#include "target_visualizer_display.h"
-#include <OGRE/OgreManualObject.h>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <OgreCamera.h>
+#include <OgreMaterialManager.h>
+#include "target_visualizer_display.hpp"
+#include <OgreManualObject.h>
+
+#include <iomanip>
 
 namespace jsk_rviz_plugins
 {
@@ -48,27 +50,27 @@ namespace jsk_rviz_plugins
   TargetVisualizerDisplay::TargetVisualizerDisplay():
     message_recieved_(false)
   {
-    target_name_property_ = new rviz::StringProperty(
+    target_name_property_ = new rviz_common::properties::StringProperty(
       "target name", "target",
       "name of the target",
       this, SLOT(updateTargetName())
       );
-    radius_property_ = new rviz::FloatProperty(
+    radius_property_ = new rviz_common::properties::FloatProperty(
       "radius", 1.0,
       "radius of the target mark",
       this, SLOT(updateRadius()));
     radius_property_->setMin(0.0);
-    alpha_property_ = new rviz::FloatProperty(
+    alpha_property_ = new rviz_common::properties::FloatProperty(
       "alpha", 0.8,
       "0 is fully transparent, 1.0 is fully opaque.",
       this, SLOT(updateAlpha()));
     alpha_property_->setMin(0.0);
     alpha_property_->setMax(1.0);
-    color_property_ = new rviz::ColorProperty(
+    color_property_ = new rviz_common::properties::ColorProperty(
       "color", QColor(25, 255, 240),
       "color of the target",
       this, SLOT(updateColor()));
-    shape_type_property_ = new rviz::EnumProperty(
+    shape_type_property_ = new rviz_common::properties::EnumProperty(
       "type", "Simple Circle",
       "Shape to display the pose as",
       this, SLOT(updateShapeType()));
@@ -86,15 +88,16 @@ namespace jsk_rviz_plugins
 
   void TargetVisualizerDisplay::onEnable()
   {
+    RTDClass::onEnable();
     subscribe();
     visualizer_->setEnable(false); // keep false, it will be true
                                    // in side of processMessae callback.
   }
   
   void TargetVisualizerDisplay::processMessage(
-    const geometry_msgs::PoseStamped::ConstPtr& msg)
+    geometry_msgs::msg::PoseStamped::ConstSharedPtr msg)
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     message_recieved_ = true;
     visualizer_->setEnable(isEnabled());
     if (!isEnabled()) {
@@ -110,8 +113,8 @@ namespace jsk_rviz_plugins
       oss << "Error transforming pose";
       oss << " from frame '" << msg->header.frame_id << "'";
       oss << " to frame '" << qPrintable(fixed_frame_) << "'";
-      ROS_ERROR_STREAM(oss.str());
-      setStatus(rviz::StatusProperty::Error, "Transform", QString::fromStdString(oss.str()));
+      //ROS_ERROR_STREAM(oss.str());
+      setStatus(rviz_common::properties::StatusProperty::Error, "Transform", QString::fromStdString(oss.str()));
       return;
     }
     visualizer_->setPosition(position);
@@ -130,7 +133,7 @@ namespace jsk_rviz_plugins
   void TargetVisualizerDisplay::onInitialize()
   {
     visualizer_initialized_ = false;
-    MFDClass::onInitialize();
+    RTDClass::onInitialize();
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
     
     updateRadius();
@@ -142,7 +145,7 @@ namespace jsk_rviz_plugins
 
   void TargetVisualizerDisplay::reset()
   {
-    MFDClass::reset();
+    RTDClass::reset();
     message_recieved_ = false;
     if (visualizer_) {
       visualizer_->setEnable(false);
@@ -151,7 +154,7 @@ namespace jsk_rviz_plugins
 
   void TargetVisualizerDisplay::updateTargetName()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     target_name_ = target_name_property_->getStdString();
     if (visualizer_) {
       visualizer_->setText(target_name_);
@@ -160,7 +163,7 @@ namespace jsk_rviz_plugins
   
   void TargetVisualizerDisplay::updateRadius()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     radius_ = radius_property_->getFloat();
     if (visualizer_) {
       visualizer_->setSize(radius_);
@@ -169,7 +172,7 @@ namespace jsk_rviz_plugins
 
   void TargetVisualizerDisplay::updateAlpha()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     alpha_ = alpha_property_->getFloat();
     if (visualizer_) {
       visualizer_->setAlpha(alpha_);
@@ -178,7 +181,7 @@ namespace jsk_rviz_plugins
 
   void TargetVisualizerDisplay::updateColor()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     color_ = color_property_->getColor();
     if (visualizer_) {
       visualizer_->setColor(color_);
@@ -190,7 +193,7 @@ namespace jsk_rviz_plugins
     if (!visualizer_initialized_ ||
         current_type_ != shape_type_property_->getOptionInt()) {
       {
-        boost::mutex::scoped_lock lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         if (shape_type_property_->getOptionInt() == SimpleCircle) {
           current_type_ = SimpleCircle;
           // simple circle
@@ -219,6 +222,5 @@ namespace jsk_rviz_plugins
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TargetVisualizerDisplay, rviz::Display )
-
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TargetVisualizerDisplay, rviz_common::Display )

@@ -16,14 +16,15 @@
   <url type="repository">https://github.com/jsk-ros-pkg/jsk_visualization</url>
   <url type="bugtracker">https://github.com/jsk-ros-pkg/jsk_visualization/issues</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <run_depend>jsk_rqt_plugins</run_depend>
+  <!-- <run_depend>jsk_rqt_plugins</run_depend>
   <run_depend>jsk_rviz_plugins</run_depend>
   <run_depend>jsk_interactive</run_depend>
   <run_depend>jsk_interactive_marker</run_depend>
-  <run_depend>jsk_interactive_test</run_depend>
+  <run_depend>jsk_interactive_test</run_depend> -->
+
   <export>
-    <metapackage/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

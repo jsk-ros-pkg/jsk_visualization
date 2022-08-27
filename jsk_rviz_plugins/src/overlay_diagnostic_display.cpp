@@ -33,59 +33,64 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "overlay_diagnostic_display.h"
+#include "overlay_diagnostic_display.hpp"
 
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreHardwarePixelBuffer.h>
-#include <OGRE/OgreTechnique.h>
+#include <OgreMaterialManager.h>
+#include <OgreTextureManager.h>
+#include <OgreTexture.h>
+#include <OgreHardwarePixelBuffer.h>
+#include <OgreTechnique.h>
 
-#include <rviz/uniform_string_stream.h>
-#include <rviz/display_context.h>
-#include <rviz/view_manager.h>
-#include <rviz/render_panel.h>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rclcpp/duration.hpp>
+
+#include "rviz_common/logging.hpp"
+#include "rviz_common/msg_conversions.hpp"
+#include "rviz_common/validate_floats.hpp"
+#include "rviz_utils.hpp"
+
+#include <chrono>
+#include <iomanip>
 
 namespace jsk_rviz_plugins
 {
   const double overlay_diagnostic_animation_duration = 5.0;
   const double overlay_diagnostic_animation_transition_duration = 0.2;
   OverlayDiagnosticDisplay::OverlayDiagnosticDisplay()
-    : previous_state_(STALL_STATE), Display()
+    : previous_state_(STALL_STATE)
+    , clock_(RCL_SYSTEM_TIME)
   {
-    ros_topic_property_ = new rviz::RosTopicProperty(
-      "Topic", "/diagnostics_agg",
-      ros::message_traits::datatype<diagnostic_msgs::DiagnosticArray>(),
-      "diagnostic_msgs::DiagnosticArray topic to subscribe to.",
-      this, SLOT( updateRosTopic() ));
-    diagnostics_namespace_property_ = new rviz::EditableEnumProperty(
+    diagnostics_namespace_property_ = new rviz_common::properties::EditableEnumProperty(
       "diagnostics namespace", "/",
       "diagnostics namespace to visualize diagnostics",
       this, SLOT(updateDiagnosticsNamespace()));
-    type_property_ = new rviz::EnumProperty(
+    type_property_ = new rviz_common::properties::EnumProperty(
       "type", "SAC", "Type of visualization", this, SLOT(updateType()));
     type_property_->addOptionStd("SAC", 0);
     type_property_->addOptionStd("EVA", 1);
-    top_property_ = new rviz::IntProperty(
+    top_property_ = new rviz_common::properties::IntProperty(
       "top", 128,
       "top positoin",
       this, SLOT(updateTop()));
-    left_property_ = new rviz::IntProperty(
+    left_property_ = new rviz_common::properties::IntProperty(
       "left", 128,
       "left positoin",
       this, SLOT(updateLeft()));
-    size_property_ = new rviz::IntProperty(
+    size_property_ = new rviz_common::properties::IntProperty(
       "size", 128,
       "size of the widget",
       this, SLOT(updateSize()));
     size_property_->setMin(1);
-    alpha_property_ = new rviz::FloatProperty(
+    alpha_property_ = new rviz_common::properties::FloatProperty(
       "alpha", 0.8,
       "alpha value",
       this, SLOT(updateAlpha()));
     alpha_property_->setMin(0.0);
     alpha_property_->setMax(1.0);
-    stall_duration_property_ = new rviz::FloatProperty(
+    stall_duration_property_ = new rviz_common::properties::FloatProperty(
       "stall duration", 5.0,
       "seconds to be regarded as stalled",
       this, SLOT(updateStallDuration())
@@ -100,7 +105,6 @@ namespace jsk_rviz_plugins
     }
     // panel_material_->unload();
     // Ogre::MaterialManager::getSingleton().remove(panel_material_->getName());
-    delete ros_topic_property_;
     delete diagnostics_namespace_property_;
     delete top_property_;
     delete left_property_;
@@ -108,12 +112,17 @@ namespace jsk_rviz_plugins
     delete size_property_;
     delete type_property_;
   }
-
-  void OverlayDiagnosticDisplay::processMessage(
-    const diagnostic_msgs::DiagnosticArray::ConstPtr& msg)
+  
+  void OverlayDiagnosticDisplay::reset()
   {
-    //std::make_shared<diagnostic_msgs::DiagnosticStatus>
+    RTDClass::reset();
+  }
+
+  void OverlayDiagnosticDisplay::processMessage(diagnostic_msgs::msg::DiagnosticArray::ConstSharedPtr msg)
+  {
+    //std::make_shared<diagnostic_msgs::msg::DiagnosticStatus>
     // update namespaces_ if needed
+
     std::set<std::string> new_namespaces;
     for (size_t i = 0; i < msg->status.size(); i++) {
       new_namespaces.insert(msg->status[i].name);
@@ -145,16 +154,11 @@ namespace jsk_rviz_plugins
     }
 
     for (size_t i = 0; i < msg->status.size(); i++) {
-      diagnostic_msgs::DiagnosticStatus status = msg->status[i];
+      diagnostic_msgs::msg::DiagnosticStatus status = msg->status[i];
       if (status.name == diagnostics_namespace_) {
-#if ROS_VERSION_MINIMUM(1,12,0)
-        latest_status_
-          = std::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
-#else
-        latest_status_
-          = boost::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
-#endif
-        latest_message_time_ = ros::WallTime::now();
+        latest_status_ = std::make_shared<diagnostic_msgs::msg::DiagnosticStatus>(status);
+
+        latest_message_time_ = clock_.now();
         break;
       }
     }
@@ -162,16 +166,17 @@ namespace jsk_rviz_plugins
 
   void OverlayDiagnosticDisplay::update(float wall_dt, float ros_dt)
   {
+    wall_dt = RCL_NS_TO_S(wall_dt);
     if (!isEnabled()) {
       return;
     }
     if (!overlay_) {
       static int count = 0;
-      rviz::UniformStringStream ss;
+      rviz_common::UniformStringStream ss;
       ss << "OverlayDiagnosticDisplayObject" << count++;
       overlay_.reset(new OverlayObject(ss.str()));
       overlay_->show();
-      animation_start_time_ = ros::WallTime::now();
+      animation_start_time_ = clock_.now();
     }
     t_ += wall_dt;
 
@@ -179,7 +184,7 @@ namespace jsk_rviz_plugins
     if (!is_animating_) {
       if (previous_state_ != getLatestState()) {
         is_animating_ = true;
-        animation_start_time_ = ros::WallTime::now();
+        animation_start_time_ = clock_.now();
       }
     }
     else {
@@ -199,16 +204,17 @@ namespace jsk_rviz_plugins
 
   bool OverlayDiagnosticDisplay::isAnimating()
   {
-    return ((ros::WallTime::now() - animation_start_time_).toSec() < overlay_diagnostic_animation_transition_duration);
+    return ((clock_.now() - animation_start_time_).seconds()  < overlay_diagnostic_animation_transition_duration);
   }
   
   double OverlayDiagnosticDisplay::animationRate()
   {
-    return ((ros::WallTime::now() - animation_start_time_).toSec() / overlay_diagnostic_animation_transition_duration);
+    return ((clock_.now() - animation_start_time_).seconds() / overlay_diagnostic_animation_transition_duration);
   }
   
   void OverlayDiagnosticDisplay::onEnable()
   {
+    RTDClass::onEnable();
     t_ = 0.0;
     if (overlay_) {
       overlay_->show();
@@ -218,7 +224,7 @@ namespace jsk_rviz_plugins
 
   void OverlayDiagnosticDisplay::onDisable()
   {
-    ROS_INFO("onDisable");
+    JSK_LOG_INFO("onDisable");
     if (overlay_) {
       overlay_->hide();
     }
@@ -227,8 +233,10 @@ namespace jsk_rviz_plugins
 
   void OverlayDiagnosticDisplay::onInitialize()
   {
+    overlay_->prepareOverlays(scene_manager_);
+    RTDClass::onInitialize();
     
-    ROS_DEBUG("onInitialize");
+    JSK_LOG_DEBUG("onInitialize");
     updateType();
     updateDiagnosticsNamespace();
     updateSize();
@@ -239,26 +247,14 @@ namespace jsk_rviz_plugins
     updateRosTopic();
   }
   
-  void OverlayDiagnosticDisplay::unsubscribe()
-  {
-    sub_.shutdown();
-  }
   
-  void OverlayDiagnosticDisplay::subscribe()
-  {
-    ros::NodeHandle n;
-    sub_ = n.subscribe(ros_topic_property_->getTopicStd(),
-                       1,
-                       &OverlayDiagnosticDisplay::processMessage,
-                       this);
-  }
 
   bool OverlayDiagnosticDisplay::isStalled()
   {
     if (latest_status_) {
-      ros::WallDuration message_duration
-        = ros::WallTime::now() - latest_message_time_;
-      if (message_duration.toSec() < stall_duration_) {
+      rclcpp::Duration message_duration
+        = clock_.now() - latest_message_time_;
+      if (message_duration.seconds()  < stall_duration_) {
         return false;
       }
       else {
@@ -274,13 +270,13 @@ namespace jsk_rviz_plugins
   {
     if (latest_status_) {
       if (!isStalled()) {
-        if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
+        if (latest_status_->level == diagnostic_msgs::msg::DiagnosticStatus::OK) {
           return "OK";
         }
-        else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::WARN) {
+        else if (latest_status_->level == diagnostic_msgs::msg::DiagnosticStatus::WARN) {
           return "WARN";
         }
-        else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::ERROR) {
+        else if (latest_status_->level == diagnostic_msgs::msg::DiagnosticStatus::ERROR) {
           return "ERROR";
         }
         else {
@@ -301,15 +297,15 @@ namespace jsk_rviz_plugins
   {
     if (latest_status_) {
       if (!isStalled()) {
-        if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
+        if (latest_status_->level == diagnostic_msgs::msg::DiagnosticStatus::OK) {
           return OK_STATE;
         }
         else if (latest_status_->level
-                 == diagnostic_msgs::DiagnosticStatus::WARN) {
+                 == diagnostic_msgs::msg::DiagnosticStatus::WARN) {
           return WARN_STATE;
         }
         else if (latest_status_->level
-                 == diagnostic_msgs::DiagnosticStatus::ERROR) {
+                 == diagnostic_msgs::msg::DiagnosticStatus::ERROR) {
           return ERROR_STATE;
         }
         else {
@@ -529,6 +525,7 @@ namespace jsk_rviz_plugins
                                                               int width,
                                                               double D)
   {
+
     double S = size_;
     double A = S * 0.1;
     double B = 0.2 * S;
@@ -708,5 +705,5 @@ namespace jsk_rviz_plugins
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayDiagnosticDisplay, rviz::Display)
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayDiagnosticDisplay, rviz_common::Display)

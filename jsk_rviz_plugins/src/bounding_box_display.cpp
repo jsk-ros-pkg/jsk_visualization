@@ -32,16 +32,16 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "bounding_box_display_common.h"
-#include "bounding_box_display.h"
-#include <jsk_topic_tools/color_utils.h>
+#include "bounding_box_display_common.hpp"
+#include "bounding_box_display.hpp"
+#include <jsk_topic_tools/color_utils.hpp>
 
 namespace jsk_rviz_plugins
 {
 
   BoundingBoxDisplay::BoundingBoxDisplay()
   {
-    coloring_property_ = new rviz::EnumProperty(
+    coloring_property_ = new rviz_common::properties::EnumProperty(
       "coloring", "Flat color",
       "coloring method",
       this, SLOT(updateColoring()));
@@ -49,23 +49,23 @@ namespace jsk_rviz_plugins
     coloring_property_->addOption("Label", 1);
     coloring_property_->addOption("Value", 2);
 
-    color_property_ = new rviz::ColorProperty(
+    color_property_ = new rviz_common::properties::ColorProperty(
       "color", QColor(25, 255, 0),
       "color to draw the bounding boxes",
       this, SLOT(updateColor()));
-    alpha_property_ = new rviz::FloatProperty(
+    alpha_property_ = new rviz_common::properties::FloatProperty(
       "alpha", 0.8,
       "alpha value to draw the bounding boxes",
       this, SLOT(updateAlpha()));
-    only_edge_property_ = new rviz::BoolProperty(
+    only_edge_property_ = new rviz_common::properties::BoolProperty(
       "only edge", false,
       "show only the edges of the boxes",
       this, SLOT(updateOnlyEdge()));
-    line_width_property_ = new rviz::FloatProperty(
+    line_width_property_ = new rviz_common::properties::FloatProperty(
       "line width", 0.005,
       "line width of the edges",
       this, SLOT(updateLineWidth()));
-    show_coords_property_ = new rviz::BoolProperty(
+    show_coords_property_ = new rviz_common::properties::BoolProperty(
       "show coords", false,
       "show coordinate of bounding box",
       this, SLOT(updateShowCoords()));
@@ -82,7 +82,7 @@ namespace jsk_rviz_plugins
 
   void BoundingBoxDisplay::onInitialize()
   {
-    MFDClass::onInitialize();
+    RTDClass::onInitialize();
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
     updateColor();
@@ -165,7 +165,7 @@ namespace jsk_rviz_plugins
 
   void BoundingBoxDisplay::reset()
   {
-    MFDClass::reset();
+    RTDClass::reset();
     shapes_.clear();
     edges_.clear();
     coords_nodes_.clear();
@@ -174,15 +174,15 @@ namespace jsk_rviz_plugins
   }
 
   void BoundingBoxDisplay::processMessage(
-    const jsk_recognition_msgs::BoundingBox::ConstPtr& msg)
+    jsk_recognition_msgs::msg::BoundingBox::ConstSharedPtr msg)
   {
     // Store latest message
     latest_msg_ = msg;
 
     // Convert bbox to bbox_array to show it
-    jsk_recognition_msgs::BoundingBoxArrayPtr bbox_array_msg(new jsk_recognition_msgs::BoundingBoxArray);
+    jsk_recognition_msgs::msg::BoundingBoxArray::SharedPtr bbox_array_msg(new jsk_recognition_msgs::msg::BoundingBoxArray);
     bbox_array_msg->header = msg->header;
-    std::vector<jsk_recognition_msgs::BoundingBox> boxes;
+    std::vector<jsk_recognition_msgs::msg::BoundingBox> boxes;
     boxes.push_back(*msg);
     bbox_array_msg->boxes = boxes;
 
@@ -201,7 +201,7 @@ namespace jsk_rviz_plugins
     }
   }
 
-}  // namespace jsk_rviz_plugins
+}
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::BoundingBoxDisplay, rviz::Display)
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::BoundingBoxDisplay, rviz_common::Display)

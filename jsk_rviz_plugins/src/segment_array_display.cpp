@@ -32,28 +32,29 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "segment_array_display.h"
-#include <jsk_topic_tools/color_utils.h>
+#include "segment_array_display.hpp"
+#include <jsk_topic_tools/color_utils.hpp>
+
 namespace jsk_rviz_plugins
 {
   SegmentArrayDisplay::SegmentArrayDisplay()
   {
-    coloring_property_ = new rviz::EnumProperty(
+    coloring_property_ = new rviz_common::properties::EnumProperty(
       "coloring", "Auto",
       "coloring method",
       this, SLOT(updateColoring()));
     coloring_property_->addOption("Auto", 0);
     coloring_property_->addOption("Flat color", 1);
 
-    color_property_ = new rviz::ColorProperty(
+    color_property_ = new rviz_common::properties::ColorProperty(
       "color", QColor(25, 255, 0),
       "color to draw the edges",
       this, SLOT(updateColor()));
-    alpha_property_ = new rviz::FloatProperty(
+    alpha_property_ = new rviz_common::properties::FloatProperty(
       "alpha", 0.8,
       "alpha value to draw the edges",
       this, SLOT(updateAlpha()));
-    line_width_property_ = new rviz::FloatProperty(
+    line_width_property_ = new rviz_common::properties::FloatProperty(
       "line width", 0.005,
       "line width of the edges",
       this, SLOT(updateLineWidth()));
@@ -69,7 +70,7 @@ namespace jsk_rviz_plugins
   QColor SegmentArrayDisplay::getColor(size_t index)
   {
     if (coloring_method_ == "auto") {
-      std_msgs::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(index);
+      std_msgs::msg::ColorRGBA ros_color = jsk_topic_tools::colorCategory20(index);
       return QColor(ros_color.r * 255.0,
                     ros_color.g * 255.0,
                     ros_color.b * 255.0,
@@ -83,7 +84,7 @@ namespace jsk_rviz_plugins
 
   void SegmentArrayDisplay::onInitialize()
   {
-    MFDClass::onInitialize();
+    RTDClass::onInitialize();
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
     updateColor();
@@ -134,7 +135,7 @@ namespace jsk_rviz_plugins
 
   void SegmentArrayDisplay::reset()
   {
-    MFDClass::reset();
+    RTDClass::reset();
     edges_.clear();
     latest_msg_.reset();
   }
@@ -143,7 +144,7 @@ namespace jsk_rviz_plugins
   {
     if (num > edges_.size()) {
       for (size_t i = edges_.size(); i < num; i++) {
-        BillboardLinePtr line(new rviz::BillboardLine(
+        BillboardLinePtr line(new rviz_rendering::BillboardLine(
                                                       this->context_->getSceneManager(), this->scene_node_));
         edges_.push_back(line);
       }
@@ -155,17 +156,17 @@ namespace jsk_rviz_plugins
   }
 
   void SegmentArrayDisplay::showEdges(
-    const jsk_recognition_msgs::SegmentArray::ConstPtr& msg)
+    jsk_recognition_msgs::msg::SegmentArray::ConstSharedPtr msg)
   {
     allocateBillboardLines(msg->segments.size());
     for (size_t i = 0; i < msg->segments.size(); i++) {
-      jsk_recognition_msgs::Segment edge_msg = msg->segments[i];
+      jsk_recognition_msgs::msg::Segment edge_msg = msg->segments[i];
 
       BillboardLinePtr edge = edges_[i];
       edge->clear();
 
-      geometry_msgs::Pose start_pose_local;
-      geometry_msgs::Pose end_pose_local;
+      geometry_msgs::msg::Pose start_pose_local;
+      geometry_msgs::msg::Pose end_pose_local;
       start_pose_local.position = edge_msg.start_point;
       start_pose_local.orientation.w = 1.0;
       end_pose_local.position = edge_msg.end_point;
@@ -179,10 +180,10 @@ namespace jsk_rviz_plugins
         context_->getFrameManager()->transform(msg->header, start_pose_local, start_point, quaternion)
         && context_->getFrameManager()->transform(msg->header, end_pose_local, end_point, quaternion);
       if(!transform_ret) {
-        ROS_ERROR( "Error transforming pose"
-                   "'%s' from frame '%s' to frame '%s'",
-                   qPrintable( getName() ), msg->header.frame_id.c_str(),
-                   qPrintable( fixed_frame_ ));
+        // ROS_ERROR( "Error transforming pose"
+        //            "'%s' from frame '%s' to frame '%s'",
+        //            qPrintable( getName() ), msg->header.frame_id.c_str(),
+        //            qPrintable( fixed_frame_ ));
         return;                 // return?
       }
       edge->addPoint(start_point);
@@ -197,7 +198,7 @@ namespace jsk_rviz_plugins
   }
 
   void SegmentArrayDisplay::processMessage(
-    const jsk_recognition_msgs::SegmentArray::ConstPtr& msg)
+    jsk_recognition_msgs::msg::SegmentArray::ConstSharedPtr msg)
   {
     // Store latest message
     latest_msg_ = msg;
@@ -206,6 +207,6 @@ namespace jsk_rviz_plugins
   }
 }
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  jsk_rviz_plugins::SegmentArrayDisplay, rviz::Display)
+  jsk_rviz_plugins::SegmentArrayDisplay, rviz_common::Display)

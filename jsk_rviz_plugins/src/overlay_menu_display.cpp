@@ -33,18 +33,21 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "overlay_menu_display.h"
+#include "overlay_menu_display.hpp"
 
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreHardwarePixelBuffer.h>
-#include <OGRE/OgreTechnique.h>
+#include <OgreMaterialManager.h>
+#include <OgreTextureManager.h>
+#include <OgreTexture.h>
+#include <OgreHardwarePixelBuffer.h>
+#include <OgreTechnique.h>
 
-#include <rviz/uniform_string_stream.h>
-#include <rviz/display_context.h>
-#include <rviz/view_manager.h>
-#include <rviz/render_panel.h>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/render_panel.hpp>
+#include "rviz_utils.hpp"
+
+#include <iomanip>
 
 namespace jsk_rviz_plugins
 {
@@ -53,50 +56,45 @@ namespace jsk_rviz_plugins
   const int menu_padding_y = 5;
   const int menu_last_padding_y = 30;
   const double animate_duration = 0.2;
-  OverlayMenuDisplay::OverlayMenuDisplay() : Display()
+  OverlayMenuDisplay::OverlayMenuDisplay()
   {
-    update_topic_property_ = new rviz::RosTopicProperty(
-      "Topic", "",
-      ros::message_traits::datatype<jsk_rviz_plugins::OverlayMenu>(),
-      "jsk_rviz_plugins::OverlayMenu topic to subscribe to.",
-      this, SLOT( updateTopic() ));
-    left_property_ = new rviz::IntProperty("left", 128,
+    left_property_ = new rviz_common::properties::IntProperty("left", 128,
                                            "left of the image window",
                                            this, SLOT(updateLeft()));
     left_property_->setMin(0);
-    top_property_ = new rviz::IntProperty("top", 128,
+    top_property_ = new rviz_common::properties::IntProperty("top", 128,
                                           "top of the image window",
                                           this, SLOT(updateTop()));
     top_property_->setMin(0);
-    keep_centered_property_ = new rviz::BoolProperty("keep centered", true,
+    keep_centered_property_ = new rviz_common::properties::BoolProperty("keep centered", true,
                                                      "enable automatic center adjustment",
                                                      this, SLOT(updateKeepCentered()));
 
     // NOTE: Overtaking FG/BG Color Properties defaults to TRUE for backward compatibility.
-    overtake_fg_color_properties_property_ = new rviz::BoolProperty(
+    overtake_fg_color_properties_property_ = new rviz_common::properties::BoolProperty(
       "Overtake FG Color Properties", true,
       "overtake color properties specified by message such as foreground color and alpha",
       this, SLOT(updateOvertakeFGColorProperties()));
-    overtake_bg_color_properties_property_ = new rviz::BoolProperty(
+    overtake_bg_color_properties_property_ = new rviz_common::properties::BoolProperty(
       "Overtake BG Color Properties", true,
       "overtake color properties specified by message such as background color and alpha",
       this, SLOT(updateOvertakeBGColorProperties()));
 
-    fg_color_property_ = new rviz::ColorProperty(
+    fg_color_property_ = new rviz_common::properties::ColorProperty(
       "Foreground Color", QColor(25, 255, 240),
       "Foreground Color",
       this, SLOT(updateFGColor()));
-    fg_alpha_property_ = new rviz::FloatProperty(
+    fg_alpha_property_ = new rviz_common::properties::FloatProperty(
       "Foreground Alpha", 1.0, "Foreground Alpha",
       this, SLOT(updateFGAlpha()));
     fg_alpha_property_->setMin(0.0);
     fg_alpha_property_->setMax(1.0);
 
-    bg_color_property_ = new rviz::ColorProperty(
+    bg_color_property_ = new rviz_common::properties::ColorProperty(
       "Background Color", QColor(0, 0, 0),
       "Background Color",
       this, SLOT(updateBGColor()));
-    bg_alpha_property_ = new rviz::FloatProperty(
+    bg_alpha_property_ = new rviz_common::properties::FloatProperty(
       "Background Alpha", 0.5, "Background Alpha",
       this, SLOT(updateBGAlpha()));
     bg_alpha_property_->setMin(0.0);
@@ -106,7 +104,7 @@ namespace jsk_rviz_plugins
   OverlayMenuDisplay::~OverlayMenuDisplay()
   {
     onDisable();
-    delete update_topic_property_;
+    
     delete left_property_;
     delete top_property_;
     delete keep_centered_property_;
@@ -120,6 +118,8 @@ namespace jsk_rviz_plugins
 
   void OverlayMenuDisplay::onInitialize()
   {
+    overlay_->prepareOverlays(scene_manager_);
+    RTDClass::onInitialize();
     updateKeepCentered();
     updateLeft();
     updateTop();
@@ -135,10 +135,16 @@ namespace jsk_rviz_plugins
   
   void OverlayMenuDisplay::onEnable()
   {
+    RTDClass::onEnable();
     if (overlay_) {
       overlay_->show();
     }
     subscribe();
+  }
+
+  void OverlayMenuDisplay::reset()
+  {
+    RTDClass::reset();
   }
 
   void OverlayMenuDisplay::onDisable()
@@ -149,23 +155,10 @@ namespace jsk_rviz_plugins
     unsubscribe();
   }
 
-  void OverlayMenuDisplay::unsubscribe()
-  {
-    sub_.shutdown();
-  }
 
-  void OverlayMenuDisplay::subscribe()
-  {
-    std::string topic_name = update_topic_property_->getTopicStd();
-    if (topic_name.length() > 0 && topic_name != "/") {
-      sub_ = ros::NodeHandle().subscribe(topic_name, 1,
-                                         &OverlayMenuDisplay::processMessage,
-                                         this);
-    }
-  }
 
   void OverlayMenuDisplay::processMessage
-  (const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg)
+  (jsk_rviz_plugin_msgs::msg::OverlayMenu::ConstSharedPtr msg)
   {
     next_menu_ = msg;
     if (!overtake_bg_color_properties_)
@@ -183,23 +176,23 @@ namespace jsk_rviz_plugins
   bool OverlayMenuDisplay::isNeedToResize()
   {
     if (!current_menu_ && next_menu_) { // first time
-      ROS_DEBUG("need to resize because this is the first time to draw");
+      JSK_LOG_DEBUG("need to resize because this is the first time to draw");
       return true;
     }
     else if (!current_menu_ && !next_menu_) {
       // both are null, it means that ...
       // the plugin tries to draw without message reception
-      ROS_DEBUG("no need to resize because the plugin tries to draw without message reception");
+      JSK_LOG_DEBUG("no need to resize because the plugin tries to draw without message reception");
       return false;
     }
     else if (current_menu_ && !next_menu_) {
       // this is unexpected case
-      ROS_DEBUG("no need to resize, this is unexpected case. please debug");
+      JSK_LOG_DEBUG("no need to resize, this is unexpected case. please debug");
       return false;
     }
     else {
       if (current_menu_->menus.size() != next_menu_->menus.size()) {
-        ROS_DEBUG("need to resize because the length of menu is different");
+        JSK_LOG_DEBUG("need to resize because the length of menu is different");
         return true;
       }
       else if (current_menu_->title != next_menu_->title) {
@@ -209,11 +202,11 @@ namespace jsk_rviz_plugins
         // check all the menu is same or not
         for (size_t i = 0; i < current_menu_->menus.size(); i++) {
           if (current_menu_->menus[i] != next_menu_->menus[i]) {
-            ROS_DEBUG("need to resize because the content of menu is different");
+            JSK_LOG_DEBUG("need to resize because the content of menu is different");
             return true;
           }
         }
-        ROS_DEBUG("no need to resize because the content of menu is same");
+        JSK_LOG_DEBUG("no need to resize because the content of menu is same");
         return false;
       }
     }
@@ -233,7 +226,7 @@ namespace jsk_rviz_plugins
   }
   
   int OverlayMenuDisplay::drawAreaWidth(
-    const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg)
+    jsk_rviz_plugin_msgs::msg::OverlayMenu::ConstSharedPtr msg)
   {
     QFontMetrics fm = fontMetrics();
     int max_width = 0;
@@ -252,7 +245,7 @@ namespace jsk_rviz_plugins
   }
 
   int OverlayMenuDisplay::drawAreaHeight(
-    const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg)
+    jsk_rviz_plugin_msgs::msg::OverlayMenu::ConstSharedPtr msg)
   {
     QFontMetrics fm = fontMetrics();
     return fm.height() * (msg->menus.size() + 1)
@@ -263,20 +256,20 @@ namespace jsk_rviz_plugins
   void OverlayMenuDisplay::update(float wall_dt, float ros_dt)
   {
     if (!next_menu_) {
-      ROS_DEBUG("next_menu_ is null, no need to update");
+      JSK_LOG_DEBUG("next_menu_ is null, no need to update");
       return;
     }
-    if (next_menu_->action == jsk_rviz_plugins::OverlayMenu::ACTION_CLOSE &&
+    if (next_menu_->action == jsk_rviz_plugin_msgs::msg::OverlayMenu::ACTION_CLOSE &&
         animation_state_ == CLOSED) {
-      ROS_DEBUG("request is close and state is closed, we ignore it completely");
+      JSK_LOG_DEBUG("request is close and state is closed, we ignore it completely");
       return;
     }
 
-    if (next_menu_->action == jsk_rviz_plugins::OverlayMenu::ACTION_CLOSE) {
+    if (next_menu_->action == jsk_rviz_plugin_msgs::msg::OverlayMenu::ACTION_CLOSE) {
       // need to close...
       if (animation_state_ == CLOSED) {
         // do nothing, it should be ignored above if sentence
-        ROS_WARN("request is CLOSE and state is CLOSED, it should be ignored before...");
+        JSK_LOG_WARN("request is CLOSE and state is CLOSED, it should be ignored before...");
       }
       else if (animation_state_ == OPENED) { // OPENED -> CLOSING
         animation_state_ = CLOSING;
@@ -311,7 +304,7 @@ namespace jsk_rviz_plugins
       }
       else if (animation_state_ == OPENING) {
         animation_t_ += wall_dt;
-        ROS_DEBUG("animation_t: %f", animation_t_);
+        JSK_LOG_DEBUG("animation_t: %f", animation_t_);
         if (animation_t_ < animate_duration) { // OPENING -> OPENING
           openingAnimation();
         }
@@ -346,7 +339,7 @@ namespace jsk_rviz_plugins
   }
 
   std::string OverlayMenuDisplay::getMenuString(
-    const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg,
+    jsk_rviz_plugin_msgs::msg::OverlayMenu::ConstSharedPtr msg,
     size_t index)
   {
     if (index >= msg->menus.size()) {
@@ -361,7 +354,7 @@ namespace jsk_rviz_plugins
   {
     if (!overlay_) {
       static int count = 0;
-      rviz::UniformStringStream ss;
+      rviz_common::UniformStringStream ss;
       ss << "OverlayMenuDisplayObject" << count++;
       overlay_.reset(new OverlayObject(ss.str()));
       overlay_->show();
@@ -370,13 +363,13 @@ namespace jsk_rviz_plugins
       overlay_->updateTextureSize(drawAreaWidth(next_menu_), drawAreaHeight(next_menu_));
     }
     else {
-      ROS_DEBUG("no need to update texture size");
+      JSK_LOG_DEBUG("no need to update texture size");
     }
   }
   
   void OverlayMenuDisplay::openingAnimation()
   {
-    ROS_DEBUG("openningAnimation");
+    JSK_LOG_DEBUG("openningAnimation");
     prepareOverlay();
     int current_width = animation_t_ / animate_duration * overlay_->getTextureWidth();
     int current_height = animation_t_ / animate_duration * overlay_->getTextureHeight();
@@ -404,7 +397,7 @@ namespace jsk_rviz_plugins
   
   void OverlayMenuDisplay::redraw()
   {
-    ROS_DEBUG("redraw");
+    JSK_LOG_DEBUG("redraw");
     prepareOverlay();
     {
       ScopedPixelBuffer buffer = overlay_->getBuffer();
@@ -469,20 +462,20 @@ namespace jsk_rviz_plugins
   
   void OverlayMenuDisplay::updateTopic()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     unsubscribe();
     subscribe();
   }
 
   void OverlayMenuDisplay::updateLeft()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     left_ = left_property_->getInt();
   }
 
   void OverlayMenuDisplay::updateTop()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     top_ = top_property_->getInt();
   }
 
@@ -493,7 +486,7 @@ namespace jsk_rviz_plugins
       updateLeft();
       updateTop();
     }
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     keep_centered_ = keep_centered_property_->getBool();
   }
 
@@ -601,5 +594,5 @@ namespace jsk_rviz_plugins
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayMenuDisplay, rviz::Display )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayMenuDisplay, rviz_common::Display )

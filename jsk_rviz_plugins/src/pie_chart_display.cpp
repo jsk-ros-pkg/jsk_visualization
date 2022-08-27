@@ -33,102 +33,83 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "pie_chart_display.h"
+#include "pie_chart_display.hpp"
 
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreTechnique.h>
-#include <OGRE/OgreHardwarePixelBuffer.h>
-#include <rviz/uniform_string_stream.h>
-#include <rviz/display_context.h>
+#include <OgreMaterialManager.h>
+#include <OgreTextureManager.h>
+#include <OgreTexture.h>
+#include <OgreTechnique.h>
+#include <OgreHardwarePixelBuffer.h>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/display_context.hpp>
 #include <QPainter>
+
+#include <iomanip>
 
 namespace jsk_rviz_plugins
 {
 
   PieChartDisplay::PieChartDisplay()
-    : rviz::Display(), update_required_(false), first_time_(true), data_(0.0)
+    :  update_required_(false), first_time_(true), data_(0.0)
   {
-    update_topic_property_ = new rviz::RosTopicProperty(
-      "Topic", "",
-      ros::message_traits::datatype<std_msgs::Float32>(),
-      "std_msgs::Float32 topic to subscribe to.",
-      this, SLOT( updateTopic() ));
-    size_property_ = new rviz::IntProperty("size", 128,
+    size_property_ = new rviz_common::properties::IntProperty("size", 128,
                                            "size of the plotter window",
                                            this, SLOT(updateSize()));
-    left_property_ = new rviz::IntProperty("left", 128,
+    left_property_ = new rviz_common::properties::IntProperty("left", 128,
                                            "left of the plotter window",
                                            this, SLOT(updateLeft()));
-    top_property_ = new rviz::IntProperty("top", 128,
+    top_property_ = new rviz_common::properties::IntProperty("top", 128,
                                           "top of the plotter window",
                                           this, SLOT(updateTop()));
-    fg_color_property_ = new rviz::ColorProperty("foreground color",
+    fg_color_property_ = new rviz_common::properties::ColorProperty("foreground color",
                                                  QColor(25, 255, 240),
                                                  "color to draw line",
                                                  this, SLOT(updateFGColor()));
     fg_alpha_property_
-      = new rviz::FloatProperty("foreground alpha", 0.7,
+      = new rviz_common::properties::FloatProperty("foreground alpha", 0.7,
                                 "alpha belnding value for foreground",
                                 this, SLOT(updateFGAlpha()));
     fg_alpha2_property_
-      = new rviz::FloatProperty("foreground alpha 2", 0.4,
+      = new rviz_common::properties::FloatProperty("foreground alpha 2", 0.4,
                                 "alpha belnding value for foreground for indicator",
                                 this, SLOT(updateFGAlpha2()));
-    bg_color_property_ = new rviz::ColorProperty("background color",
+    bg_color_property_ = new rviz_common::properties::ColorProperty("background color",
                                                  QColor(0, 0, 0),
                                                  "background color",
                                                  this, SLOT(updateBGColor()));
     bg_alpha_property_
-      = new rviz::FloatProperty("backround alpha", 0.0,
+      = new rviz_common::properties::FloatProperty("backround alpha", 0.0,
                                 "alpha belnding value for background",
                                 this, SLOT(updateBGAlpha()));
     text_size_property_
-      = new rviz::IntProperty("text size", 14,
+      = new rviz_common::properties::IntProperty("text size", 14,
                               "text size",
                               this, SLOT(updateTextSize()));
     show_caption_property_
-      = new rviz::BoolProperty("show caption", true,
+      = new rviz_common::properties::BoolProperty("show caption", true,
                                 "show caption",
                                 this, SLOT(updateShowCaption()));
     max_value_property_
-      = new rviz::FloatProperty("max value", 1.0,
+      = new rviz_common::properties::FloatProperty("max value", 1.0,
                                 "max value of pie chart",
                                 this, SLOT(updateMaxValue()));
     min_value_property_
-      = new rviz::FloatProperty("min value", 0.0,
+      = new rviz_common::properties::FloatProperty("min value", 0.0,
                                 "min value of pie chart",
                                 this, SLOT(updateMinValue()));
     auto_color_change_property_
-      = new rviz::BoolProperty("auto color change",
+      = new rviz_common::properties::BoolProperty("auto color change",
                                false,
                                "change the color automatically",
                                this, SLOT(updateAutoColorChange()));
     max_color_property_
-      = new rviz::ColorProperty("max color",
+      = new rviz_common::properties::ColorProperty("max color",
                                 QColor(255, 0, 0),
                                 "only used if auto color change is set to True.",
                                 this, SLOT(updateMaxColor()));
 
-    med_color_property_
-      = new rviz::ColorProperty("med color",
-                                QColor(255, 0, 0),
-                                "only used if auto color change is set to True.",
-                                this, SLOT(updateMedColor()));
-
-    max_color_threshold_property_
-      = new rviz::FloatProperty("max color change threthold", 0,
-                                  "change the max color at threshold",
-                                  this, SLOT(updateMaxColorThreshold()));
-   
-    med_color_threshold_property_
-      = new rviz::FloatProperty("med color change threthold", 0,
-                                  "change the med color at threshold ",
-                                  this, SLOT(updateMedColorThreshold()));
-    
     clockwise_rotate_property_
-      = new rviz::BoolProperty("clockwise rotate direction",
+      = new rviz_common::properties::BoolProperty("clockwise rotate direction",
                                false,
                                "change the rotate direction",
                                this, SLOT(updateClockwiseRotate()));
@@ -139,7 +120,7 @@ namespace jsk_rviz_plugins
     if (overlay_->isVisible()) {
       overlay_->hide();
     }
-    delete update_topic_property_;
+    
     delete fg_color_property_;
     delete bg_color_property_;
     delete fg_alpha_property_;
@@ -150,16 +131,16 @@ namespace jsk_rviz_plugins
     delete size_property_;
     delete min_value_property_;
     delete max_value_property_;
-    delete max_color_property_;
-    delete med_color_property_;
     delete text_size_property_;
     delete show_caption_property_;
   }
 
   void PieChartDisplay::onInitialize()
   {
+    overlay_->prepareOverlays(scene_manager_);
+    RTDClass::onInitialize();
     static int count = 0;
-    rviz::UniformStringStream ss;
+    rviz_common::UniformStringStream ss;
     ss << "PieChartDisplayObject" << count++;
     overlay_.reset(new OverlayObject(ss.str()));
     onEnable();
@@ -177,9 +158,6 @@ namespace jsk_rviz_plugins
     updateShowCaption();
     updateAutoColorChange();
     updateMaxColor();
-    updateMedColor();
-    updateMaxColorThreshold();
-    updateMedColorThreshold();
     updateClockwiseRotate();
     overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
     overlay_->hide();
@@ -190,16 +168,17 @@ namespace jsk_rviz_plugins
     if (update_required_) {
       update_required_ = false;
       overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
+      drawPlot(data_);
       overlay_->setPosition(left_, top_);
       overlay_->setDimensions(overlay_->getTextureWidth(),
                               overlay_->getTextureHeight());
-      drawPlot(data_);
     }
   }
   
-  void PieChartDisplay::processMessage(const std_msgs::Float32::ConstPtr& msg)
+  void PieChartDisplay::processMessage(std_msgs::msg::Float32::ConstSharedPtr msg)
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    //std::mutex::scoped_lock lock(mutex_);
+    mutex_.lock();
 
     if (!overlay_->isVisible()) {
       return;
@@ -209,6 +188,8 @@ namespace jsk_rviz_plugins
       data_ = msg->data;
       update_required_ = true;
     }
+
+    mutex_.unlock();
   }
   
   void PieChartDisplay::drawPlot(double val)
@@ -226,20 +207,6 @@ namespace jsk_rviz_plugins
                           + fg_color_.green());
         fg_color.setBlue((max_color_.blue() - fg_color_.blue()) * r2
                          + fg_color_.blue());
-      }
-      if (max_color_threshold_ != 0) {
-        if (r > max_color_threshold_) {
-        fg_color.setRed(max_color_.red());
-        fg_color.setGreen(max_color_.green());
-        fg_color.setBlue(max_color_.blue());
-        }
-      }
-      if (med_color_threshold_ != 0) {
-        if (max_color_threshold_ > r and r > med_color_threshold_ ) {
-        fg_color.setRed(med_color_.red());
-        fg_color.setGreen(med_color_.green());
-        fg_color.setBlue(med_color_.blue());
-        }
       }
     }
 
@@ -311,23 +278,15 @@ namespace jsk_rviz_plugins
   }
 
   
-  void PieChartDisplay::subscribe()
-  {
-    std::string topic_name = update_topic_property_->getTopicStd();
-    if (topic_name.length() > 0 && topic_name != "/") {
-      ros::NodeHandle n;
-      sub_ = n.subscribe(topic_name, 1, &PieChartDisplay::processMessage, this);
-    }
-  }
 
-  
-  void PieChartDisplay::unsubscribe()
+  void PieChartDisplay::reset()
   {
-    sub_.shutdown();
+    RTDClass::reset();
   }
 
   void PieChartDisplay::onEnable()
   {
+    RTDClass::onEnable();
     subscribe();
     overlay_->show();
     first_time_ = true;
@@ -341,89 +300,73 @@ namespace jsk_rviz_plugins
 
   void PieChartDisplay::updateSize()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    //std::mutex::scoped_lock lock(mutex_);
+    mutex_.lock();
     texture_size_ = size_property_->getInt();
-    update_required_ = true;
+    mutex_.unlock();
   }
   
   void PieChartDisplay::updateTop()
   {
     top_ = top_property_->getInt();
-    update_required_ = true;
   }
   
   void PieChartDisplay::updateLeft()
   {
     left_ = left_property_->getInt();
-    update_required_ = true;
   }
   
   void PieChartDisplay::updateBGColor()
   {
     bg_color_ = bg_color_property_->getColor();
-    update_required_ = true;
-
   }
 
   void PieChartDisplay::updateFGColor()
   {
     fg_color_ = fg_color_property_->getColor();
-    update_required_ = true;
-
   }
 
   void PieChartDisplay::updateFGAlpha()
   {
     fg_alpha_ = fg_alpha_property_->getFloat() * 255.0;
-    update_required_ = true;
-
   }
 
   void PieChartDisplay::updateFGAlpha2()
   {
     fg_alpha2_ = fg_alpha2_property_->getFloat() * 255.0;
-    update_required_ = true;
-
   }
 
   
   void PieChartDisplay::updateBGAlpha()
   {
     bg_alpha_ = bg_alpha_property_->getFloat() * 255.0;
-    update_required_ = true;
-
   }
 
   void PieChartDisplay::updateMinValue()
   {
     min_value_ = min_value_property_->getFloat();
-    update_required_ = true;
-
   }
 
   void PieChartDisplay::updateMaxValue()
   {
     max_value_ = max_value_property_->getFloat();
-    update_required_ = true;
-
   }
   
   void PieChartDisplay::updateTextSize()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    //std::mutex::scoped_lock lock(mutex_);
+    mutex_.lock();
     text_size_ = text_size_property_->getInt();
     QFont font;
     font.setPointSize(text_size_);
     caption_offset_ = QFontMetrics(font).height();
-    update_required_ = true;
-
+    mutex_.unlock();
+    
   }
   
   void PieChartDisplay::updateShowCaption()
   {
     show_caption_ = show_caption_property_->getBool();
-    update_required_ = true;
-
   }
 
   
@@ -438,51 +381,20 @@ namespace jsk_rviz_plugins
     auto_color_change_ = auto_color_change_property_->getBool();
     if (auto_color_change_) {
       max_color_property_->show();
-      med_color_property_->show();
-      max_color_threshold_property_->show();
-      med_color_threshold_property_->show();
     }
     else {
       max_color_property_->hide();
-      med_color_property_->hide();
-      max_color_threshold_property_->hide();
-      med_color_threshold_property_->hide();
     }
-    update_required_ = true;
-
   }
 
   void PieChartDisplay::updateMaxColor()
   {
     max_color_ = max_color_property_->getColor();
-    update_required_ = true;
-
-  }
-
-  void PieChartDisplay::updateMedColor()
-  {
-    med_color_ = med_color_property_->getColor();
-    update_required_ = true;
-
-  }
-
-  void PieChartDisplay::updateMaxColorThreshold()
-  {
-    max_color_threshold_ = max_color_threshold_property_->getFloat();
-    update_required_ = true;
-  }
-
-  void PieChartDisplay::updateMedColorThreshold()
-  {
-    med_color_threshold_ = med_color_threshold_property_->getFloat();
-    update_required_ = true;
   }
 
   void PieChartDisplay::updateClockwiseRotate()
   {
     clockwise_rotate_ = clockwise_rotate_property_->getBool();
-    update_required_ = true;
-
   }
 
    bool PieChartDisplay::isInRegion(int x, int y)
@@ -504,5 +416,5 @@ namespace jsk_rviz_plugins
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::PieChartDisplay, rviz::Display )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::PieChartDisplay, rviz_common::Display )

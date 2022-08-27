@@ -33,27 +33,29 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "string_display.h"
+#include "string_display.hpp"
 
 #include <string>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/format.hpp>
-#include <jsk_topic_tools/log_utils.h>
-#include <OGRE/OgreHardwarePixelBuffer.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTexture.h>
-#include <pluginlib/class_list_macros.h>
+//#include <boost/algorithm/string.hpp>
+//#include <boost/format.hpp>
+//#include <jsk_topic_tools/log_utils.hpp>
+#include <OgreHardwarePixelBuffer.h>
+#include <OgreMaterialManager.h>
+#include <OgreTexture.h>
+//#include <pluginlib/class_list_macros.hpp>
 #include <QFontDatabase>
 #include <QPainter>
 #include <QStaticText>
 #include <QTextDocument>
-#include <rviz/uniform_string_stream.h>
+#include <rviz_common/uniform_string_stream.hpp>
+#include "string_utils.hpp"
+
+#include <iomanip>
 
 namespace jsk_rviz_plugins
 {
-  StringDisplay::StringDisplay() : Display(),
-                                   texture_width_(0), texture_height_(0),
+  StringDisplay::StringDisplay() : texture_width_(0), texture_height_(0),
                                    text_size_(14),
                                    line_width_(2),
                                    text_(""), font_(""),
@@ -61,67 +63,62 @@ namespace jsk_rviz_plugins
                                    fg_color_(255, 255, 255, 255.0),
                                    require_update_texture_(false)
   {
-    update_topic_property_ = new rviz::RosTopicProperty(
-      "Topic", "",
-      ros::message_traits::datatype<std_msgs::String>(),
-      "std_msgs::String topic to subscribe to.",
-      this, SLOT(updateTopic()));
-    overtake_position_properties_property_ = new rviz::BoolProperty(
+    overtake_position_properties_property_ = new rviz_common::properties::BoolProperty(
       "Overtake Position Properties", false,
       "overtake position properties specified by message such as left, top and font",
       this, SLOT(updateOvertakePositionProperties()));
-    overtake_color_properties_property_ = new rviz::BoolProperty(
+    overtake_color_properties_property_ = new rviz_common::properties::BoolProperty(
       "Overtake Color Properties", false,
       "overtake color properties specified by message such as foreground/background color and alpha",
       this, SLOT(updateOvertakeColorProperties()));
-    align_bottom_property_ = new rviz::BoolProperty(
+    align_bottom_property_ = new rviz_common::properties::BoolProperty(
       "Align Bottom", false,
       "align text with the bottom of the overlay region",
       this, SLOT(updateAlignBottom()));
-    top_property_ = new rviz::IntProperty(
+    top_property_ = new rviz_common::properties::IntProperty(
       "top", 0,
       "top position",
       this, SLOT(updateTop()));
     top_property_->setMin(0);
-    left_property_ = new rviz::IntProperty(
+    left_property_ = new rviz_common::properties::IntProperty(
       "left", 0,
       "left position",
       this, SLOT(updateLeft()));
     left_property_->setMin(0);
-    width_property_ = new rviz::IntProperty(
+    width_property_ = new rviz_common::properties::IntProperty(
       "width", 128,
       "width position",
       this, SLOT(updateWidth()));
     width_property_->setMin(0);
-    height_property_ = new rviz::IntProperty(
+    height_property_ = new rviz_common::properties::IntProperty(
       "height", 128,
       "height position",
       this, SLOT(updateHeight()));
     height_property_->setMin(0);
-    text_size_property_ = new rviz::IntProperty(
+    text_size_property_ = new rviz_common::properties::IntProperty(
       "text size", 12,
       "text size",
       this, SLOT(updateTextSize()));
     text_size_property_->setMin(0);
-    line_width_property_ = new rviz::IntProperty(
+    line_width_property_ = new rviz_common::properties::IntProperty(
       "line width", 2,
       "line width",
       this, SLOT(updateLineWidth()));
     line_width_property_->setMin(0);
-    fg_color_property_ = new rviz::ColorProperty(
+    fg_color_property_ = new rviz_common::properties::ColorProperty(
       "Foreground Color", QColor(25, 255, 240),
       "Foreground Color",
       this, SLOT(updateFGColor()));
-    fg_alpha_property_ = new rviz::FloatProperty(
+    fg_alpha_property_ = new rviz_common::properties::FloatProperty(
       "Foreground Alpha", 0.8, "Foreground Alpha",
       this, SLOT(updateFGAlpha()));
     fg_alpha_property_->setMin(0.0);
     fg_alpha_property_->setMax(1.0);
-    bg_color_property_ = new rviz::ColorProperty(
+    bg_color_property_ = new rviz_common::properties::ColorProperty(
       "Background Color", QColor(0, 0, 0),
       "Background Color",
       this, SLOT(updateBGColor()));
-    bg_alpha_property_ = new rviz::FloatProperty(
+    bg_alpha_property_ = new rviz_common::properties::FloatProperty(
       "Background Alpha", 0.8, "Background Alpha",
       this, SLOT(updateBGAlpha()));
     bg_alpha_property_->setMin(0.0);
@@ -129,7 +126,7 @@ namespace jsk_rviz_plugins
 
     QFontDatabase database;
     font_families_ = database.families();
-    font_property_ = new rviz::EnumProperty(
+    font_property_ = new rviz_common::properties::EnumProperty(
       "font", "DejaVu Sans Mono",
       "font", this,
       SLOT(updateFont()));
@@ -143,7 +140,7 @@ namespace jsk_rviz_plugins
   {
     onDisable();
     //delete overlay_;
-    delete update_topic_property_;
+    
     delete overtake_color_properties_property_;
     delete overtake_position_properties_property_;
     delete align_bottom_property_;
@@ -160,8 +157,14 @@ namespace jsk_rviz_plugins
     delete font_property_;
   }
 
+  void StringDisplay::reset()
+  {
+    RTDClass::reset();
+  }
+
   void StringDisplay::onEnable()
   {
+    RTDClass::onEnable();
     if (overlay_)
     {
       overlay_->show();
@@ -178,19 +181,7 @@ namespace jsk_rviz_plugins
     unsubscribe();
   }
 
-  void StringDisplay::unsubscribe()
-  {
-    sub_.shutdown();
-  }
 
-  void StringDisplay::subscribe()
-  {
-    std::string topic_name = update_topic_property_->getTopicStd();
-    if (topic_name.length() > 0 && topic_name != "/")
-    {
-      sub_ = ros::NodeHandle().subscribe(topic_name, 1, &StringDisplay::processMessage, this);
-    }
-  }
 
   void StringDisplay::updateTopic()
   {
@@ -201,6 +192,8 @@ namespace jsk_rviz_plugins
   // only the first time
   void StringDisplay::onInitialize()
   {
+    overlay_->prepareOverlays(scene_manager_);
+    RTDClass::onInitialize();
     onEnable();
     updateTopic();
     updateOvertakePositionProperties();
@@ -234,6 +227,7 @@ namespace jsk_rviz_plugins
     {
       return;
     }
+
     overlay_->setPosition(left_, top_);
     overlay_->updateTextureSize(texture_width_, texture_height_);
     {
@@ -253,14 +247,12 @@ namespace jsk_rviz_plugins
         font.setBold(true);
         painter.setFont(font);
       }
+
       if (text_.length() > 0)
       {
-        std::string color_wrapped_text
-          = (boost::format("<span style=\"color: rgba(%2%, %3%, %4%, %5%)\">%1%</span>")
-             % text_ % fg_color_.red() % fg_color_.green() % fg_color_.blue() %
-             fg_color_.alpha()).str();
-        QStaticText static_text(
-          boost::algorithm::replace_all_copy(color_wrapped_text, "\n", "<br >").c_str());
+        std::string color_wrapped_text = rviz_string::format("<span style=\"color: rgba(%d, %d, %d, %d)\">%s</span>",
+            fg_color_.red(), fg_color_.green(), fg_color_.blue(), fg_color_.alpha(), text_.c_str());
+        QStaticText static_text(rviz_string::replace_str(color_wrapped_text, "\n", "<br >").c_str());
         static_text.setTextWidth(w);
         if (!align_bottom_)
         {
@@ -282,8 +274,7 @@ namespace jsk_rviz_plugins
     require_update_texture_ = false;
   }
 
-  void StringDisplay::processMessage
-  (const std_msgs::String::ConstPtr& msg)
+  void StringDisplay::processMessage(std_msgs::msg::String::ConstSharedPtr msg)
   {
     if (!isEnabled())
     {
@@ -292,7 +283,7 @@ namespace jsk_rviz_plugins
     if (!overlay_)
     {
       static int count = 0;
-      rviz::UniformStringStream ss;
+      rviz_common::UniformStringStream ss;
       ss << "StringDisplayObject" << count++;
       overlay_.reset(new OverlayObject(ss.str()));
       overlay_->show();
@@ -479,7 +470,7 @@ namespace jsk_rviz_plugins
     }
     else
     {
-      ROS_FATAL("Unexpected error at selecting font index %d.", font_index);
+      //ROS_FATAL("Unexpected error at selecting font index %d.", font_index);
       return;
     }
     if (overtake_color_properties_)
@@ -515,6 +506,7 @@ namespace jsk_rviz_plugins
     left_property_->setValue(x);
   }
 
-}  // namespace jsk_rviz_plugins
+}  // #include <iomanip>
 
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::StringDisplay, rviz::Display )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::StringDisplay, rviz_common::Display )

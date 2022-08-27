@@ -33,8 +33,10 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "overlay_utils.h"
-#include <ros/ros.h>
+#include "overlay_utils.hpp"
+//#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
+#include "rviz_utils.hpp"
 
 namespace jsk_rviz_plugins
 {
@@ -115,6 +117,11 @@ namespace jsk_rviz_plugins
     //delete overlay_;
   }
 
+  void OverlayObject::prepareOverlays(Ogre::SceneManager* manager)
+  {
+    rviz_rendering::RenderSystem::get()->prepareOverlays(manager);
+  }
+
   std::string OverlayObject::getName()
   {
     return name_;
@@ -143,11 +150,11 @@ namespace jsk_rviz_plugins
   {
     const std::string texture_name = name_ + "Texture";
     if (width == 0) {
-      ROS_WARN("[OverlayObject] width=0 is specified as texture size");
+      JSK_LOG_WARN("[OverlayObject] width=0 is specified as texture size");
       width = 1;
     }
     if (height == 0) {
-      ROS_WARN("[OverlayObject] height=0 is specified as texture size");
+      JSK_LOG_WARN("[OverlayObject] height=0 is specified as texture size");
       height = 1;
     }
     if (!isTextureReady() ||

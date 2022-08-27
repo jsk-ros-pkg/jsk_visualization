@@ -1,41 +1,7 @@
-/*********************************************************************
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2014, JSK Lab
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
- *     with the distribution.
- *   * Neither the name of the JSK Lab nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *********************************************************************/
-
-#include "pictogram_display.h"
+#include "pictogram_display.hpp"
 #include <QPainter>
 #include <QFontDatabase>
-#include <ros/package.h>
+//#include <ros/package.hpp>
 
 ////////////////////////////////////////////////////////
 // read Entypo fonts
@@ -45,7 +11,8 @@
 #include "Entypo.dat"
 #include "Entypo_Social.dat"
 #include "fontawesome.dat"
-#include "pictogram_font_mapping.h"
+#include "pictogram_font_mapping.hpp"
+#include <rviz_common/properties/parse_color.hpp>
 
 namespace jsk_rviz_plugins
 {
@@ -59,7 +26,7 @@ namespace jsk_rviz_plugins
     int id =
       QFontDatabase::addApplicationFontFromData(entypo);
     if (id == -1) {
-      ROS_WARN("failed to load font");
+      //RCLCPP_WARN("failed to load font");
     }
     return id;
   }
@@ -90,7 +57,7 @@ namespace jsk_rviz_plugins
       return QFont("Entypo");
     }
     else {
-      return QFont("Font Awesome 5 Free");
+      return QFont("FontAwesome");
     }
   }
   
@@ -128,7 +95,8 @@ namespace jsk_rviz_plugins
                                    double size):
     FacingTexturedObject(manager, parent, size),
     need_to_update_(false),
-    action_(jsk_rviz_plugins::Pictogram::ADD)
+    action_(jsk_rviz_plugin_msgs::msg::Pictogram::ADD),
+    clock_(RCL_SYSTEM_TIME)
   {
     square_object_->setPolygonType(SquareObject::SQUARE);
     square_object_->rebuildPolygon();
@@ -136,7 +104,7 @@ namespace jsk_rviz_plugins
     // for (std::map<std::string, QString>::iterator it = fontawesome_character_map.begin();
     //      it != fontawesome_character_map.end();
     //      ++it) {
-    //   ROS_INFO("%s", it->first.c_str());
+    //   //RCLCPP_INFO("%s", it->first.c_str());
     // }
   }
 
@@ -150,7 +118,7 @@ namespace jsk_rviz_plugins
 
   void PictogramObject::start()
   {
-    time_ = ros::WallTime::now();
+    time_ = clock_.now();
   }
 
   void PictogramObject::setSize(double size)
@@ -166,14 +134,14 @@ namespace jsk_rviz_plugins
     speed_ = speed;
   }
 
-  void PictogramObject::setPose(const geometry_msgs::Pose& pose,
+  void PictogramObject::setPose(const geometry_msgs::msg::Pose& pose,
                                 const std::string& frame_id)
   {
     pose_ = pose;
     frame_id_ = frame_id;
   }
   
-  void PictogramObject::setContext(rviz::DisplayContext* context)
+  void PictogramObject::setContext(rviz_common::DisplayContext* context)
   {
     context_ = context;
   }
@@ -191,7 +159,7 @@ namespace jsk_rviz_plugins
   void PictogramObject::setAction(uint8_t type)
   {
     action_ = type;
-    if (action_ == jsk_rviz_plugins::Pictogram::DELETE) {
+    if (action_ == jsk_rviz_plugin_msgs::msg::Pictogram::DELETE) {
       setEnable(false);
     }
     else{
@@ -203,37 +171,37 @@ namespace jsk_rviz_plugins
   {
     Ogre::Vector3 position;
     Ogre::Quaternion quaternion;
-    std_msgs::Header header;
+    std_msgs::msg::Header header;
     header.frame_id = frame_id_;
     if(!context_->getFrameManager()->transform(header,
                                                pose_,
                                                position,
                                                quaternion)) {
-      ROS_ERROR( "Error transforming pose from frame '%s'",
-                 frame_id_.c_str());
+      //RCLCPP_ERROR( "Error transforming pose from frame '%s'",
+      //           frame_id_.c_str());
       return;
     }
 
-    if (action_ == jsk_rviz_plugins::Pictogram::ADD) {
+    if (action_ == jsk_rviz_plugin_msgs::msg::Pictogram::ADD) {
       setPosition(position);
       setOrientation(quaternion);
     }
-    else if (action_ == jsk_rviz_plugins::Pictogram::ROTATE_Z ||
-             action_ == jsk_rviz_plugins::Pictogram::ROTATE_X ||
-             action_ == jsk_rviz_plugins::Pictogram::ROTATE_Y) {
+    else if (action_ == jsk_rviz_plugin_msgs::msg::Pictogram::ROTATE_Z ||
+             action_ == jsk_rviz_plugin_msgs::msg::Pictogram::ROTATE_X ||
+             action_ == jsk_rviz_plugin_msgs::msg::Pictogram::ROTATE_Y) {
       Ogre::Vector3 axis;
-      if (action_ == jsk_rviz_plugins::Pictogram::ROTATE_Z) {
+      if (action_ == jsk_rviz_plugin_msgs::msg::Pictogram::ROTATE_Z) {
         axis = Ogre::Vector3(0, 0, 1);
       }
-      else if (action_ == jsk_rviz_plugins::Pictogram::ROTATE_X) {
+      else if (action_ == jsk_rviz_plugin_msgs::msg::Pictogram::ROTATE_X) {
         axis = Ogre::Vector3(1, 0, 0);
       }
-      else if (action_ == jsk_rviz_plugins::Pictogram::ROTATE_Y) {
+      else if (action_ == jsk_rviz_plugin_msgs::msg::Pictogram::ROTATE_Y) {
         axis = Ogre::Vector3(0, 1, 0);
       }
-      time_ = time_ + ros::WallDuration(wall_dt);
+      time_ = rclcpp::Time(time_.seconds(), time_.nanoseconds() + wall_dt); //wall_dt; // = time_ + rclcpp::Time(wall_dt);
       // time_ -> theta
-      Ogre::Radian theta(M_PI * 2 * fmod(time_.toSec() * speed_, 1.0));
+      Ogre::Radian theta(M_PI * 2 * fmod(time_.seconds() * speed_, 1.0));
       
       Ogre::Quaternion offset;
       offset.FromAngleAxis(theta, axis);
@@ -241,14 +209,14 @@ namespace jsk_rviz_plugins
       setPosition(position);
       setOrientation(final_rot);
     }
-    else if (action_ == jsk_rviz_plugins::Pictogram::JUMP ||
-             action_ == jsk_rviz_plugins::Pictogram::JUMP_ONCE) {
+    else if (action_ == jsk_rviz_plugin_msgs::msg::Pictogram::JUMP ||
+             action_ == jsk_rviz_plugin_msgs::msg::Pictogram::JUMP_ONCE) {
       bool jumpingp = false;
-      if (action_ == jsk_rviz_plugins::Pictogram::JUMP) {
+      if (action_ == jsk_rviz_plugin_msgs::msg::Pictogram::JUMP) {
         jumpingp = true;
       }
-      else if (action_ == jsk_rviz_plugins::Pictogram::JUMP_ONCE &&
-               (ros::WallTime::now() - time_).toSec() < 2) {
+      else if (action_ == jsk_rviz_plugin_msgs::msg::Pictogram::JUMP_ONCE &&
+               (clock_.now() - time_).seconds() < 2) {
         jumpingp = true;
       }
       
@@ -257,7 +225,7 @@ namespace jsk_rviz_plugins
       }
       else {
         // t(2-t) * size
-        double t = fmod((ros::WallTime::now() - time_).toSec(), 2.0);
+        double t = fmod((clock_.now() - time_).seconds(), 2.0);
         double height = size_ * t * (2 - t);
         Ogre::Vector3 new_pos = position + quaternion * Ogre::Vector3(height, 0, 0);
         setPosition(new_pos);
@@ -266,10 +234,12 @@ namespace jsk_rviz_plugins
     }
 
     double exceeded_time;
-    if( ttl_ && (exceeded_time = (ros::WallTime::now() - time_).toSec()) > ttl_) {
-      setAlpha( std::max(1.0 - 1.0 * (ros::WallTime::now() - (time_ + ros::WallDuration(ttl_))).toSec() / 5.0, 0.0) );
-      if( 1.0 - 1.0 * (ros::WallTime::now() - (time_ + ros::WallDuration(ttl_))).toSec() / 3.0 < 0)
-	setAction(jsk_rviz_plugins::Pictogram::DELETE);
+    if (ttl_ && (exceeded_time = (clock_.now() - time_).seconds()) > ttl_)
+    {
+      double tmp_time = clock_.now().seconds() - (time_.seconds() + ttl_);
+      setAlpha(std::max(1.0 - 1.0 * tmp_time / 5.0, 0.0));
+      if (1.0 - 1.0 * tmp_time / 3.0 < 0)
+        setAction(jsk_rviz_plugin_msgs::msg::Pictogram::DELETE);
     }
   }
   
@@ -293,10 +263,10 @@ namespace jsk_rviz_plugins
     QImage Hud = buffer.getQImage(128, 128, transparent); // should change according to size
     QPainter painter( &Hud );
     painter.setRenderHint(QPainter::Antialiasing, true);
-    QColor foreground = rviz::ogreToQt(color_);
+    QColor foreground = rviz_common::properties::ogreToQt(color_);
     painter.setPen(QPen(foreground, 5, Qt::SolidLine));
     
-    if (isCharacterSupported(text_) && mode_ == jsk_rviz_plugins::Pictogram::PICTOGRAM_MODE) {
+    if (isCharacterSupported(text_) && mode_ == jsk_rviz_plugin_msgs::msg::Pictogram::PICTOGRAM_MODE) {
       QFont font = getFont(text_);
       QString pictogram_text = lookupPictogramText(text_);
       if (isEntypo(text_)) {
@@ -310,7 +280,7 @@ namespace jsk_rviz_plugins
                        Qt::AlignHCenter | Qt::AlignVCenter,
                        pictogram_text);
       painter.end();
-    }else if( mode_ == jsk_rviz_plugins::Pictogram::STRING_MODE){
+    }else if( mode_ == jsk_rviz_plugin_msgs::msg::Pictogram::STRING_MODE){
       QFont font("Liberation Sans");
       font.setPointSize(32);
       font.setBold(true);
@@ -321,7 +291,7 @@ namespace jsk_rviz_plugins
       painter.end();
     }
     else {
-      ROS_WARN("%s is not supported", text_.c_str());
+      //RCLCPP_WARN("%s is not supported", text_.c_str());
     }
   }
 
@@ -371,7 +341,7 @@ namespace jsk_rviz_plugins
   
   void PictogramDisplay::onInitialize()
   {
-    MFDClass::onInitialize();
+    RTDClass::onInitialize();
     pictogram_.reset(new PictogramObject(scene_manager_,
                                          scene_node_,
                                          1.0));
@@ -388,12 +358,13 @@ namespace jsk_rviz_plugins
 
   void PictogramDisplay::reset()
   {
-    MFDClass::reset();
+    RTDClass::reset();
     pictogram_->setEnable(false);
   }
 
   void PictogramDisplay::onEnable()
   {
+    RTDClass::onEnable();
     subscribe();
     if (pictogram_) {
       // keep false, it will be true
@@ -402,16 +373,17 @@ namespace jsk_rviz_plugins
     }
   }
 
-  void PictogramDisplay::processMessage(const jsk_rviz_plugins::Pictogram::ConstPtr& msg)
+  void PictogramDisplay::processMessage(jsk_rviz_plugin_msgs::msg::Pictogram::ConstSharedPtr msg)
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    //std::mutex::scoped_lock lock(mutex_);
+    mutex_.lock();
 
     pictogram_->setEnable(isEnabled());
     if (!isEnabled()) {
       return;
     }
     pictogram_->setAction(msg->action);
-    if (msg->action == jsk_rviz_plugins::Pictogram::DELETE) {
+    if (msg->action == jsk_rviz_plugin_msgs::msg::Pictogram::DELETE) {
       return;
     }
     
@@ -431,16 +403,20 @@ namespace jsk_rviz_plugins
     pictogram_->setTTL(msg->ttl);
     if (msg->speed)
       pictogram_->setSpeed(msg->speed);
+    
+    mutex_.unlock();
   }
 
   void PictogramDisplay::update(float wall_dt, float ros_dt)
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    //std::mutex::scoped_lock lock(mutex_);
+    mutex_.lock();
     if (pictogram_) {
       pictogram_->update(wall_dt, ros_dt);
     }
+    mutex_.unlock();
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::PictogramDisplay, rviz::Display);
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::PictogramDisplay, rviz_common::Display);
