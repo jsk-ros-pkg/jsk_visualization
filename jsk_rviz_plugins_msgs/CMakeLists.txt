@@ -19,12 +19,11 @@ rosidl_generate_interfaces(jsk_rviz_plugin_msgs
   srv/RequestMarkerOperate.srv
   srv/Screenshot.srv
 
-  DEPENDENCIES std_msgs geometry_msgs
-  )
+  DEPENDENCIES std_msgs geometry_msgs)
 
 ament_export_dependencies(rosidl_default_runtime)
 
-if (BUILD_TESTING)
+if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
   # uncomment the line when a copyright and license is not present in all source files
@@ -33,6 +32,6 @@ if (BUILD_TESTING)
   # uncomment the line when this package is not in a git repo
   #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
-endif ()
+endif()
 
 ament_package()
