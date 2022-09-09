@@ -33,7 +33,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-
 #ifndef JSK_TOPIC_TOOLS_COLOR_UTILS_H_
 #define JSK_TOPIC_TOOLS_COLOR_UTILS_H_
 
@@ -46,20 +45,20 @@
 
 namespace jsk_topic_tools
 {
-  /** @brief choose a color out of 20 good selected colors
+/** @brief choose a color out of 20 good selected colors
    *
    * The color format is same as d3.js (https://github.com/mbostock/d3/wiki/Ordinal-Scales#category20)
    * @param[in] i index value
    * @return return std_msgs::ColorRGBA and each value is in range between 0 and 1.
    */
-  std_msgs::msg::ColorRGBA colorCategory20(int i);
+std_msgs::msg::ColorRGBA colorCategory20(int i);
 
-  /** @brief returns heat-map color (http://en.wikipedia.org/wiki/Heat_map)
+/** @brief returns heat-map color (http://en.wikipedia.org/wiki/Heat_map)
    *
    * @param[in] v Value to colorize. This should be in [0.0:1.0]
    * @return return std_msgs::ColorRGBA and each value is in range between 0 and 1.
    */
-  std_msgs::msg::ColorRGBA heatColor(double v);
-}
+std_msgs::msg::ColorRGBA heatColor(double v);
+}  // namespace jsk_topic_tools
 
 #endif
