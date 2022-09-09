@@ -46,7 +46,7 @@
 #include <rviz_common/view_manager.hpp>
 #include <rviz_common/display_group.hpp>
 #include <rviz_common/ros_topic_display.hpp>
-#include <rviz_default_plugins/visibility_control.hpp>
+// #include <rviz_default_plugins/visibility_control.hpp>
 
 #include "overlay_picker_tool.hpp"
 #include "overlay_text_display.hpp"

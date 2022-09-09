@@ -38,7 +38,7 @@
 #include <std_msgs/msg/float32.hpp>
 #ifndef Q_MOC_RUN
 #include <rviz_common/ros_topic_display.hpp>
-#include <rviz_default_plugins/visibility_control.hpp>
+// #include <rviz_default_plugins/visibility_control.hpp>
 #include "overlay_utils.hpp"
 #include <OgreColourValue.h>
 #include <OgreTexture.h>

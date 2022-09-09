@@ -1,0 +1,22 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/uowner/jsk_plugin_dev_ws/install/speech_recognition_msgs/lib/python3.8/site-packages",
+        "/home/uowner/jsk_plugin_dev_ws/install/posedetection_msgs/lib/python3.8/site-packages",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_topic_tools/lib/python3.8/site-packages",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_rviz_plugin_msgs/lib/python3.8/site-packages",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_recognition_msgs/lib/python3.8/site-packages",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_hark_msgs/lib/python3.8/site-packages",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_gui_msgs/lib/python3.8/site-packages",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_footstep_msgs/lib/python3.8/site-packages",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/speech_recognition_msgs/lib/python3.8/site-packages",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/ros_tcp_endpoint/lib/python3.8/site-packages",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/posedetection_msgs/lib/python3.8/site-packages",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_topic_tools/lib/python3.8/site-packages",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_rviz_plugins/lib/python3.8/site-packages",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_recognition_msgs/lib/python3.8/site-packages",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_hark_msgs/lib/python3.8/site-packages",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_gui_msgs/lib/python3.8/site-packages",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_footstep_msgs/lib/python3.8/site-packages",
+        "/opt/ros/foxy/lib/python3.8/site-packages"
+    ]
+}

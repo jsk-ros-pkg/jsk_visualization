@@ -1,0 +1,43 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/uowner/jsk_plugin_dev_ws/install/speech_recognition_msgs/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/install/posedetection_msgs/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_rviz_plugins/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_topic_tools/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_tester/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_rviz_plugin_msgs/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_recognition_msgs/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_hark_msgs/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_gui_msgs/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/install/jsk_footstep_msgs/include/**",
+        "/home/uowner/Documents/cpp_robotics/install/lib_dev/include/**",
+        "/home/uowner/Documents/cpp_robotics/install/cpp_robotics_vendor/include/**",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/speech_recognition_msgs/include/**",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/posedetection_msgs/include/**",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_rviz_plugins_nodes/include/**",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_topic_tools/include/**",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_rviz_plugins/include/**",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_recognition_msgs/include/**",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_hark_msgs/include/**",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_gui_msgs/include/**",
+        "/home/uowner/Documents/tut_robocon/ABU2022/external_packages/install/jsk_footstep_msgs/include/**",
+        "/opt/ros/foxy/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/src/jsk_tester/include/**",
+        "/home/uowner/jsk_plugin_dev_ws/src/jsk_visualization/jsk_topic_tools/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
