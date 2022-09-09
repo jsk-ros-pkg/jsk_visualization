@@ -11,11 +11,11 @@
       screenshot utility
     </description>
   </class>
-  <!-- <class name="jsk_rviz_plugin/OverlayPicker" type="jsk_rviz_plugins::OverlayPickerTool" base_class_type="rviz_common::Tool">
+  <class name="jsk_rviz_plugin/OverlayPicker" type="jsk_rviz_plugins::OverlayPickerTool" base_class_type="rviz_common::Tool">
     <description>
       Overlay picker by dragging
     </description>
-  </class> -->
+  </class>
   <class name="jsk_rviz_plugin/CloseAll" type="jsk_rviz_plugins::CloseAllTool" base_class_type="rviz_common::Tool">
     <description>
       close all displays

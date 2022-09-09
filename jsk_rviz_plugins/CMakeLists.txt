@@ -105,7 +105,7 @@ add_library(jsk_rviz_plugins SHARED
   src/close_all_tool.cpp
   src/open_all_tool.cpp
   src/screenshot_listener_tool.cpp
-  # src/overlay_picker_tool.cpp
+  src/overlay_picker_tool.cpp
 
   ### ViewController
   # src/view_controller/tablet_view_controller.cpp
@@ -180,10 +180,10 @@ ament_export_dependencies(
   jsk_topic_tools
 )
 
-install(
-  DIRECTORY include/
-  DESTINATION include
-)
+# install(
+#   DIRECTORY include/
+#   DESTINATION include
+# )
 
 install(TARGETS
   jsk_rviz_plugins
