@@ -1,37 +1,32 @@
 // // -*- mode: c++; -*-
-// /*********************************************************************
-//  * Software License Agreement (BSD License)
-//  *
-//  *  Copyright (c) 2014, JSK Lab
-//  *  All rights reserved.
-//  *
-//  *  Redistribution and use in source and binary forms, with or without
-//  *  modification, are permitted provided that the following conditions
-//  *  are met:
-//  *
-//  *   * Redistributions of source code must retain the above copyright
-//  *     notice, this list of conditions and the following disclaimer.
-//  *   * Redistributions in binary form must reproduce the above
-//  *     copyright notice, this list of conditions and the following
-//  *     disclaimer in the documentation and/o2r other materials provided
-//  *     with the distribution.
-//  *   * Neither the name of the JSK Lab nor the names of its
-//  *     contributors may be used to endorse or promote products derived
-//  *     from this software without specific prior written permission.
-//  *
-//  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-//  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-//  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-//  *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-//  *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-//  *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-//  *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-//  *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-//  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-//  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-//  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-//  *  POSSIBILITY OF SUCH DAMAGE.
-//  *********************************************************************/
+// Copyright (c) 2014, JSK Lab
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//
+//  * Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following
+//    disclaimer in the documentation and/or other materials provided
+//    with the distribution.
+//  * Neither the name of the JSK Lab nor the names of its
+//    contributors may be used to endorse or promote products derived from
+//    this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+// ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 // //#include <boost/bind.hpp>
 
@@ -108,7 +103,6 @@
 //                                        this, SLOT( updateAlpha() ));
 //   alpha_property_->setMin( 0 );
 //   alpha_property_->setMax( 1 );
-  
 
 //   zoom_property_ = new FloatProperty( "Zoom Factor", 1.0,
 //                                       "Set a zoom factor below 1 to see a larger part of the world, above 1 to magnify the image.",
@@ -144,7 +138,6 @@
 //     unsubscribe();
 //     caminfo_tf_filter_->clear();
 
-
 //     //workaround. delete results in a later crash
 //     render_panel_->hide();
 //     //delete render_panel_;
@@ -166,7 +159,7 @@
 //     overlay_->prepareOverlays(scene_manager_);
 //     RTDClass::onInitialize();
 //   ImageDisplayBase::onInitialize();
-  
+
 // #if ROS_VERSION_MINIMUM(1, 15, 0) // noetic and greater
 //   caminfo_tf_filter_ = new tf2_ros::MessageFilter<sensor_msgs::CameraInfo>(
 //     *context_->getTF2BufferPtr(), fixed_frame_.toStdString(),
@@ -237,7 +230,7 @@
 //   updateLeft();
 //   updateTop();
 //   updateTextureAlpha();
-  
+
 //   render_panel_ = new RenderPanel();
 //   render_panel_->getRenderWindow()->addListener( this );
 //   render_panel_->getRenderWindow()->setAutoUpdated(false);
@@ -303,8 +296,6 @@
 //     overlay_->hide();
 //   }
 // }
-
-
 
 // void OverlayCameraDisplay::updateAlpha()
 // {
@@ -405,7 +396,7 @@
 //   }
 //   delete[] data;
 // }
-  
+
 // bool OverlayCameraDisplay::updateCamera()
 // {
 //   sensor_msgs::CameraInfo::ConstSharedPtr info;
@@ -522,7 +513,7 @@
 
 //   Ogre::Matrix4 proj_matrix;
 //   proj_matrix = Ogre::Matrix4::ZERO;
- 
+
 //   proj_matrix[0][0]= 2.0 * fx/img_width * zoom_x;
 //   proj_matrix[1][1]= 2.0 * fy/img_height * zoom_y;
 
@@ -608,7 +599,7 @@
 // {
 //   texture_alpha_ = texture_alpha_property_->getFloat();
 // }
-  
+
 // }
 
 // #include <pluginlib/class_list_macros.hpp>

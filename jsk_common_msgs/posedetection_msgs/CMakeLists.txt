@@ -21,8 +21,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/Feature1DDetect.srv
   srv/TargetObj.srv
 
-  DEPENDENCIES std_msgs geometry_msgs sensor_msgs
- )
+  DEPENDENCIES std_msgs geometry_msgs sensor_msgs)
 
 ament_export_dependencies(rosidl_default_runtime)
 

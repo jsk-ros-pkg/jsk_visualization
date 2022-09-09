@@ -14,13 +14,12 @@ rosidl_generate_interfaces(jsk_rviz_plugin_msgs
   msg/RecordCommand.msg
   msg/StringStamped.msg
   msg/TransformableMarkerOperate.msg
-  
+
   srv/EusCommand.srv
   srv/RequestMarkerOperate.srv
   srv/Screenshot.srv
 
-  DEPENDENCIES std_msgs geometry_msgs
- )
+  DEPENDENCIES std_msgs geometry_msgs)
 
 ament_export_dependencies(rosidl_default_runtime)
 

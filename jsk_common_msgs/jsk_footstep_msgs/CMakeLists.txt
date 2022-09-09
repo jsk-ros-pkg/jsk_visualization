@@ -10,8 +10,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/Footstep.msg
   msg/FootstepArray.msg
 
-  DEPENDENCIES geometry_msgs builtin_interfaces
- )
+  DEPENDENCIES geometry_msgs builtin_interfaces)
 
 ament_export_dependencies(rosidl_default_runtime)
 

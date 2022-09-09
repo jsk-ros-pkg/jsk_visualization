@@ -1,37 +1,32 @@
 // // -*- mode: c++ -*-
-// /*********************************************************************
-//  * Software License Agreement (BSD License)
-//  *
-//  *  Copyright (c) 2014, JSK Lab
-//  *  All rights reserved.
-//  *
-//  *  Redistribution and use in source and binary forms, with or without
-//  *  modification, are permitted provided that the following conditions
-//  *  are met:
-//  *
-//  *   * Redistributions of source code must retain the above copyright
-//  *     notice, this list of conditions and the following disclaimer.
-//  *   * Redistributions in binary form must reproduce the above
-//  *     copyright notice, this list of conditions and the following
-//  *     disclaimer in the documentation and/o2r other materials provided
-//  *     with the distribution.
-//  *   * Neither the name of the JSK Lab nor the names of its
-//  *     contributors may be used to endorse or promote products derived
-//  *     from this software without specific prior written permission.
-//  *
-//  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-//  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-//  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-//  *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-//  *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-//  *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-//  *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-//  *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-//  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-//  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-//  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-//  *  POSSIBILITY OF SUCH DAMAGE.
-//  *********************************************************************/
+// Copyright (c) 2014, JSK Lab
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//
+//  * Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following
+//    disclaimer in the documentation and/or other materials provided
+//    with the distribution.
+//  * Neither the name of the JSK Lab nor the names of its
+//    contributors may be used to endorse or promote products derived from
+//    this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+// ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 // #include <video_capture_display.hpp>
 // // #if CV_MAJOR_VERSION >= 4
@@ -108,7 +103,7 @@
 //     start_capture_property_->setBool(false); // always false when starting up
 //     context_->queueRender();
 //   }
-  
+
 //   void VideoCaptureDisplay::updateFileName()
 //   {
 //     if (capturing_) {
@@ -211,12 +206,12 @@
 //     // }
 
 // #if (CV_VERSION_MAJOR >= 4)
-//     writer_.open(file_name_, cv::VideoWriter::fourcc('I','Y','U','V'), fps_, cv::Size(width_, height_)); // from OpenCV 4.x 
+//     writer_.open(file_name_, cv::VideoWriter::fourcc('I','Y','U','V'), fps_, cv::Size(width_, height_)); // from OpenCV 4.x
 // #else
 //     writer_.open(file_name_, CV_FOURCC_DEFAULT, fps_, cv::Size(width_, height_));
-// #endif    
+// #endif
 //   }
-  
+
 //   void VideoCaptureDisplay::stopCapture()
 //   {
 //     // JSK_LOG_INFO("stop capturing");
@@ -233,7 +228,7 @@
 //       return;
 //     }
 //     if (capturing_) {
-//       //rviz_common::properties::RenderPanel* 
+//       //rviz_common::properties::RenderPanel*
 //       //auto panel = context_->getViewManager()->getRenderPanel();
 // #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 //       QPixmap screenshot
@@ -253,7 +248,7 @@
 //       cv::cvtColor(image, image, cv::COLOR_BGR2RGB);  // RGB -> BGR
 // #else
 //       cv::cvtColor(image, image, CV_RGB2BGR);  // RGB -> BGR
-// #endif    
+// #endif
 
 //       writer_ << image;
 //       ++frame_counter_;
@@ -264,7 +259,6 @@
 //     // convert QPixmap into cv::Mat
 //   }
 // }
-
 
 // #include <pluginlib/class_list_macros.hpp>
 // PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::VideoCaptureDisplay, rviz_common::Display)

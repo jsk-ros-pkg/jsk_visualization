@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 3.5)
 project(jsk_rviz_plugins)
 
 # Default to C99
-if(NOT CMAKE_C_STANDARD)
+if (NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
 # Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
+if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
@@ -105,15 +105,14 @@ add_library(jsk_rviz_plugins SHARED
   src/close_all_tool.cpp
   src/open_all_tool.cpp
   src/screenshot_listener_tool.cpp
-  src/overlay_picker_tool.cpp
+  src/overlay_picker_tool.cpp)
 
   ### ViewController
-  # src/view_controller/tablet_view_controller.cpp
-)
+  # src/view_controller/tablet_view_controller.cpp )
 
 # Link ament packages
-ament_target_dependencies(jsk_rviz_plugins 
-  rclcpp 
+ament_target_dependencies(jsk_rviz_plugins
+  rclcpp
   rviz_common
   cv_bridge
   image_transport
@@ -129,13 +128,13 @@ ament_target_dependencies(jsk_rviz_plugins
   jsk_topic_tools
   )
 
-target_include_directories(jsk_rviz_plugins 
+target_include_directories(jsk_rviz_plugins
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  )
 
-if(NOT WIN32)
+if (NOT WIN32)
   ament_environment_hooks(
     "${ament_cmake_package_templates_ENVIRONMENT_HOOK_LIBRARY_PATH}"
   )
@@ -192,12 +191,12 @@ install(TARGETS
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
   INCLUDES DESTINATION include
-)
+  )
 
 install(DIRECTORY
   icons
   DESTINATION share/jsk_rviz_plugins
-)
+  )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

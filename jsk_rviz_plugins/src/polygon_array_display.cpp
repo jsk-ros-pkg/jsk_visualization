@@ -1,37 +1,32 @@
 // // -*- mode: c++ -*-
-// /*********************************************************************
-//  * Software License Agreement (BSD License)
-//  *
-//  *  Copyright (c) 2015, JSK Lab
-//  *  All rights reserved.
-//  *
-//  *  Redistribution and use in source and binary forms, with or without
-//  *  modification, are permitted provided that the following conditions
-//  *  are met:
-//  *
-//  *   * Redistributions of source code must retain the above copyright
-//  *     notice, this list of conditions and the following disclaimer.
-//  *   * Redistributions in binary form must reproduce the above
-//  *     copyright notice, this list of conditions and the following
-//  *     disclaimer in the documentation and/o2r other materials provided
-//  *     with the distribution.
-//  *   * Neither the name of the JSK Lab nor the names of its
-//  *     contributors may be used to endorse or promote products derived
-//  *     from this software without specific prior written permission.
-//  *
-//  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-//  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-//  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-//  *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-//  *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-//  *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-//  *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-//  *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-//  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-//  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-//  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-//  *  POSSIBILITY OF SUCH DAMAGE.
-//  *********************************************************************/
+// Copyright (c) 2015, JSK Lab
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//
+//  * Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following
+//    disclaimer in the documentation and/or other materials provided
+//    with the distribution.
+//  * Neither the name of the JSK Lab nor the names of its
+//    contributors may be used to endorse or promote products derived from
+//    this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+// ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 // #define BOOST_PARAMETER_MAX_ARITY 7
 
@@ -84,7 +79,7 @@
 //     alpha_property_->setMin(0);
 //     alpha_property_->setMax(1);
 //   }
-  
+
 //   PolygonArrayDisplay::~PolygonArrayDisplay()
 //   {
 //     delete alpha_property_;
@@ -96,18 +91,18 @@
 //     for (size_t i = 0; i < lines_.size(); i++) {
 //       delete lines_[i];
 //     }
-    
+
 //     for (size_t i = 0; i < materials_.size(); i++) {
 //       materials_[i]->unload();
 //       Ogre::MaterialManager::getSingleton().remove(materials_[i]->getName());
 //     }
-    
+
 //     for (size_t i = 0; i < manual_objects_.size(); i++) {
 //       scene_manager_->destroyManualObject(manual_objects_[i]);
 //       scene_manager_->destroySceneNode(scene_nodes_[i]);
 //     }
 //   }
-  
+
 //   void PolygonArrayDisplay::onInitialize()
 //   {
 //     overlay_->prepareOverlays(scene_manager_);
@@ -125,7 +120,7 @@
 //       return;
 //     }
 //     static uint32_t count = 0;
-    
+
 //     if (num > materials_.size()) {
 //       for (size_t i = materials_.size(); num > i; i++) {
 //         std::stringstream ss;
@@ -141,7 +136,7 @@
 //       }
 //     }
 //   }
-  
+
 //   bool validateFloats(jsk_recognition_msgs::msg::PolygonArray msg)
 //   {
 //     for (size_t i = 0; i < msg.polygons.size(); i++) {
@@ -150,7 +145,7 @@
 //     }
 //     return true;
 //   }
-  
+
 //   void PolygonArrayDisplay::reset()
 //   {
 //     MFDClass::reset();
@@ -220,7 +215,7 @@
 //       lines_[i]->clear();
 //     }
 //   }
-  
+
 //   Ogre::ColourValue PolygonArrayDisplay::getColor(size_t index)
 //   {
 //     Ogre::ColourValue color;
@@ -285,7 +280,7 @@
 //     rviz_rendering::BillboardLine* line = lines_[i];
 //     line->clear();
 //     line->setMaxPointsPerLine(polygon.polygon.points.size() + 1);
-        
+
 //     Ogre::ColourValue color = getColor(i);
 //     line->setColor(color.r, color.g, color.b, color.a);
 
@@ -330,7 +325,7 @@
 //     Ogre::Quaternion orientation;
 //     if (!getTransform(polygon.header, position, orientation))
 //       return;
-    
+
 //     {
 //       Ogre::SceneNode* scene_node = scene_nodes_[i * 2];
 //       Ogre::ManualObject* manual_object = manual_objects_[i * 2];
@@ -339,12 +334,12 @@
 //       scene_node->setOrientation(orientation);
 //       manual_object->clear();
 //       manual_object->setVisible(true);
-      
+
 //       jsk_recognition_utils::Polygon geo_polygon
 //         = jsk_recognition_utils::Polygon::fromROSMsg(polygon.polygon);
 //       std::vector<jsk_recognition_utils::Polygon::Ptr>
 //         triangles = geo_polygon.decomposeToTriangles();
-        
+
 //       uint32_t num_points = 0;
 //       for (size_t j = 0; j < triangles.size(); j++) {
 //         num_points += triangles[j]->getNumVertices();
@@ -371,7 +366,7 @@
 //       }
 //     }
 //   }
-  
+
 //   void PolygonArrayDisplay::processNormal(
 //     const size_t i, const geometry_msgs::PolygonStamped& polygon)
 //   {
@@ -410,11 +405,11 @@
 //     Ogre::Vector3 scale(normal_length_, normal_length_, normal_length_);
 //     arrow->setPosition(pos);
 //     arrow->setDirection(direction);
-    
+
 //     arrow->setScale(scale);
 //     arrow->setColor(getColor(i));
 //   }
-  
+
 //   void PolygonArrayDisplay::processMessage(
 //     const jsk_recognition_msgs::PolygonArray::ConstSharedPtr& msg)
 //   {
@@ -449,7 +444,7 @@
 //       for (size_t i = 0; i < msg->polygons.size(); i++) {
 //         processPolygonMaterial(i);
 //       }
-      
+
 //       for (size_t i = 0; i < msg->polygons.size(); i++) {
 //         geometry_msgs::PolygonStamped polygon = msg->polygons[i];
 //         processPolygon(i, polygon);

@@ -57,8 +57,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/Torus.msg
   msg/WeightedPoseArray.msg
 
-  DEPENDENCIES std_msgs geometry_msgs sensor_msgs
-  )
+  DEPENDENCIES std_msgs geometry_msgs sensor_msgs)
 
 ament_export_dependencies(rosidl_default_runtime)
 

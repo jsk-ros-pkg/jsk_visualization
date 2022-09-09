@@ -8,8 +8,7 @@ find_package(std_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   msg/HarkPower.msg
 
-  DEPENDENCIES std_msgs
- )
+  DEPENDENCIES std_msgs)
 
 ament_export_dependencies(rosidl_default_runtime)
 
