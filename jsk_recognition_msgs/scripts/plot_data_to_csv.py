@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-# Software License Agreement (BSD License)
-#
 #  Copyright (c) 2014, JSK Lab
-#  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
 #  modification, are permitted provided that the following conditions
@@ -12,7 +9,7 @@
 #   * Redistributions of source code must retain the above copyright
 #     notice, this list of conditions and the following disclaimer.
 #   * Redistributions in binary form must reproduce the above copyright
-#     copyright notice, this list of conditions and the following
+#     notice, this list of conditions and the following
 #     disclaimer in the documentation and/or other materials provided
 #     with the distribution.
 #   * Neither the name of the JSK Lab nor the names of its
