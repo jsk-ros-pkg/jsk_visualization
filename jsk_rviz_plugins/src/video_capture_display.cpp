@@ -108,7 +108,7 @@
 //     start_capture_property_->setBool(false); // always false when starting up
 //     context_->queueRender();
 //   }
-  
+
 //   void VideoCaptureDisplay::updateFileName()
 //   {
 //     if (capturing_) {
@@ -211,12 +211,12 @@
 //     // }
 
 // #if (CV_VERSION_MAJOR >= 4)
-//     writer_.open(file_name_, cv::VideoWriter::fourcc('I','Y','U','V'), fps_, cv::Size(width_, height_)); // from OpenCV 4.x 
+//     writer_.open(file_name_, cv::VideoWriter::fourcc('I','Y','U','V'), fps_, cv::Size(width_, height_)); // from OpenCV 4.x
 // #else
 //     writer_.open(file_name_, CV_FOURCC_DEFAULT, fps_, cv::Size(width_, height_));
-// #endif    
+// #endif
 //   }
-  
+
 //   void VideoCaptureDisplay::stopCapture()
 //   {
 //     // JSK_LOG_INFO("stop capturing");
@@ -233,7 +233,7 @@
 //       return;
 //     }
 //     if (capturing_) {
-//       //rviz_common::properties::RenderPanel* 
+//       //rviz_common::properties::RenderPanel*
 //       //auto panel = context_->getViewManager()->getRenderPanel();
 // #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 //       QPixmap screenshot
@@ -253,7 +253,7 @@
 //       cv::cvtColor(image, image, cv::COLOR_BGR2RGB);  // RGB -> BGR
 // #else
 //       cv::cvtColor(image, image, CV_RGB2BGR);  // RGB -> BGR
-// #endif    
+// #endif
 
 //       writer_ << image;
 //       ++frame_counter_;
@@ -264,7 +264,6 @@
 //     // convert QPixmap into cv::Mat
 //   }
 // }
-
 
 // #include <pluginlib/class_list_macros.hpp>
 // PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::VideoCaptureDisplay, rviz_common::Display)

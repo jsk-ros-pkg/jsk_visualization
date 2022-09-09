@@ -33,29 +33,29 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-
 #ifndef JSK_RVIZ_PLUGIN_OPEN_ALL_TOOL_H_
 #define JSK_RVIZ_PLUGIN_OPEN_ALL_TOOL_H_
 
-#include <rviz_common/tool.hpp>
 #include <rviz_common/properties/property.hpp>
 #include <rviz_common/properties/property_tree_model.hpp>
+#include <rviz_common/tool.hpp>
 
 namespace jsk_rviz_plugins
 {
-  class OpenAllTool: public rviz_common::Tool
-  {
-  public:
-    OpenAllTool();
-    virtual ~OpenAllTool();
-    virtual void onInitialize();
-    virtual void activate();
-    virtual void deactivate();
-  protected:
-    virtual void openProperty(rviz_common::properties::Property* property);
-  private:
-    
-  };
-}
+class OpenAllTool : public rviz_common::Tool
+{
+public:
+  OpenAllTool();
+  virtual ~OpenAllTool();
+  virtual void onInitialize();
+  virtual void activate();
+  virtual void deactivate();
+
+protected:
+  virtual void openProperty(rviz_common::properties::Property * property);
+
+private:
+};
+}  // namespace jsk_rviz_plugins
 
 #endif

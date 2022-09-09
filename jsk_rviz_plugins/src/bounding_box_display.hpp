@@ -37,54 +37,57 @@
 #define JSK_RVIZ_PLUGINS_BOUDNING_BOX_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
-#include "bounding_box_display_common.hpp"
-#include <jsk_recognition_msgs/msg/bounding_box_array.hpp>
-#include <rviz_common/properties/color_property.hpp>
-#include <rviz_common/properties/bool_property.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/enum_property.hpp>
-#include <rviz_common/ros_topic_display.hpp>
-#include <rviz_rendering/objects/shape.hpp>
-#include <rviz_rendering/objects/billboard_line.hpp>
-#include <rviz_rendering/objects/arrow.hpp>
 #include <OgreSceneNode.h>
+
+#include <jsk_recognition_msgs/msg/bounding_box_array.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/ros_topic_display.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/shape.hpp>
+
+#include "bounding_box_display_common.hpp"
 #endif
 
 namespace jsk_rviz_plugins
 {
 
-  class BoundingBoxDisplay: public BoundingBoxDisplayCommon<jsk_recognition_msgs::msg::BoundingBox>
-  {
-    Q_OBJECT
-  public:
-    BoundingBoxDisplay();
-    ~BoundingBoxDisplay();
-  protected:
-    void onInitialize() override;
-    void reset();
+class BoundingBoxDisplay : public BoundingBoxDisplayCommon<jsk_recognition_msgs::msg::BoundingBox>
+{
+  Q_OBJECT
+public:
+  BoundingBoxDisplay();
+  ~BoundingBoxDisplay();
 
-    bool only_edge_;
-    bool show_coords_;
-    // Properties
-    rviz_common::properties::EnumProperty* coloring_property_;
-    rviz_common::properties::ColorProperty* color_property_;
-    rviz_common::properties::FloatProperty* alpha_property_;
-    rviz_common::properties::BoolProperty* only_edge_property_;
-    rviz_common::properties::FloatProperty* line_width_property_;
-    rviz_common::properties::BoolProperty* show_coords_property_;
+protected:
+  void onInitialize() override;
+  void reset();
 
-    jsk_recognition_msgs::msg::BoundingBox::ConstSharedPtr latest_msg_;
-  protected Q_SLOTS:
-    void updateColor();
-    void updateAlpha();
-    void updateOnlyEdge();
-    void updateColoring();
-    void updateLineWidth();
-    void updateShowCoords();
-  private:
-    void processMessage(
-      jsk_recognition_msgs::msg::BoundingBox::ConstSharedPtr msg);
-  };
+  bool only_edge_;
+  bool show_coords_;
+  // Properties
+  rviz_common::properties::EnumProperty * coloring_property_;
+  rviz_common::properties::ColorProperty * color_property_;
+  rviz_common::properties::FloatProperty * alpha_property_;
+  rviz_common::properties::BoolProperty * only_edge_property_;
+  rviz_common::properties::FloatProperty * line_width_property_;
+  rviz_common::properties::BoolProperty * show_coords_property_;
+
+  jsk_recognition_msgs::msg::BoundingBox::ConstSharedPtr latest_msg_;
+protected Q_SLOTS:
+  void updateColor();
+  void updateAlpha();
+  void updateOnlyEdge();
+  void updateColoring();
+  void updateLineWidth();
+  void updateShowCoords();
+
+private:
+  void processMessage(jsk_recognition_msgs::msg::BoundingBox::ConstSharedPtr msg);
+};
 
 }  // namespace jsk_rviz_plugins
 

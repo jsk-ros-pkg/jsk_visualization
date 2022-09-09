@@ -33,7 +33,6 @@
 //  *  POSSIBILITY OF SUCH DAMAGE.
 //  *********************************************************************/
 
-
 // #ifndef JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
 // #define JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
 
@@ -59,7 +58,7 @@
 //   protected:
 //     void onInitialize() override;
 //     void onEnable() override;
-//     void onDisable() override {}    
+//     void onDisable() override {}
 //     void update(float wall_dt, float ros_dt) override;
 //     void reset(); // override;
 //     void startCapture();
@@ -90,7 +89,7 @@
 //     void updateWidth();
 //     void updateHeight();
 //   private:
-    
+
 //   };
 // }
 

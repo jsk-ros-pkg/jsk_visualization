@@ -32,176 +32,161 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include "bounding_box_display_common.hpp"
 #include "bounding_box_display.hpp"
+
 #include <jsk_topic_tools/color_utils.hpp>
+
+#include "bounding_box_display_common.hpp"
 
 namespace jsk_rviz_plugins
 {
 
-  BoundingBoxDisplay::BoundingBoxDisplay()
-  {
-    coloring_property_ = new rviz_common::properties::EnumProperty(
-      "coloring", "Flat color",
-      "coloring method",
-      this, SLOT(updateColoring()));
-    coloring_property_->addOption("Flat color", 0);
-    coloring_property_->addOption("Label", 1);
-    coloring_property_->addOption("Value", 2);
+BoundingBoxDisplay::BoundingBoxDisplay()
+{
+  coloring_property_ = new rviz_common::properties::EnumProperty(
+    "coloring", "Flat color", "coloring method", this, SLOT(updateColoring()));
+  coloring_property_->addOption("Flat color", 0);
+  coloring_property_->addOption("Label", 1);
+  coloring_property_->addOption("Value", 2);
 
-    color_property_ = new rviz_common::properties::ColorProperty(
-      "color", QColor(25, 255, 0),
-      "color to draw the bounding boxes",
-      this, SLOT(updateColor()));
-    alpha_property_ = new rviz_common::properties::FloatProperty(
-      "alpha", 0.8,
-      "alpha value to draw the bounding boxes",
-      this, SLOT(updateAlpha()));
-    only_edge_property_ = new rviz_common::properties::BoolProperty(
-      "only edge", false,
-      "show only the edges of the boxes",
-      this, SLOT(updateOnlyEdge()));
-    line_width_property_ = new rviz_common::properties::FloatProperty(
-      "line width", 0.005,
-      "line width of the edges",
-      this, SLOT(updateLineWidth()));
-    show_coords_property_ = new rviz_common::properties::BoolProperty(
-      "show coords", false,
-      "show coordinate of bounding box",
-      this, SLOT(updateShowCoords()));
-  }
-
-  BoundingBoxDisplay::~BoundingBoxDisplay()
-  {
-    delete color_property_;
-    delete alpha_property_;
-    delete only_edge_property_;
-    delete coloring_property_;
-    delete show_coords_property_;
-  }
-
-  void BoundingBoxDisplay::onInitialize()
-  {
-    RTDClass::onInitialize();
-    scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-
-    updateColor();
-    updateAlpha();
-    updateOnlyEdge();
-    updateColoring();
-    updateLineWidth();
-    updateShowCoords();
-  }
-
-  void BoundingBoxDisplay::updateLineWidth()
-  {
-    line_width_ = line_width_property_->getFloat();
-    if (latest_msg_) {
-      processMessage(latest_msg_);
-    }
-  }
-
-  void BoundingBoxDisplay::updateColor()
-  {
-    color_ = color_property_->getColor();
-    if (latest_msg_) {
-      processMessage(latest_msg_);
-    }
-  }
-
-  void BoundingBoxDisplay::updateAlpha()
-  {
-    alpha_ = alpha_property_->getFloat();
-    if (latest_msg_) {
-      processMessage(latest_msg_);
-    }
-  }
-
-  void BoundingBoxDisplay::updateOnlyEdge()
-  {
-    only_edge_ = only_edge_property_->getBool();
-    if (only_edge_) {
-      line_width_property_->show();
-    }
-    else {
-      line_width_property_->hide();;
-    }
-    if (latest_msg_) {
-      processMessage(latest_msg_);
-    }
-  }
-
-  void BoundingBoxDisplay::updateColoring()
-  {
-    if (coloring_property_->getOptionInt() == 0) {
-      coloring_method_ = "flat";
-      color_property_->show();
-    }
-    else if (coloring_property_->getOptionInt() == 1) {
-      coloring_method_ = "label";
-      color_property_->hide();
-    }
-    else if (coloring_property_->getOptionInt() == 2) {
-      coloring_method_ = "value";
-      color_property_->hide();
-    }
-
-    if (latest_msg_) {
-      processMessage(latest_msg_);
-    }
-  }
-
-  void BoundingBoxDisplay::updateShowCoords()
-  {
-    show_coords_ = show_coords_property_->getBool();
-    // Immediately apply show_coords attribute
-    if (!show_coords_) {
-      hideCoords();
-    }
-    else if (latest_msg_) {
-      processMessage(latest_msg_);
-    }
-  }
-
-  void BoundingBoxDisplay::reset()
-  {
-    RTDClass::reset();
-    shapes_.clear();
-    edges_.clear();
-    coords_nodes_.clear();
-    coords_objects_.clear();
-    latest_msg_.reset();
-  }
-
-  void BoundingBoxDisplay::processMessage(
-    jsk_recognition_msgs::msg::BoundingBox::ConstSharedPtr msg)
-  {
-    // Store latest message
-    latest_msg_ = msg;
-
-    // Convert bbox to bbox_array to show it
-    jsk_recognition_msgs::msg::BoundingBoxArray::SharedPtr bbox_array_msg(new jsk_recognition_msgs::msg::BoundingBoxArray);
-    bbox_array_msg->header = msg->header;
-    std::vector<jsk_recognition_msgs::msg::BoundingBox> boxes;
-    boxes.push_back(*msg);
-    bbox_array_msg->boxes = boxes;
-
-    if (!only_edge_) {
-      showBoxes(bbox_array_msg);
-    }
-    else {
-      showEdges(bbox_array_msg);
-    }
-
-    if (show_coords_) {
-      showCoords(bbox_array_msg);
-    }
-    else {
-      hideCoords();
-    }
-  }
-
+  color_property_ = new rviz_common::properties::ColorProperty(
+    "color", QColor(25, 255, 0), "color to draw the bounding boxes", this, SLOT(updateColor()));
+  alpha_property_ = new rviz_common::properties::FloatProperty(
+    "alpha", 0.8, "alpha value to draw the bounding boxes", this, SLOT(updateAlpha()));
+  only_edge_property_ = new rviz_common::properties::BoolProperty(
+    "only edge", false, "show only the edges of the boxes", this, SLOT(updateOnlyEdge()));
+  line_width_property_ = new rviz_common::properties::FloatProperty(
+    "line width", 0.005, "line width of the edges", this, SLOT(updateLineWidth()));
+  show_coords_property_ = new rviz_common::properties::BoolProperty(
+    "show coords", false, "show coordinate of bounding box", this, SLOT(updateShowCoords()));
 }
+
+BoundingBoxDisplay::~BoundingBoxDisplay()
+{
+  delete color_property_;
+  delete alpha_property_;
+  delete only_edge_property_;
+  delete coloring_property_;
+  delete show_coords_property_;
+}
+
+void BoundingBoxDisplay::onInitialize()
+{
+  RTDClass::onInitialize();
+  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+
+  updateColor();
+  updateAlpha();
+  updateOnlyEdge();
+  updateColoring();
+  updateLineWidth();
+  updateShowCoords();
+}
+
+void BoundingBoxDisplay::updateLineWidth()
+{
+  line_width_ = line_width_property_->getFloat();
+  if (latest_msg_) {
+    processMessage(latest_msg_);
+  }
+}
+
+void BoundingBoxDisplay::updateColor()
+{
+  color_ = color_property_->getColor();
+  if (latest_msg_) {
+    processMessage(latest_msg_);
+  }
+}
+
+void BoundingBoxDisplay::updateAlpha()
+{
+  alpha_ = alpha_property_->getFloat();
+  if (latest_msg_) {
+    processMessage(latest_msg_);
+  }
+}
+
+void BoundingBoxDisplay::updateOnlyEdge()
+{
+  only_edge_ = only_edge_property_->getBool();
+  if (only_edge_) {
+    line_width_property_->show();
+  } else {
+    line_width_property_->hide();
+    ;
+  }
+  if (latest_msg_) {
+    processMessage(latest_msg_);
+  }
+}
+
+void BoundingBoxDisplay::updateColoring()
+{
+  if (coloring_property_->getOptionInt() == 0) {
+    coloring_method_ = "flat";
+    color_property_->show();
+  } else if (coloring_property_->getOptionInt() == 1) {
+    coloring_method_ = "label";
+    color_property_->hide();
+  } else if (coloring_property_->getOptionInt() == 2) {
+    coloring_method_ = "value";
+    color_property_->hide();
+  }
+
+  if (latest_msg_) {
+    processMessage(latest_msg_);
+  }
+}
+
+void BoundingBoxDisplay::updateShowCoords()
+{
+  show_coords_ = show_coords_property_->getBool();
+  // Immediately apply show_coords attribute
+  if (!show_coords_) {
+    hideCoords();
+  } else if (latest_msg_) {
+    processMessage(latest_msg_);
+  }
+}
+
+void BoundingBoxDisplay::reset()
+{
+  RTDClass::reset();
+  shapes_.clear();
+  edges_.clear();
+  coords_nodes_.clear();
+  coords_objects_.clear();
+  latest_msg_.reset();
+}
+
+void BoundingBoxDisplay::processMessage(jsk_recognition_msgs::msg::BoundingBox::ConstSharedPtr msg)
+{
+  // Store latest message
+  latest_msg_ = msg;
+
+  // Convert bbox to bbox_array to show it
+  jsk_recognition_msgs::msg::BoundingBoxArray::SharedPtr bbox_array_msg(
+    new jsk_recognition_msgs::msg::BoundingBoxArray);
+  bbox_array_msg->header = msg->header;
+  std::vector<jsk_recognition_msgs::msg::BoundingBox> boxes;
+  boxes.push_back(*msg);
+  bbox_array_msg->boxes = boxes;
+
+  if (!only_edge_) {
+    showBoxes(bbox_array_msg);
+  } else {
+    showEdges(bbox_array_msg);
+  }
+
+  if (show_coords_) {
+    showCoords(bbox_array_msg);
+  } else {
+    hideCoords();
+  }
+}
+
+}  // namespace jsk_rviz_plugins
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::BoundingBoxDisplay, rviz_common::Display)

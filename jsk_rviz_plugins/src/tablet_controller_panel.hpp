@@ -33,7 +33,6 @@
 //  *  POSSIBILITY OF SUCH DAMAGE.
 //  *********************************************************************/
 
-
 // #ifndef JSK_RVIZ_PLUGINS_TABLET_CONTROLLER_PANEL_H_
 // #define JSK_RVIZ_PLUGINS_TABLET_CONTROLLER_PANEL_H_
 
@@ -83,7 +82,7 @@
 //     int mouse_y_;
 //     // ros::Publisher pub_cmd_vel_;
 //   };
-  
+
 //   class TabletControllerPanel: public rviz_common::Panel
 //   {
 //     Q_OBJECT
@@ -106,12 +105,12 @@
 //     ////////////////////////////////////////////////////////
 //     // GUI variables
 //     ////////////////////////////////////////////////////////
-    
+
 //     QVBoxLayout* layout_;
 //     QPushButton* task_button_;
 //     QPushButton* spot_button_;
 //     TabletCmdVelArea* cmd_vel_area_;
-    
+
 //     QDialog* task_dialog_;
 //     QVBoxLayout* task_dialog_layout_;
 //     QHBoxLayout* task_dialog_button_layout_;
@@ -137,8 +136,7 @@
 
 //     //boost::mutex mutex_;
 //     std::mutex mutex_;
-    
-    
+
 //   protected Q_SLOTS:
 //     ////////////////////////////////////////////////////////
 //     // callbacks
@@ -150,7 +148,7 @@
 //     void spotGoClicked();
 //     void spotCancelClicked();
 //   private:
-    
+
 //   };
 // }
 

@@ -36,44 +36,50 @@
 #ifndef JSK_RVIZ_PLUGINGS_RVIZ_UTIL_H_
 #define JSK_RVIZ_PLUGINGS_RVIZ_UTIL_H_
 
-#include <std_msgs/msg/color_rgba.hpp>
 #include <OgreColourValue.h>
+
 #include <rviz_common/logging.hpp>
+#include <std_msgs/msg/color_rgba.hpp>
+
 #include "string_utils.hpp"
 
-#define JSK_LOG_DEBUG(x, ...) do { \
+#define JSK_LOG_DEBUG(x, ...)                                                          \
+  do {                                                                                 \
     rviz_common::log_debug(rviz_string::format(x, ##__VA_ARGS__), __FILE__, __LINE__); \
-} while (0)
+  } while (0)
 
-#define JSK_LOG_INFO(x, ...) do { \
+#define JSK_LOG_INFO(x, ...)                                                          \
+  do {                                                                                \
     rviz_common::log_info(rviz_string::format(x, ##__VA_ARGS__), __FILE__, __LINE__); \
-} while (0)
+  } while (0)
 
-#define JSK_LOG_WARN(x, ...) do { \
+#define JSK_LOG_WARN(x, ...)                                                             \
+  do {                                                                                   \
     rviz_common::log_warning(rviz_string::format(x, ##__VA_ARGS__), __FILE__, __LINE__); \
-} while (0)
+  } while (0)
 
-#define JSK_LOG_ERROR(x, ...) do { \
+#define JSK_LOG_ERROR(x, ...)                                                          \
+  do {                                                                                 \
     rviz_common::log_error(rviz_string::format(x, ##__VA_ARGS__), __FILE__, __LINE__); \
-} while (0)
+  } while (0)
 
 namespace rviz
 {
-  // inline Ogre::ColourValue colorMsgToOgre(std_msgs::msg::ColorRGBA::ConstSharedPtr c)
-  // {
-  //   return Ogre::ColourValue(c.r, c.g, c.b, c.a);
-  // }
+// inline Ogre::ColourValue colorMsgToOgre(std_msgs::msg::ColorRGBA::ConstSharedPtr c)
+// {
+//   return Ogre::ColourValue(c.r, c.g, c.b, c.a);
+// }
 
-  // inline std_msgs::ColorRGBA colorOgreToMsg(const Ogre::ColourValue &c)
-  // {
-  //   std_msgs::ColorRGBA ret;
-  //   ret.r = c.r;
-  //   ret.g = c.g;
-  //   ret.b = c.b;
-  //   ret.a = c.a;
-  //   return ret;
-  // }
+// inline std_msgs::ColorRGBA colorOgreToMsg(const Ogre::ColourValue &c)
+// {
+//   std_msgs::ColorRGBA ret;
+//   ret.r = c.r;
+//   ret.g = c.g;
+//   ret.b = c.b;
+//   ret.a = c.a;
+//   return ret;
+// }
 
-} // namespace rviz
+}  // namespace rviz
 
-#endif // JSK_RVIZ_PLUGINGS_RVIZ_UTIL_H_
+#endif  // JSK_RVIZ_PLUGINGS_RVIZ_UTIL_H_

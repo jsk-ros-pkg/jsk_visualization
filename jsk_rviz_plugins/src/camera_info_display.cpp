@@ -615,6 +615,5 @@
 //   }
 // }
 
-
 // #include <pluginlib/class_list_macros.hpp>
 // PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::CameraInfoDisplay, rviz_common::Display )

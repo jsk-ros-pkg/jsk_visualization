@@ -36,75 +36,70 @@
 #ifndef JSK_RVIZ_PLUGIN_TARGET_VISUALIZER_DISPLAY_H_
 #define JSK_RVIZ_PLUGIN_TARGET_VISUALIZER_DISPLAY_H_
 
-
 #ifndef Q_MOC_RUN
 #include <rviz_common/ros_topic_display.hpp>
 // #include <rviz_default_plugins/visibility_control.hpp>
-#include <rviz_common/ros_topic_display.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/color_property.hpp>
-#include <rviz_common/properties/string_property.hpp>
-#include <rviz_common/properties/editable_enum_property.hpp>
-#include <rviz_common/properties/tf_frame_property.hpp>
-#include <rviz_common/properties/ros_topic_property.hpp>
-#include <rviz_common/properties/enum_property.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
-#include <rviz_rendering/objects/billboard_line.hpp>
 #include <rviz_common/display_context.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/editable_enum_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/string_property.hpp>
+#include <rviz_common/properties/tf_frame_property.hpp>
+#include <rviz_common/ros_topic_display.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
 //#include <rviz_common/frame_manager.hpp>
-#include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
-#include <rviz_rendering/objects/movable_text.hpp>
+#include <OgreSceneNode.h>
+
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <rviz_rendering/objects/movable_text.hpp>
 
 #include "facing_visualizer.hpp"
 #endif
 
 namespace jsk_rviz_plugins
 {
-  class TargetVisualizerDisplay:
-    public rviz_common::RosTopicDisplay<geometry_msgs::msg::PoseStamped>
-  {
-    Q_OBJECT
-  public:
-    TargetVisualizerDisplay();
-    ~TargetVisualizerDisplay();
-    enum ShapeType
-    {
-      SimpleCircle,
-      GISCircle
-    };
-    
-  protected:
-    void onInitialize() override;
-    void reset();
-    void onEnable() override;
-    void processMessage(geometry_msgs::msg::PoseStamped::ConstSharedPtr msg);
-    void update(float wall_dt, float ros_dt) override;
-    rviz_common::properties::StringProperty* target_name_property_;
-    rviz_common::properties::FloatProperty* alpha_property_;
-    rviz_common::properties::ColorProperty* color_property_;
-    rviz_common::properties::FloatProperty* radius_property_;
-    rviz_common::properties::EnumProperty* shape_type_property_;
-    FacingObject::Ptr visualizer_;
-    
-    std::mutex mutex_;
-    std::string target_name_;
-    double alpha_;
-    QColor color_;
-    double radius_;
-    bool message_recieved_;
-    ShapeType current_type_;        
-    bool visualizer_initialized_;
-  private Q_SLOTS:
-    void updateTargetName();
-    void updateAlpha();
-    void updateColor();
-    void updateRadius();
-    void updateShapeType();
-  private:
-    
-  };
-}
+class TargetVisualizerDisplay : public rviz_common::RosTopicDisplay<geometry_msgs::msg::PoseStamped>
+{
+  Q_OBJECT
+public:
+  TargetVisualizerDisplay();
+  ~TargetVisualizerDisplay();
+  enum ShapeType { SimpleCircle, GISCircle };
+
+protected:
+  void onInitialize() override;
+  void reset();
+  void onEnable() override;
+  void processMessage(geometry_msgs::msg::PoseStamped::ConstSharedPtr msg);
+  void update(float wall_dt, float ros_dt) override;
+  rviz_common::properties::StringProperty * target_name_property_;
+  rviz_common::properties::FloatProperty * alpha_property_;
+  rviz_common::properties::ColorProperty * color_property_;
+  rviz_common::properties::FloatProperty * radius_property_;
+  rviz_common::properties::EnumProperty * shape_type_property_;
+  FacingObject::Ptr visualizer_;
+
+  std::mutex mutex_;
+  std::string target_name_;
+  double alpha_;
+  QColor color_;
+  double radius_;
+  bool message_recieved_;
+  ShapeType current_type_;
+  bool visualizer_initialized_;
+private Q_SLOTS:
+  void updateTargetName();
+  void updateAlpha();
+  void updateColor();
+  void updateRadius();
+  void updateShapeType();
+
+private:
+};
+}  // namespace jsk_rviz_plugins
 
 #endif

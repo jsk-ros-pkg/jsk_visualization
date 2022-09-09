@@ -39,129 +39,131 @@
 #ifndef Q_MOC_RUN
 #include <rviz_common/ros_topic_display.hpp>
 // #include <rviz_default_plugins/visibility_control.hpp>
-#include "overlay_utils.hpp"
 #include <OgreColourValue.h>
-#include <OgreTexture.h>
 #include <OgreMaterial.h>
-#include <rviz_common/properties/int_property.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/color_property.hpp>
+#include <OgreTexture.h>
+
 #include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/properties/ros_topic_property.hpp>
+
+#include "overlay_utils.hpp"
 #endif
 
 namespace jsk_rviz_plugins
 {
 
-class LinearGaugeDisplay
-    : public rviz_common::RosTopicDisplay<std_msgs::msg::Float32>
+class LinearGaugeDisplay : public rviz_common::RosTopicDisplay<std_msgs::msg::Float32>
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    LinearGaugeDisplay();
-    ~LinearGaugeDisplay();
-    // methods for OverlayPickerTool
-    bool isInRegion(int x, int y);
-    void movePosition(int x, int y);
-    void setPosition(int x, int y);
-    int getX() { return left_; };
-    int getY() { return top_; };
+  LinearGaugeDisplay();
+  ~LinearGaugeDisplay();
+  // methods for OverlayPickerTool
+  bool isInRegion(int x, int y);
+  void movePosition(int x, int y);
+  void setPosition(int x, int y);
+  int getX() { return left_; };
+  int getY() { return top_; };
+
 protected:
-    ////////////////////////////////////////////////////////
-    // methods
-    ////////////////////////////////////////////////////////
-    void update(float wall_dt, float ros_dt) override;
-    void reset() override;
-    void onEnable() override;
-    void onDisable() override;
-    void onInitialize() override;
-    void processMessage(std_msgs::msg::Float32::ConstSharedPtr msg);
-    void drawPlot();
-    ////////////////////////////////////////////////////////
-    // properties
-    ////////////////////////////////////////////////////////
-    rviz_common::properties::BoolProperty* show_value_property_;
-    rviz_common::properties::BoolProperty* vertical_gauge_property_;
-    rviz_common::properties::ColorProperty* fg_color_property_;
-    rviz_common::properties::ColorProperty* bg_color_property_;
-    rviz_common::properties::FloatProperty* fg_alpha_property_;
-    rviz_common::properties::FloatProperty* bg_alpha_property_;
-    rviz_common::properties::FloatProperty* update_interval_property_;
-    rviz_common::properties::BoolProperty* show_border_property_;
-    rviz_common::properties::IntProperty* buffer_length_property_;
-    rviz_common::properties::IntProperty* width_property_;
-    rviz_common::properties::IntProperty* height_property_;
-    rviz_common::properties::IntProperty* left_property_;
-    rviz_common::properties::IntProperty* top_property_;
-    rviz_common::properties::IntProperty* line_width_property_;
-    rviz_common::properties::BoolProperty* auto_color_change_property_;
-    rviz_common::properties::ColorProperty* max_color_property_;
-    rviz_common::properties::BoolProperty* show_caption_property_;
-    rviz_common::properties::IntProperty* text_size_property_;
-    rviz_common::properties::FloatProperty* max_value_property_;
-    rviz_common::properties::FloatProperty* min_value_property_;
-    
-    OverlayObject::Ptr overlay_;
-    QColor fg_color_;
-    QColor max_color_;
-    QColor bg_color_;
+  ////////////////////////////////////////////////////////
+  // methods
+  ////////////////////////////////////////////////////////
+  void update(float wall_dt, float ros_dt) override;
+  void reset() override;
+  void onEnable() override;
+  void onDisable() override;
+  void onInitialize() override;
+  void processMessage(std_msgs::msg::Float32::ConstSharedPtr msg);
+  void drawPlot();
+  ////////////////////////////////////////////////////////
+  // properties
+  ////////////////////////////////////////////////////////
+  rviz_common::properties::BoolProperty * show_value_property_;
+  rviz_common::properties::BoolProperty * vertical_gauge_property_;
+  rviz_common::properties::ColorProperty * fg_color_property_;
+  rviz_common::properties::ColorProperty * bg_color_property_;
+  rviz_common::properties::FloatProperty * fg_alpha_property_;
+  rviz_common::properties::FloatProperty * bg_alpha_property_;
+  rviz_common::properties::FloatProperty * update_interval_property_;
+  rviz_common::properties::BoolProperty * show_border_property_;
+  rviz_common::properties::IntProperty * buffer_length_property_;
+  rviz_common::properties::IntProperty * width_property_;
+  rviz_common::properties::IntProperty * height_property_;
+  rviz_common::properties::IntProperty * left_property_;
+  rviz_common::properties::IntProperty * top_property_;
+  rviz_common::properties::IntProperty * line_width_property_;
+  rviz_common::properties::BoolProperty * auto_color_change_property_;
+  rviz_common::properties::ColorProperty * max_color_property_;
+  rviz_common::properties::BoolProperty * show_caption_property_;
+  rviz_common::properties::IntProperty * text_size_property_;
+  rviz_common::properties::FloatProperty * max_value_property_;
+  rviz_common::properties::FloatProperty * min_value_property_;
 
-    double fg_alpha_;
-    double bg_alpha_;
-    bool show_border_;
-    bool auto_color_change_;
-    bool show_value_;
-    bool show_caption_;
-    bool vertical_gauge_;
-    bool draw_required_;
-    float last_time_;
-    float update_interval_;
-    
-    uint16_t texture_width_;
-    uint16_t texture_height_;
-    int left_;
-    int top_;
-    int line_width_;
-    int text_size_;
-    int caption_offset_;
-    double min_value_;
-    double max_value_;
-    const int width_padding_;
-    const int height_padding_;
+  OverlayObject::Ptr overlay_;
+  QColor fg_color_;
+  QColor max_color_;
+  QColor bg_color_;
 
-    float data_;
-    bool first_time_;
+  double fg_alpha_;
+  double bg_alpha_;
+  bool show_border_;
+  bool auto_color_change_;
+  bool show_value_;
+  bool show_caption_;
+  bool vertical_gauge_;
+  bool draw_required_;
+  float last_time_;
+  float update_interval_;
 
-    
-    ////////////////////////////////////////////////////////
-    // ROS variables
-    ////////////////////////////////////////////////////////
-    std::mutex mutex_;
-                        
+  uint16_t texture_width_;
+  uint16_t texture_height_;
+  int left_;
+  int top_;
+  int line_width_;
+  int text_size_;
+  int caption_offset_;
+  double min_value_;
+  double max_value_;
+  const int width_padding_;
+  const int height_padding_;
+
+  float data_;
+  bool first_time_;
+
+  ////////////////////////////////////////////////////////
+  // ROS variables
+  ////////////////////////////////////////////////////////
+  std::mutex mutex_;
+
 protected Q_SLOTS:
-    void updateTopic();
-    void updateShowValue();
-    void updateVerticalGauge();
-    void updateBGColor();
-    void updateFGColor();
-    void updateFGAlpha();
-    void updateBGAlpha();
-    void updateWidth();
-    void updateHeight();
-    void updateTop();
-    void updateLeft();
-    void updateLineWidth();
-    void updateShowBorder();
-    void updateAutoColorChange();
-    void updateMaxColor();
-    void updateUpdateInterval();
-    void updateShowCaption();
-    void updateTextSize();
-    void updateMinValue();
-    void updateMaxValue();
+  void updateTopic();
+  void updateShowValue();
+  void updateVerticalGauge();
+  void updateBGColor();
+  void updateFGColor();
+  void updateFGAlpha();
+  void updateBGAlpha();
+  void updateWidth();
+  void updateHeight();
+  void updateTop();
+  void updateLeft();
+  void updateLineWidth();
+  void updateShowBorder();
+  void updateAutoColorChange();
+  void updateMaxColor();
+  void updateUpdateInterval();
+  void updateShowCaption();
+  void updateTextSize();
+  void updateMinValue();
+  void updateMaxValue();
+
 private:
 };
 
-}
+}  // namespace jsk_rviz_plugins
 
 #endif

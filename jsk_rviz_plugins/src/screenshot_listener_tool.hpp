@@ -33,41 +33,40 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-
 #ifndef JSK_RVIZ_PLUGIN_SCREENSHOT_LISTENER_H_
 #define JSK_RVIZ_PLUGIN_SCREENSHOT_LISTENER_H_
 
 #include <jsk_rviz_plugin_msgs/srv/screenshot.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <rviz_common/tool.hpp>
 #include <rviz_common/properties/property.hpp>
 #include <rviz_common/properties/property_tree_model.hpp>
+#include <rviz_common/tool.hpp>
 
 namespace jsk_rviz_plugins
 {
-  class ScreenshotListenerTool: public rviz_common::Tool//, rclcpp::Node
-  {
-  public:
-    ScreenshotListenerTool();
-    virtual ~ScreenshotListenerTool();
-    virtual void onInitialize();
-    virtual void activate();
-    virtual void deactivate();
-  protected:
-    virtual bool takeScreenShot(
-      const std::shared_ptr<rmw_request_id_t> request_header,
-      const std::shared_ptr<jsk_rviz_plugin_msgs::srv::Screenshot::Request> req,
-      const std::shared_ptr<jsk_rviz_plugin_msgs::srv::Screenshot::Response> res);
-      // jsk_rviz_plugins::Screenshot::Request& req,
-      // jsk_rviz_plugins::Screenshot::Response& res);
-    
-    //ros::ServiceServer screenshot_service_;
-    rclcpp::Node::SharedPtr nh_;
-    rclcpp::Service<jsk_rviz_plugin_msgs::srv::Screenshot>::SharedPtr screenshot_service_;
-  private:
-    
-  };
-}
+class ScreenshotListenerTool : public rviz_common::Tool  //, rclcpp::Node
+{
+public:
+  ScreenshotListenerTool();
+  virtual ~ScreenshotListenerTool();
+  virtual void onInitialize();
+  virtual void activate();
+  virtual void deactivate();
 
+protected:
+  virtual bool takeScreenShot(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<jsk_rviz_plugin_msgs::srv::Screenshot::Request> req,
+    const std::shared_ptr<jsk_rviz_plugin_msgs::srv::Screenshot::Response> res);
+  // jsk_rviz_plugins::Screenshot::Request& req,
+  // jsk_rviz_plugins::Screenshot::Response& res);
+
+  //ros::ServiceServer screenshot_service_;
+  rclcpp::Node::SharedPtr nh_;
+  rclcpp::Service<jsk_rviz_plugin_msgs::srv::Screenshot>::SharedPtr screenshot_service_;
+
+private:
+};
+}  // namespace jsk_rviz_plugins
 
 #endif

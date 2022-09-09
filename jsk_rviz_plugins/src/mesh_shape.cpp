@@ -29,27 +29,28 @@
 
 #include "mesh_shape.hpp"
 
+#include <OgreEntity.h>
+#include <OgreManualObject.h>
+#include <OgreMaterialManager.h>
 #include <OgreMesh.h>
 #include <OgreMeshManager.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
-#include <OgreEntity.h>
-#include <OgreMaterialManager.h>
-#include <OgreManualObject.h>
 
 //#include <ros/console.h>
 #include <boost/lexical_cast.hpp>
+
 #include "rviz_utils.hpp"
 
 namespace jsk_rviz_plugins
 {
 
-MeshShape::MeshShape(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node )
-: Shape( Shape::Mesh, scene_manager, parent_node )
-, started_(false)
+MeshShape::MeshShape(Ogre::SceneManager * scene_manager, Ogre::SceneNode * parent_node)
+: Shape(Shape::Mesh, scene_manager, parent_node), started_(false)
 {
   static uint32_t count = 0;
-  manual_object_ = scene_manager->createManualObject("MeshShape_ManualObject" + boost::lexical_cast<std::string>(count++)); 
+  manual_object_ = scene_manager->createManualObject(
+    "MeshShape_ManualObject" + boost::lexical_cast<std::string>(count++));
   material_->setCullingMode(Ogre::CULL_NONE);
 }
 
@@ -61,39 +62,37 @@ MeshShape::~MeshShape()
 
 void MeshShape::estimateVertexCount(size_t vcount)
 {
-  if (entity_ == NULL && started_ == false)
-    manual_object_->estimateVertexCount(vcount);
+  if (entity_ == NULL && started_ == false) manual_object_->estimateVertexCount(vcount);
 }
 
 void MeshShape::beginTriangles()
 {
-  if (!started_ && entity_)
-  {
+  if (!started_ && entity_) {
     JSK_LOG_WARN("Cannot modify mesh once construction is complete");
     return;
   }
-  
-  if (!started_)
-  {
+
+  if (!started_) {
     started_ = true;
     manual_object_->begin(material_name_, Ogre::RenderOperation::OT_TRIANGLE_LIST);
   }
 }
 
-void MeshShape::addVertex(const Ogre::Vector3& position)
+void MeshShape::addVertex(const Ogre::Vector3 & position)
 {
   beginTriangles();
   manual_object_->position(position);
 }
 
-void MeshShape::addVertex(const Ogre::Vector3& position, const Ogre::Vector3& normal)
+void MeshShape::addVertex(const Ogre::Vector3 & position, const Ogre::Vector3 & normal)
 {
   beginTriangles();
   manual_object_->position(position);
   manual_object_->normal(normal);
 }
 
-void MeshShape::addVertex(const Ogre::Vector3& position, const Ogre::Vector3& normal, const Ogre::ColourValue &color)
+void MeshShape::addVertex(
+  const Ogre::Vector3 & position, const Ogre::Vector3 & normal, const Ogre::ColourValue & color)
 {
   beginTriangles();
   manual_object_->position(position);
@@ -101,15 +100,9 @@ void MeshShape::addVertex(const Ogre::Vector3& position, const Ogre::Vector3& no
   manual_object_->colour(color);
 }
 
-void MeshShape::addNormal(const Ogre::Vector3& normal)
-{
-  manual_object_->normal(normal);
-}
+void MeshShape::addNormal(const Ogre::Vector3 & normal) { manual_object_->normal(normal); }
 
-void MeshShape::addColor(const Ogre::ColourValue &color)
-{
-  manual_object_->colour(color);
-}
+void MeshShape::addColor(const Ogre::ColourValue & color) { manual_object_->colour(color); }
 
 void MeshShape::addTriangle(unsigned int v1, unsigned int v2, unsigned int v3)
 {
@@ -118,16 +111,14 @@ void MeshShape::addTriangle(unsigned int v1, unsigned int v2, unsigned int v3)
 
 void MeshShape::endTriangles()
 {
-  if (started_)
-  {
+  if (started_) {
     started_ = false;
     manual_object_->end();
     static uint32_t count = 0;
     std::string name = "ConvertedMeshShape@" + boost::lexical_cast<std::string>(count++);
     manual_object_->convertToMesh(name);
     entity_ = scene_manager_->createEntity(name);
-    if (entity_)
-    {
+    if (entity_) {
       entity_->setMaterialName(material_name_);
       offset_node_->attachObject(entity_);
     }
@@ -140,16 +131,14 @@ void MeshShape::endTriangles()
 
 void MeshShape::clear()
 {
-  if (entity_)
-  {
+  if (entity_) {
     entity_->detachFromParent();
     Ogre::MeshManager::getSingleton().remove(entity_->getMesh()->getName());
-    scene_manager_->destroyEntity( entity_ );
+    scene_manager_->destroyEntity(entity_);
     entity_ = NULL;
   }
   manual_object_->clear();
   started_ = false;
 }
 
-} // namespace jsk_rviz_plugins
-
+}  // namespace jsk_rviz_plugins

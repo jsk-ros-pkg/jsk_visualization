@@ -108,7 +108,6 @@
 //                                        this, SLOT( updateAlpha() ));
 //   alpha_property_->setMin( 0 );
 //   alpha_property_->setMax( 1 );
-  
 
 //   zoom_property_ = new FloatProperty( "Zoom Factor", 1.0,
 //                                       "Set a zoom factor below 1 to see a larger part of the world, above 1 to magnify the image.",
@@ -144,7 +143,6 @@
 //     unsubscribe();
 //     caminfo_tf_filter_->clear();
 
-
 //     //workaround. delete results in a later crash
 //     render_panel_->hide();
 //     //delete render_panel_;
@@ -166,7 +164,7 @@
 //     overlay_->prepareOverlays(scene_manager_);
 //     RTDClass::onInitialize();
 //   ImageDisplayBase::onInitialize();
-  
+
 // #if ROS_VERSION_MINIMUM(1, 15, 0) // noetic and greater
 //   caminfo_tf_filter_ = new tf2_ros::MessageFilter<sensor_msgs::CameraInfo>(
 //     *context_->getTF2BufferPtr(), fixed_frame_.toStdString(),
@@ -237,7 +235,7 @@
 //   updateLeft();
 //   updateTop();
 //   updateTextureAlpha();
-  
+
 //   render_panel_ = new RenderPanel();
 //   render_panel_->getRenderWindow()->addListener( this );
 //   render_panel_->getRenderWindow()->setAutoUpdated(false);
@@ -303,8 +301,6 @@
 //     overlay_->hide();
 //   }
 // }
-
-
 
 // void OverlayCameraDisplay::updateAlpha()
 // {
@@ -405,7 +401,7 @@
 //   }
 //   delete[] data;
 // }
-  
+
 // bool OverlayCameraDisplay::updateCamera()
 // {
 //   sensor_msgs::CameraInfo::ConstSharedPtr info;
@@ -522,7 +518,7 @@
 
 //   Ogre::Matrix4 proj_matrix;
 //   proj_matrix = Ogre::Matrix4::ZERO;
- 
+
 //   proj_matrix[0][0]= 2.0 * fx/img_width * zoom_x;
 //   proj_matrix[1][1]= 2.0 * fy/img_height * zoom_y;
 
@@ -608,7 +604,7 @@
 // {
 //   texture_alpha_ = texture_alpha_property_->getFloat();
 // }
-  
+
 // }
 
 // #include <pluginlib/class_list_macros.hpp>

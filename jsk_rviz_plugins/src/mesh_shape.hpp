@@ -69,19 +69,18 @@ namespace jsk_rviz_plugins
 class MeshShape : public rviz_rendering::Shape
 {
 public:
-
   /**
    * \brief Constructor
    *
    * @param scene_manager The scene manager this object is associated with
    * @param parent_node A scene node to use as the parent of this object.  If NULL, uses the root scene node.
    */
-  MeshShape(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node = NULL);
+  MeshShape(Ogre::SceneManager * scene_manager, Ogre::SceneNode * parent_node = NULL);
   virtual ~MeshShape();
 
   /* \brief Estimate the number of vertices ahead of time. */
   void estimateVertexCount(size_t vcount);
-  
+
   /** \brief Start adding triangles to the mesh */
   void beginTriangles();
 
@@ -91,7 +90,7 @@ public:
       consecutive calls to this function). This means there must be
       3*n calls to this function to add n triangles. If addTriangle()
       is used, indexing in the defined vertices is done. */
-  void addVertex(const Ogre::Vector3& position);
+  void addVertex(const Ogre::Vector3 & position);
 
   /** \brief Add a vertex to the mesh with a normal defined. If using
       this function only (not using addTriangle()) it is assumed that
@@ -99,7 +98,7 @@ public:
       consecutive calls to this function). This means there must be
       3*n calls to this function to add n triangles.If addTriangle()
       is used, indexing in the defined vertices is done.  */
-  void addVertex(const Ogre::Vector3& position, const Ogre::Vector3& normal);
+  void addVertex(const Ogre::Vector3 & position, const Ogre::Vector3 & normal);
 
   /** \brief Add a vertex to the mesh with normal and color defined. If using
       this function only (not using addTriangle()) it is assumed that
@@ -107,38 +106,33 @@ public:
       consecutive calls to this function). This means there must be
       3*n calls to this function to add n triangles.If addTriangle()
       is used, indexing in the defined vertices is done. */
-  void addVertex(const Ogre::Vector3& position, const Ogre::Vector3& normal, const Ogre::ColourValue &color);
+  void addVertex(
+    const Ogre::Vector3 & position, const Ogre::Vector3 & normal, const Ogre::ColourValue & color);
 
   /** \brief Add normal for a vertex */
-  void addNormal(const Ogre::Vector3 &normal);
+  void addNormal(const Ogre::Vector3 & normal);
 
   /** \brief Add color for a vertex */
-  void addColor(const Ogre::ColourValue &color);
-  
+  void addColor(const Ogre::ColourValue & color);
+
   /** \brief Add a triangle by indexing in the defined vertices. */
   void addTriangle(unsigned int p1, unsigned int p2, unsigned int p3);
-  
+
   /** \brief Notify that the set of triangles to add is complete. No more triangles can be added, beginTriangles() can no longer be called unless clear() was called. */
   void endTriangles();
 
   /** \brief Clear the mesh */
   void clear();
-  
+
   /** \brief Get the manual object created for the mesh */
-  Ogre::ManualObject* getManualObject()
-  {
-    return manual_object_;
-  }
+  Ogre::ManualObject * getManualObject() { return manual_object_; }
 
 private:
-
   // true in between calls to beginTriangles() and endTriangles()
   bool started_;
-  Ogre::ManualObject *manual_object_;
-  
+  Ogre::ManualObject * manual_object_;
 };
 
-} // namespace jsk_rviz_plugins
+}  // namespace jsk_rviz_plugins
 
-#endif // JSK_OGRE_TOOLS_MESH_SHAPE_H
-
+#endif  // JSK_OGRE_TOOLS_MESH_SHAPE_H

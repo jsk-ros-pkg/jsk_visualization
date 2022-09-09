@@ -111,7 +111,7 @@
 //   // overrides from Display
 //   void onEnable() override;
 //   void onDisable() override;
-  
+
 //   ROSImageTexture texture_;
 //   RenderPanel* render_panel_;
 

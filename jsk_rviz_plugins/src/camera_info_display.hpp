@@ -33,7 +33,6 @@
 //  *  POSSIBILITY OF SUCH DAMAGE.
 //  *********************************************************************/
 
-
 // #ifndef JSK_RVIZ_PLUGINS_CAMERA_INFO_DISPLAY_H_
 // #define JSK_RVIZ_PLUGINS_CAMERA_INFO_DISPLAY_H_
 
@@ -81,9 +80,9 @@
 //     Ogre::ManualObject* manual_;
 //     Ogre::SceneManager* manager_;
 //   private:
-    
+
 //   };
-  
+
 //   class CameraInfoDisplay:
 //     public rviz_common::RosTopicDisplay<sensor_msgs::msg::CameraInfo>
 //   {
@@ -93,7 +92,7 @@
 //     typedef std::shared_ptr<rviz_rendering::BillboardLine> BillboardLinePtr;
 //     CameraInfoDisplay();
 //     ~CameraInfoDisplay();
-    
+
 //   protected:
 //     ////////////////////////////////////////////////////////
 //     // methods required by super class
@@ -121,7 +120,7 @@
 //     //void subscribeImage(std::string topic);
 //     /////////////////////////////////////////////////////////
 //     // variables
-//     //////////////////////////////////////////////////////// 
+//     ////////////////////////////////////////////////////////
 //     std::vector<TrianglePolygon::Ptr> polygons_;
 //     BillboardLinePtr edges_;
 //     sensor_msgs::msg::CameraInfo::ConstSharedPtr camera_info_;
@@ -156,7 +155,7 @@
 //     rviz_common::properties::BoolProperty* not_show_side_polygons_property_;
 //     rviz_common::properties::BoolProperty* use_image_property_;
 //     rviz_common::properties::BoolProperty* show_edges_property_;
-    
+
 //   protected Q_SLOTS:
 //     void updateFarClipDistance();
 //     void updateAlpha();
@@ -168,7 +167,7 @@
 //     void updateUseImage();
 //     void updateEdgeColor();
 //   };
-  
+
 // }
 
 // #endif

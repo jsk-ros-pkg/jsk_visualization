@@ -14,41 +14,41 @@ class QPushButton;
 
 namespace jsk_rviz_plugins
 {
-  class PublishTopic: public rviz_common::Panel
-    {
-Q_OBJECT
-  public:
-      PublishTopic( QWidget* parent = 0 );
+class PublishTopic : public rviz_common::Panel
+{
+  Q_OBJECT
+public:
+  PublishTopic(QWidget * parent = 0);
 
-      virtual void onInitialize();
-      virtual void load( const rviz_common::Config& config );
-      virtual void save( rviz_common::Config config ) const;
+  virtual void onInitialize();
+  virtual void load(const rviz_common::Config & config);
+  virtual void save(rviz_common::Config config) const;
 
-      public Q_SLOTS:
+public Q_SLOTS:
 
-      void setTopic( const QString& topic );
+  void setTopic(const QString & topic);
 
-      protected Q_SLOTS:
+protected Q_SLOTS:
 
-      void sendVel() {}
+  void sendVel() {}
 
-      void updateTopic();
+  void updateTopic();
 
-      void sendTopic();
+  void sendTopic();
 
-    protected:
-      QLineEdit* output_topic_editor_;
+protected:
+  QLineEdit * output_topic_editor_;
 
-      QString output_topic_;
+  QString output_topic_;
 
-      QPushButton* send_topic_button_;
+  QPushButton * send_topic_button_;
 
-      // ros::Publisher velocity_publisher_;
-      // ros::NodeHandle nh_;
-      rclcpp::Node::SharedPtr nh_;
-      rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr pub_;
-    };
+  // ros::Publisher velocity_publisher_;
+  // ros::NodeHandle nh_;
+  rclcpp::Node::SharedPtr nh_;
+  rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr pub_;
+};
 
-}
+}  // namespace jsk_rviz_plugins
 
 #endif

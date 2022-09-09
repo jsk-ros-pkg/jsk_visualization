@@ -34,58 +34,45 @@
  *********************************************************************/
 
 // #include <ros/ros.h>
-#include <rclcpp/rclcpp.hpp>
-#include <rviz_common/tool.hpp>
-#include <rviz_common/display_context.hpp>
-#include <rviz_common/view_manager.hpp>
-#include <rviz_common/display_group.hpp>
-#include <rviz_common/display.hpp>
 #include "open_all_tool.hpp"
 
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/display.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/display_group.hpp>
+#include <rviz_common/tool.hpp>
+#include <rviz_common/view_manager.hpp>
 
 namespace jsk_rviz_plugins
 {
-  OpenAllTool::OpenAllTool()
-    : rviz_common::Tool()
-  {
+OpenAllTool::OpenAllTool() : rviz_common::Tool() {}
 
-  }
+OpenAllTool::~OpenAllTool() {}
 
-  OpenAllTool::~OpenAllTool()
-  {
-  }
+void OpenAllTool::onInitialize() {}
 
-  void OpenAllTool::onInitialize()
-  {
-
-  }
-
-  void OpenAllTool::openProperty(
-    rviz_common::properties::Property* property)
-  {
-    property->expand();
-    if (property->numChildren() > 0) {
-      for (size_t i = 0; i < property->numChildren(); i++) {
-        openProperty(property->childAt(i));
-      }
-      context_->queueRender();
+void OpenAllTool::openProperty(rviz_common::properties::Property * property)
+{
+  property->expand();
+  if (property->numChildren() > 0) {
+    for (size_t i = 0; i < property->numChildren(); i++) {
+      openProperty(property->childAt(i));
     }
+    context_->queueRender();
   }
-  
-  void OpenAllTool::activate()
-  {
-    rviz_common::DisplayGroup* display_group = context_->getRootDisplayGroup();
-    openProperty(display_group);
-    // rviz_common::ToolManager* tool_manager = context_->getToolManager();
-    // tool_manager->setCurrentTool(tool_manager->getTool(0));
-  }
-
-  void OpenAllTool::deactivate()
-  {
-    
-  }
-
 }
 
+void OpenAllTool::activate()
+{
+  rviz_common::DisplayGroup * display_group = context_->getRootDisplayGroup();
+  openProperty(display_group);
+  // rviz_common::ToolManager* tool_manager = context_->getToolManager();
+  // tool_manager->setCurrentTool(tool_manager->getTool(0));
+}
+
+void OpenAllTool::deactivate() {}
+
+}  // namespace jsk_rviz_plugins
+
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OpenAllTool, rviz_common::Tool )
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::OpenAllTool, rviz_common::Tool)

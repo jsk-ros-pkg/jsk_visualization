@@ -36,68 +36,59 @@
 // #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
 //#include <rviz/tool_manager.h>
-#include <rviz_common/tool.hpp>
-#include <rviz_common/display_context.hpp>
-#include <rviz_common/view_manager.hpp>
-#include <rviz_common/display_group.hpp>
-#include <rviz_common/display.hpp>
-#include <rviz_common/render_panel.hpp>
-#include <rviz_rendering/render_window.hpp>
 #include <QImageWriter>
+#include <rviz_common/display.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/display_group.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_common/tool.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_rendering/render_window.hpp>
+
 #include "screenshot_listener_tool.hpp"
 
 namespace jsk_rviz_plugins
 {
-  ScreenshotListenerTool::ScreenshotListenerTool()
-    : rviz_common::Tool()//, Node("ScreenshotListenerTool")
-  {
+ScreenshotListenerTool::ScreenshotListenerTool()
+: rviz_common::Tool()  //, Node("ScreenshotListenerTool")
+{
+}
+ScreenshotListenerTool::~ScreenshotListenerTool() {}
 
-  }
-  ScreenshotListenerTool::~ScreenshotListenerTool()
-  {
-
-  }
-
-  void ScreenshotListenerTool::onInitialize()
-  {
-    //ros::NodeHandle nh;
-    nh_ = context_->getRosNodeAbstraction().lock()->get_raw_node();
-    // screenshot_service_ = nh.advertiseService(
-    //   "/rviz/screenshot",
-    //   &ScreenshotListenerTool::takeScreenShot, this);
-    RCLCPP_INFO(nh_->get_logger(), "create srv");
-    using namespace std::placeholders;
-    screenshot_service_ = nh_->create_service<jsk_rviz_plugin_msgs::srv::Screenshot>(
-        "/rviz/screenshot",
-        std::bind(&ScreenshotListenerTool::takeScreenShot, this, _1, _2, _3));
-  }
-  
-  void ScreenshotListenerTool::activate()
-  {
-    RCLCPP_INFO(nh_->get_logger(), "activate");
-  }
-
-  void ScreenshotListenerTool::deactivate()
-  {
-    RCLCPP_INFO(nh_->get_logger(), "deactivate");
-  }
-
-  bool ScreenshotListenerTool::takeScreenShot(
-    const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<jsk_rviz_plugin_msgs::srv::Screenshot::Request> req,
-    const std::shared_ptr<jsk_rviz_plugin_msgs::srv::Screenshot::Response> res)
-  {
-    RCLCPP_INFO(nh_->get_logger(), "take picture: " + req->file_name);
-    //QPixmap screenshot = QPixmap::grabWindow(context_->getViewManager()->getRenderPanel()->winId());
-    // QPixmap screenshot = ->windowHandle()->screen()->grabWindow(context_->getViewManager()->getRenderPanel()->winId());
-    // QString output_file = QString::fromStdString(req->file_name);
-    // QImageWriter writer(output_file);
-    // writer.write(screenshot.toImage());
-    context_->getViewManager()->getRenderPanel()->getRenderWindow()->captureScreenShot(req->file_name);
-    return true;
-  }
-
+void ScreenshotListenerTool::onInitialize()
+{
+  //ros::NodeHandle nh;
+  nh_ = context_->getRosNodeAbstraction().lock()->get_raw_node();
+  // screenshot_service_ = nh.advertiseService(
+  //   "/rviz/screenshot",
+  //   &ScreenshotListenerTool::takeScreenShot, this);
+  RCLCPP_INFO(nh_->get_logger(), "create srv");
+  using namespace std::placeholders;
+  screenshot_service_ = nh_->create_service<jsk_rviz_plugin_msgs::srv::Screenshot>(
+    "/rviz/screenshot", std::bind(&ScreenshotListenerTool::takeScreenShot, this, _1, _2, _3));
 }
 
+void ScreenshotListenerTool::activate() { RCLCPP_INFO(nh_->get_logger(), "activate"); }
+
+void ScreenshotListenerTool::deactivate() { RCLCPP_INFO(nh_->get_logger(), "deactivate"); }
+
+bool ScreenshotListenerTool::takeScreenShot(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<jsk_rviz_plugin_msgs::srv::Screenshot::Request> req,
+  const std::shared_ptr<jsk_rviz_plugin_msgs::srv::Screenshot::Response> res)
+{
+  RCLCPP_INFO(nh_->get_logger(), "take picture: " + req->file_name);
+  //QPixmap screenshot = QPixmap::grabWindow(context_->getViewManager()->getRenderPanel()->winId());
+  // QPixmap screenshot = ->windowHandle()->screen()->grabWindow(context_->getViewManager()->getRenderPanel()->winId());
+  // QString output_file = QString::fromStdString(req->file_name);
+  // QImageWriter writer(output_file);
+  // writer.write(screenshot.toImage());
+  context_->getViewManager()->getRenderPanel()->getRenderWindow()->captureScreenShot(
+    req->file_name);
+  return true;
+}
+
+}  // namespace jsk_rviz_plugins
+
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::ScreenshotListenerTool, rviz_common::Tool )
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::ScreenshotListenerTool, rviz_common::Tool)

@@ -33,29 +33,29 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-
 #ifndef JSK_RVIZ_PLUGIN_CLOSE_ALL_TOOL_H_
 #define JSK_RVIZ_PLUGIN_CLOSE_ALL_TOOL_H_
 
-#include <rviz_common/tool.hpp>
 #include <rviz_common/properties/property.hpp>
 #include <rviz_common/properties/property_tree_model.hpp>
+#include <rviz_common/tool.hpp>
 
 namespace jsk_rviz_plugins
 {
-  class CloseAllTool: public rviz_common::Tool
-  {
-  public:
-    CloseAllTool();
-    virtual ~CloseAllTool();
-    virtual void onInitialize();
-    virtual void activate();
-    virtual void deactivate();
-  protected:
-    virtual void closeProperty(rviz_common::properties::Property* property);
-  private:
-    
-  };
-}
+class CloseAllTool : public rviz_common::Tool
+{
+public:
+  CloseAllTool();
+  virtual ~CloseAllTool();
+  virtual void onInitialize();
+  virtual void activate();
+  virtual void deactivate();
+
+protected:
+  virtual void closeProperty(rviz_common::properties::Property * property);
+
+private:
+};
+}  // namespace jsk_rviz_plugins
 
 #endif

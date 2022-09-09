@@ -37,57 +37,58 @@
 #define JSK_RVIZ_PLUGINS_SEGMENT_ARRAY_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
-#include <jsk_recognition_msgs/msg/segment_array.hpp>
-#include <rviz_common/properties/color_property.hpp>
-#include <rviz_common/properties/bool_property.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/enum_property.hpp>
-#include <rviz_common/ros_topic_display.hpp>
-#include <rviz_rendering/objects/shape.hpp>
-#include <rviz_rendering/objects/billboard_line.hpp>
-#include <rviz_rendering/objects/arrow.hpp>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
+
+#include <jsk_recognition_msgs/msg/segment_array.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/ros_topic_display.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/shape.hpp>
 #endif
 
 namespace jsk_rviz_plugins
 {
-  class SegmentArrayDisplay:
-    public rviz_common::RosTopicDisplay<jsk_recognition_msgs::msg::SegmentArray>
-  {
-    Q_OBJECT
-  public:
-    typedef std::shared_ptr<rviz_rendering::BillboardLine> BillboardLinePtr;
-    SegmentArrayDisplay();
-    ~SegmentArrayDisplay();
-  protected:
-    void onInitialize() override;
-    void reset();
-    void allocateBillboardLines(int num);
-    QColor getColor(size_t index);
-    void showEdges(
-      jsk_recognition_msgs::msg::SegmentArray::ConstSharedPtr msg);
+class SegmentArrayDisplay
+: public rviz_common::RosTopicDisplay<jsk_recognition_msgs::msg::SegmentArray>
+{
+  Q_OBJECT
+public:
+  typedef std::shared_ptr<rviz_rendering::BillboardLine> BillboardLinePtr;
+  SegmentArrayDisplay();
+  ~SegmentArrayDisplay();
 
-    rviz_common::properties::EnumProperty* coloring_property_;
-    rviz_common::properties::ColorProperty* color_property_;
-    rviz_common::properties::FloatProperty* alpha_property_;
-    rviz_common::properties::FloatProperty* line_width_property_;
-    QColor color_;
-    double alpha_;
-    std::string coloring_method_;
-    double line_width_;
-    std::vector<BillboardLinePtr> edges_;
+protected:
+  void onInitialize() override;
+  void reset();
+  void allocateBillboardLines(int num);
+  QColor getColor(size_t index);
+  void showEdges(jsk_recognition_msgs::msg::SegmentArray::ConstSharedPtr msg);
 
-    jsk_recognition_msgs::msg::SegmentArray::ConstSharedPtr latest_msg_;
-  private Q_SLOTS:
-    void updateColor();
-    void updateAlpha();
-    void updateColoring();
-    void updateLineWidth();
-  private:
-    void processMessage(
-      jsk_recognition_msgs::msg::SegmentArray::ConstSharedPtr msg);
-  };
+  rviz_common::properties::EnumProperty * coloring_property_;
+  rviz_common::properties::ColorProperty * color_property_;
+  rviz_common::properties::FloatProperty * alpha_property_;
+  rviz_common::properties::FloatProperty * line_width_property_;
+  QColor color_;
+  double alpha_;
+  std::string coloring_method_;
+  double line_width_;
+  std::vector<BillboardLinePtr> edges_;
 
-}
+  jsk_recognition_msgs::msg::SegmentArray::ConstSharedPtr latest_msg_;
+private Q_SLOTS:
+  void updateColor();
+  void updateAlpha();
+  void updateColoring();
+  void updateLineWidth();
+
+private:
+  void processMessage(jsk_recognition_msgs::msg::SegmentArray::ConstSharedPtr msg);
+};
+
+}  // namespace jsk_rviz_plugins
 #endif

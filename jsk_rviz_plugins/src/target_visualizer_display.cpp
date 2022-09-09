@@ -32,195 +32,173 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#include <rviz_common/view_manager.hpp>
-#include <rviz_common/render_panel.hpp>
-#include <rviz_common/uniform_string_stream.hpp>
-#include <OgreCamera.h>
-#include <OgreMaterialManager.h>
 #include "target_visualizer_display.hpp"
+
+#include <OgreCamera.h>
 #include <OgreManualObject.h>
+#include <OgreMaterialManager.h>
 
 #include <iomanip>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/view_manager.hpp>
 
 namespace jsk_rviz_plugins
 {
-  const float arrow_animation_duration = 1.0;
-  const double minimum_font_size = 0.2;
-  
-  TargetVisualizerDisplay::TargetVisualizerDisplay():
-    message_recieved_(false)
-  {
-    target_name_property_ = new rviz_common::properties::StringProperty(
-      "target name", "target",
-      "name of the target",
-      this, SLOT(updateTargetName())
-      );
-    radius_property_ = new rviz_common::properties::FloatProperty(
-      "radius", 1.0,
-      "radius of the target mark",
-      this, SLOT(updateRadius()));
-    radius_property_->setMin(0.0);
-    alpha_property_ = new rviz_common::properties::FloatProperty(
-      "alpha", 0.8,
-      "0 is fully transparent, 1.0 is fully opaque.",
-      this, SLOT(updateAlpha()));
-    alpha_property_->setMin(0.0);
-    alpha_property_->setMax(1.0);
-    color_property_ = new rviz_common::properties::ColorProperty(
-      "color", QColor(25, 255, 240),
-      "color of the target",
-      this, SLOT(updateColor()));
-    shape_type_property_ = new rviz_common::properties::EnumProperty(
-      "type", "Simple Circle",
-      "Shape to display the pose as",
-      this, SLOT(updateShapeType()));
-    shape_type_property_->addOption("Simple Circle", SimpleCircle);
-    shape_type_property_->addOption("Decoreted Circle", GISCircle);
-  }
+const float arrow_animation_duration = 1.0;
+const double minimum_font_size = 0.2;
 
-  TargetVisualizerDisplay::~TargetVisualizerDisplay()
-  {
-    delete target_name_property_;
-    delete alpha_property_;
-    delete color_property_;
-    delete radius_property_;
-  }
+TargetVisualizerDisplay::TargetVisualizerDisplay() : message_recieved_(false)
+{
+  target_name_property_ = new rviz_common::properties::StringProperty(
+    "target name", "target", "name of the target", this, SLOT(updateTargetName()));
+  radius_property_ = new rviz_common::properties::FloatProperty(
+    "radius", 1.0, "radius of the target mark", this, SLOT(updateRadius()));
+  radius_property_->setMin(0.0);
+  alpha_property_ = new rviz_common::properties::FloatProperty(
+    "alpha", 0.8, "0 is fully transparent, 1.0 is fully opaque.", this, SLOT(updateAlpha()));
+  alpha_property_->setMin(0.0);
+  alpha_property_->setMax(1.0);
+  color_property_ = new rviz_common::properties::ColorProperty(
+    "color", QColor(25, 255, 240), "color of the target", this, SLOT(updateColor()));
+  shape_type_property_ = new rviz_common::properties::EnumProperty(
+    "type", "Simple Circle", "Shape to display the pose as", this, SLOT(updateShapeType()));
+  shape_type_property_->addOption("Simple Circle", SimpleCircle);
+  shape_type_property_->addOption("Decoreted Circle", GISCircle);
+}
 
-  void TargetVisualizerDisplay::onEnable()
-  {
-    RTDClass::onEnable();
-    subscribe();
-    visualizer_->setEnable(false); // keep false, it will be true
-                                   // in side of processMessae callback.
-  }
-  
-  void TargetVisualizerDisplay::processMessage(
-    geometry_msgs::msg::PoseStamped::ConstSharedPtr msg)
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    message_recieved_ = true;
-    visualizer_->setEnable(isEnabled());
-    if (!isEnabled()) {
-      return;
-    }
-    Ogre::Quaternion orientation;
-    Ogre::Vector3 position;
-    if(!context_->getFrameManager()->transform(msg->header,
-                                               msg->pose,
-                                               position, orientation))
-    {
-      std::ostringstream oss;
-      oss << "Error transforming pose";
-      oss << " from frame '" << msg->header.frame_id << "'";
-      oss << " to frame '" << qPrintable(fixed_frame_) << "'";
-      //ROS_ERROR_STREAM(oss.str());
-      setStatus(rviz_common::properties::StatusProperty::Error, "Transform", QString::fromStdString(oss.str()));
-      return;
-    }
-    visualizer_->setPosition(position);
-  }
+TargetVisualizerDisplay::~TargetVisualizerDisplay()
+{
+  delete target_name_property_;
+  delete alpha_property_;
+  delete color_property_;
+  delete radius_property_;
+}
 
-  
-  void TargetVisualizerDisplay::update(float wall_dt, float ros_dt)
-  {
-    if (!message_recieved_) {
-      return;
-    }
-    visualizer_->setOrientation(context_);
-    visualizer_->update(wall_dt, ros_dt);
-  }
+void TargetVisualizerDisplay::onEnable()
+{
+  RTDClass::onEnable();
+  subscribe();
+  visualizer_->setEnable(false);  // keep false, it will be true
+                                  // in side of processMessae callback.
+}
 
-  void TargetVisualizerDisplay::onInitialize()
-  {
-    visualizer_initialized_ = false;
-    RTDClass::onInitialize();
-    scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-    
-    updateRadius();
-    updateShapeType();
-    // updateTargetName();
-    // updateColor();
-    // updateAlpha();
+void TargetVisualizerDisplay::processMessage(geometry_msgs::msg::PoseStamped::ConstSharedPtr msg)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  message_recieved_ = true;
+  visualizer_->setEnable(isEnabled());
+  if (!isEnabled()) {
+    return;
   }
+  Ogre::Quaternion orientation;
+  Ogre::Vector3 position;
+  if (!context_->getFrameManager()->transform(msg->header, msg->pose, position, orientation)) {
+    std::ostringstream oss;
+    oss << "Error transforming pose";
+    oss << " from frame '" << msg->header.frame_id << "'";
+    oss << " to frame '" << qPrintable(fixed_frame_) << "'";
+    //ROS_ERROR_STREAM(oss.str());
+    setStatus(
+      rviz_common::properties::StatusProperty::Error, "Transform",
+      QString::fromStdString(oss.str()));
+    return;
+  }
+  visualizer_->setPosition(position);
+}
 
-  void TargetVisualizerDisplay::reset()
-  {
-    RTDClass::reset();
-    message_recieved_ = false;
-    if (visualizer_) {
-      visualizer_->setEnable(false);
-    }
+void TargetVisualizerDisplay::update(float wall_dt, float ros_dt)
+{
+  if (!message_recieved_) {
+    return;
   }
+  visualizer_->setOrientation(context_);
+  visualizer_->update(wall_dt, ros_dt);
+}
 
-  void TargetVisualizerDisplay::updateTargetName()
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    target_name_ = target_name_property_->getStdString();
-    if (visualizer_) {
-      visualizer_->setText(target_name_);
-    }
-  }
-  
-  void TargetVisualizerDisplay::updateRadius()
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    radius_ = radius_property_->getFloat();
-    if (visualizer_) {
-      visualizer_->setSize(radius_);
-    }
-  }
+void TargetVisualizerDisplay::onInitialize()
+{
+  visualizer_initialized_ = false;
+  RTDClass::onInitialize();
+  scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 
-  void TargetVisualizerDisplay::updateAlpha()
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    alpha_ = alpha_property_->getFloat();
-    if (visualizer_) {
-      visualizer_->setAlpha(alpha_);
-    }
-  }
+  updateRadius();
+  updateShapeType();
+  // updateTargetName();
+  // updateColor();
+  // updateAlpha();
+}
 
-  void TargetVisualizerDisplay::updateColor()
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    color_ = color_property_->getColor();
-    if (visualizer_) {
-      visualizer_->setColor(color_);
-    }
-  }
-  
-  void TargetVisualizerDisplay::updateShapeType()
-  {
-    if (!visualizer_initialized_ ||
-        current_type_ != shape_type_property_->getOptionInt()) {
-      {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (shape_type_property_->getOptionInt() == SimpleCircle) {
-          current_type_ = SimpleCircle;
-          // simple circle
-          visualizer_.reset(new SimpleCircleFacingVisualizer(
-                              scene_manager_,
-                              scene_node_,
-                              context_,
-                              radius_));
-        }
-        else {
-          current_type_ = GISCircle;
-          // GIS
-          GISCircleVisualizer* v = new GISCircleVisualizer(
-            scene_manager_,
-            scene_node_,
-            radius_);
-          v->setAnonymous(false);
-          visualizer_.reset(v);
-        }
-        visualizer_initialized_ = true;
-      }
-      updateTargetName();
-      updateColor();
-      updateAlpha();
-    }
+void TargetVisualizerDisplay::reset()
+{
+  RTDClass::reset();
+  message_recieved_ = false;
+  if (visualizer_) {
+    visualizer_->setEnable(false);
   }
 }
 
+void TargetVisualizerDisplay::updateTargetName()
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  target_name_ = target_name_property_->getStdString();
+  if (visualizer_) {
+    visualizer_->setText(target_name_);
+  }
+}
+
+void TargetVisualizerDisplay::updateRadius()
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  radius_ = radius_property_->getFloat();
+  if (visualizer_) {
+    visualizer_->setSize(radius_);
+  }
+}
+
+void TargetVisualizerDisplay::updateAlpha()
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  alpha_ = alpha_property_->getFloat();
+  if (visualizer_) {
+    visualizer_->setAlpha(alpha_);
+  }
+}
+
+void TargetVisualizerDisplay::updateColor()
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  color_ = color_property_->getColor();
+  if (visualizer_) {
+    visualizer_->setColor(color_);
+  }
+}
+
+void TargetVisualizerDisplay::updateShapeType()
+{
+  if (!visualizer_initialized_ || current_type_ != shape_type_property_->getOptionInt()) {
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      if (shape_type_property_->getOptionInt() == SimpleCircle) {
+        current_type_ = SimpleCircle;
+        // simple circle
+        visualizer_.reset(
+          new SimpleCircleFacingVisualizer(scene_manager_, scene_node_, context_, radius_));
+      } else {
+        current_type_ = GISCircle;
+        // GIS
+        GISCircleVisualizer * v = new GISCircleVisualizer(scene_manager_, scene_node_, radius_);
+        v->setAnonymous(false);
+        visualizer_.reset(v);
+      }
+      visualizer_initialized_ = true;
+    }
+    updateTargetName();
+    updateColor();
+    updateAlpha();
+  }
+}
+}  // namespace jsk_rviz_plugins
+
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TargetVisualizerDisplay, rviz_common::Display )
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::TargetVisualizerDisplay, rviz_common::Display)

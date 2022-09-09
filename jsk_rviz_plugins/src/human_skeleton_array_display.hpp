@@ -37,60 +37,61 @@
 #define JSK_RVIZ_PLUGINS_HUMAN_SKELETON_ARRAY_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
-#include <jsk_recognition_msgs/msg/human_skeleton_array.hpp>
-#include <rviz_common/properties/color_property.hpp>
-#include <rviz_common/properties/bool_property.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/enum_property.hpp>
-#include <rviz_common/ros_topic_display.hpp>
-#include <rviz_rendering/objects/shape.hpp>
-#include <rviz_rendering/objects/billboard_line.hpp>
-#include <rviz_rendering/objects/arrow.hpp>
-#include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+
+#include <jsk_recognition_msgs/msg/human_skeleton_array.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/ros_topic_display.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/shape.hpp>
 #endif
 
 namespace jsk_rviz_plugins
 {
-  class HumanSkeletonArrayDisplay:
-    public rviz_common::RosTopicDisplay<jsk_recognition_msgs::msg::HumanSkeletonArray>
-  {
-    Q_OBJECT
-  public:
-    typedef std::shared_ptr<rviz_rendering::BillboardLine> BillboardLinePtr;
-    typedef std::shared_ptr<rviz_rendering::Shape> ShapePtr;
-    HumanSkeletonArrayDisplay();
-    ~HumanSkeletonArrayDisplay();
-  protected:
-    void onInitialize() override;
-    void reset();
-    void allocateSpheres(int num);
-    void allocateBillboardLines(int num);
-    QColor getColor(size_t index);
-    void showEdges(
-      jsk_recognition_msgs::msg::HumanSkeletonArray::ConstSharedPtr msg);
+class HumanSkeletonArrayDisplay
+: public rviz_common::RosTopicDisplay<jsk_recognition_msgs::msg::HumanSkeletonArray>
+{
+  Q_OBJECT
+public:
+  typedef std::shared_ptr<rviz_rendering::BillboardLine> BillboardLinePtr;
+  typedef std::shared_ptr<rviz_rendering::Shape> ShapePtr;
+  HumanSkeletonArrayDisplay();
+  ~HumanSkeletonArrayDisplay();
 
-    rviz_common::properties::EnumProperty* coloring_property_;
-    rviz_common::properties::ColorProperty* color_property_;
-    rviz_common::properties::FloatProperty* alpha_property_;
-    rviz_common::properties::FloatProperty* line_width_property_;
-    QColor color_;
-    double alpha_;
-    std::string coloring_method_;
-    double line_width_;
-    std::vector<BillboardLinePtr> edges_;
-    std::vector<ShapePtr> shapes_;
+protected:
+  void onInitialize() override;
+  void reset();
+  void allocateSpheres(int num);
+  void allocateBillboardLines(int num);
+  QColor getColor(size_t index);
+  void showEdges(jsk_recognition_msgs::msg::HumanSkeletonArray::ConstSharedPtr msg);
 
-    jsk_recognition_msgs::msg::HumanSkeletonArray::ConstSharedPtr latest_msg_;
-  private Q_SLOTS:
-    void updateColor();
-    void updateAlpha();
-    void updateColoring();
-    void updateLineWidth();
-  private:
-    void processMessage(
-      jsk_recognition_msgs::msg::HumanSkeletonArray::ConstSharedPtr msg);
-  };
+  rviz_common::properties::EnumProperty * coloring_property_;
+  rviz_common::properties::ColorProperty * color_property_;
+  rviz_common::properties::FloatProperty * alpha_property_;
+  rviz_common::properties::FloatProperty * line_width_property_;
+  QColor color_;
+  double alpha_;
+  std::string coloring_method_;
+  double line_width_;
+  std::vector<BillboardLinePtr> edges_;
+  std::vector<ShapePtr> shapes_;
 
-}
+  jsk_recognition_msgs::msg::HumanSkeletonArray::ConstSharedPtr latest_msg_;
+private Q_SLOTS:
+  void updateColor();
+  void updateAlpha();
+  void updateColoring();
+  void updateLineWidth();
+
+private:
+  void processMessage(jsk_recognition_msgs::msg::HumanSkeletonArray::ConstSharedPtr msg);
+};
+
+}  // namespace jsk_rviz_plugins
 #endif

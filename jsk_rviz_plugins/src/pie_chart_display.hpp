@@ -39,105 +39,106 @@
 #ifndef Q_MOC_RUN
 #include "rviz_common/ros_topic_display.hpp"
 // #include "rviz_default_plugins/visibility_control.hpp"
-#include "overlay_utils.hpp"
 #include <OgreColourValue.h>
-#include <OgreTexture.h>
 #include <OgreMaterial.h>
-#include <rviz_common/properties/int_property.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/color_property.hpp>
+#include <OgreTexture.h>
+
 #include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/properties/ros_topic_property.hpp>
+
+#include "overlay_utils.hpp"
 #endif
 
 namespace jsk_rviz_plugins
 {
-  class PieChartDisplay
-    : public rviz_common::RosTopicDisplay<std_msgs::msg::Float32>
-  {
-    Q_OBJECT
-  public:
-    PieChartDisplay();
-    ~PieChartDisplay();
-    
-    // methods for OverlayPickerTool
-    bool isInRegion(int x, int y);
-    void movePosition(int x, int y);
-    void setPosition(int x, int y);
-    int getX() { return left_; };
-    int getY() { return top_; };
+class PieChartDisplay : public rviz_common::RosTopicDisplay<std_msgs::msg::Float32>
+{
+  Q_OBJECT
+public:
+  PieChartDisplay();
+  ~PieChartDisplay();
 
-  protected:
-    void onEnable() override;
-    void onDisable() override;
-    void onInitialize() override;
-    void processMessage(std_msgs::msg::Float32::ConstSharedPtr msg) override;
-    void drawPlot(double val);
-    void update(float wall_dt, float ros_dt) override;
-    void reset() override;
-    // properties
-    rviz_common::properties::IntProperty* size_property_;
-    rviz_common::properties::IntProperty* left_property_;
-    rviz_common::properties::IntProperty* top_property_;
-    rviz_common::properties::ColorProperty* fg_color_property_;
-    rviz_common::properties::ColorProperty* bg_color_property_;
-    rviz_common::properties::ColorProperty* text_color_property_;
-    rviz_common::properties::FloatProperty* fg_alpha_property_;
-    rviz_common::properties::FloatProperty* fg_alpha2_property_;
-    rviz_common::properties::FloatProperty* bg_alpha_property_;
-    rviz_common::properties::FloatProperty* text_alpha_property_;
-    rviz_common::properties::IntProperty* text_size_property_;
-    rviz_common::properties::FloatProperty* max_value_property_;
-    rviz_common::properties::FloatProperty* min_value_property_;
-    rviz_common::properties::BoolProperty* show_caption_property_;
-    rviz_common::properties::BoolProperty* auto_color_change_property_;
-    rviz_common::properties::ColorProperty* max_color_property_;
-    rviz_common::properties::BoolProperty* clockwise_rotate_property_;
+  // methods for OverlayPickerTool
+  bool isInRegion(int x, int y);
+  void movePosition(int x, int y);
+  void setPosition(int x, int y);
+  int getX() { return left_; };
+  int getY() { return top_; };
 
-    int left_;
-    int top_;
-    uint16_t texture_size_;
-    QColor fg_color_;
-    QColor bg_color_;
-    QColor max_color_;
-    int text_size_;
-    bool show_caption_;
-    bool auto_color_change_;
-    int caption_offset_;
-    double fg_alpha_;
-    double fg_alpha2_;
-    double bg_alpha_;
-    double max_value_;
-    double min_value_;
-    float data_;
-    bool update_required_;
-    bool first_time_;
-    OverlayObject::Ptr overlay_;
-    bool clockwise_rotate_;
-    
-    std::mutex mutex_;
-                       
-  protected Q_SLOTS:
-    void updateTopic();
-    void updateSize();
-    void updateTop();
-    void updateLeft();
-    void updateBGColor();
-    void updateTextSize();
-    void updateFGColor();
-    void updateFGAlpha();
-    void updateFGAlpha2();
-    void updateBGAlpha();
-    void updateMinValue();
-    void updateMaxValue();
-    void updateShowCaption();
-    void updateAutoColorChange();
-    void updateMaxColor();
-    void updateClockwiseRotate();
+protected:
+  void onEnable() override;
+  void onDisable() override;
+  void onInitialize() override;
+  void processMessage(std_msgs::msg::Float32::ConstSharedPtr msg) override;
+  void drawPlot(double val);
+  void update(float wall_dt, float ros_dt) override;
+  void reset() override;
+  // properties
+  rviz_common::properties::IntProperty * size_property_;
+  rviz_common::properties::IntProperty * left_property_;
+  rviz_common::properties::IntProperty * top_property_;
+  rviz_common::properties::ColorProperty * fg_color_property_;
+  rviz_common::properties::ColorProperty * bg_color_property_;
+  rviz_common::properties::ColorProperty * text_color_property_;
+  rviz_common::properties::FloatProperty * fg_alpha_property_;
+  rviz_common::properties::FloatProperty * fg_alpha2_property_;
+  rviz_common::properties::FloatProperty * bg_alpha_property_;
+  rviz_common::properties::FloatProperty * text_alpha_property_;
+  rviz_common::properties::IntProperty * text_size_property_;
+  rviz_common::properties::FloatProperty * max_value_property_;
+  rviz_common::properties::FloatProperty * min_value_property_;
+  rviz_common::properties::BoolProperty * show_caption_property_;
+  rviz_common::properties::BoolProperty * auto_color_change_property_;
+  rviz_common::properties::ColorProperty * max_color_property_;
+  rviz_common::properties::BoolProperty * clockwise_rotate_property_;
 
-  private:
-  };
+  int left_;
+  int top_;
+  uint16_t texture_size_;
+  QColor fg_color_;
+  QColor bg_color_;
+  QColor max_color_;
+  int text_size_;
+  bool show_caption_;
+  bool auto_color_change_;
+  int caption_offset_;
+  double fg_alpha_;
+  double fg_alpha2_;
+  double bg_alpha_;
+  double max_value_;
+  double min_value_;
+  float data_;
+  bool update_required_;
+  bool first_time_;
+  OverlayObject::Ptr overlay_;
+  bool clockwise_rotate_;
 
-}
+  std::mutex mutex_;
+
+protected Q_SLOTS:
+  void updateTopic();
+  void updateSize();
+  void updateTop();
+  void updateLeft();
+  void updateBGColor();
+  void updateTextSize();
+  void updateFGColor();
+  void updateFGAlpha();
+  void updateFGAlpha2();
+  void updateBGAlpha();
+  void updateMinValue();
+  void updateMaxValue();
+  void updateShowCaption();
+  void updateAutoColorChange();
+  void updateMaxColor();
+  void updateClockwiseRotate();
+
+private:
+};
+
+}  // namespace jsk_rviz_plugins
 
 #endif

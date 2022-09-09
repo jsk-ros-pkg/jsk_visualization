@@ -39,70 +39,71 @@
 #ifndef Q_MOC_RUN
 #include <rviz_common/ros_topic_display.hpp>
 // #include <rviz_default_plugins/visibility_control.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/string_property.hpp>
-#include <rviz_common/properties/editable_enum_property.hpp>
-#include <rviz_common/properties/tf_frame_property.hpp>
-#include <rviz_common/properties/ros_topic_property.hpp>
-#include <rviz_common/properties/enum_property.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
-#include <rviz_rendering/objects/billboard_line.hpp>
 #include <rviz_common/display_context.hpp>
+#include <rviz_common/properties/editable_enum_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/string_property.hpp>
+#include <rviz_common/properties/tf_frame_property.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
 //#include <rviz_common/frame_manager.hpp>
-#include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+
 #include <rviz_rendering/objects/movable_text.hpp>
 #endif
 
 namespace jsk_rviz_plugins
 {
-  class DiagnosticsDisplay : public rviz_common::RosTopicDisplay<diagnostic_msgs::msg::DiagnosticArray>
-  {
-    Q_OBJECT
-  public:
-    DiagnosticsDisplay();
-    ~DiagnosticsDisplay();
-  protected:
-    void onEnable() override;
-    void onDisable() override;
-    void onInitialize() override;
-    void updateLine();
-    void update(float wall_dt, float ros_dt) override;
-    void processMessage
-    (diagnostic_msgs::msg::DiagnosticArray::ConstSharedPtr msg);
-    
-    rviz_common::properties::EditableEnumProperty* diagnostics_namespace_property_;
-    rviz_common::properties::TfFrameProperty* frame_id_property_;
-    rviz_common::properties::FloatProperty* radius_property_;
-    rviz_common::properties::FloatProperty* line_width_property_;
-    rviz_common::properties::FloatProperty* font_size_property_;
-    rviz_common::properties::EnumProperty* axis_property_;
-    
-    double radius_;
-    double line_width_;
-    std::string frame_id_;
-    std::string diagnostics_namespace_;
-    rviz_rendering::MovableText* msg_;
-    rviz_rendering::BillboardLine* line_;
-    Ogre::SceneNode* orbit_node_;
-    std::set<std::string> namespaces_;
-    int axis_;
-    double orbit_theta_;
-    double font_size_;
-    bool line_update_required_;
-  protected Q_SLOTS:
-    void updateRosTopic();
-    void updateDiagnosticsNamespace();
-    void updateRadius();
-    void updateLineWidth();
-    void updateAxis();
-    void updateFontSize();
-    void fillNamespaceList();
-  private:
-    
-  };
-  
-}
+class DiagnosticsDisplay
+: public rviz_common::RosTopicDisplay<diagnostic_msgs::msg::DiagnosticArray>
+{
+  Q_OBJECT
+public:
+  DiagnosticsDisplay();
+  ~DiagnosticsDisplay();
 
+protected:
+  void onEnable() override;
+  void onDisable() override;
+  void onInitialize() override;
+  void updateLine();
+  void update(float wall_dt, float ros_dt) override;
+  void processMessage(diagnostic_msgs::msg::DiagnosticArray::ConstSharedPtr msg);
+
+  rviz_common::properties::EditableEnumProperty * diagnostics_namespace_property_;
+  rviz_common::properties::TfFrameProperty * frame_id_property_;
+  rviz_common::properties::FloatProperty * radius_property_;
+  rviz_common::properties::FloatProperty * line_width_property_;
+  rviz_common::properties::FloatProperty * font_size_property_;
+  rviz_common::properties::EnumProperty * axis_property_;
+
+  double radius_;
+  double line_width_;
+  std::string frame_id_;
+  std::string diagnostics_namespace_;
+  rviz_rendering::MovableText * msg_;
+  rviz_rendering::BillboardLine * line_;
+  Ogre::SceneNode * orbit_node_;
+  std::set<std::string> namespaces_;
+  int axis_;
+  double orbit_theta_;
+  double font_size_;
+  bool line_update_required_;
+protected Q_SLOTS:
+  void updateRosTopic();
+  void updateDiagnosticsNamespace();
+  void updateRadius();
+  void updateLineWidth();
+  void updateAxis();
+  void updateFontSize();
+  void fillNamespaceList();
+
+private:
+};
+
+}  // namespace jsk_rviz_plugins
 
 #endif
