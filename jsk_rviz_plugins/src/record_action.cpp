@@ -11,7 +11,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 RecordAction::RecordAction(QWidget * parent) : rviz_common::Panel(parent) {}
 
 void RecordAction::onInitialize()

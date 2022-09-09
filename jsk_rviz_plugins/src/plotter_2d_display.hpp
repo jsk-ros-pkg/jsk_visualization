@@ -54,7 +54,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 class Plotter2DDisplay : public rviz_common::RosTopicDisplay<std_msgs::msg::Float32>
 {
   Q_OBJECT

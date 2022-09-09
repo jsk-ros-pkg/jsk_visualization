@@ -41,7 +41,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 BoundingBoxArrayDisplay::BoundingBoxArrayDisplay()
 {
   coloring_property_ = new rviz_common::properties::EnumProperty(

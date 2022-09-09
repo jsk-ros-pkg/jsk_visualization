@@ -54,7 +54,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 class BoundingBoxDisplay : public BoundingBoxDisplayCommon<jsk_recognition_msgs::msg::BoundingBox>
 {
   Q_OBJECT

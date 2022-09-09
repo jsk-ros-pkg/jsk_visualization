@@ -48,7 +48,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 PieChartDisplay::PieChartDisplay() : update_required_(false), first_time_(true), data_(0.0)
 {
   size_property_ = new rviz_common::properties::IntProperty(

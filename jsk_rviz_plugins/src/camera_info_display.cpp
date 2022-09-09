@@ -346,7 +346,6 @@
 
 //   // void CameraInfoDisplay::subscribeImage(std::string topic)
 //   // {
-
 //   //   image_sub_.shutdown();
 //   //   if (topic.empty()) {
 //   //     ROS_WARN("topic name is empty");

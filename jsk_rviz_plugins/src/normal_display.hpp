@@ -24,7 +24,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 class NormalDisplay : public rviz_common::RosTopicDisplay<sensor_msgs::msg::PointCloud2>
 {
   Q_OBJECT

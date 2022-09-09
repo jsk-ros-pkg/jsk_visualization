@@ -51,7 +51,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 const int menu_padding_x = 100;
 const int menu_padding_y = 5;
 const int menu_last_padding_y = 30;

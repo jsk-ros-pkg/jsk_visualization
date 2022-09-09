@@ -57,7 +57,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 template <class MessageType>
 class BoundingBoxDisplayCommon : public rviz_common::RosTopicDisplay<MessageType>
 {

@@ -202,7 +202,6 @@
 
 //   TabletControllerPanel::~TabletControllerPanel()
 //   {
-
 //   }
 
 //   void TabletControllerPanel::load(const rviz_common::Config& config)

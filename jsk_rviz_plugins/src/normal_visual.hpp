@@ -13,7 +13,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 class NormalVisual
 {
 public:

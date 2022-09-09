@@ -25,7 +25,6 @@ class MovableText;
 
 namespace jsk_rviz_plugins
 {
-
 // outer radius
 // inner radius
 class SquareObject

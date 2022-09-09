@@ -5,7 +5,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 NormalDisplay::NormalDisplay() : skip_rate_(1), scale_(0.3), alpha_(1.0)
 {
   skip_rate_property_ = new rviz_common::properties::FloatProperty(

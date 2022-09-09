@@ -49,7 +49,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 OverlayImageDisplay::OverlayImageDisplay()
 : width_(128),
   height_(128),

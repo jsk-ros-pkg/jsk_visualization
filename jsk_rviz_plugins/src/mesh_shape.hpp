@@ -39,7 +39,6 @@ class ManualObject;
 
 namespace jsk_rviz_plugins
 {
-
 /** \brief This class allows constructing Ogre shapes manually, from triangle lists.
     
     For example:

@@ -12,7 +12,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 CancelAction::CancelAction(QWidget * parent) : rviz_common::Panel(parent) {}
 
 void CancelAction::onInitialize()

@@ -48,7 +48,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 class TFTrajectoryDisplay : public rviz_common::Display
 {
   Q_OBJECT

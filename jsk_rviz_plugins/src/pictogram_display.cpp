@@ -18,7 +18,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 int addFont(unsigned char * data, unsigned int data_len)
 {
   // register font

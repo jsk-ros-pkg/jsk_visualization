@@ -23,7 +23,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 class YesNoButtonInterface : public rviz_common::Panel
 {
   Q_OBJECT

@@ -58,7 +58,6 @@
 
 // namespace jsk_rviz_plugins
 // {
-
 //   class PolygonArrayDisplay:
 //     public rviz_common::RosTopicDisplay<jsk_recognition_msgs::msg::PolygonArray>
 //   {

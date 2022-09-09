@@ -54,7 +54,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 class BoundingBoxArrayDisplay
 : public BoundingBoxDisplayCommon<jsk_recognition_msgs::msg::BoundingBoxArray>
 {

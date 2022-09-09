@@ -42,7 +42,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 DiagnosticsDisplay::DiagnosticsDisplay() : msg_(0)
 {
   frame_id_property_ = new rviz_common::properties::TfFrameProperty(

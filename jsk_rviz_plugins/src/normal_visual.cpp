@@ -5,7 +5,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 NormalVisual::NormalVisual(Ogre::SceneManager * scene_manager, Ogre::SceneNode * parent_node)
 {
   scene_manager_ = scene_manager;

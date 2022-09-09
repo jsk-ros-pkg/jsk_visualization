@@ -12,7 +12,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 YesNoButtonInterface::YesNoButtonInterface(QWidget * parent) : rviz_common::Panel(parent)
 {
   layout_ = new QHBoxLayout;

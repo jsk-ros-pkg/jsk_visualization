@@ -9,7 +9,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 const double minimum_font_size = 0.2;
 const float arrow_animation_duration = 1.0;
 

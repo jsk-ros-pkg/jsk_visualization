@@ -44,7 +44,6 @@
 
 namespace jsk_rviz_plugins
 {
-
 MeshShape::MeshShape(Ogre::SceneManager * scene_manager, Ogre::SceneNode * parent_node)
 : Shape(Shape::Mesh, scene_manager, parent_node), started_(false)
 {
