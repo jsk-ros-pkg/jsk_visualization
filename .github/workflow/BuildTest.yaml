@@ -1,0 +1,49 @@
+name: BuildTest
+
+on:
+  push:
+    branches:
+      - feat/ros2_foxy
+      - feat/ci
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build_and_test:
+    name: Build
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        rosdistro : [foxy]
+    steps:
+      - uses: actions/checkout@v2-beta
+      - name: Check dependency-${{ matrix.rosdistro }}.repos existence
+        id: check_rosdistro_repos_files
+        uses: andstor/file-existence-action@v1
+        with:
+          files: dependency-${{ matrix.rosdistro }}.repos
+          allow_failure: false
+      - name: Check dependency.repos existence
+        id: check_repos_files
+        uses: andstor/file-existence-action@v1
+        with:
+          files: dependency.repos
+          allow_failure: false
+      - name: Run OUXT-Polaris/ros2-ci@master with dependency-${{ matrix.rosdistro }}.repos
+        uses: OUXT-Polaris/ros2-ci@master
+        if: steps.check_rosdistro_repos_files.outputs.files_exists == 'true'
+        with:
+          ros2-distro: ${{ matrix.rosdistro }}
+          repos-filepath: dependency-${{ matrix.rosdistro }}.repos
+      - name: Run OUXT-Polaris/ros2-ci@master with dependency.repos
+        uses: OUXT-Polaris/ros2-ci@master
+        if: steps.check_rosdistro_repos_files.outputs.files_exists == 'false' && steps.check_repos_files.outputs.files_exists == 'true'
+        with:
+          ros2-distro: ${{ matrix.rosdistro }}
+          repos-filepath: dependency.repos
+      - name: Run OUXT-Polaris/ros2-ci@master without repos
+        uses: OUXT-Polaris/ros2-ci@master
+        if: steps.check_rosdistro_repos_files.outputs.files_exists == 'false' && steps.check_repos_files.outputs.files_exists == 'false'
+        with:
+          ros2-distro: ${{ matrix.rosdistro }}
