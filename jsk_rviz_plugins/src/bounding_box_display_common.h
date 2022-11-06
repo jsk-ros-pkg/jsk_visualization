@@ -193,21 +193,25 @@ protected:
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
     {
       edges_.clear();
-      allocateShapes(msg->boxes.size());
       float min_value = DBL_MAX;
       float max_value = -DBL_MAX;
-      for (size_t i = 0; i < msg->boxes.size(); i++) {
-        min_value = std::min(min_value, msg->boxes[i].value);
-        max_value = std::max(max_value, msg->boxes[i].value);
-      }
+      std::vector<jsk_recognition_msgs::BoundingBox> boxes;
       for (size_t i = 0; i < msg->boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
-        if (!isValidBoundingBox(box)) {
+        if (isValidBoundingBox(box)) {
+          boxes.push_back(box);
+          min_value = std::min(min_value, msg->boxes[i].value);
+          max_value = std::max(max_value, msg->boxes[i].value);
+        }
+        else
+        {
           ROS_WARN_THROTTLE(10, "Invalid size of bounding box is included and skipped: [%f, %f, %f]",
             box.dimensions.x, box.dimensions.y, box.dimensions.z);
-          continue;
         }
-
+      }
+      allocateShapes(boxes.size());
+      for (size_t i = 0; i < boxes.size(); i++) {
+        jsk_recognition_msgs::BoundingBox box = boxes[i];
         ShapePtr shape = shapes_[i];
         Ogre::Vector3 position;
         Ogre::Quaternion orientation;
@@ -248,22 +252,26 @@ protected:
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
     {
       shapes_.clear();
-      allocateBillboardLines(msg->boxes.size());
       float min_value = DBL_MAX;
       float max_value = -DBL_MAX;
-      for (size_t i = 0; i < msg->boxes.size(); i++) {
-        min_value = std::min(min_value, msg->boxes[i].value);
-        max_value = std::max(max_value, msg->boxes[i].value);
-      }
-
+      std::vector<jsk_recognition_msgs::BoundingBox> boxes;
       for (size_t i = 0; i < msg->boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
-        if (!isValidBoundingBox(box)) {
+        if (isValidBoundingBox(box)) {
+          boxes.push_back(box);
+          min_value = std::min(min_value, msg->boxes[i].value);
+          max_value = std::max(max_value, msg->boxes[i].value);
+        }
+        else
+        {
           ROS_WARN_THROTTLE(10, "Invalid size of bounding box is included and skipped: [%f, %f, %f]",
             box.dimensions.x, box.dimensions.y, box.dimensions.z);
-          continue;
         }
+      }
 
+      allocateBillboardLines(boxes.size());
+      for (size_t i = 0; i < boxes.size(); i++) {
+        jsk_recognition_msgs::BoundingBox box = boxes[i];
         geometry_msgs::Vector3 dimensions = box.dimensions;
 
         BillboardLinePtr edge = edges_[i];
@@ -338,9 +346,21 @@ protected:
     void showCoords(
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
     {
-      allocateCoords(msg->boxes.size());
+      std::vector<jsk_recognition_msgs::BoundingBox> boxes;
       for (size_t i = 0; i < msg->boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
+        if (isValidBoundingBox(box)) {
+          boxes.push_back(box);
+        }
+        else
+        {
+          ROS_WARN_THROTTLE(10, "Invalid size of bounding box is included and skipped: [%f, %f, %f]",
+            box.dimensions.x, box.dimensions.y, box.dimensions.z);
+        }
+      }
+      allocateCoords(boxes.size());
+      for (size_t i = 0; i < boxes.size(); i++) {
+        jsk_recognition_msgs::BoundingBox box = boxes[i];
         std::vector<ArrowPtr> coord = coords_objects_[i];
 
         Ogre::SceneNode* scene_node = coords_nodes_[i];
