@@ -125,7 +125,8 @@ protected:
           box_msg.dimensions.z < 1.0e-9 ||
           std::isnan(box_msg.dimensions.x) ||
           std::isnan(box_msg.dimensions.y) ||
-          std::isnan(box_msg.dimensions.z)) {
+          std::isnan(box_msg.dimensions.z) ||
+          box_msg.header.frame_id.empty()) {
         return false;
       }
       return true;
