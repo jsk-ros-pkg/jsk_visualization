@@ -398,7 +398,7 @@ void OverlayCameraDisplay::update( float wall_dt, float ros_dt )
   if (!overlay_) {
     static int count = 0;
     rviz::UniformStringStream ss;
-    ss << "OverlayImageDisplayObject" << count++;
+    ss << "OverlayCameraImageDisplayObject" << count++;
     overlay_.reset(new OverlayObject(ss.str()));
     overlay_->show();
   }
