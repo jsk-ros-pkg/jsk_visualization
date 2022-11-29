@@ -1,15 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_interactive_marker)
 
-add_compile_options(-std=c++11)
+if("$ENV{ROS_DISTRO}" STRGREATER "melodic")
+  add_compile_options(-std=c++14)
+else()
+  add_compile_options(-std=c++11)
+endif()
 
 # Use ccache if installed to make it fast to generate object files
-find_program(CCACHE_FOUND ccache)
-if(CCACHE_FOUND)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-endif(CCACHE_FOUND)
-
+if (CMAKE_VERSION VERSION_LESS 3.4)
+  find_program(CCACHE_FOUND ccache)
+  if(CCACHE_FOUND)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+  endif(CCACHE_FOUND)
+endif()
 
 if($ENV{ROS_DISTRO} STREQUAL "groovy")
   set(PCL_MSGS pcl)
@@ -29,7 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
   ${PCL_MSGS}
   jsk_topic_tools
   rviz
-  roseus)
+  )
 message("jsk_recognition_msgs : ${jsk_recognition_msgs_VERSION}")
 message("jsk_footstep_msgs    : ${jsk_footstep_msgs_VERSION}")
 find_package(orocos_kdl REQUIRED)
@@ -107,7 +112,7 @@ target_link_libraries(interactive_marker_interface ${catkin_LIBRARIES} ${orocos_
 add_dependencies(interactive_marker_interface ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 add_executable(camera_info_publisher src/camera_info_publisher.cpp src/interactive_marker_utils.cpp)
-target_link_libraries(camera_info_publisher ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
+target_link_libraries(camera_info_publisher ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker yaml-cpp)
 add_dependencies(camera_info_publisher ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
 add_executable(urdf_model_marker src/urdf_model_marker.cpp src/urdf_model_marker_main.cpp src/interactive_marker_utils.cpp)

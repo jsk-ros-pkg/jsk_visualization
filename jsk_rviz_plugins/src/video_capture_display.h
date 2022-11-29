@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -41,6 +41,7 @@
 #include <rviz/properties/string_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
 #include <opencv2/opencv.hpp>
 
 #include <ros/ros.h>
@@ -73,9 +74,15 @@ namespace jsk_rviz_plugins
     rviz::StringProperty* file_name_property_;
     rviz::BoolProperty* start_capture_property_;
     rviz::FloatProperty* fps_property_;
+    rviz::BoolProperty* use_3d_viewer_size_property_;
+    rviz::IntProperty* width_property_;
+    rviz::IntProperty* height_property_;
     std::string file_name_;
     bool capturing_;
     double fps_;
+    bool use_3d_viewer_size_;
+    int width_;
+    int height_;
     int frame_counter_;
     bool first_time_;
     cv::VideoWriter writer_;
@@ -83,6 +90,9 @@ namespace jsk_rviz_plugins
     void updateFileName();
     void updateStartCapture();
     void updateFps();
+    void updateUse3DViewerSize();
+    void updateWidth();
+    void updateHeight();
   private:
     
   };

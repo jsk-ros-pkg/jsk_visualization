@@ -1,0 +1,14 @@
+<launch>
+
+  <arg name="gui" default="true" />
+
+  <node name="piechart_sample"
+        pkg="jsk_rviz_plugins" type="piechart_sample.py" />
+
+  <group if="$(arg gui)" >
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find jsk_rviz_plugins)/config/linear_gauge_sample.rviz" />
+  </group>
+
+</launch>

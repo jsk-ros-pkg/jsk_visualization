@@ -4,7 +4,9 @@
 # http://ros.org/doc/groovy/api/catkin/html/user_guide/supposed.html
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_rviz_plugins)
-if("$ENV{ROS_DISTRO}" STRGREATER "indigo")
+if("$ENV{ROS_DISTRO}" STRGREATER "melodic")
+  add_compile_options(-std=c++14)
+else()
   add_compile_options(-std=c++11)
 endif()
 # Load catkin and all dependencies required for this package
@@ -18,14 +20,17 @@ find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk
   geometry_msgs
   dynamic_reconfigure
   jsk_recognition_msgs
-  jsk_gui_msgs)
+  jsk_gui_msgs
+  message_filters)
 
 # Use ccache if installed to make it fast to generate object files
-find_program(CCACHE_FOUND ccache)
-if(CCACHE_FOUND)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-endif(CCACHE_FOUND)
+if (CMAKE_VERSION VERSION_LESS 3.4)
+  find_program(CCACHE_FOUND ccache)
+  if(CCACHE_FOUND)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+  endif(CCACHE_FOUND)
+endif()
 
 add_message_files(FILES
   OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg ObjectFitCommand.msg
@@ -86,6 +91,7 @@ set(HEADER_FILES
   src/overlay_camera_display.h
   src/plotter_2d_display.h
   src/pie_chart_display.h
+  src/linear_gauge_display.h
   src/diagnostics_display.h
   src/quiet_interactive_marker_display.h
   src/bounding_box_display.h
@@ -107,12 +113,15 @@ set(HEADER_FILES
   src/view_controller/tablet_view_controller.h
   src/tablet_controller_panel.h
   src/video_capture_display.h
+  src/rviz_scene_publisher.h
   src/twist_stamped_display.h
   src/pose_array_display.h
   src/tf_trajectory_display.h
   src/yes_no_button_interface.h
   src/segment_array_display.h
   src/image_transport_hints_property.h
+  src/string_display.h
+  src/human_skeleton_array_display.h
 )
 
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -138,6 +147,7 @@ set(SOURCE_FILES
   src/overlay_camera_display.cpp
   src/plotter_2d_display.cpp
   src/pie_chart_display.cpp
+  src/linear_gauge_display.cpp
   src/diagnostics_display.cpp
   src/bounding_box_display.cpp
   src/bounding_box_array_display.cpp
@@ -162,14 +172,23 @@ set(SOURCE_FILES
   src/view_controller/tablet_view_controller.cpp
   src/tablet_controller_panel.cpp
   src/video_capture_display.cpp
+  src/rviz_scene_publisher.cpp
   src/twist_stamped_display.cpp
   src/pose_array_display.cpp
   src/tf_trajectory_display.cpp
   src/yes_no_button_interface.cpp
   src/segment_array_display.cpp
   src/image_transport_hints_property.cpp
+  src/string_display.cpp
+  src/human_skeleton_array_display.cpp
   ${MOC_FILES}
 )
+if(jsk_recognition_msgs_VERSION VERSION_LESS 1.2.15)
+  message(WARNING "jsk_recognition_msgs ${jsk_recognition_msgs_VERSION} < 1.2.15 does not support human_skeleton_array_display.cpp")
+  list(REMOVE_ITEM HEADER_FILES src/human_skeleton_array_display.h)
+  list(REMOVE_ITEM SOURCE_FILES src/human_skeleton_array_display.cpp)
+  list(REMOVE_ITEM SOURCE_FILES  ${PROJECT_BINARY_DIR}/src/moc_human_skeleton_array_display.cxx)
+endif()
 
 add_library(jsk_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -184,7 +203,8 @@ add_dependencies(jsk_rviz_plugins
   jsk_recognition_msgs_generate_messages_cpp
   people_msgs_generate_messages_cpp
   view_controller_msgs_generate_messages_cpp
-  ${PROJECT_NAME}_generate_messages_cpp)
+  ${PROJECT_NAME}_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS})
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set_target_properties(jsk_rviz_plugins PROPERTIES LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")
@@ -222,3 +242,25 @@ install(DIRECTORY src/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
 )
+
+if (CATKIN_ENABLE_TESTING)
+  # download and install sample data
+  add_custom_target(${PROJECT_NAME}_install_sample_data COMMAND python$ENV{ROS_PYTHON_VERSION} ${PROJECT_SOURCE_DIR}/test/install_sample_data.py)
+  add_dependencies(tests ${PROJECT_NAME}_install_sample_data)
+  # run rostest for melodic+
+  find_package(rostest REQUIRED)
+  if("$ENV{ROS_DISTRO}" STRGREATER "indigo") # support from kinetic
+    file(GLOB TEST_FILES test/*.test test/*.xml)
+    foreach(TEST_FILE ${TEST_FILES})
+      # if we failed to install sample data, skip testing face_detect and normal
+      if((NOT EXISTS "${PROJECT_SOURCE_DIR}/test/data/2017-06-20-12-00-00_people_images_in_lab.bag") AND
+	  ((${TEST_FILE} STREQUAL "${PROJECT_SOURCE_DIR}/test/face_detector.xml") OR
+	    (${TEST_FILE} STREQUAL "${PROJECT_SOURCE_DIR}/test/normal.xml")))
+	message(STATUS "Skip test for ${TEST_FILE} due to missing bag file")
+	continue()
+      endif()
+      message(STATUS "Run test for ${TEST_FILE}")
+      add_rostest(${TEST_FILE})
+    endforeach()
+  endif()
+endif()

@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the Willow Garage nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -43,6 +43,7 @@
 #include "jsk_interactive_marker/interactive_marker_helpers.h"
 #include <dynamic_reconfigure/server.h>
 #include "jsk_interactive_marker/CameraInfoPublisherConfig.h"
+#include <yaml-cpp/yaml.h>
 
 namespace jsk_interactive_marker
 {
@@ -87,6 +88,8 @@ namespace jsk_interactive_marker
     double width_;
     double height_;
     double f_;
+    std::string yaml_filename_;
+    YAML::Node camera_info_yaml_;
     geometry_msgs::Pose latest_pose_;
     
   private:

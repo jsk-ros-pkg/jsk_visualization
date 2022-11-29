@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -34,6 +34,10 @@
  *********************************************************************/
 
 #include "video_capture_display.h"
+#if CV_MAJOR_VERSION >= 4
+#include <opencv2/videoio/legacy/constants_c.h>
+#include <opencv2/imgproc/types_c.h>
+#endif
 #include <rviz/display_context.h>
 #include <rviz/view_manager.h>
 #include <rviz/display_group.h>
@@ -61,18 +65,34 @@ namespace jsk_rviz_plugins
       "fps", 30.0,
       "fps", this, SLOT(updateFps()));
     fps_property_->setMin(0.1);
+    use_3d_viewer_size_property_ = new rviz::BoolProperty(
+      "use 3D viewer size", true,
+      "Use width and height of 3D viewer for output video or set them manually",
+      this, SLOT(updateUse3DViewerSize()));
+    width_property_ = new rviz::IntProperty(
+      "width", 1920,
+      "Width of video in pixels", this, SLOT(updateWidth()));
+    height_property_ = new rviz::IntProperty(
+      "height", 1080,
+      "Height of video in pixels", this, SLOT(updateHeight()));
   }
 
   VideoCaptureDisplay::~VideoCaptureDisplay()
   {
     delete start_capture_property_;
     delete file_name_property_;
+    delete use_3d_viewer_size_property_;
+    delete width_property_;
+    delete height_property_;
   }
 
   void VideoCaptureDisplay::onInitialize()
   {
     updateFileName();
     updateFps();
+    updateUse3DViewerSize();
+    updateWidth();
+    updateHeight();
     //updateStartCapture();
     start_capture_property_->setBool(false); // always false when starting up
     context_->queueRender();
@@ -145,15 +165,45 @@ namespace jsk_rviz_plugins
   {
     fps_ = fps_property_->getFloat();
   }
-  
+
+  void VideoCaptureDisplay::updateUse3DViewerSize()
+  {
+    if (use_3d_viewer_size_ && !use_3d_viewer_size_property_->getBool()) {
+      updateWidth();
+      updateHeight();
+    }
+
+    use_3d_viewer_size_ = use_3d_viewer_size_property_->getBool();
+    if (use_3d_viewer_size_) {
+      width_property_->hide();
+      height_property_->hide();
+    }
+    else {
+      width_property_->show();
+      height_property_->show();
+    }
+  }
+
+  void VideoCaptureDisplay::updateWidth()
+  {
+    width_ = width_property_->getInt();
+  }
+
+  void VideoCaptureDisplay::updateHeight()
+  {
+    height_ = height_property_->getInt();
+  }
+
   void VideoCaptureDisplay::startCapture()
   {
     ROS_INFO("start capturing");
     frame_counter_ = 0;
-    rviz::RenderPanel* panel = context_->getViewManager()->getRenderPanel();
-    int width = panel->width();
-    int height = panel->height();
-    writer_.open(file_name_, CV_FOURCC_DEFAULT, fps_, cv::Size(width, height));
+    if (use_3d_viewer_size_) {
+      rviz::RenderPanel* panel = context_->getViewManager()->getRenderPanel();
+      width_ = panel->width();
+      height_ = panel->height();
+    }
+    writer_.open(file_name_, CV_FOURCC_DEFAULT, fps_, cv::Size(width_, height_));
   }
   
   void VideoCaptureDisplay::stopCapture()
@@ -183,6 +233,9 @@ namespace jsk_rviz_plugins
       QImage src = screenshot.toImage().convertToFormat(QImage::Format_RGB888);  // RGB
       cv::Mat image(src.height(), src.width(), CV_8UC3,
                     (uchar*)src.bits(), src.bytesPerLine());  // RGB
+      if (image.size().width != width_ || image.size().height != height_) {
+        cv::resize(image, image, cv::Size(width_, height_), 0, 0, cv::INTER_LINEAR);
+      }
       cv::cvtColor(image, image, CV_RGB2BGR);  // RGB -> BGR
       writer_ << image;
       ++frame_counter_;

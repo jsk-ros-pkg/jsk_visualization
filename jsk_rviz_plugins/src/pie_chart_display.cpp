@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -111,6 +111,27 @@ namespace jsk_rviz_plugins
                                 "only used if auto color change is set to True.",
                                 this, SLOT(updateMaxColor()));
 
+    med_color_property_
+      = new rviz::ColorProperty("med color",
+                                QColor(255, 0, 0),
+                                "only used if auto color change is set to True.",
+                                this, SLOT(updateMedColor()));
+
+    max_color_threshold_property_
+      = new rviz::FloatProperty("max color change threthold", 0,
+                                  "change the max color at threshold",
+                                  this, SLOT(updateMaxColorThreshold()));
+   
+    med_color_threshold_property_
+      = new rviz::FloatProperty("med color change threthold", 0,
+                                  "change the med color at threshold ",
+                                  this, SLOT(updateMedColorThreshold()));
+    
+    clockwise_rotate_property_
+      = new rviz::BoolProperty("clockwise rotate direction",
+                               false,
+                               "change the rotate direction",
+                               this, SLOT(updateClockwiseRotate()));
   }
 
   PieChartDisplay::~PieChartDisplay()
@@ -129,6 +150,8 @@ namespace jsk_rviz_plugins
     delete size_property_;
     delete min_value_property_;
     delete max_value_property_;
+    delete max_color_property_;
+    delete med_color_property_;
     delete text_size_property_;
     delete show_caption_property_;
   }
@@ -154,6 +177,10 @@ namespace jsk_rviz_plugins
     updateShowCaption();
     updateAutoColorChange();
     updateMaxColor();
+    updateMedColor();
+    updateMaxColorThreshold();
+    updateMedColorThreshold();
+    updateClockwiseRotate();
     overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
     overlay_->hide();
   }
@@ -163,10 +190,10 @@ namespace jsk_rviz_plugins
     if (update_required_) {
       update_required_ = false;
       overlay_->updateTextureSize(texture_size_, texture_size_ + caption_offset_);
-      drawPlot(data_);
       overlay_->setPosition(left_, top_);
       overlay_->setDimensions(overlay_->getTextureWidth(),
                               overlay_->getTextureHeight());
+      drawPlot(data_);
     }
   }
   
@@ -199,6 +226,20 @@ namespace jsk_rviz_plugins
                           + fg_color_.green());
         fg_color.setBlue((max_color_.blue() - fg_color_.blue()) * r2
                          + fg_color_.blue());
+      }
+      if (max_color_threshold_ != 0) {
+        if (r > max_color_threshold_) {
+        fg_color.setRed(max_color_.red());
+        fg_color.setGreen(max_color_.green());
+        fg_color.setBlue(max_color_.blue());
+        }
+      }
+      if (med_color_threshold_ != 0) {
+        if (max_color_threshold_ > r and r > med_color_threshold_ ) {
+        fg_color.setRed(med_color_.red());
+        fg_color.setGreen(med_color_.green());
+        fg_color.setBlue(med_color_.blue());
+        }
       }
     }
 
@@ -236,7 +277,8 @@ namespace jsk_rviz_plugins
                           height - value_aabb_offset * 2 - caption_offset_);
 
       const double ratio = (val - min_value_) / (max_value_ - min_value_);
-      const double ratio_angle = ratio * 360.0;
+      const double rotate_direction = clockwise_rotate_ ? -1.0 : 1.0;
+      const double ratio_angle = ratio * 360.0 * rotate_direction;
       const double start_angle_offset = -90;
       painter.setPen(QPen(fg_color, value_line_width, Qt::SolidLine));
       painter.drawArc(QRectF(value_aabb_offset, value_aabb_offset,
@@ -301,52 +343,69 @@ namespace jsk_rviz_plugins
   {
     boost::mutex::scoped_lock lock(mutex_);
     texture_size_ = size_property_->getInt();
+    update_required_ = true;
   }
   
   void PieChartDisplay::updateTop()
   {
     top_ = top_property_->getInt();
+    update_required_ = true;
   }
   
   void PieChartDisplay::updateLeft()
   {
     left_ = left_property_->getInt();
+    update_required_ = true;
   }
   
   void PieChartDisplay::updateBGColor()
   {
     bg_color_ = bg_color_property_->getColor();
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateFGColor()
   {
     fg_color_ = fg_color_property_->getColor();
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateFGAlpha()
   {
     fg_alpha_ = fg_alpha_property_->getFloat() * 255.0;
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateFGAlpha2()
   {
     fg_alpha2_ = fg_alpha2_property_->getFloat() * 255.0;
+    update_required_ = true;
+
   }
 
   
   void PieChartDisplay::updateBGAlpha()
   {
     bg_alpha_ = bg_alpha_property_->getFloat() * 255.0;
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateMinValue()
   {
     min_value_ = min_value_property_->getFloat();
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateMaxValue()
   {
     max_value_ = max_value_property_->getFloat();
+    update_required_ = true;
+
   }
   
   void PieChartDisplay::updateTextSize()
@@ -356,12 +415,15 @@ namespace jsk_rviz_plugins
     QFont font;
     font.setPointSize(text_size_);
     caption_offset_ = QFontMetrics(font).height();
-    
+    update_required_ = true;
+
   }
   
   void PieChartDisplay::updateShowCaption()
   {
     show_caption_ = show_caption_property_->getBool();
+    update_required_ = true;
+
   }
 
   
@@ -376,18 +438,54 @@ namespace jsk_rviz_plugins
     auto_color_change_ = auto_color_change_property_->getBool();
     if (auto_color_change_) {
       max_color_property_->show();
+      med_color_property_->show();
+      max_color_threshold_property_->show();
+      med_color_threshold_property_->show();
     }
     else {
       max_color_property_->hide();
+      med_color_property_->hide();
+      max_color_threshold_property_->hide();
+      med_color_threshold_property_->hide();
     }
+    update_required_ = true;
+
   }
 
   void PieChartDisplay::updateMaxColor()
   {
     max_color_ = max_color_property_->getColor();
+    update_required_ = true;
+
   }
 
-  bool PieChartDisplay::isInRegion(int x, int y)
+  void PieChartDisplay::updateMedColor()
+  {
+    med_color_ = med_color_property_->getColor();
+    update_required_ = true;
+
+  }
+
+  void PieChartDisplay::updateMaxColorThreshold()
+  {
+    max_color_threshold_ = max_color_threshold_property_->getFloat();
+    update_required_ = true;
+  }
+
+  void PieChartDisplay::updateMedColorThreshold()
+  {
+    med_color_threshold_ = med_color_threshold_property_->getFloat();
+    update_required_ = true;
+  }
+
+  void PieChartDisplay::updateClockwiseRotate()
+  {
+    clockwise_rotate_ = clockwise_rotate_property_->getBool();
+    update_required_ = true;
+
+  }
+
+   bool PieChartDisplay::isInRegion(int x, int y)
   {
     return (top_ < y && top_ + texture_size_ > y &&
             left_ < x && left_ + texture_size_ > x);

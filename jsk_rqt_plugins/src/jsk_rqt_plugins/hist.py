@@ -5,7 +5,12 @@ import collections
 import os
 import sys
 
-from cStringIO import StringIO
+# https://stackoverflow.com/questions/11914472/stringio-in-python3
+# https://stackoverflow.com/questions/50797043/string-argument-expected-got-bytes-in-buffer-write
+try:
+    from cStringIO import StringIO ## for Python 2
+except ImportError:
+    from io import BytesIO as StringIO ## for Python 3
 import cv2
 from cv_bridge import CvBridge
 from distutils.version import LooseVersion

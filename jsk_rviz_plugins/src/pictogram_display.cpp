@@ -12,7 +12,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -61,10 +61,8 @@ namespace jsk_rviz_plugins
     if (id == -1) {
       ROS_WARN("failed to load font");
     }
-    else {
-      return id;
-    }
-  }  
+    return id;
+  }
   
   bool epsEqual(double a, double b)
   {
@@ -92,7 +90,7 @@ namespace jsk_rviz_plugins
       return QFont("Entypo");
     }
     else {
-      return QFont("FontAwesome");
+      return QFont("Font Awesome 5 Free");
     }
   }
   
@@ -406,7 +404,7 @@ namespace jsk_rviz_plugins
 
   void PictogramDisplay::processMessage(const jsk_rviz_plugins::Pictogram::ConstPtr& msg)
   {
-    boost::mutex::scoped_lock (mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
 
     pictogram_->setEnable(isEnabled());
     if (!isEnabled()) {
@@ -437,7 +435,7 @@ namespace jsk_rviz_plugins
 
   void PictogramDisplay::update(float wall_dt, float ros_dt)
   {
-    boost::mutex::scoped_lock (mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
     if (pictogram_) {
       pictogram_->update(wall_dt, ros_dt);
     }

@@ -3,13 +3,20 @@
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "moveit_msgs")
 
-(defun angle-vector-to-display-robot-state (robot rootlink-coords &key (global-frame "odom"))
+(defun angle-vector-to-display-robot-state (robot rootlink-coords &key (virtual-world-joint-name "world_joint") (global-frame "odom"))
   (let ((msg (instance moveit_msgs::DisplayRobotState :init)))
     (send msg :state :joint_state :name (send-all (send robot :joint-list) :name))
-    (send msg :state :joint_state :position (mapcar #'deg2rad (coerce (send robot :angle-vector) cons)))
+    (send msg :state :joint_state :position
+          (mapcar
+            '(lambda (joint)
+               (if (derivedp joint rotational-joint)
+                   (deg2rad (send joint :joint-angle))
+                 (* 0.001 (send joint :joint-angle)))
+               )
+            (send robot :joint-list)))
     (send msg :state :multi_dof_joint_state :header :frame_id global-frame)
+    (send msg :state :multi_dof_joint_state :joint_names (list virtual-world-joint-name))
     (send msg :state :multi_dof_joint_state :transforms (list (instance geometry_msgs::transform :init)))
-    (send msg :state :multi_dof_joint_state :joint_names (list "world_joint"))
     (send (car (send msg :state :multi_dof_joint_state :transforms)) :translation
           (ros::pos->tf-translation (send rootlink-coords :worldpos)))
     (send (car (send msg :state :multi_dof_joint_state :transforms)) :rotation

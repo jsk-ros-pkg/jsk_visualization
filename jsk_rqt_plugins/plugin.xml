@@ -136,4 +136,17 @@
       <statustip>A plugin to wait for user input.</statustip>
     </qtgui>
   </class>
+  <class name="ServiceTabbedButtons"
+         type="jsk_rqt_plugins.tabbed_button.ServiceTabbedButtons"
+         base_class_type="rqt_gui_py::Plugin">
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>ServiceTabbedButton</label>
+      <icon type="theme">utilities-system-monitor</icon>
+    </qtgui>
+  </class>
 </library>

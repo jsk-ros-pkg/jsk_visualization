@@ -2,6 +2,63 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.8 (2022-01-11)
+------------------
+* [jsk_interactive_markers][jsk_rqt_plugins] fix yaml load (`#818 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/818>`_)
+* fix with '2to3 -w -f zip .' (`#817 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/817>`_)
+
+  * In python3, sys.maxint changed to sys.maxsize
+  * fix "TypeError: 'dict_keys' object is not subscriptable" error
+    we can fix this by '2to3 -w -f dict', but it will change too many lines, so we do not use this for now....
+  * fix with '2to3 -w -f import .'
+  * fix cStringIO.StringIO -> io.BytesIO, see https://stackoverflow.com/questions/11914472/stringio-in-python3 / https://stackoverflow.com/questions/50797043/string-argument-expected-got-bytes-in-buffer-write
+  * [jsk_rqt_plugins][jsk_rviz_plugins] Fix has_key
+
+* add tabbed_buttuns to rqt_plugin (`#813 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/813>`_)
+* update .travis to 0.5.21 (`#814 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/814>`_)
+* Updating the URLs of the jsk_rviz_plugins and jsk_rqt_plugins so the generated README points to working links (closes #805 ). (`#806 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/806>`_)
+* Support single button setup in ServiceButtons plugin (`#798 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/798>`_)
+
+  * `*column_indices` expects to be an array of integers and the length
+  should be equal or longer than 2.
+  * If column_indices is just an array of a single integer (length is
+  1), do not apply sum with expanding a list argument.
+
+* fix for using button_general.py without perspective file (`#796 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/796>`_)
+* [jsk_rqt_plugins/button_general.py] reset button if SetBool fail (`#794 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/794>`_)
+* sample_service_button.py support SetBool (`#792 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/792>`_)
+* add sample_service_radio_buttons script (`#789 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/789>`_)
+* add sample_service_buttons scriptf (`#790 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/790>`_)
+* add sample_service_buttons.launch (`#791 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/791>`_)
+
+* Contributors: Adi Vardi, Kei Okada, Naoki Hiraoka, Ryohei Ueda, Sam Pfeiffer, Shingo Kitagawa, Yohei Kakiuchi
+
+2.1.7 (2020-10-17)
+------------------
+* add noetic test (`#774 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/774>`_)
+
+  * run 2to3 -f except
+  * support noetic, conver to package format 3
+
+* Contributors: Kei Okada
+
+2.1.6 (2020-04-13)
+------------------
+* fix test failure in jsk_rqt_plugins (`#766 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/766>`_)
+
+  * disable jsk_rqt_plugins test in indigo
+    this is because indigo does not support matplotlib
+    liner_model.RANSACRegressor.
+
+* [jsk_rqt_plugins] load rosparam correctly in button_general.py (`#746 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/746>`_)
+* Replace image_pipeline with image_publisher (`#729 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/729>`_)
+
+  * Replace image_pipeline with image_publisher
+    * image_pipeline is a meta package and normal ros packages are not
+    intended to depend on meta packages.
+
+* Contributors: Ryohei Ueda, Shingo Kitagawa
+
 2.1.5 (2019-02-18)
 ------------------
 

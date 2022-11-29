@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the Willow Garage nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -60,9 +60,8 @@ public:
     pnh.param("object_g", object_g_, 1.0);
     pnh.param("object_b", object_b_, 1.0);
     pnh.param("object_a", object_a_, 1.0);
-    std::string frame_id;
-    pnh.param("frame_id", frame_id, std::string("/map"));
-    latest_pose_.header.frame_id = frame_id;
+    pnh.param("frame_id", frame_id_, std::string("/map"));
+    latest_pose_.header.frame_id = frame_id_;
     double initial_x, initial_y, initial_z;
     pnh.param("initial_x", initial_x, 0.0);
     pnh.param("initial_y", initial_y, 0.0);
@@ -89,6 +88,7 @@ public:
     }
     if (publish_tf_) {
       tf_broadcaster_.reset(new tf::TransformBroadcaster);
+      tf_listener_.reset(new tf::TransformListener);
     }
     
     pose_pub_ = pnh.advertise<geometry_msgs::PoseStamped>("pose", 1);
@@ -279,7 +279,21 @@ protected:
     geometry_msgs::PoseStamped pose;
     pose.header = feedback->header;
     pose.pose = feedback->pose;
-    latest_pose_ = pose;
+
+    if (publish_tf_) {
+      // feedback->header.frame_id equals to fixed frame of rviz.
+      // Pose should be transformed respect to frame_id_ to publish correct tf frames.
+      try {
+        tf_listener_->transformPose(frame_id_, pose, latest_pose_);
+      }
+      catch (tf2::TransformException& e) {
+        ROS_ERROR_STREAM("Failed to transform " << pose.header.frame_id << " to " << frame_id_ << ": " << e.what());
+        return;
+      }
+    }
+    else {
+      latest_pose_ = pose;
+    }
     if (!publish_pose_periodically_) {
       pose_pub_.publish(pose);
     }
@@ -328,6 +342,7 @@ protected:
   double object_g_;
   double object_b_;
   double object_a_;
+  std::string frame_id_;
   double line_width_;
   double int_marker_scale_;
   std::string mesh_file_;
@@ -338,6 +353,7 @@ protected:
   ros::Timer timer_pose_;
   ros::Timer timer_tf_;
   std::shared_ptr<tf::TransformBroadcaster> tf_broadcaster_;
+  std::shared_ptr<tf::TransformListener> tf_listener_;
   boost::mutex mutex_;
   interactive_markers::MenuHandler::EntryHandle circle_menu_entry_;
   geometry_msgs::PoseStamped latest_pose_;

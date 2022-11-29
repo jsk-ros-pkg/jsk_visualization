@@ -12,7 +12,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the Willow Garage nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -57,7 +57,6 @@ void publishClickedBox(jsk_recognition_msgs::Int32Stamped& msg)
 
 void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
-  boost::mutex::scoped_lock(mutex);
   // control_name is "sec nsec index"
   if (feedback->event_type == visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN) {
     std::string control_name = feedback->control_name;
@@ -82,7 +81,6 @@ bool indexRequest(jsk_interactive_marker::IndexRequest::Request  &req,
 
 void boxCallback(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
 {
-  boost::mutex::scoped_lock(mutex);
   box_msg = msg;
   server->clear();
   // create cube markers

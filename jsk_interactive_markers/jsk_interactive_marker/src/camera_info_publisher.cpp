@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the Willow Garage nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -46,6 +46,13 @@ namespace jsk_interactive_marker
     latest_pose_.orientation.w = 1.0;
     tf_listener_.reset(new tf::TransformListener());
     pub_camera_info_ = pnh.advertise<sensor_msgs::CameraInfo>("camera_info", 1);
+    if (!pnh.getParam("yaml_filename", yaml_filename_)) {
+      yaml_filename_ = "";
+      ROS_WARN("~yaml_fliename is not specified, use default camera info parameters");
+    }
+    else {
+      camera_info_yaml_ = YAML::LoadFile(yaml_filename_);
+    }
 
     // setup dynamic reconfigure
     srv_ = std::make_shared <dynamic_reconfigure::Server<Config> > (pnh);
@@ -150,20 +157,42 @@ namespace jsk_interactive_marker
     sensor_msgs::CameraInfo camera_info;
     camera_info.header.stamp = stamp;
     camera_info.header.frame_id = frame_id_;
-    camera_info.height = height_;
-    camera_info.width = width_;
-    camera_info.distortion_model = sensor_msgs::distortion_models::PLUMB_BOB;
-    camera_info.D.resize(5, 0);
-    camera_info.K.assign(0.0);
-    camera_info.R.assign(0.0);
-    camera_info.P.assign(0.0);
-    camera_info.K[0] = camera_info.K[4] = f_;
-    
-    camera_info.K[0] = camera_info.P[0] = camera_info.K[4] = camera_info.P[5] = f_;
-    camera_info.K[2] = camera_info.P[2] = width_ / 2.0;
-    camera_info.K[5] = camera_info.P[6] = height_ / 2.0;
-    camera_info.K[8] = camera_info.P[10] = 1.0;
-    camera_info.R[0] = camera_info.R[4] = camera_info.R[8] = 1.0;
+    if (yaml_filename_ != "") {
+      camera_info.height = camera_info_yaml_["image_height"].as<uint32_t>();
+      camera_info.width = camera_info_yaml_["image_width"].as<uint32_t>();
+      camera_info.distortion_model =
+        camera_info_yaml_["camera_model"].as<std::string>();
+      std::vector<double> D, K, R, P;
+      boost::array<double, 9ul> Kl, Rl;
+      boost::array<double, 12ul> Pl;
+      D = camera_info_yaml_["distortion_coefficients"]["data"].as<std::vector<double>>();
+      K = camera_info_yaml_["camera_matrix"]["data"].as<std::vector<double>>();
+      std::memcpy(&Kl[0], &K[0], sizeof(double)*9);
+      R = camera_info_yaml_["rectification_matrix"]["data"].as<std::vector<double>>();
+      std::memcpy(&Rl[0], &R[0], sizeof(double)*9);
+      P = camera_info_yaml_["projection_matrix"]["data"].as<std::vector<double>>();
+      std::memcpy(&Pl[0], &P[0], sizeof(double)*12);
+      camera_info.D = D;
+      camera_info.K = Kl;
+      camera_info.R = Rl;
+      camera_info.P = Pl;
+    }
+    else {
+      camera_info.height = height_;
+      camera_info.width = width_;
+      camera_info.distortion_model = sensor_msgs::distortion_models::PLUMB_BOB;
+      camera_info.D.resize(5, 0);
+      camera_info.K.assign(0.0);
+      camera_info.R.assign(0.0);
+      camera_info.P.assign(0.0);
+      camera_info.K[0] = camera_info.K[4] = f_;
+
+      camera_info.K[0] = camera_info.P[0] = camera_info.K[4] = camera_info.P[5] = f_;
+      camera_info.K[2] = camera_info.P[2] = width_ / 2.0;
+      camera_info.K[5] = camera_info.P[6] = height_ / 2.0;
+      camera_info.K[8] = camera_info.P[10] = 1.0;
+      camera_info.R[0] = camera_info.R[4] = camera_info.R[8] = 1.0;
+    }
     pub_camera_info_.publish(camera_info);
     static tf::TransformBroadcaster br;
     tf::Transform transform;

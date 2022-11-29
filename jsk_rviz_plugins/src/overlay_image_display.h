@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -71,7 +71,7 @@ namespace jsk_rviz_plugins
     virtual void setPosition(int x, int y);
     virtual int getX() { return left_; };
     virtual int getY() { return top_; };
-    
+
   protected:
     boost::mutex mutex_;
     OverlayObject::Ptr overlay_;
@@ -83,6 +83,7 @@ namespace jsk_rviz_plugins
     rviz::IntProperty* left_property_;
     rviz::IntProperty* top_property_;
     rviz::FloatProperty* alpha_property_;
+    rviz::BoolProperty* overwrite_alpha_property_;
     int width_, height_, left_, top_;
     double alpha_;
 #if ROS_VERSION_MINIMUM(1,12,0)
@@ -95,6 +96,7 @@ namespace jsk_rviz_plugins
     bool is_msg_available_;
     bool require_update_;
     bool keep_aspect_ratio_;
+    bool overwrite_alpha_;
 
     virtual void redraw();
     virtual void onInitialize();
@@ -113,9 +115,9 @@ namespace jsk_rviz_plugins
     void updateTop();
     void updateAlpha();
     void updateKeepAspectRatio();
+    void updateOverwriteAlpha();
   };
 
 }
 
 #endif
-

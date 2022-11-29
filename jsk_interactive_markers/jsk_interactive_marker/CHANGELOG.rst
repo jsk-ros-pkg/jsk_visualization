@@ -2,6 +2,46 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.8 (2022-01-11)
+------------------
+* Resolve fixed frame of rviz (`#842 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/842>`_)
+
+  * frame_id\_ is std::string, so we need to use c_str() or ROS_ERROR_STREAM
+  * Resolve fixed frame of rviz
+    * The pose in callback function of interactive marker is represented
+    respect to fixed frame of rviz.
+    * In order to publish consistent tf transformation, the pose should be
+    transformed respect to the frame_id which is specified as ros
+    parameter.
+
+* Fix sample display robot state demo (`#838 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/838>`_)
+
+  * [jsk_interactive_marker] fix bugs
+  * [jsk_interactive_marker] change the robot of
+    sample_display_robot_state from JAXON to PR2
+
+* [jsk_interactive_markers][jsk_rqt_plugins] fix yaml load (`#818 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/818>`_)
+* Enable to publish camera info from yaml file (`#793 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/793>`_)
+
+* Contributors: Adi Vardi, Kei Okada, Koki Shinjo, Naoya Yamaguchi, Ryohei Ueda
+
+2.1.7 (2020-10-17)
+------------------
+
+* set property for ccache if cmake version < 3.4 (`#780 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/780>`_)
+* Remove meaningless lock (`#750 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/750>`_)
+* add noetic test (`#774 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/774>`_)
+
+  * run 2to3 -f print
+  * support noetic, use c++14, convert to package format 3
+
+* Contributors: Kei Okada, Ryohei Ueda, Yuki Furuta
+
+2.1.6 (2020-04-13)
+------------------
+* Remove unnecessary ROS_INFO (`#755 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/755>`_)
+* Contributors: Yuto Uchimi
+
 2.1.5 (2019-02-18)
 ------------------
 

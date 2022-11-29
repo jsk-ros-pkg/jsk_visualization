@@ -4,7 +4,12 @@ import argparse
 import os
 import sys
 
-from cStringIO import StringIO
+# https://stackoverflow.com/questions/11914472/stringio-in-python3
+# https://stackoverflow.com/questions/50797043/string-argument-expected-got-bytes-in-buffer-write
+try:
+    from cStringIO import StringIO ## for Python 2
+except ImportError:
+    from io import BytesIO as StringIO ## for Python 3
 import cv2
 from cv_bridge import CvBridge
 from distutils.version import LooseVersion
@@ -225,7 +230,7 @@ class Plot2DWidget(QWidget):
         self.enable_timer(not checked)
 
     def plot_one(self, msg, axes):
-        concatenated_data = zip(msg.xs, msg.ys)
+        concatenated_data = list(zip(msg.xs, msg.ys))
         if self.sort_x:
             concatenated_data.sort(key=lambda x: x[0])
         xs = [d[0] for d in concatenated_data]
@@ -269,7 +274,7 @@ class Plot2DWidget(QWidget):
             return
         try:
             data_x, data_y = self._rosdata.next()
-        except RosPlotException, e:
+        except RosPlotException as e:
             rospy.logerr("Exception in subscribing topic")
             rospy.logerr(e.message)
             return

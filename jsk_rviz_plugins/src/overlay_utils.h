@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -101,7 +101,7 @@ namespace jsk_rviz_plugins
     virtual void hide();
     virtual void show();
     virtual bool isTextureReady();
-    virtual bool updateTextureSize(unsigned int width, unsigned int height);
+    virtual void updateTextureSize(unsigned int width, unsigned int height);
     virtual ScopedPixelBuffer getBuffer();
     virtual void setPosition(double left, double top);
     virtual void setDimensions(double width, double height);

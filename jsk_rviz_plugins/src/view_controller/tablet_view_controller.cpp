@@ -405,7 +405,7 @@ void TabletViewController::handleMouseEvent(ViewportMouseEvent& event)
   }
   if (event.type == QEvent::MouseButtonPress
       || event.type == QEvent::MouseButtonRelease
-      || dragging_ && event.type == QEvent::MouseMove) {
+      || (dragging_ && event.type == QEvent::MouseMove)) {
     publishMouseEvent(event);
   }
   float distance = distance_property_->getFloat();

@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -38,6 +38,7 @@
 
 namespace jsk_rviz_plugins
 {
+  #define MAX_ELEMENTS_PER_LINE (65536 / 4) // from ros-visualization/rviz/src/rviz/ogre_helpers/billboard_line.cpp
   TFTrajectoryDisplay::TFTrajectoryDisplay()
     : Display()
   {
@@ -157,8 +158,9 @@ namespace jsk_rviz_plugins
       }
     }
     line_->clear();
-    line_->setNumLines(1);
-    line_->setMaxPointsPerLine(trajectory_.size());
+    // split into multiple lines if the trajectory size exceeds MAX_ELEMENTS_PER_LINE (https://github.com/ros-visualization/rviz/issues/1107)
+    line_->setNumLines(trajectory_.size() / MAX_ELEMENTS_PER_LINE + 1);
+    line_->setMaxPointsPerLine(trajectory_.size() > MAX_ELEMENTS_PER_LINE ? MAX_ELEMENTS_PER_LINE : trajectory_.size());
     line_->setLineWidth(line_width_);
     line_->setColor(color_.red() * 255.0, color_.green() * 255.0, color_.blue() * 255.0, 255.0);
     for (size_t i = 0; i < trajectory_.size(); i++) {

@@ -1,0 +1,14 @@
+<launch>
+
+  <arg name="gui" default="true" />
+
+  <node name="pictogram_sample"
+        pkg="jsk_rviz_plugins" type="pictogram_all.py" />
+
+  <group if="$(arg gui)" >
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find jsk_rviz_plugins)/config/pictogram_sample.rviz" />
+  </group>
+
+</launch>

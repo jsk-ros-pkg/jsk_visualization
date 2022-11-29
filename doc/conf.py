@@ -10,6 +10,8 @@ from recommonmark.parser import CommonMarkParser
 
 
 extensions = [
+    'recommonmark',
+    'sphinx_markdown_tables',
     'sphinx.ext.mathjax',
 ]
 
@@ -169,6 +171,8 @@ htmlhelp_basename = 'jsk_visualizationdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
+latex_engine = 'platex'
+latex_use_xindy = False
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
 #'papersize': 'letterpaper',
@@ -178,7 +182,6 @@ latex_elements = {
 
     # Additional stuff for the LaTeX preamble.
     'preamble': "".join((
-        '\usepackage[utf8]{inputenc}',
         # NO-BREAK SPACE
         '\DeclareUnicodeCharacter{00A0}{ }',
         # BOX DRAWINGS LIGHT VERTICAL AND RIGHT
@@ -195,7 +198,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'jsk_visualization.tex', u'jsk_visualization Documentation',
+  (master_doc, 'jsk_visualization.tex', u'jsk\_visualization Documentation',
    author, 'manual'),
 ]
 

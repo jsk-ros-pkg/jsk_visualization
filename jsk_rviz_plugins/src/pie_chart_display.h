@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -92,6 +92,10 @@ namespace jsk_rviz_plugins
     rviz::BoolProperty* show_caption_property_;
     rviz::BoolProperty* auto_color_change_property_;
     rviz::ColorProperty* max_color_property_;
+    rviz::ColorProperty* med_color_property_;
+    rviz::FloatProperty* max_color_threshold_property_;
+    rviz::FloatProperty* med_color_threshold_property_;
+    rviz::BoolProperty* clockwise_rotate_property_;
 
     ros::Subscriber sub_;
     int left_;
@@ -100,6 +104,7 @@ namespace jsk_rviz_plugins
     QColor fg_color_;
     QColor bg_color_;
     QColor max_color_;
+    QColor med_color_;
     int text_size_;
     bool show_caption_;
     bool auto_color_change_;
@@ -109,10 +114,13 @@ namespace jsk_rviz_plugins
     double bg_alpha_;
     double max_value_;
     double min_value_;
+    double max_color_threshold_;
+    double med_color_threshold_;
     float data_;
     bool update_required_;
     bool first_time_;
     OverlayObject::Ptr overlay_;
+    bool clockwise_rotate_;
     
     boost::mutex mutex_;
                        
@@ -132,6 +140,10 @@ namespace jsk_rviz_plugins
     void updateShowCaption();
     void updateAutoColorChange();
     void updateMaxColor();
+    void updateMedColor();
+    void updateMaxColorThreshold();
+    void updateMedColorThreshold();
+    void updateClockwiseRotate();
 
   private:
   };

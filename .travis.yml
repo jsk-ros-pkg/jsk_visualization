@@ -1,14 +1,22 @@
-language: c++
+sudo: true
+dist: bionic
+language: python
+addons:
+  apt:
+    packages:
+    - 2to3
 cache:
+  apt: true
+  pip: true
   directories:
     - $HOME/.ccache
     - $HOME/.cache/pip
+    - $HOME/apt-cacher-ng
+    - $HOME/.ros/data
 python:
   - "2.7"
 compiler:
   - gcc
-sudo: required
-dist: trusty
 services:
   - docker
 notifications:
@@ -23,18 +31,23 @@ env:
     - USE_TRAVIS=true
     - USE_DOCKER=true
   matrix:
-    - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
-    - ROS_DISTRO=indigo USE_DEB=true
-    - ROS_DISTRO=kinetic USE_DEB=true
+    - CHECK_PYTHON3_COMPILE=true
+    - ROS_DISTRO=indigo USE_DEB=true ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu' ROS_PYTHON_VERSION=2 NOT_TEST_INSTALL=true
+    - ROS_DISTRO=indigo USE_DEB=true ROS_PYTHON_VERSION=2 NOT_TEST_INSTALL=true
+    # FIXME: kinetic test fails because of matplotlib
+    # see: https://github.com/matplotlib/matplotlib/issues/9789
+    - ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --user matplotlib==2.2.5" USE_DEB=true
     - ROS_DISTRO=lunar   USE_DEB=true
     - ROS_DISTRO=melodic USE_DEB=true
+    - ROS_DISTRO=noetic  USE_DEB=false # to use .travis.rosinstall.noetic for face_detector
 matrix:
   allow_failures:
     - env: ROS_DISTRO=lunar   USE_DEB=true
 script:
+  - if [ "${CHECK_PYTHON3_COMPILE}" == "true" ]; then bash -c "ret=0; trap 'ret=1' ERR; python3 -m compileall .; 2to3 -w -f except -f execfile -f has_key -f import -f raw_input -f zip .; git diff --exit-code . :^.travis > /dev/null; echo Exitting with \$ret; exit \$ret"; exit $?; fi
   - source .travis/travis.sh
   # test building sphinx documentation
-  - which virtualenv 2>/dev/null || pip install --user virtualenv
+  - which virtualenv 2>/dev/null || pip3 install --user virtualenv
   - (cd $TRAVIS_BUILD_DIR/doc && source setup.sh && make html)
 after_success:
   # trigger build of jsk-docs.readthedocs.org

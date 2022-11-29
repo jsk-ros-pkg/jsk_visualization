@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -44,7 +44,12 @@
 #include <QPainter>
 
 #include <rviz/properties/ros_topic_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/bool_property.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/float_property.h>
 
+#include <std_msgs/ColorRGBA.h>
 #include <jsk_rviz_plugins/OverlayMenu.h>
 
 #include "overlay_utils.h"
@@ -66,16 +71,40 @@ namespace jsk_rviz_plugins
       OPENING,
       CLOSING,
     };
-    
+
+    // methods for OverlayPickerTool
+    virtual bool isInRegion(int x, int y);
+    virtual void movePosition(int x, int y);
+    virtual void setPosition(int x, int y);
+    virtual int getX() { return left_; };
+    virtual int getY() { return top_; };
+
   protected:
+    boost::mutex mutex_;
     OverlayObject::Ptr overlay_;
     ros::Subscriber sub_;
     rviz::RosTopicProperty* update_topic_property_;
+    rviz::IntProperty* left_property_;
+    rviz::IntProperty* top_property_;
+    rviz::BoolProperty* keep_centered_property_;
+    rviz::BoolProperty* overtake_fg_color_properties_property_;
+    rviz::BoolProperty* overtake_bg_color_properties_property_;
+    rviz::ColorProperty* bg_color_property_;
+    rviz::FloatProperty* bg_alpha_property_;
+    rviz::ColorProperty* fg_color_property_;
+    rviz::FloatProperty* fg_alpha_property_;
     AnimationState animation_state_;
     bool require_update_texture_;
+    bool keep_centered_;
+    int left_, top_;
     jsk_rviz_plugins::OverlayMenu::ConstPtr current_menu_;
     jsk_rviz_plugins::OverlayMenu::ConstPtr next_menu_;
     double animation_t_;
+    bool overtake_fg_color_properties_;
+    bool overtake_bg_color_properties_;
+    QColor bg_color_;
+    QColor fg_color_;
+
     virtual void prepareOverlay();
     virtual void openingAnimation();
     virtual std::string getMenuString(
@@ -98,9 +127,18 @@ namespace jsk_rviz_plugins
     virtual void unsubscribe();
     virtual void processMessage
     (const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
+    virtual void setMenuLocation();
   protected Q_SLOTS:
     void updateTopic();
-    
+    void updateLeft();
+    void updateTop();
+    void updateKeepCentered();
+    void updateOvertakeFGColorProperties();
+    void updateOvertakeBGColorProperties();
+    void updateFGColor();
+    void updateFGAlpha();
+    void updateBGColor();
+    void updateBGAlpha();
   };
 
 }
