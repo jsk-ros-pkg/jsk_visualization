@@ -50,6 +50,8 @@ jobs:
              sudo mkdir -p /__w/
              sudo chmod 777 -R /__w/
              sudo chown -R $USER $HOME
+             sudo mkdir  -p /__w/_temp/_runner_file_commands/
+             sudo chown -R $USER /__w/_temp/_runner_file_commands/
              # sudo mkdir -p /home/runner/work/_temp/_github_workflow/
              # sudo chown -R $USER $HOME /home/runner/work/_temp/_github_workflow/
              # ls -al /home/runner/work/_temp/_github_workflow/
@@ -63,7 +65,7 @@ jobs:
           submodules: true
 
       - name: Cache Download Data
-        uses: actions/cache@v3
+        uses: actions/cache@v3.0.4
         with:
           path: /github/home/.ros/data/jsk_rviz_plugins
           key: jsk_rviz_plugins
