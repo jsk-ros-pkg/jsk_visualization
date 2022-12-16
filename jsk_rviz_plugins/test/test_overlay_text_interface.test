@@ -1,0 +1,13 @@
+<launch>
+  <node name="publish_overlay_text_interface"
+        pkg="jsk_rviz_plugins" type="test_overlay_text_interface.py"
+        required="true" />
+  <test test-name="test_overlay_text_interface"
+        pkg="jsk_tools" type="test_topic_published.py"
+        time-limit="15" retry="2">
+    <rosparam>
+      topic_0: /publish_overlay_text_interface/text
+      timeout_0: 15
+    </rosparam>
+  </test>
+</launch>
