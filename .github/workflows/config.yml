@@ -50,6 +50,8 @@ jobs:
              sudo mkdir -p /__w/
              sudo chmod 777 -R /__w/
              sudo chown -R $USER $HOME
+             sudo mkdir  -p /__w/_temp/_runner_file_commands/
+             sudo chown -R $USER /__w/_temp/_runner_file_commands/
              # sudo mkdir -p /home/runner/work/_temp/_github_workflow/
              # sudo chown -R $USER $HOME /home/runner/work/_temp/_github_workflow/
              # ls -al /home/runner/work/_temp/_github_workflow/
@@ -58,16 +60,19 @@ jobs:
           fi
 
       - name: Chcekout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.2
+        with:
+          submodules: true
 
       - name: Cache Download Data
-        uses: actions/cache@v3
+        uses: actions/cache@v3.0.4
         with:
           path: /github/home/.ros/data/jsk_rviz_plugins
           key: jsk_rviz_plugins
 
       - name: Start X server
         run: |
+          if [[ "${{ matrix.CONTAINER }}" =~ "jskrobotics/ros-ubuntu:14.04" ]]; then exit 0; fi
           echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections || echo "failing on ros-ubuntu is OK" # set non interactive tzdata https://stackoverflow.com/questions/8671308/non-interactive-method-for-dpkg-reconfigure-tzdata
           sudo apt-get -y -qq install mesa-utils x11-xserver-utils xserver-xorg-video-dummy wget
           export DISPLAY=:0
@@ -76,6 +81,21 @@ jobs:
           sleep 3 # wait x server up
           export QT_X11_NO_MITSHM=1 # http://wiki.ros.org/docker/Tutorials/GUI
           xhost +local:root
+        shell: bash
+
+      - name: Start X server (for 14.04)
+        run: |
+          if [[ "${{ matrix.CONTAINER }}" =~ "jskrobotics/ros-ubuntu:14.04" ]]; then
+            echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections || echo "failing on ros-ubuntu is OK" # set non interactive tzdata https://stackoverflow.com/questions/8671308/non-interactive-method-for-dpkg-reconfigure-tzdata
+            export DISPLAY=:0
+            sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
+            sudo apt-get install -y x11-xserver-utils  # for xhost
+            sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
+            sleep 3 # wait x server up
+            export QT_X11_NO_MITSHM=1 # http://wiki.ros.org/docker/Tutorials/GUI
+            xhost +local:root
+          fi
+        shell: bash
 
       - name: Run jsk_travis
         uses: jsk-ros-pkg/jsk_travis@master
