@@ -49,6 +49,12 @@ namespace jsk_rviz_plugins
     coloring_property_->addOption("Label", 2);
     coloring_property_->addOption("Value", 3);
 
+    alpha_method_property_ = new rviz::EnumProperty(
+      "alpha method", "flat", "alpha method",
+      this, SLOT(updateAlphaMethod()));
+    alpha_method_property_->addOption("flat", 0);
+    alpha_method_property_->addOption("value", 1);
+
     color_property_ = new rviz::ColorProperty(
       "color", QColor(25, 255, 0),
       "color to draw the bounding boxes",
@@ -57,6 +63,14 @@ namespace jsk_rviz_plugins
       "alpha", 0.8,
       "alpha value to draw the bounding boxes",
       this, SLOT(updateAlpha()));
+    alpha_min_property_ = new rviz::FloatProperty(
+      "alpha min", 0.0,
+      "alpha value corresponding to value = 0",
+      this, SLOT(updateAlphaMin()));
+    alpha_max_property_ = new rviz::FloatProperty(
+      "alpha max", 1.0,
+      "alpha value corresponding to value = 1",
+      this, SLOT(updateAlphaMax()));
     only_edge_property_ = new rviz::BoolProperty(
       "only edge", false,
       "show only the edges of the boxes",
@@ -69,15 +83,23 @@ namespace jsk_rviz_plugins
       "show coords", false,
       "show coordinate of bounding box",
       this, SLOT(updateShowCoords()));
+    value_threshold_property_ = new rviz::FloatProperty(
+      "value threshold", 0.0,
+      "filter all boxes with value < threshold",
+      this, SLOT(updateValueThreshold()));
   }
 
   BoundingBoxArrayDisplay::~BoundingBoxArrayDisplay()
   {
     delete color_property_;
     delete alpha_property_;
+    delete alpha_min_property_;
+    delete alpha_max_property_;
     delete only_edge_property_;
     delete coloring_property_;
+    delete alpha_method_property_;
     delete show_coords_property_;
+    delete value_threshold_property_;
   }
 
   void BoundingBoxArrayDisplay::onInitialize()
@@ -87,10 +109,14 @@ namespace jsk_rviz_plugins
 
     updateColor();
     updateAlpha();
+    updateAlphaMin();
+    updateAlphaMax();
     updateOnlyEdge();
     updateColoring();
+    updateAlphaMethod();
     updateLineWidth();
     updateShowCoords();
+    updateValueThreshold();
   }
 
   void BoundingBoxArrayDisplay::updateLineWidth()
@@ -112,6 +138,34 @@ namespace jsk_rviz_plugins
   void BoundingBoxArrayDisplay::updateAlpha()
   {
     alpha_ = alpha_property_->getFloat();
+    if (latest_msg_) {
+      processMessage(latest_msg_);
+    }
+  }
+
+  void BoundingBoxArrayDisplay::updateAlphaMin()
+  {
+    if (alpha_min_property_->getFloat() > alpha_max_)
+    {
+      ROS_WARN("alpha_min must be <= alpha_max");
+      alpha_min_property_->setFloat(alpha_min_);
+      return;
+    }
+    alpha_min_ = alpha_min_property_->getFloat();
+    if (latest_msg_) {
+      processMessage(latest_msg_);
+    }
+  }
+
+  void BoundingBoxArrayDisplay::updateAlphaMax()
+  {
+    if (alpha_max_property_->getFloat() < alpha_min_)
+    {
+      ROS_WARN("alpha_min must be <= alpha_max");
+      alpha_max_property_->setFloat(alpha_max_);
+      return;
+    }
+    alpha_max_ = alpha_max_property_->getFloat();
     if (latest_msg_) {
       processMessage(latest_msg_);
     }
@@ -161,6 +215,26 @@ namespace jsk_rviz_plugins
     }
   }
 
+  void BoundingBoxArrayDisplay::updateAlphaMethod()
+  {
+    if (alpha_method_property_->getOptionInt() == 0) {
+      alpha_method_ = "flat";
+      alpha_property_->show();
+      alpha_min_property_->hide();
+      alpha_max_property_->hide();
+    }
+    else if (alpha_method_property_->getOptionInt() == 1) {
+      alpha_method_ = "value";
+      alpha_property_->hide();
+      alpha_min_property_->show();
+      alpha_max_property_->show();
+    }
+
+    if (latest_msg_) {
+      processMessage(latest_msg_);
+    }
+  }
+
   void BoundingBoxArrayDisplay::updateShowCoords()
   {
     show_coords_ = show_coords_property_->getBool();
@@ -201,6 +275,20 @@ namespace jsk_rviz_plugins
     }
     else {
       hideCoords();
+    }
+  }
+
+  void BoundingBoxArrayDisplay::updateValueThreshold()
+  {
+    if (value_threshold_property_->getFloat() < 0.0 || value_threshold_property_->getFloat() > 1.0)
+    {
+      ROS_WARN("value threshold must be in [0,1]");
+      value_threshold_property_->setFloat(value_threshold_);
+      return;
+    }
+    value_threshold_ = value_threshold_property_->getFloat();
+    if (latest_msg_) {
+      processMessage(latest_msg_);
     }
   }
 
