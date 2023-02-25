@@ -42,6 +42,7 @@
 #include <OGRE/OgreMaterial.h>
 
 #include <QPainter>
+#include <QPainterPath>
 
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/editable_enum_property.h>
