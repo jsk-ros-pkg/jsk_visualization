@@ -61,10 +61,10 @@ namespace jsk_rviz_plugins
 
   int OverlayPickerTool::processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel)
   {
-    if (event->type() == QEvent::KeyPress && event->key() == 16777248) { // sift
+    if (event->type() == QEvent::KeyPress && event->key() == Qt::Key_Shift) { // shift
       shift_pressing_ = true;
     }
-    else if (event->type() == QEvent::KeyRelease && event->key() == 16777248) {
+    else if (event->type() == QEvent::KeyRelease && event->key() == Qt::Key_Shift) {
       shift_pressing_ = false;
     }
     return 0;
