@@ -68,6 +68,7 @@ class LineEditDialog(QDialog):
     def __init__(self, parent=None):
         super(LineEditDialog, self).__init__()
         self.value = None
+        self.button_pressed = False
         vbox = QVBoxLayout(self)
         # combo box
         model = QtGui.QStandardItemModel(self)
@@ -90,6 +91,7 @@ class LineEditDialog(QDialog):
 
     def buttonCallback(self, event):
         self.value = self.line_edit.text()
+        self.button_pressed = True
         self.close()
 
 
@@ -118,12 +120,14 @@ class ServiceButtonGeneralWidget(QWidget):
         resolved_layout_yaml_file = get_filename(
             layout_yaml_file)[len("file://"):]
         # check file exists
-        if not os.path.exists(resolved_layout_yaml_file):
+        if os.path.exists(resolved_layout_yaml_file):
+            self.setupButtons(resolved_layout_yaml_file)
+            self.show()
+            return True
+        else:
             self.showError("Cannot find %s (%s)" % (
                            layout_yaml_file, resolved_layout_yaml_file))
-            sys.exit(1)
-        self.setupButtons(resolved_layout_yaml_file)
-        self.show()
+            return False
 
     def setupButtons(self, yaml_file):
         """
@@ -273,12 +277,26 @@ class ServiceButtonGeneralWidget(QWidget):
     def restore_settings(self, plugin_settings, instance_settings):
         if instance_settings.value("layout_param"):
             self._layout_param = instance_settings.value("layout_param")
-            self.loadLayoutYaml(self._layout_param)
             rospy.loginfo("restore setting is called. %s" % self._layout_param)
+            updated = self.loadLayoutYaml(self._layout_param)
+            if updated:
+                rospy.loginfo("succeeded to restore. %s" % self._layout_param)
+            else:
+                rospy.logerr("failed to restore. %s" % self._layout_param)
 
     def trigger_configuration(self):
         self._dialog.exec_()
-        self._layout_param = self._dialog.value
-        self.loadLayoutYaml(self._layout_param)
-        rospy.loginfo(
-            "trigger configuration is called. %s" % self._dialog.value)
+        button_pressed = self._dialog.button_pressed
+        self._dialog.button_pressed = False
+        if button_pressed:
+            self._layout_param = self._dialog.value
+            updated = self.loadLayoutYaml(self._layout_param)
+            rospy.loginfo(
+                "trigger configuration is called. %s" % self._dialog.value)
+            if updated:
+                rospy.loginfo(
+                    "succeeded to configure. %s" % self._dialog.value)
+            else:
+                rospy.logerr(
+                    "failed to configure. %s" % self._dialog.value)
+                self.trigger_configuration()
