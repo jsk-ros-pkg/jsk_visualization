@@ -43,9 +43,9 @@
          base_class_type="rqt_gui_py::Plugin">
     <qtgui>
       <group>
-        <label>Visualization</label>
+        <label>Services</label>
         <icon type="theme">folder</icon>
-        <statustip>Plugins related to visualization.</statustip>
+        <statustip>Plugins related to services.</statustip>
       </group>
       <label>ServiceButton</label>
       <icon type="theme">utilities-system-monitor</icon>
@@ -56,9 +56,9 @@
          base_class_type="rqt_gui_py::Plugin">
     <qtgui>
       <group>
-        <label>Visualization</label>
+        <label>Services</label>
         <icon type="theme">folder</icon>
-        <statustip>Plugins related to visualization.</statustip>
+        <statustip>Plugins related to services.</statustip>
       </group>
       <label>ServiceRadioButton</label>
       <icon type="theme">utilities-system-monitor</icon>
@@ -127,9 +127,9 @@
     <description>Simple yes or no button with service call.</description>
     <qtgui>
       <group>
-        <label>Visualization</label>
+        <label>Services</label>
         <icon type="theme">folder</icon>
-        <statustip>Plugins related to visualization.</statustip>
+        <statustip>Plugins related to service.</statustip>
       </group>
       <label>YesNo Button</label>
       <icon type="theme">utilities-system-monitor</icon>
@@ -141,9 +141,9 @@
          base_class_type="rqt_gui_py::Plugin">
     <qtgui>
       <group>
-        <label>Visualization</label>
+        <label>Services</label>
         <icon type="theme">folder</icon>
-        <statustip>Plugins related to visualization.</statustip>
+        <statustip>Plugins related to services.</statustip>
       </group>
       <label>ServiceTabbedButton</label>
       <icon type="theme">utilities-system-monitor</icon>
