@@ -9,6 +9,7 @@ from python_qt_binding.QtCore import QEvent
 from python_qt_binding.QtCore import QSize
 from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtCore import QTimer
+from python_qt_binding.QtCore import QTranslator
 from python_qt_binding.QtCore import qWarning
 from python_qt_binding.QtCore import Slot
 import python_qt_binding.QtGui as QtGui
@@ -31,15 +32,12 @@ from std_srvs.srv import Trigger
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QAction
-    from python_qt_binding.QtWidgets import QComboBox
     from python_qt_binding.QtWidgets import QCompleter
-    from python_qt_binding.QtWidgets import QDialog
+    from python_qt_binding.QtWidgets import QFileDialog
     from python_qt_binding.QtWidgets import QGroupBox
     from python_qt_binding.QtWidgets import QHBoxLayout
-    from python_qt_binding.QtWidgets import QLineEdit
     from python_qt_binding.QtWidgets import QMenu
     from python_qt_binding.QtWidgets import QMessageBox
-    from python_qt_binding.QtWidgets import QPushButton
     from python_qt_binding.QtWidgets import QRadioButton
     from python_qt_binding.QtWidgets import QSizePolicy
     from python_qt_binding.QtWidgets import QToolButton
@@ -48,49 +46,17 @@ if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
 
 else:
     from python_qt_binding.QtGui import QAction
-    from python_qt_binding.QtGui import QComboBox
     from python_qt_binding.QtGui import QCompleter
-    from python_qt_binding.QtGui import QDialog
+    from python_qt_binding.QtGui import QFileDialog
     from python_qt_binding.QtGui import QGroupBox
     from python_qt_binding.QtGui import QHBoxLayout
-    from python_qt_binding.QtGui import QLineEdit
     from python_qt_binding.QtGui import QMenu
     from python_qt_binding.QtGui import QMessageBox
-    from python_qt_binding.QtGui import QPushButton
     from python_qt_binding.QtGui import QRadioButton
     from python_qt_binding.QtGui import QSizePolicy
     from python_qt_binding.QtGui import QToolButton
     from python_qt_binding.QtGui import QVBoxLayout
     from python_qt_binding.QtGui import QWidget
-
-
-class LineEditDialog(QDialog):
-    def __init__(self, parent=None):
-        super(LineEditDialog, self).__init__()
-        self.value = None
-        vbox = QVBoxLayout(self)
-        # combo box
-        model = QtGui.QStandardItemModel(self)
-        for elm in rospy.get_param_names():
-            model.setItem(model.rowCount(), 0, QtGui.QStandardItem(elm))
-        self.combo_box = QComboBox(self)
-        self.line_edit = QLineEdit()
-        self.combo_box.setLineEdit(self.line_edit)
-        self.combo_box.setCompleter(QCompleter())
-        self.combo_box.setModel(model)
-        self.combo_box.completer().setModel(model)
-        self.combo_box.lineEdit().setText('')
-        vbox.addWidget(self.combo_box)
-        # button
-        button = QPushButton()
-        button.setText("Done")
-        button.clicked.connect(self.buttonCallback)
-        vbox.addWidget(button)
-        self.setLayout(vbox)
-
-    def buttonCallback(self, event):
-        self.value = self.line_edit.text()
-        self.close()
 
 
 class ServiceButtonGeneralWidget(QWidget):
@@ -101,7 +67,9 @@ class ServiceButtonGeneralWidget(QWidget):
         super(ServiceButtonGeneralWidget, self).__init__()
         self.button_type = button_type
         self._layout_param = None
-        self._dialog = LineEditDialog()
+        self._translator = QTranslator()
+        self._dialog = QFileDialog()
+        self._dialog.setFileMode(QFileDialog.ExistingFile)
 
         if rospy.has_param("~layout_yaml_file"):
             self.loadLayoutYaml(None)
@@ -115,15 +83,19 @@ class ServiceButtonGeneralWidget(QWidget):
         # Initialize layout of the buttons from yaml file
         # The yaml file can be specified by rosparam
         layout_yaml_file = rospy.get_param("~layout_yaml_file", layout_param)
-        resolved_layout_yaml_file = get_filename(
-            layout_yaml_file)[len("file://"):]
+        resolved_layout_yaml_file = get_filename(layout_yaml_file)
+        if (resolved_layout_yaml_file is not None
+                and resolved_layout_yaml_file.startswith("file://")):
+            resolved_layout_yaml_file = resolved_layout_yaml_file[len("file://"):]
         # check file exists
-        if not os.path.exists(resolved_layout_yaml_file):
+        if os.path.exists(resolved_layout_yaml_file):
+            self.setupButtons(resolved_layout_yaml_file)
+            self.show()
+            return True
+        else:
             self.showError("Cannot find %s (%s)" % (
                            layout_yaml_file, resolved_layout_yaml_file))
-            sys.exit(1)
-        self.setupButtons(resolved_layout_yaml_file)
-        self.show()
+            return False
 
     def setupButtons(self, yaml_file):
         """
@@ -273,12 +245,26 @@ class ServiceButtonGeneralWidget(QWidget):
     def restore_settings(self, plugin_settings, instance_settings):
         if instance_settings.value("layout_param"):
             self._layout_param = instance_settings.value("layout_param")
-            self.loadLayoutYaml(self._layout_param)
             rospy.loginfo("restore setting is called. %s" % self._layout_param)
+            updated = self.loadLayoutYaml(self._layout_param)
+            if updated:
+                rospy.loginfo("succeeded to restore. %s" % self._layout_param)
+            else:
+                rospy.logerr("failed to restore. %s" % self._layout_param)
 
     def trigger_configuration(self):
-        self._dialog.exec_()
-        self._layout_param = self._dialog.value
-        self.loadLayoutYaml(self._layout_param)
-        rospy.loginfo(
-            "trigger configuration is called. %s" % self._dialog.value)
+        self._layout_param = self._dialog.getOpenFileName(
+            None, self._translator.tr("Open File"), "",
+            self._translator.tr("YAML files (*.yaml *.yml)"))[0]
+
+        if self._layout_param:
+            updated = self.loadLayoutYaml(self._layout_param)
+            rospy.loginfo(
+                "trigger configuration is called. %s" % self._layout_param)
+            if updated:
+                rospy.loginfo(
+                    "succeeded to configure. %s" % self._layout_param)
+            else:
+                rospy.logerr(
+                    "failed to configure. %s" % self._layout_param)
+                self.trigger_configuration()
