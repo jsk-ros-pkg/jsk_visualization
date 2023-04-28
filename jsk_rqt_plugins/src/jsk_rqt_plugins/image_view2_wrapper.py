@@ -237,9 +237,11 @@ class ImageView2Widget(QWidget):
         msg = MouseEvent()
         msg.header.stamp = rospy.Time.now()
         msg.type = MouseEvent.MOUSE_MOVE
-        msg.x, msg.y = self.mousePosition(e)
         msg.width = self.label.pixmap().width()
         msg.height = self.label.pixmap().height()
+        x, y = self.mousePosition(e)
+        msg.x = int(x)
+        msg.y = int(y)
         if self.event_pub:
             self.event_pub.publish(msg)
 
@@ -253,7 +255,9 @@ class ImageView2Widget(QWidget):
             msg.type = MouseEvent.MOUSE_RIGHT_DOWN
         msg.width = self.label.pixmap().width()
         msg.height = self.label.pixmap().height()
-        msg.x, msg.y = self.mousePosition(e)
+        x, y = self.mousePosition(e)
+        msg.x = int(x)
+        msg.y = int(y)
         if self.event_pub:
             self.event_pub.publish(msg)
 
@@ -265,7 +269,9 @@ class ImageView2Widget(QWidget):
             msg.width = self.label.pixmap().width()
             msg.height = self.label.pixmap().height()
             msg.type = MouseEvent.MOUSE_LEFT_UP
-            msg.x, msg.y = self.mousePosition(e)
+            x, y = self.mousePosition(e)
+            msg.x = int(x)
+            msg.y = int(y)
             if self.event_pub:
                 self.event_pub.publish(msg)
 
