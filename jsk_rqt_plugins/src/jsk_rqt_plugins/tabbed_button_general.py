@@ -34,12 +34,11 @@ if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QComboBox
     from python_qt_binding.QtWidgets import QCompleter
     from python_qt_binding.QtWidgets import QDialog
+    from python_qt_binding.QtWidgets import QFileDialog
     from python_qt_binding.QtWidgets import QGroupBox
     from python_qt_binding.QtWidgets import QHBoxLayout
-    from python_qt_binding.QtWidgets import QLineEdit
     from python_qt_binding.QtWidgets import QMenu
     from python_qt_binding.QtWidgets import QMessageBox
-    from python_qt_binding.QtWidgets import QPushButton
     from python_qt_binding.QtWidgets import QRadioButton
     from python_qt_binding.QtWidgets import QSizePolicy
     from python_qt_binding.QtWidgets import QToolButton
@@ -51,12 +50,11 @@ else:
     from python_qt_binding.QtGui import QComboBox
     from python_qt_binding.QtGui import QCompleter
     from python_qt_binding.QtGui import QDialog
+    from python_qt_binding.QtGui import QFileDialog
     from python_qt_binding.QtGui import QGroupBox
     from python_qt_binding.QtGui import QHBoxLayout
-    from python_qt_binding.QtGui import QLineEdit
     from python_qt_binding.QtGui import QMenu
     from python_qt_binding.QtGui import QMessageBox
-    from python_qt_binding.QtGui import QPushButton
     from python_qt_binding.QtGui import QRadioButton
     from python_qt_binding.QtGui import QSizePolicy
     from python_qt_binding.QtGui import QToolButton
@@ -65,7 +63,7 @@ else:
     from python_qt_binding.QtGui import QTabWidget
 
 from jsk_rqt_plugins.button_general import ServiceButtonGeneralWidget
-from jsk_rqt_plugins.button_general import LineEditDialog
+
 
 class ServiceTabbedButtonGeneralWidget(QWidget):
     def __init__(self):
@@ -154,7 +152,10 @@ class ServiceButtonGeneralWidget_in_tab(ServiceButtonGeneralWidget):
             namespace = settings['namespace']
 
         self._layout_param = None
-        self._dialog = LineEditDialog()
+        self._dialog = QFileDialog()
+        self._dialog.setFileMode(QFileDialog.ExistingFile)
+        self._dialog.setNameFilter(
+            self._translator.tr("YAML files (*.yaml *.yml)"))
 
         resolved_yaml = get_filename(yaml_file)
         if "file://" == resolved_yaml[0:7]:
