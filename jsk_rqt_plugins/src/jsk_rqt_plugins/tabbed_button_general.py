@@ -140,7 +140,7 @@ class ServiceButtonGeneralWidget_in_tab(ServiceButtonGeneralWidget):
     Qt widget to visualize multiple buttons
     """
     def __init__(self, settings):
-        super(ServiceButtonGeneralWidget, self).__init__()
+        super(ServiceButtonGeneralWidget_in_tab, self).__init__()
         yaml_file = settings['yaml_file']
         namespace = None
         if 'type' in settings:
