@@ -26,6 +26,11 @@ from jsk_recognition_msgs.msg import BoundingBoxArray
 import rospy
 
 
+# Python2's xrange equals Python3's range, and xrange is removed on Python3
+if not hasattr(__builtins__, 'xrange'):
+    xrange = range
+
+
 class TransformableMarkersClient(object):
 
     def __init__(self):
