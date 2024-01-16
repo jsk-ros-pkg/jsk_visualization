@@ -102,7 +102,9 @@ namespace jsk_rviz_plugins
     rviz::BoolProperty* auto_scale_property_;
     rviz::FloatProperty* max_value_property_;
     rviz::FloatProperty* min_value_property_;
-    
+    rviz::BoolProperty* auto_text_size_in_plot_property_;
+    rviz::IntProperty* text_size_in_plot_property_;
+
     OverlayObject::Ptr overlay_;
     QColor fg_color_;
     QColor max_color_;
@@ -118,6 +120,8 @@ namespace jsk_rviz_plugins
     bool draw_required_;
     float last_time_;
     float update_interval_;
+    bool auto_text_size_in_plot_;
+    int text_size_in_plot_;
     
     int buffer_length_;
     std::vector<double> buffer_;
@@ -159,6 +163,9 @@ namespace jsk_rviz_plugins
     void updateAutoScale();
     void updateMinValue();
     void updateMaxValue();
+    void updateTextSizeInPlot();
+    void updateAutoTextSizeInPlot();
+
   private:
   };
 }
