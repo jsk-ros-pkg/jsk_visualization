@@ -162,7 +162,7 @@ class ServiceButtonGeneralWidget_in_tab(ServiceButtonGeneralWidget):
             resolved_yaml = resolved_yaml[len("file://"):]
 
         with open(resolved_yaml) as f:
-            yaml_data = yaml.load(f)
+            yaml_data = yaml.safe_load(f)
             self.setupButtons_with_yaml_data(yaml_data=yaml_data, namespace=namespace)
 
         self.show()
