@@ -46,19 +46,6 @@ generate_dynamic_reconfigure_options(
   cfg/OverlayTextInterface.cfg)
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
-catkin_package(
-    DEPENDS rviz
-    CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
-    jsk_recognition_utils cv_bridge people_msgs image_geometry
-    INCLUDE_DIRS # TODO include
-    LIBRARIES ${PROJECT_NAME}
-)
-
-
-set(ROS_BUILD_TYPE Release)
-
-include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
-
 # TODO: fill in what other packages will need to use this package
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
@@ -69,7 +56,24 @@ if(rviz_QT_VERSION VERSION_LESS "5")
   include(${QT_USE_FILE})
 else()
   find_package(Qt5Widgets REQUIRED)
+  set(QT_INCLUDE_DIR ${Qt5Widgets_INCLUDE_DIRS})
+  set(QT_LIBRARIES ${Qt5Widgets_LIBRARIES};${_Qt5Widgets_PRIVATEDEPS})
 endif()
+
+catkin_package(
+    DEPENDS rviz
+    CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
+    jsk_recognition_utils cv_bridge people_msgs image_geometry
+    INCLUDE_DIRS include ${QT_INCLUDE_DIR}
+    LIBRARIES ${PROJECT_NAME} ${QT_LIBRARIES}
+    CFG_EXTRAS jsk_rviz_plugins.cmake.in
+)
+
+
+set(ROS_BUILD_TYPE Release)
+
+include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+
 add_definitions(-DQT_NO_KEYWORDS -g)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
