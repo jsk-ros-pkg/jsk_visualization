@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -eu
+
+[[ ${DOCKER_TAG} =~ ([a-z]+)-([0-9a-z.]+)$ ]]
+ROS_DISTRO=${BASH_REMATCH[1]};
+
+if [[ ${ROS_DISTRO} = "kinetic" ]]; then
+    UBUNTU_VERSION="xenial";
+elif [[ ${ROS_DISTRO} = "indigo" ]]; then
+    UBUNTU_VERSION="trusty";
+fi
+
+docker build --build-arg ROS_DISTRO=${ROS_DISTRO} \
+             --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} \
+             -t ${IMAGE_NAME} .
