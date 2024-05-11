@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -41,6 +41,9 @@
 #include <OGRE/OgreBlendMode.h>
 #include <QImage>
 #include <OGRE/OgreHardwarePixelBuffer.h>
+#include <sensor_msgs/image_encodings.h>
+
+namespace enc = sensor_msgs::image_encodings;
 
 namespace jsk_rviz_plugins
 {
@@ -207,7 +210,11 @@ namespace jsk_rviz_plugins
     // move scene_node according to tf
      Ogre::Vector3 position;
      Ogre::Quaternion quaternion;
-     if(!context_->getFrameManager()->getTransform(msg->header.frame_id,
+     std::string frame_id = msg->header.frame_id;
+     if (frame_id[0] == '/') {
+       frame_id = frame_id.substr(1, frame_id.size());
+     }
+     if(!context_->getFrameManager()->getTransform(frame_id,
                                                    msg->header.stamp,
                                                    position,
                                                    quaternion)) {
@@ -240,7 +247,11 @@ namespace jsk_rviz_plugins
         msg->header.frame_id == camera_info_->header.frame_id &&
         msg->height == camera_info_->height &&
         msg->width == camera_info_->width &&
-        msg->distortion_model == camera_info_->distortion_model;
+        msg->distortion_model == camera_info_->distortion_model &&
+        msg->roi.x_offset == camera_info_->roi.x_offset &&
+        msg->roi.y_offset == camera_info_->roi.y_offset &&
+        msg->roi.height == camera_info_->roi.height &&
+        msg->roi.width == camera_info_->roi.width;
       if (meta_same_p) {
         for (size_t i = 0; i < msg->P.size(); i++) {
           if (msg->P[i] != camera_info_->P[i]) {
@@ -404,11 +415,67 @@ namespace jsk_rviz_plugins
       const sensor_msgs::Image::ConstPtr& msg)
   {
     boost::mutex::scoped_lock lock(mutex_);
-    cv_bridge::CvImagePtr cv_ptr;
+    cv_bridge::CvImageConstPtr cv_ptr;
+    if (!camera_info_) {
+      return;
+    }
     try
     {
-      cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
-      image_ = cv_ptr->image;
+      cv_ptr = cv_bridge::toCvShare(msg);
+      cv::Mat im = cv_ptr->image.clone();
+      if (msg->encoding == enc::BGRA8) {
+        cv::cvtColor(im, im, cv::COLOR_BGRA2RGB);
+      } else if (msg->encoding == enc::BGRA16) {
+        im.convertTo(im, CV_8U, 1 / 256.0);
+        cv::cvtColor(im, im, cv::COLOR_BGRA2RGB);
+      } else if (msg->encoding == enc::BGR8) {
+        cv::cvtColor(im, im, cv::COLOR_BGR2RGB);
+      } else if (msg->encoding == enc::BGR16) {
+        im.convertTo(im, CV_8U, 1 / 256.0);
+        cv::cvtColor(im, im, cv::COLOR_BGR2RGB);
+      } else if (msg->encoding == enc::RGBA8) {
+        cv::cvtColor(im, im, cv::COLOR_RGBA2RGB);
+      } else if (msg->encoding == enc::RGBA16) {
+        im.convertTo(im, CV_8U, 1 / 256.0);
+        cv::cvtColor(im, im, cv::COLOR_RGBA2RGB);
+      } else if (msg->encoding == enc::RGB8) {
+        // nothing
+      } else if (msg->encoding == enc::RGB16) {
+        im.convertTo(im, CV_8U, 1 / 256.0);
+      } else if (msg->encoding == enc::MONO8) {
+        cv::cvtColor(im, im, cv::COLOR_GRAY2RGB);
+      } else if (msg->encoding == enc::MONO16) {
+        im.convertTo(im, CV_8U, 1 / 256.0);
+        cv::cvtColor(im, im, cv::COLOR_GRAY2RGB);
+      } else {
+        ROS_ERROR("[CameraInfoDisplay] Not supported image encodings %s.", msg->encoding.c_str());
+        return;
+      }
+
+      int roi_height = camera_info_->roi.height ? camera_info_->roi.height : camera_info_->height;
+      int roi_width = camera_info_->roi.width ? camera_info_->roi.width : camera_info_->width;
+      if (camera_info_->binning_y > 0) {
+        roi_height /= camera_info_->binning_y;
+      }
+      if (camera_info_->binning_x > 0) {
+        roi_width /= camera_info_->binning_x;
+      }
+
+      if (im.cols == camera_info_->width && im.rows == camera_info_->height) {
+        cv::Rect roi(camera_info_->roi.x_offset, camera_info_->roi.y_offset,
+                     camera_info_->roi.width ? camera_info_->roi.width : camera_info_->width,
+                     camera_info_->roi.height ? camera_info_->roi.height : camera_info_->height);
+        image_ = cv::Mat(im, roi).clone();
+      } else if (im.cols == roi_width && im.rows == roi_height) {
+        image_ = im.clone();
+      } else {
+        ROS_ERROR("[CameraInfoDisplay] Invalid image size (w, h) = (%d, %d), expected (w, h) = (%d, %d) or (%d, %d) (ROI size)",
+                  im.cols, im.rows,
+                  camera_info_->width, camera_info_->height,
+                  roi_width, roi_height);
+        return;
+      }
+
       // check the size of bottom texture
       if (bottom_texture_.isNull()
           || bottom_texture_->getWidth() != image_.cols
@@ -457,8 +524,17 @@ namespace jsk_rviz_plugins
       edges_->setLineWidth(0.01);
     }
 
-    cv::Point2d a(0, 0), b(msg->width, 0),
-      c(msg->width, msg->height), d(0, msg->height);
+    int height = msg->roi.height ? msg->roi.height : msg->height;
+    int width = msg->roi.width ? msg->roi.width : msg->width;
+    if (msg->binning_y > 0) {
+      height /= msg->binning_y;
+    }
+    if (msg->binning_x > 0) {
+      width /= msg->binning_x;
+    }
+
+    cv::Point2d a(0, 0), b(width, 0),
+      c(width, height), d(0, height);
     // all the z = 1.0
     cv::Point3d A = model.projectPixelTo3dRay(a);
     cv::Point3d B = model.projectPixelTo3dRay(b);

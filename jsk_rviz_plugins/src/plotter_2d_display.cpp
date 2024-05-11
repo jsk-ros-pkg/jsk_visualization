@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -119,6 +119,12 @@ namespace jsk_rviz_plugins
     text_size_property_ = new rviz::IntProperty("text size", 12,
                                                 "text size of the caption",
                                                 this, SLOT(updateTextSize()));
+    auto_text_size_in_plot_property_ = new rviz::BoolProperty("auto text size in plot", true,
+                                                              "automatiacally adjust text size of the value in plot",
+                                                              this, SLOT(updateAutoTextSizeInPlot()));
+    text_size_in_plot_property_ = new rviz::IntProperty("text size in plot", 12,
+                                                        "text size of the value in plot",
+                                                        this, SLOT(updateTextSizeInPlot()));
     text_size_property_->setMin(1);
     text_size_property_->setMax(1000);
     show_caption_property_ = new rviz::BoolProperty(
@@ -208,6 +214,8 @@ namespace jsk_rviz_plugins
     updateAutoScale();
     updateMinValue();
     updateMaxValue();
+    updateTextSizeInPlot();
+    updateAutoTextSizeInPlot();
     overlay_->updateTextureSize(width_property_->getInt(),
                                 height_property_->getInt() + caption_offset_);
   }
@@ -293,7 +301,11 @@ namespace jsk_rviz_plugins
       }
       if (show_value_) {
         QFont font = painter.font();
-        font.setPointSize(w / 4);
+        if (auto_text_size_in_plot_) {
+          font.setPointSize(w / 4);
+        } else {
+          font.setPointSize(text_size_in_plot_);
+        }
         font.setBold(true);
         painter.setFont(font);
         std::ostringstream ss;
@@ -532,6 +544,21 @@ namespace jsk_rviz_plugins
     }
     updateMinValue();
     updateMaxValue();
+  }
+
+  void Plotter2DDisplay::updateAutoTextSizeInPlot(){
+    auto_text_size_in_plot_ = auto_text_size_in_plot_property_->getBool();
+    if (auto_text_size_in_plot_) {
+      text_size_in_plot_property_->hide();
+    }
+    else {
+      text_size_in_plot_property_->show();
+    }
+    updateTextSizeInPlot();
+  }
+
+  void Plotter2DDisplay::updateTextSizeInPlot(){
+    text_size_in_plot_ = text_size_in_plot_property_->getInt();
   }
 
   bool Plotter2DDisplay::isInRegion(int x, int y)

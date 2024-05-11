@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -243,12 +243,12 @@ namespace jsk_rviz_plugins
     //draw gauge
     if(vertical_gauge_)
     {
-        double normalised_value = std::min(std::max((double)data_, 0.0), max_value_)*(h-2*height_padding_)/max_value_;
+        double normalised_value = std::min(std::max((double)data_ - min_value_, 0.0), max_value_ - min_value_)*(h-2*height_padding_)/(max_value_-min_value_);
         painter.fillRect(width_padding_, h-normalised_value-height_padding_, w-2*width_padding_, normalised_value, fg_color);
     }
     else
     {   
-        double normalised_value = std::min(std::max((double)data_, 0.0), max_value_)*(w-2*width_padding_)/max_value_;
+        double normalised_value = std::min(std::max((double)data_ - min_value_, 0.0), max_value_ - min_value_)*(w-2*width_padding_)/(max_value_-min_value_);
         painter.fillRect(width_padding_, height_padding_, normalised_value, h-(2*height_padding_), fg_color);
     }
   

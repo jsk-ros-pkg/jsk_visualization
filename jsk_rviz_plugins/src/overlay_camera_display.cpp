@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -398,7 +398,7 @@ void OverlayCameraDisplay::update( float wall_dt, float ros_dt )
   if (!overlay_) {
     static int count = 0;
     rviz::UniformStringStream ss;
-    ss << "OverlayImageDisplayObject" << count++;
+    ss << "OverlayCameraImageDisplayObject" << count++;
     overlay_.reset(new OverlayObject(ss.str()));
     overlay_->show();
   }

@@ -13,7 +13,7 @@
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
  *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/o2r other materials provided
+ *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of the JSK Lab nor the names of its
  *     contributors may be used to endorse or promote products derived
@@ -61,10 +61,10 @@ namespace jsk_rviz_plugins
 
   int OverlayPickerTool::processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel)
   {
-    if (event->type() == QEvent::KeyPress && event->key() == 16777248) { // sift
+    if (event->type() == QEvent::KeyPress && event->key() == Qt::Key_Shift) { // shift
       shift_pressing_ = true;
     }
-    else if (event->type() == QEvent::KeyRelease && event->key() == 16777248) {
+    else if (event->type() == QEvent::KeyRelease && event->key() == Qt::Key_Shift) {
       shift_pressing_ = false;
     }
     return 0;

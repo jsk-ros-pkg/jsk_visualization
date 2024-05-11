@@ -1,0 +1,114 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+env:
+  DISPLAY: ':0.0'
+
+jobs:
+  ros:
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ROS_DISTRO: indigo
+            CONTAINER: jskrobotics/ros-ubuntu:14.04
+            BEFORE_SCRIPT : "sudo pip install virtualenv==15.1.0"
+            NOT_TEST_INSTALL: true
+          - ROS_DISTRO: kinetic
+            CONTAINER: ubuntu:16.04
+            BEFORE_SCRIPT: "pip install --user matplotlib==2.2.5"
+          - ROS_DISTRO: melodic
+            CONTAINER: ubuntu:18.04
+          - ROS_DISTRO: noetic
+            CONTAINER: ubuntu:20.04
+          - ROS_DISTRO: noetic
+            CONTAINER: ubuntu:20.04
+            BEFORE_SCRIPT: "pip3 install -U --user pyyaml"
+
+    container: ${{ matrix.CONTAINER }}
+    steps:
+      - name: Install latest git ( use sudo for ros-ubuntu )
+        run: |
+          [ -e /etc/apt/sources.list.d/ubuntu-esm-infra-$(lsb_release -cs).list ] && sudo rm /etc/apt/sources.list.d/ubuntu-esm-infra-$(lsb_release -cs).list ## fix Err https://esm.ubuntu.com trusty-infra-security/main amd64 Packages, gnutls_handshake() failed: Handshake failed
+          (apt-get update && apt-get install -y sudo) || echo "OK"
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
+          sudo apt-get update
+          sudo -E add-apt-repository -y ppa:git-core/ppa
+          sudo apt-get update
+          sudo apt-get install -y git
+
+      - name: work around permission issue  # https://github.com/actions/checkout/issues/760#issuecomment-1097501613
+        run: |
+          set -x
+          export USER=$(whoami)
+          if [ "${{ matrix.CONTAINER }}" = "jskrobotics/ros-ubuntu:14.04" ]; then
+             git config --global --add safe.directory $GITHUB_WORKSPACE || echo "OK" # Show 'could not lock config file /github/home/.gitconfig: Permission denied', but it is ok
+             sudo mkdir -p /__w/
+             sudo chmod 777 -R /__w/
+             sudo chown -R $USER $HOME
+             sudo mkdir  -p /__w/_temp/_runner_file_commands/
+             sudo chown -R $USER /__w/_temp/_runner_file_commands/
+             # sudo mkdir -p /home/runner/work/_temp/_github_workflow/
+             # sudo chown -R $USER $HOME /home/runner/work/_temp/_github_workflow/
+             # ls -al /home/runner/work/_temp/_github_workflow/
+          else
+             git config --global --add safe.directory $GITHUB_WORKSPACE
+          fi
+
+      - name: Chcekout
+        uses: actions/checkout@v3.0.2
+        with:
+          submodules: true
+
+      - name: Cache Download Data
+        uses: actions/cache@v3.0.4
+        with:
+          path: /github/home/.ros/data/jsk_rviz_plugins
+          key: jsk_rviz_plugins
+
+      - name: Start X server
+        run: |
+          if [[ "${{ matrix.CONTAINER }}" =~ "jskrobotics/ros-ubuntu:14.04" ]]; then exit 0; fi
+          echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections || echo "failing on ros-ubuntu is OK" # set non interactive tzdata https://stackoverflow.com/questions/8671308/non-interactive-method-for-dpkg-reconfigure-tzdata
+          sudo apt-get -y -qq install mesa-utils x11-xserver-utils xserver-xorg-video-dummy wget
+          export DISPLAY=:0
+          wget https://raw.githubusercontent.com/jsk-ros-pkg/jsk_travis/master/dummy.xorg.conf -O /tmp/dummy.xorg.conf
+          sudo Xorg -noreset +extension GLX +extension RANDR +extension RENDER -logfile /tmp/xorg.log -config /tmp/dummy.xorg.conf $DISPLAY &
+          sleep 3 # wait x server up
+          export QT_X11_NO_MITSHM=1 # http://wiki.ros.org/docker/Tutorials/GUI
+          xhost +local:root
+        shell: bash
+
+      - name: Start X server (for 14.04)
+        run: |
+          if [[ "${{ matrix.CONTAINER }}" =~ "jskrobotics/ros-ubuntu:14.04" ]]; then
+            echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections || echo "failing on ros-ubuntu is OK" # set non interactive tzdata https://stackoverflow.com/questions/8671308/non-interactive-method-for-dpkg-reconfigure-tzdata
+            export DISPLAY=:0
+            sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
+            sudo apt-get install -y x11-xserver-utils  # for xhost
+            sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
+            sleep 3 # wait x server up
+            export QT_X11_NO_MITSHM=1 # http://wiki.ros.org/docker/Tutorials/GUI
+            xhost +local:root
+          fi
+        shell: bash
+
+      - name: Run jsk_travis
+        uses: jsk-ros-pkg/jsk_travis@master
+        with:
+          ROS_PARALLEL_JOBS : "-j8"
+          CATKIN_PARALLEL_JOBS : "-p8"
+          ROS_PARALLEL_TEST_JOBS : "-j8"
+          CATKIN_PARALLEL_TEST_JOBS : "-p8"
+          BEFORE_SCRIPT : ${{ matrix.BEFORE_SCRIPT }}
+          ROS_DISTRO : ${{ matrix.ROS_DISTRO }}
+          USE_DEB :  ${{ matrix.USE_DEB }}
+          NOT_TEST_INSTALL : ${{ matrix.NOT_TEST_INSTALL }}
+          TEST_PKGS : ${{ matrix.TEST_PKGS }}
+          EXTRA_DEB : ${{ matrix.EXTRA_DEB }}

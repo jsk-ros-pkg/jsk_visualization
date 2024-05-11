@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>jsk_rqt_plugins</name>
-  <version>2.1.7</version>
+  <version>2.1.8</version>
   <description>The jsk_rqt_plugins package</description>
   <maintainer email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</maintainer>
   <license>BSD</license>
@@ -30,8 +30,6 @@
   <exec_depend>image_view2</exec_depend>
   <exec_depend version_gte="4.3.0" >jsk_gui_msgs</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
-  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-urlgrabber</exec_depend>
-  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-urlgrabber</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-sklearn</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-sklearn</exec_depend>
   <exec_depend>message_runtime</exec_depend>
