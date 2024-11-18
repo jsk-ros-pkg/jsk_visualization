@@ -50,6 +50,7 @@
   #include <OGRE/OgreOverlayContainer.h>
   #include <OGRE/OgreOverlayManager.h>
 #else
+  #include <OGRE/Overlay/OgreOverlay.h>
   #include <OGRE/Overlay/OgrePanelOverlayElement.h>
   #include <OGRE/Overlay/OgreOverlayElement.h>
   #include <OGRE/Overlay/OgreOverlayContainer.h>

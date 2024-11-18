@@ -206,7 +206,11 @@ void OverlayCameraDisplay::onInitialize()
 
     bg_screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_BACKGROUND);
     bg_screen_rect_->setBoundingBox(aabInf);
+#if ((OGRE_VERSION_MAJOR << 16) | (OGRE_VERSION_MINOR << 8) | OGRE_VERSION_PATCH) < ((1 << 16) | (10 << 8) | 0)
     bg_screen_rect_->setMaterial(bg_material_->getName());
+#else
+    bg_screen_rect_->setMaterial(bg_material_);
+#endif
 
     bg_scene_node_->attachObject(bg_screen_rect_);
     bg_scene_node_->setVisible(false);
@@ -217,7 +221,11 @@ void OverlayCameraDisplay::onInitialize()
 
     fg_material_ = bg_material_->clone( ss.str()+"fg" );
     fg_screen_rect_->setBoundingBox(aabInf);
+#if ((OGRE_VERSION_MAJOR << 16) | (OGRE_VERSION_MINOR << 8) | OGRE_VERSION_PATCH) < ((1 << 16) | (10 << 8) | 0)
     fg_screen_rect_->setMaterial(fg_material_->getName());
+#else
+    fg_screen_rect_->setMaterial(fg_material_);
+#endif
 
     fg_material_->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
     fg_screen_rect_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY - 1);
