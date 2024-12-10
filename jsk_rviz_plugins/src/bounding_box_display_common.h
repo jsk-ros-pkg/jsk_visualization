@@ -211,27 +211,29 @@ protected:
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
     {
       edges_.clear();
+      float min_value = DBL_MAX;
+      float max_value = -DBL_MAX;
       // filter boxes before drawing
       std::vector<jsk_recognition_msgs::BoundingBox> boxes;
-      for (auto box : msg->boxes) {
-        if (!isValidBoundingBox(box)) {
+      for (size_t i = 0; i < msg->boxes.size(); i++) {
+        jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
+        if (isValidBoundingBox(box)) {
+          if (box.value < value_threshold_) {
+            continue;
+          }
+          boxes.push_back(box);
+          min_value = std::min(min_value, msg->boxes[i].value);
+          max_value = std::max(max_value, msg->boxes[i].value);
+        }
+        else
+        {
           ROS_WARN_THROTTLE(10, "Invalid size of bounding box is included and skipped: [%f, %f, %f]",
             box.dimensions.x, box.dimensions.y, box.dimensions.z);
         }
-        if (box.value < value_threshold_) {
-          continue;
-        }
-        boxes.push_back(box);
       }
 
       // draw filtered boxes
       allocateShapes(boxes.size());
-      float min_value = DBL_MAX;
-      float max_value = -DBL_MAX;
-      for (size_t i = 0; i < boxes.size(); i++) {
-        min_value = std::min(min_value, boxes[i].value);
-        max_value = std::max(max_value, boxes[i].value);
-      }
       for (size_t i = 0; i < boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = boxes[i];
         ShapePtr shape = shapes_[i];
@@ -274,40 +276,28 @@ protected:
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
     {
       shapes_.clear();
+      float min_value = DBL_MAX;
+      float max_value = -DBL_MAX;
       // filter boxes before drawing
       std::vector<jsk_recognition_msgs::BoundingBox> boxes;
-      for (auto box : msg->boxes) {
-        if (!isValidBoundingBox(box)) {
+      for (size_t i = 0; i < msg->boxes.size(); i++) {
+        jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
+        if (isValidBoundingBox(box)) {
+          if (box.value < value_threshold_) {
+            continue;
+          }
+          boxes.push_back(box);
+          min_value = std::min(min_value, msg->boxes[i].value);
+          max_value = std::max(max_value, msg->boxes[i].value);
+        }
+        else
+        {
           ROS_WARN_THROTTLE(10, "Invalid size of bounding box is included and skipped: [%f, %f, %f]",
             box.dimensions.x, box.dimensions.y, box.dimensions.z);
-          continue;
         }
-        if (box.value < value_threshold_) {
-          continue;
-        }
-        boxes.push_back(box);
       }
 
       // draw filtered boxes
-      allocateBillboardLines(boxes.size());
-      float min_value = DBL_MAX;
-      float max_value = -DBL_MAX;
-      for (size_t i = 0; i < boxes.size(); i++) {
-        min_value = std::min(min_value, boxes[i].value);
-        max_value = std::max(max_value, boxes[i].value);
-      }
-      for (size_t i = 0; i < boxes.size(); i++) {
-        jsk_recognition_msgs::BoundingBox box = boxes[i];
-        if (!isValidBoundingBox(box)) {
-          ROS_WARN_THROTTLE(10, "Invalid size of bounding box is included and skipped: [%f, %f, %f]",
-            box.dimensions.x, box.dimensions.y, box.dimensions.z);
-        }
-        if (box.value < value_threshold_)
-        {
-          continue;
-        }
-      }
-
       allocateBillboardLines(boxes.size());
       for (size_t i = 0; i < boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = boxes[i];

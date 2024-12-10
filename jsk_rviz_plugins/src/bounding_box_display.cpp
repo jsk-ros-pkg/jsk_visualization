@@ -50,7 +50,7 @@ namespace jsk_rviz_plugins
     coloring_property_->addOption("Value", 2);
 
     alpha_method_property_ = new rviz::EnumProperty(
-      "alpha_method", "flat", "alpha method",  
+      "alpha_method", "flat", "alpha method",
       this, SLOT(updateAlphaMethod()));
     alpha_method_property_->addOption("flat", 0);
     alpha_method_property_->addOption("value", 1);
