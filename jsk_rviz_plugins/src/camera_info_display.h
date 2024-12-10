@@ -53,6 +53,7 @@
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreTextureManager.h>
 #include <OGRE/OgreTexture.h>
+#include <OGRE/OgreTechnique.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <image_transport/subscriber.h>

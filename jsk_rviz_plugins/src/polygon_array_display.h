@@ -47,6 +47,7 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreManualObject.h>
 #include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreTechnique.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/enum_property.h>
