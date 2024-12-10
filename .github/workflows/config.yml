@@ -30,7 +30,11 @@ jobs:
             CONTAINER: ubuntu:20.04
             BEFORE_SCRIPT: "pip3 install -U --user pyyaml"
 
-    container: ${{ matrix.CONTAINER }}
+    container:
+      image: ${{ matrix.CONTAINER }}
+      volumes:
+        - /tmp/node20:/__e/node20
+
     steps:
       - name: Install latest git ( use sudo for ros-ubuntu )
         run: |
@@ -60,6 +64,21 @@ jobs:
           else
              git config --global --add safe.directory $GITHUB_WORKSPACE
           fi
+
+      - name: Try to replace `node` with an glibc 2.17
+        shell: bash
+        run: |
+          if [ "${{ matrix.CONTAINER }}" = "jskrobotics/ros-ubuntu:14.04" ]; then
+             export USER=$(whoami)
+             sudo chmod 777 -R /__e/node20
+             sudo chown -R $USER /__e/node20
+          fi
+          ls -lar /__e/node20 &&
+          sudo apt-get install -y curl &&
+          curl -Lo /tmp/node.tar.gz https://unofficial-builds.nodejs.org/download/release/v20.17.0/node-v20.17.0-linux-x64-glibc-217.tar.gz &&
+          cd /__e/node20 &&
+          tar -x --strip-components=1 -f /tmp/node.tar.gz &&
+          ls -lar /__e/node20/bin/
 
       - name: Chcekout
         uses: actions/checkout@v3.0.2
