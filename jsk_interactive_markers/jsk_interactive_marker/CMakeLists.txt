@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_interactive_marker)
 
-if("$ENV{ROS_DISTRO}" STREQUAL "kinetic")
+if(("$ENV{ROS_DISTRO}" STREQUAL "kinetic") OR ("$ENV{ROS_DISTRO}" STREQUAL "indigo"))
   # catch special case ROS kinetic where c++11 is not the default yet
   add_compile_options(-std=c++11)
 endif()
