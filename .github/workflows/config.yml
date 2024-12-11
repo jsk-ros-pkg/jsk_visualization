@@ -131,3 +131,61 @@ jobs:
           NOT_TEST_INSTALL : ${{ matrix.NOT_TEST_INSTALL }}
           TEST_PKGS : ${{ matrix.TEST_PKGS }}
           EXTRA_DEB : ${{ matrix.EXTRA_DEB }}
+
+  # ROS-O setup https://github.com/v4hn/ros-o-builder/blob/jammy-one/README.md#install-instructions
+  ros-o:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - DISTRO: ubuntu:22.04
+            ROS_REPOSITORY_URL: https://raw.githubusercontent.com/v4hn/ros-o-builder/jammy-one/repository
+
+    container: ${{ matrix.DISTRO }}
+
+    env:
+      DEBIAN_FRONTEND : noninteractive
+
+    steps:
+      - name: Chcekout Source
+        uses: actions/checkout@v3.0.2
+
+      - name: Setup ROS-O deb repository
+        run: |
+          set -x
+          apt update && apt install -qq -y ca-certificates
+          echo "deb [trusted=yes] ${{ matrix.ROS_REPOSITORY_URL }}/ ./" | tee /etc/apt/sources.list.d/ros-o-builder.list
+          apt update
+          apt install -qq -y python3-rosdep2
+          echo "yaml ${{ matrix.ROS_REPOSITORY_URL }}/local.yaml debian" | tee /etc/ros/rosdep/sources.list.d/1-ros-o-builder.list
+          rosdep update
+
+      - name: Setup catkin-tools
+        run: |
+          set -x
+          # setup catkin tools
+          apt install -qq -y python3-pip
+          pip3 install catkin-tools
+          # setup build tools
+          apt install -qq -y cmake build-essential catkin ros-one-rosbash
+
+      - name: Setup Workspace
+        run: |
+          source /opt/ros/one/setup.bash
+          set -x
+          # setup workspace
+          mkdir -p ~/ws/src
+          cd ~/ws/src
+          ln -sf $GITHUB_WORKSPACE .
+          rosdep install -qq -r -y --from-path . --ignore-src || echo "OK"
+        shell: bash
+
+      - name: Compile Packages
+        run: |
+          source /opt/ros/one/setup.bash
+          set -x
+          cd ~/ws/
+          catkin build --no-status -sv ${{ matrix.CATKIN_OPTIONS }} --cmake-args -DCATKIN_ENABLE_TESTING=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
+        shell: bash
