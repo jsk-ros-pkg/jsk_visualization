@@ -240,7 +240,12 @@ install(TARGETS jsk_interactive_marker
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
-install(DIRECTORY config euslisp launch models scripts urdf
+file(GLOB PYTHON_SCRIPTS scripts/*.py)
+catkin_install_python(
+  PROGRAMS ${PYTHON_SCRIPTS}
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(DIRECTORY config euslisp launch models urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS
   PATTERN ".svn" EXCLUDE
