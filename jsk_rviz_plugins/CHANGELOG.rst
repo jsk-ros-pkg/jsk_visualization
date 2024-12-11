@@ -2,8 +2,8 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.9 (2024-12-11)
+------------------
 * enable to jsk_rviz_plugins, without rviz/ogre (`#848 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/848>`_)
   * jsk_rviz_plugins: find_package(Qt.. only when USE_VISUALIZATION
   * enable to compile without jsk_recognition_utils, if 'pcl/visualization' not found

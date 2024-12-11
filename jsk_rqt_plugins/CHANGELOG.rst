@@ -2,8 +2,8 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.9 (2024-12-11)
+------------------
 * add more visualization options for BoundingBox and BoundingBoxArray (`#844 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/844>`_)
 * [ROS-O] patches (`#891 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/891>`_)
 
