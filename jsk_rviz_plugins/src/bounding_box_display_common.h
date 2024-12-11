@@ -214,6 +214,7 @@ protected:
       float min_value = DBL_MAX;
       float max_value = -DBL_MAX;
       // filter boxes before drawing
+      std::vector<int> box_indices;
       std::vector<jsk_recognition_msgs::BoundingBox> boxes;
       for (size_t i = 0; i < msg->boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
@@ -222,6 +223,7 @@ protected:
             continue;
           }
           boxes.push_back(box);
+          box_indices.push_back(i);
           min_value = std::min(min_value, msg->boxes[i].value);
           max_value = std::max(max_value, msg->boxes[i].value);
         }
@@ -264,7 +266,7 @@ protected:
         dimensions[1] = box.dimensions.y;
         dimensions[2] = box.dimensions.z;
         shape->setScale(dimensions);
-        QColor color = getColor(i, box, min_value, max_value);
+        QColor color = getColor(box_indices[i], box, min_value, max_value);
         shape->setColor(color.red() / 255.0,
                         color.green() / 255.0,
                         color.blue() / 255.0,
@@ -279,6 +281,7 @@ protected:
       float min_value = DBL_MAX;
       float max_value = -DBL_MAX;
       // filter boxes before drawing
+      std::vector<int> box_indices;
       std::vector<jsk_recognition_msgs::BoundingBox> boxes;
       for (size_t i = 0; i < msg->boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
@@ -287,6 +290,7 @@ protected:
             continue;
           }
           boxes.push_back(box);
+          box_indices.push_back(i);
           min_value = std::min(min_value, msg->boxes[i].value);
           max_value = std::max(max_value, msg->boxes[i].value);
         }
@@ -324,7 +328,7 @@ protected:
         edge->setMaxPointsPerLine(2);
         edge->setNumLines(12);
         edge->setLineWidth(line_width_);
-        QColor color = getColor(i, box, min_value, max_value);
+        QColor color = getColor(box_indices[i], box, min_value, max_value);
         edge->setColor(color.red() / 255.0,
                       color.green() / 255.0,
                       color.blue() / 255.0,
