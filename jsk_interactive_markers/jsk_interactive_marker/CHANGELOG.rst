@@ -2,6 +2,30 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* enable to jsk_rviz_plugins, without rviz/ogre (`#848 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/848>`_)
+
+  use jsk_rviz_plugins message within embedded environment, compile with
+  ```
+  catkin bt -vi --cmake-args -DUSE_VISUALIZATION=OFF
+  ```
+* [ROS-O] patches (`#891 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/891>`_)
+
+* drop ROS_DISTRO STRGREATER tests
+  As the Debian packages use "Debian"
+  https://salsa.debian.org/science-team/ros-ros-environment/-/blame/master/debian/rules?ref_type=heads#L6
+  which is incompatible, does not trigger them
+  c++14 is the default from melodic onward, so the additional statements
+  there are not necessary
+* CMakeLists.txt: check both kinetic and indigo
+
+* [jsk_interactive_marker/scripts/transformable_markers_client.py] Fix for Python3 (`#882 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/882>`_)
+
+* Fixed typo of Software License Agreement. and/o2r to and/or (`#853 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/853>`_)
+
+* Contributors: Kei Okada, Shun Hasegawa, iory, v4hn
+
 2.1.8 (2022-01-11)
 ------------------
 * Resolve fixed frame of rviz (`#842 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/842>`_)

@@ -2,6 +2,35 @@
 Changelog for package jsk_rqt_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add more visualization options for BoundingBox and BoundingBoxArray (`#844 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/844>`_)
+* [ROS-O] patches (`#891 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/891>`_)
+
+  * drop ROS_DISTRO STRGREATER tests
+    As the Debian packages use "Debian"
+    https://salsa.debian.org/science-team/ros-ros-environment/-/blame/master/debian/rules?ref_type=heads#L6
+    which is incompatible, does not trigger them
+    c++14 is the default from melodic onward, so the additional statements
+    there are not necessary
+
+* face_detector is released, so remove .travis.rosinstall.noetic . add test to check with latest pyyaml from pip (`#884 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/884>`_)
+
+  * [jsk_rqt_plugins] Fix yaml load in tabbed_button_general.py
+
+* update perspective for noetic (`#873 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/873>`_)
+* drop obsolete (and broken urlgrabber dependency) (`#867 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/867>`_)
+* add test to check (ServiceButtonGeneralWidget_in_tab (`#880 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/880>`_)
+
+  * Fix super function argument in tabbed_button_general
+  * add test to check https://github.com/jsk-ros-pkg/jsk_visualization/pull/879
+
+* use QFileDialog for file select (`#876 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/876>`_)
+* fix plugin category (`#877 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/877>`_)
+* return int in mouse event (`#874 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/874>`_)
+
+* Contributors: Naoaki Kanazawa, Kei Okada, Shingo Kitagawa, Yoshiki Obinata, v4hn
+
 2.1.8 (2022-01-11)
 ------------------
 * [jsk_interactive_markers][jsk_rqt_plugins] fix yaml load (`#818 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/818>`_)

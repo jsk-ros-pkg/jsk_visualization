@@ -2,6 +2,72 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* enable to jsk_rviz_plugins, without rviz/ogre (`#848 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/848>`_)
+  * jsk_rviz_plugins: find_package(Qt.. only when USE_VISUALIZATION
+  * enable to compile without jsk_recognition_utils, if 'pcl/visualization' not found
+  * enable to jsk_rviz_plugins, without rviz/ogre, i.e. use jsk_rviz_plugins message within embedded environment, compile with 'catkin bt -vi --cmake-args -DUSE_VISUALIZATION=ON'
+
+* add more visualization options for BoundingBox and BoundingBoxArray `#844 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/844>`_
+  * keep index to set box color
+  * add value threshold filtering and fix unintended state behaviour for boxes violating size constraints
+  * property naming consistency
+  * hide min max properties in flat mode
+  * add alpha min max value properties
+  * add alpha = value option
+
+* [ROS-O] patches (`#891 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/891>`_)
+
+  * support Ogre 1.12
+    OgreTechnique and Overlay are only forward declared in some headers now.
+    `SimpleRenderable::setMaterial` requires a MaterialPtr from 1.12.
+    The std::string overload was deprecated in 1.10.
+  * drop ROS_DISTRO STRGREATER tests
+    As the Debian packages use "Debian"
+    https://salsa.debian.org/science-team/ros-ros-environment/-/blame/master/debian/rules?ref_type=heads#L6
+    which is incompatible, does not trigger them
+    c++14 is the default from melodic onward, so the additional statements
+    there are not necessary
+
+* [jsk_rviz_plugins] fix typo in test: boundigbox -> boundingbox (`#888 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/888>`_)
+* [jsk_rviz_plugins][Plotter2D] add option to control text size in plot (`#878 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/878>`_)
+* use qt key namespace (`#870 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/870>`_)
+* Fix QPainterPath path has incomplete type and cannot be defined (`#869 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/869>`_)
+* Fix simultaneous display of OverlayCamera and OverlayImage (`#863 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/863>`_)
+* [jsk_rviz_plugins] allocate only valid bboxes (`#861 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/861>`_)
+* Fixed linear gague display (`#860 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/860>`_)
+
+* add test to check 'genpy.message.SerializationError: field width must be an integer type' (`#864 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/864>`_)
+  * use int_t for width/height/top/left to be compatible with OverlayText.msg
+  * add test to check 'genpy.message.SerializationError: field width must be an integer type'
+  ```
+  File "/home/k-okada/catkin_ws/jsk_recognition_ws/devel/lib/python3/dist-packages/jsk_rviz_plugins/msg/_OverlayText.py", line 127, in serialize
+  except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
+  File "/opt/ros/noetic/lib/python3/dist-packages/genpy/message.py", line 393, in _check_types
+  check_type(n, t, getattr(self, n))
+  File "/opt/ros/noetic/lib/python3/dist-packages/genpy/message.py", line 261, in check_type
+  raise SerializationError('field %s must be an integer type' % field_name)
+  genpy.message.SerializationError: field width must be an integer type
+  ```
+
+* Fixed typo of Software License Agreement. and/o2r to and/or (`#853 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/853>`_)
+* Fixed typo of Software License Agreement. and/o2r to and/or
+* [jsk_rviz_plugins] Fixed Camera Info visualization (`#851 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/851>`_)
+
+  * [jsk_rviz_plugins/CameraInfo] Fixed scale depending on encodings
+  * [jsk_rviz_plugins/CameraInfo] Fixed duplicated BGR encogind
+  * [jsk_rviz_plugins/CameraInfo] Enable ROI size iamge input
+  * [jsk_rviz_plugins/CameraInfo] Supprt for other image encodings (`#1 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/1>`_)
+  * [jsk_rviz_plugins/CameraInfo] Avoid invalid image size case for visualization image
+  * [jsk_rviz_plugins] Fixed Camera Info visualization
+
+* integrate all config file to one, to make it easy to restart failed job (`#850 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/850>`_)
+
+  * location? file? of 2017-06-20-12-00-00_people_images_in_lab.bag.tgz has changed ? but md5sum is same... strange
+
+* Contributors: Aoi Nakane, Kei Okada, Martin Pecka, Shingo Kitagawa, Yoshiki Obinata, iory, joachim-p, ozzdemir, v4hn
+
 2.1.8 (2022-01-11)
 ------------------
 * Fix font name for pictgram (`#835 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/835>`_)
