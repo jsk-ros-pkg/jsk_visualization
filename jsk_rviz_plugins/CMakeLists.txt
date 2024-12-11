@@ -225,17 +225,23 @@ install(TARGETS jsk_rviz_plugins
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
-install(DIRECTORY scripts/
+file(GLOB PYTHON_SCRIPTS scripts/*.py)
+catkin_install_python(
+  PROGRAMS ${PYTHON_SCRIPTS}
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  USE_SOURCE_PERMISSIONS
 )
 
 install(FILES plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(DIRECTORY cfg config icons launch samples test
+install(DIRECTORY cfg config icons launch test
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS
+)
+file(GLOB PYTHON_SAMPLES samples/*.py)
+catkin_install_python(
+  PROGRAMS ${PYTHON_SAMPLES}
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/samples
 )
 
 install(DIRECTORY src/
