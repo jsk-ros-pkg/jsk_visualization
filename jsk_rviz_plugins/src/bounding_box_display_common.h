@@ -74,7 +74,11 @@ protected:
     QColor color_;
     std::string coloring_method_;
     double alpha_;
+    double alpha_min_;
+    double alpha_max_;
+    std::string alpha_method_;
     double line_width_;
+    double value_threshold_;
 
     std::vector<std::vector<ArrowPtr> > coords_objects_;
     std::vector<Ogre::SceneNode*> coords_nodes_;
@@ -114,6 +118,19 @@ protected:
         }
       }
       return QColor(255.0, 255.0, 255.0, 255.0);
+    }
+
+    double getAlpha(const jsk_recognition_msgs::BoundingBox& box)
+    {
+      if (alpha_method_ == "flat") {
+        return alpha_;
+      }
+      else if (alpha_method_ == "value")
+      {
+        return alpha_min_ + box.value * (alpha_max_ - alpha_min_);
+      }
+      ROS_WARN_THROTTLE(10, "unknown alpha method");
+      return 1.0;
     }
 
     bool isValidBoundingBox(
@@ -196,11 +213,17 @@ protected:
       edges_.clear();
       float min_value = DBL_MAX;
       float max_value = -DBL_MAX;
+      // filter boxes before drawing
+      std::vector<int> box_indices;
       std::vector<jsk_recognition_msgs::BoundingBox> boxes;
       for (size_t i = 0; i < msg->boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
         if (isValidBoundingBox(box)) {
+          if (box.value < value_threshold_) {
+            continue;
+          }
           boxes.push_back(box);
+          box_indices.push_back(i);
           min_value = std::min(min_value, msg->boxes[i].value);
           max_value = std::max(max_value, msg->boxes[i].value);
         }
@@ -210,6 +233,8 @@ protected:
             box.dimensions.x, box.dimensions.y, box.dimensions.z);
         }
       }
+
+      // draw filtered boxes
       allocateShapes(boxes.size());
       for (size_t i = 0; i < boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = boxes[i];
@@ -241,11 +266,11 @@ protected:
         dimensions[1] = box.dimensions.y;
         dimensions[2] = box.dimensions.z;
         shape->setScale(dimensions);
-        QColor color = getColor(i, box, min_value, max_value);
+        QColor color = getColor(box_indices[i], box, min_value, max_value);
         shape->setColor(color.red() / 255.0,
                         color.green() / 255.0,
                         color.blue() / 255.0,
-                        alpha_);
+                        getAlpha(box));
       }
     }
 
@@ -255,11 +280,17 @@ protected:
       shapes_.clear();
       float min_value = DBL_MAX;
       float max_value = -DBL_MAX;
+      // filter boxes before drawing
+      std::vector<int> box_indices;
       std::vector<jsk_recognition_msgs::BoundingBox> boxes;
       for (size_t i = 0; i < msg->boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = msg->boxes[i];
         if (isValidBoundingBox(box)) {
+          if (box.value < value_threshold_) {
+            continue;
+          }
           boxes.push_back(box);
+          box_indices.push_back(i);
           min_value = std::min(min_value, msg->boxes[i].value);
           max_value = std::max(max_value, msg->boxes[i].value);
         }
@@ -270,6 +301,7 @@ protected:
         }
       }
 
+      // draw filtered boxes
       allocateBillboardLines(boxes.size());
       for (size_t i = 0; i < boxes.size(); i++) {
         jsk_recognition_msgs::BoundingBox box = boxes[i];
@@ -296,11 +328,11 @@ protected:
         edge->setMaxPointsPerLine(2);
         edge->setNumLines(12);
         edge->setLineWidth(line_width_);
-        QColor color = getColor(i, box, min_value, max_value);
+        QColor color = getColor(box_indices[i], box, min_value, max_value);
         edge->setColor(color.red() / 255.0,
                       color.green() / 255.0,
                       color.blue() / 255.0,
-                      alpha_);
+                      getAlpha(box));
 
         Ogre::Vector3 A, B, C, D, E, F, G, H;
         A[0] = dimensions.x / 2.0;

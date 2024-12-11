@@ -18,16 +18,33 @@ catkin_package()
 # recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
 # Be careful that 'launch' and 'launch/' are different: the former is directory
 # and the latter is each content.
-install(DIRECTORY bin/
+file(GLOB PYTHON_SCRIPTS bin/*)
+catkin_install_python(
+  PROGRAMS ${PYTHON_SCRIPTS}
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  USE_SOURCE_PERMISSIONS
 )
 install(FILES plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(DIRECTORY launch resource sample sample_scripts test
+install(DIRECTORY launch resource sample sample_scripts
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS
+)
+file(GLOB PYTHON_SAMPLES sample_scripts/*.py)
+catkin_install_python(
+  PROGRAMS ${PYTHON_SAMPLES}
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/sample_scripts
+)
+
+install(DIRECTORY test
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  USE_SOURCE_PERMISSIONS
+  PATTERN "*.launch"
+)
+file(GLOB PYTHON_TEST test/*.py)
+catkin_install_python(
+  PROGRAMS ${PYTHON_TEST}
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
 
 if (CATKIN_ENABLE_TESTING)
