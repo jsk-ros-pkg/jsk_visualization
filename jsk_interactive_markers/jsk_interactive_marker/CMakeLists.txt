@@ -6,6 +6,17 @@ if(("$ENV{ROS_DISTRO}" STREQUAL "kinetic") OR ("$ENV{ROS_DISTRO}" STREQUAL "indi
   add_compile_options(-std=c++11)
 endif()
 
+# support environment does not have visualization such as VTK or Rviz (i.e embedded environment)
+set(USE_VISUALIZATION ON CACHE BOOL "compile with rviz package")
+if(USE_VISUALIZATION)
+  set(RVIZ "rviz")
+  set(JSK_RECOGNITION_UTILS "jsk_recognition_utils")
+else()
+  set(RVIZ "")
+  set(JSK_RECOGNITION_UTILS "")
+  message(WARNING "Compile without RVIZ/jsk_recognition_utils package")
+endif()
+
 # Use ccache if installed to make it fast to generate object files
 if (CMAKE_VERSION VERSION_LESS 3.4)
   find_program(CCACHE_FOUND ccache)
@@ -31,11 +42,13 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   jsk_recognition_msgs
   ${PCL_MSGS}
-  jsk_topic_tools
-  rviz
+  jsk_topic_tools image_transport
+  ${RVIZ} ${JSK_RECOGNITION_UTILS}
   )
-message("jsk_recognition_msgs : ${jsk_recognition_msgs_VERSION}")
-message("jsk_footstep_msgs    : ${jsk_footstep_msgs_VERSION}")
+message("rviz                  : VERSION: ${rviz_VERSION}, FOUND: ${rviz_FOUND}")
+message("jsk_recognition_utils : VERSION: ${jsk_recognition_utils_VERSION}, FOUND ${jsk_recognition_utils_FOUND}")
+message("jsk_recognition_msgs  : VERSION: ${jsk_recognition_msgs_VERSION}, FOUND: ${jsk_recognition_msgs_FOUND}")
+message("jsk_footstep_msgs     : VERSION: ${jsk_footstep_msgs_VERSION}, FOUND: ${jsk_footstep_msgs_FOUND}")
 find_package(orocos_kdl REQUIRED)
 find_package(TinyXML REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
@@ -63,30 +76,30 @@ include_directories(include ${catkin_INCLUDE_DIRS}
   ${orocos_kdl_INCLUDE_DIRS} ${TinyXML_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 # include Qt
-if(rviz_QT_VERSION VERSION_LESS "5")
+if(rviz_FOUND AND (rviz_QT_VERSION VERSION_LESS "5"))
   find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
   include(${QT_USE_FILE})
-else()
+elseif(rviz_FOUND)
   find_package(Qt5Widgets REQUIRED)
 endif()
 add_definitions(-DQT_NO_KEYWORDS -g)
 
-if(jsk_recognition_msgs_VERSION VERSION_LESS "1.2.0")
+if((NOT rviz_FOUND) OR (jsk_recognition_msgs_VERSION VERSION_LESS "1.2.0"))
   set(TRANSFORMABLE_MARKER_OPERATOR_SRC_FILES)
   message(WARNING "transformable_marker_operator.h requires jsk_recognition_msgs >= 1.2.0")
 else(jsk_recognition_msgs_VERSION VERSION_LESS "1.2.0")
   set(TRANSFORMABLE_MARKER_OPERATOR_SRC_FILES
      src/rviz_plugins/transformable_marker_operator.cpp)
-if(rviz_QT_VERSION VERSION_LESS "5")
+if(rviz_FOUND AND (rviz_QT_VERSION VERSION_LESS "5"))
   qt4_wrap_cpp(MOC_FILES
     include/jsk_interactive_marker/rviz_plugins/transformable_marker_operator.h
     )
-else()
+elseif(rviz_FOUND)
   qt5_wrap_cpp(MOC_FILES
     include/jsk_interactive_marker/rviz_plugins/transformable_marker_operator.h
     )
 endif()
-endif(jsk_recognition_msgs_VERSION VERSION_LESS "1.2.0")
+endif((NOT rviz_FOUND) OR (jsk_recognition_msgs_VERSION VERSION_LESS "1.2.0"))
 
 # target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${TinyXML_LIBRARIES} ${orocos_kdl_LIBRARIES})
 link_directories(${catkin_LIBRARY_DIRS})
@@ -99,28 +112,37 @@ add_library(jsk_interactive_marker
   ${MOC_FILES}
   ${UIC_FILES}
 )
-if(rviz_QT_VERSION VERSION_LESS "5")
+if(rviz_FOUND AND (rviz_QT_VERSION VERSION_LESS "5"))
   target_link_libraries(jsk_interactive_marker ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
-else()
+elseif(rviz_FOUND)
   target_link_libraries(jsk_interactive_marker Qt5::Widgets ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES})
 endif()
+if(rviz_FOUND)
 add_dependencies(jsk_interactive_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+endif()
 
+set(INSTALL_TARGET)
+if(jsk_recognition_utils_FOUND)
 add_executable(interactive_marker_interface src/interactive_marker_interface.cpp src/interactive_marker_utils.cpp)
 target_link_libraries(interactive_marker_interface ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
 add_dependencies(interactive_marker_interface ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+list(APPEND INSTALL_TARGET "interactive_marker_interface")
 
 add_executable(camera_info_publisher src/camera_info_publisher.cpp src/interactive_marker_utils.cpp)
 target_link_libraries(camera_info_publisher ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker yaml-cpp)
 add_dependencies(camera_info_publisher ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+list(APPEND INSTALL_TARGET "camera_info_publisher")
 
 add_executable(urdf_model_marker src/urdf_model_marker.cpp src/urdf_model_marker_main.cpp src/interactive_marker_utils.cpp)
 target_link_libraries(urdf_model_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
 add_dependencies(urdf_model_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+list(APPEND INSTALL_TARGET "urdf_model_marker")
 
 add_executable(urdf_control_marker src/urdf_control_marker.cpp src/interactive_marker_utils.cpp)
 target_link_libraries(urdf_control_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
 add_dependencies(urdf_control_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+list(APPEND INSTALL_TARGET "urdf_control_marker")
+endif()
 
 add_executable(point_cloud_config_marker src/point_cloud_config_marker.cpp)
 target_link_libraries(point_cloud_config_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
@@ -134,9 +156,12 @@ add_executable(door_foot src/door_foot.cpp)
 target_link_libraries(door_foot ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
 add_dependencies(door_foot ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
-add_executable(footstep_marker src/footstep_marker.cpp)
-target_link_libraries(footstep_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
-add_dependencies(footstep_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+if(jsk_recognition_utils_FOUND)
+  add_executable(footstep_marker src/footstep_marker.cpp)
+  target_link_libraries(footstep_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
+  add_dependencies(footstep_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+  list(APPEND INSTALL_TARGET "footstep_marker")
+endif()
 
 add_executable(marker_6dof src/marker_6dof.cpp)
 target_link_libraries(marker_6dof ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
@@ -150,13 +175,17 @@ add_executable(bounding_box_marker src/bounding_box_marker.cpp)
 target_link_libraries(bounding_box_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
 add_dependencies(bounding_box_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 
-add_executable(polygon_marker src/polygon_marker.cpp)
-target_link_libraries(polygon_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
-add_dependencies(polygon_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+if(jsk_recognition_utils_FOUND)
+  add_executable(polygon_marker src/polygon_marker.cpp)
+  target_link_libraries(polygon_marker ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
+  add_dependencies(polygon_marker ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+  list(APPEND INSTALL_TARGET "polygon_marker")
 
-add_executable(interactive_point_cloud src/interactive_point_cloud_node.cpp src/interactive_point_cloud.cpp src/parent_and_child_interactive_marker_server.cpp)
-target_link_libraries(interactive_point_cloud ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
-add_dependencies(interactive_point_cloud ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+  add_executable(interactive_point_cloud src/interactive_point_cloud_node.cpp src/interactive_point_cloud.cpp src/parent_and_child_interactive_marker_server.cpp)
+  target_link_libraries(interactive_point_cloud ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES} ${Boost_LIBRARIES} jsk_interactive_marker)
+  add_dependencies(interactive_point_cloud ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
+  list(APPEND INSTALL_TARGET "interactive_point_cloud")
+endif()
 
 add_executable(pointcloud_cropper src/pointcloud_cropper.cpp
  )
@@ -223,21 +252,15 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 install(TARGETS
   jsk_interactive_marker
-  interactive_marker_interface
-  camera_info_publisher
-  urdf_model_marker
-  urdf_control_marker
   point_cloud_config_marker
   triangle_foot
   door_foot
-  footstep_marker
   marker_6dof
   world2yaml
   bounding_box_marker
-  polygon_marker
-  interactive_point_cloud
   pointcloud_cropper
   transformable_server_sample
+  ${INSTALL_TARGET}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

@@ -8,9 +8,21 @@ if(("$ENV{ROS_DISTRO}" STREQUAL "kinetic") OR ("$ENV{ROS_DISTRO}" STREQUAL "indi
   # catch special case ROS kinetic where c++11 is not the default yet
   add_compile_options(-std=c++11)
 endif()
+
+# support environment does not have visualization such as VTK or Rviz (i.e embedded environment)
+set(USE_VISUALIZATION ON CACHE BOOL "compile with rviz package")
+if(USE_VISUALIZATION)
+  set(RVIZ "rviz")
+  set(JSK_RECOGNITION_UTILS "jsk_recognition_utils") # jsk_recognition_utils depends on pcl/visualization (https://github.com/jsk-ros-pkg/jsk_recognition/blob/09cbce5f0ce7102331f6e48b9f9befc2b1fda869/jsk_recognition_utils/src/pcl_conversion_util.cpp#L37)
+else()
+  set(RVIZ "")
+  set(JSK_RECOGNITION_UTILS "")
+  message(WARNING "Compile without RVIZ/jsk_recognition_utils package")
+endif()
+
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS rviz jsk_hark_msgs jsk_footstep_msgs jsk_recognition_utils
+find_package(catkin REQUIRED COMPONENTS ${RVIZ} jsk_hark_msgs jsk_footstep_msgs ${JSK_RECOGNITION_UTILS}
   people_msgs
   message_generation std_msgs diagnostic_msgs cv_bridge
   jsk_topic_tools
@@ -45,12 +57,17 @@ generate_dynamic_reconfigure_options(
   cfg/OverlayTextInterface.cfg)
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
+if(USE_VISUALIZATION)
+  set(${LIBRARIES_PROJECT_NAME} ${PROJECT_NAME})
+else()
+  set(${LIBRARIES_PROJECT_NAME} "")
+endif()
 catkin_package(
-    DEPENDS rviz
+    DEPENDS ${RVIZ}
     CATKIN_DEPENDS jsk_hark_msgs jsk_footstep_msgs
-    jsk_recognition_utils cv_bridge people_msgs image_geometry
+    ${JSK_RECOGNITION_UTILS} cv_bridge people_msgs image_geometry
     INCLUDE_DIRS # TODO include
-    LIBRARIES ${PROJECT_NAME}
+    LIBRARIES ${LIBRARIES_PROJECT_NAME}
 )
 
 
@@ -63,10 +80,10 @@ include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 
-if(rviz_QT_VERSION VERSION_LESS "5")
+if(USE_VISUALIZATION AND rviz_QT_VERSION VERSION_LESS "5")
   find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
   include(${QT_USE_FILE})
-else()
+elseif(USE_VISUALIZATION)
   find_package(Qt5Widgets REQUIRED)
 endif()
 add_definitions(-DQT_NO_KEYWORDS -g)
@@ -123,7 +140,10 @@ set(HEADER_FILES
   src/human_skeleton_array_display.h
 )
 
-if(rviz_QT_VERSION VERSION_LESS "5")
+message(STATUS "Check rviz_FOUND: [${rviz_FOUND}], rviz_QT_VERSION: [${rviz_QT_VERSION}]")
+if("${rviz_QT_VERSION}" STREQUAL "")
+  message(WARNING "Compile without RVIZ package : skip qt_wrap_cpp")
+elseif(rviz_QT_VERSION VERSION_LESS "5")
   qt4_wrap_cpp(MOC_FILES ${HEADER_FILES})
 else()
   qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
@@ -189,6 +209,15 @@ if(jsk_recognition_msgs_VERSION VERSION_LESS 1.2.15)
   list(REMOVE_ITEM SOURCE_FILES  ${PROJECT_BINARY_DIR}/src/moc_human_skeleton_array_display.cxx)
 endif()
 
+if(NOT USE_VISUALIZATION)
+  message(WARNING "polygon_array_display, simple_occupancy_grid_array_display requries jsk_recognition_utils")
+  list(REMOVE_ITEM HEADER_FILES src/polygon_array_display.h)
+  list(REMOVE_ITEM SOURCE_FILES src/polygon_array_display.cpp)
+  list(REMOVE_ITEM HEADER_FILES src/simple_occupancy_grid_array_display.h)
+  list(REMOVE_ITEM SOURCE_FILES src/simple_occupancy_grid_array_display.cpp)
+endif()
+
+if(rviz_FOUND)
 add_library(jsk_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 if(rviz_QT_VERSION VERSION_LESS "5")
   target_link_libraries(jsk_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
@@ -223,6 +252,7 @@ install(TARGETS jsk_rviz_plugins
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
+endif(rviz_FOUND)
 
 file(GLOB PYTHON_SCRIPTS scripts/*.py)
 catkin_install_python(
