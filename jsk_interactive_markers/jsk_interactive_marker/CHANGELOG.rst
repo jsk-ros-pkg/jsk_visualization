@@ -2,6 +2,12 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* jsk_interactive_marker: use catkin_install_python in CMakeLists.txt (`#897 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/897>`_)
+
+* Contributors: Kei Okada
+
 2.1.9 (2024-12-11)
 ------------------
 * enable to jsk_rviz_plugins, without rviz/ogre (`#848 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/848>`_)
