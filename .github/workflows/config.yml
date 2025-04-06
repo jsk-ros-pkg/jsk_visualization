@@ -167,7 +167,7 @@ jobs:
           set -x
           # setup catkin tools
           apt install -qq -y python3-pip
-          pip3 install catkin-tools
+          pip3 install catkin-tools==0.9.4
           # setup build tools
           apt install -qq -y cmake build-essential catkin ros-one-rosbash
 
