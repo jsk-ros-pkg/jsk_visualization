@@ -34,6 +34,7 @@ jobs:
       image: ${{ matrix.CONTAINER }}
       volumes:
         - /tmp/node20:/__e/node20
+      options: --user root
 
     steps:
       - name: Install latest git ( use sudo for ros-ubuntu )
