@@ -34,6 +34,7 @@ jobs:
       image: ${{ matrix.CONTAINER }}
       volumes:
         - /tmp/node20:/__e/node20
+      options: --user root
 
     steps:
       - name: Install latest git ( use sudo for ros-ubuntu )
@@ -86,7 +87,7 @@ jobs:
           submodules: true
 
       - name: Cache Download Data
-        uses: actions/cache@v3.0.4
+        uses: actions/cache@v4
         with:
           path: /github/home/.ros/data/jsk_rviz_plugins
           key: jsk_rviz_plugins
@@ -167,7 +168,7 @@ jobs:
           set -x
           # setup catkin tools
           apt install -qq -y python3-pip
-          pip3 install catkin-tools
+          pip3 install catkin-tools==0.9.4
           # setup build tools
           apt install -qq -y cmake build-essential catkin ros-one-rosbash
 
