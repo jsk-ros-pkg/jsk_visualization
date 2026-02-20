@@ -39,125 +39,125 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
-#include <jsk_topic_tools/log_utils.h>
-#include <OGRE/OgreHardwarePixelBuffer.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTexture.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
+#include <rviz_rendering/render_system.hpp>
 #include <QFontDatabase>
 #include <QPainter>
 #include <QStaticText>
-#include <QTextDocument>
-#include <rviz/uniform_string_stream.h>
+#include <rviz_common/uniform_string_stream.hpp>
 
 namespace jsk_rviz_plugins
 {
   StringDisplay::StringDisplay() : Display(),
                                    texture_width_(0), texture_height_(0),
+                                   overtake_color_properties_(false),
+                                   overtake_position_properties_(false),
+                                   align_bottom_(false),
                                    text_size_(14),
                                    line_width_(2),
                                    text_(""), font_(""),
                                    bg_color_(0, 0, 0, 0),
                                    fg_color_(255, 255, 255, 255.0),
+                                   left_(0), top_(0),
                                    require_update_texture_(false)
   {
-    update_topic_property_ = new rviz::RosTopicProperty(
+    update_topic_property_ = std::make_unique<rviz_common::properties::RosTopicProperty>(
       "Topic", "",
-      ros::message_traits::datatype<std_msgs::String>(),
+      rosidl_generator_traits::name<std_msgs::msg::String>(),
       "std_msgs::String topic to subscribe to.",
       this, SLOT(updateTopic()));
-    overtake_position_properties_property_ = new rviz::BoolProperty(
+    overtake_position_properties_property_ = std::make_unique<rviz_common::properties::BoolProperty>(
       "Overtake Position Properties", false,
       "overtake position properties specified by message such as left, top and font",
       this, SLOT(updateOvertakePositionProperties()));
-    overtake_color_properties_property_ = new rviz::BoolProperty(
+    overtake_color_properties_property_ = std::make_unique<rviz_common::properties::BoolProperty>(
       "Overtake Color Properties", false,
       "overtake color properties specified by message such as foreground/background color and alpha",
       this, SLOT(updateOvertakeColorProperties()));
-    align_bottom_property_ = new rviz::BoolProperty(
+    align_bottom_property_ = std::make_unique<rviz_common::properties::BoolProperty>(
       "Align Bottom", false,
       "align text with the bottom of the overlay region",
       this, SLOT(updateAlignBottom()));
-    top_property_ = new rviz::IntProperty(
+    top_property_ = std::make_unique<rviz_common::properties::IntProperty>(
       "top", 0,
       "top position",
-      this, SLOT(updateTop()));
+      nullptr, SLOT(updateTop()), this);
     top_property_->setMin(0);
-    left_property_ = new rviz::IntProperty(
+    left_property_ = std::make_unique<rviz_common::properties::IntProperty>(
       "left", 0,
       "left position",
-      this, SLOT(updateLeft()));
+      nullptr, SLOT(updateLeft()), this);
     left_property_->setMin(0);
-    width_property_ = new rviz::IntProperty(
+    width_property_ = std::make_unique<rviz_common::properties::IntProperty>(
       "width", 128,
       "width position",
-      this, SLOT(updateWidth()));
+      nullptr, SLOT(updateWidth()), this);
     width_property_->setMin(0);
-    height_property_ = new rviz::IntProperty(
+    height_property_ = std::make_unique<rviz_common::properties::IntProperty>(
       "height", 128,
       "height position",
-      this, SLOT(updateHeight()));
+      nullptr, SLOT(updateHeight()), this);
     height_property_->setMin(0);
-    text_size_property_ = new rviz::IntProperty(
+    text_size_property_ = std::make_unique<rviz_common::properties::IntProperty>(
       "text size", 12,
       "text size",
-      this, SLOT(updateTextSize()));
+      nullptr, SLOT(updateTextSize()), this);
     text_size_property_->setMin(0);
-    line_width_property_ = new rviz::IntProperty(
+
+    // Color sub-properties: created without parent (not shown by default)
+    line_width_property_ = std::make_unique<rviz_common::properties::IntProperty>(
       "line width", 2,
       "line width",
-      this, SLOT(updateLineWidth()));
+      nullptr, SLOT(updateLineWidth()), this);
     line_width_property_->setMin(0);
-    fg_color_property_ = new rviz::ColorProperty(
+    fg_color_property_ = std::make_unique<rviz_common::properties::ColorProperty>(
       "Foreground Color", QColor(25, 255, 240),
       "Foreground Color",
-      this, SLOT(updateFGColor()));
-    fg_alpha_property_ = new rviz::FloatProperty(
+      nullptr, SLOT(updateFGColor()), this);
+    fg_alpha_property_ = std::make_unique<rviz_common::properties::FloatProperty>(
       "Foreground Alpha", 0.8, "Foreground Alpha",
-      this, SLOT(updateFGAlpha()));
+      nullptr, SLOT(updateFGAlpha()), this);
     fg_alpha_property_->setMin(0.0);
     fg_alpha_property_->setMax(1.0);
-    bg_color_property_ = new rviz::ColorProperty(
+    bg_color_property_ = std::make_unique<rviz_common::properties::ColorProperty>(
       "Background Color", QColor(0, 0, 0),
       "Background Color",
-      this, SLOT(updateBGColor()));
-    bg_alpha_property_ = new rviz::FloatProperty(
+      nullptr, SLOT(updateBGColor()), this);
+    bg_alpha_property_ = std::make_unique<rviz_common::properties::FloatProperty>(
       "Background Alpha", 0.8, "Background Alpha",
-      this, SLOT(updateBGAlpha()));
+      nullptr, SLOT(updateBGAlpha()), this);
     bg_alpha_property_->setMin(0.0);
     bg_alpha_property_->setMax(1.0);
 
     QFontDatabase database;
     font_families_ = database.families();
-    font_property_ = new rviz::EnumProperty(
+    font_property_ = std::make_unique<rviz_common::properties::EnumProperty>(
       "font", "DejaVu Sans Mono",
-      "font", this,
-      SLOT(updateFont()));
+      "font", nullptr,
+      SLOT(updateFont()), this);
     for (size_t i = 0; i < font_families_.size(); i++)
     {
       font_property_->addOption(font_families_[i], static_cast<int>(i));
     }
+
   }
 
   StringDisplay::~StringDisplay()
   {
     onDisable();
-    //delete overlay_;
-    delete update_topic_property_;
-    delete overtake_color_properties_property_;
-    delete overtake_position_properties_property_;
-    delete align_bottom_property_;
-    delete top_property_;
-    delete left_property_;
-    delete width_property_;
-    delete height_property_;
-    delete text_size_property_;
-    delete line_width_property_;
-    delete bg_color_property_;
-    delete bg_alpha_property_;
-    delete fg_color_property_;
-    delete fg_alpha_property_;
-    delete font_property_;
+    // Remove dynamically-added children before unique_ptrs destroy them,
+    // to prevent Property::~Property() from double-deleting.
+    takeChild(top_property_.get());
+    takeChild(left_property_.get());
+    takeChild(width_property_.get());
+    takeChild(height_property_.get());
+    takeChild(text_size_property_.get());
+    takeChild(fg_color_property_.get());
+    takeChild(fg_alpha_property_.get());
+    takeChild(bg_color_property_.get());
+    takeChild(bg_alpha_property_.get());
+    takeChild(line_width_property_.get());
+    takeChild(font_property_.get());
   }
 
   void StringDisplay::onEnable()
@@ -180,7 +180,7 @@ namespace jsk_rviz_plugins
 
   void StringDisplay::unsubscribe()
   {
-    sub_.shutdown();
+    sub_.reset();
   }
 
   void StringDisplay::subscribe()
@@ -188,7 +188,8 @@ namespace jsk_rviz_plugins
     std::string topic_name = update_topic_property_->getTopicStd();
     if (topic_name.length() > 0 && topic_name != "/")
     {
-      sub_ = ros::NodeHandle().subscribe(topic_name, 1, &StringDisplay::processMessage, this);
+      auto raw_node = context_->getRosNodeAbstraction().lock()->get_raw_node();
+      sub_ = raw_node->create_subscription<std_msgs::msg::String>(topic_name, 1, std::bind(&StringDisplay::processMessage, this, std::placeholders::_1));
     }
   }
 
@@ -201,6 +202,8 @@ namespace jsk_rviz_plugins
   // only the first time
   void StringDisplay::onInitialize()
   {
+    rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
+    update_topic_property_->initialize(context_->getRosNodeAbstraction());
     onEnable();
     updateTopic();
     updateOvertakePositionProperties();
@@ -232,7 +235,11 @@ namespace jsk_rviz_plugins
     }
     if (!overlay_)
     {
-      return;
+      static int count = 0;
+      rviz_common::UniformStringStream ss;
+      ss << "StringDisplayObject" << count++;
+      overlay_.reset(new OverlayObject(ss.str()));
+      overlay_->show();
     }
     overlay_->setPosition(left_, top_);
     overlay_->updateTextureSize(texture_width_, texture_height_);
@@ -283,34 +290,24 @@ namespace jsk_rviz_plugins
   }
 
   void StringDisplay::processMessage
-  (const std_msgs::String::ConstPtr& msg)
+  (const std_msgs::msg::String::SharedPtr msg)
   {
     if (!isEnabled())
     {
       return;
     }
-    if (!overlay_)
-    {
-      static int count = 0;
-      rviz::UniformStringStream ss;
-      ss << "StringDisplayObject" << count++;
-      overlay_.reset(new OverlayObject(ss.str()));
-      overlay_->show();
-    }
-    if (overlay_)
-    {
-      overlay_->show();
-    }
 
     // store message for update method
+    // Ogre objects (overlay_) must be created on the render thread (in update()),
+    // not here on the ROS callback thread.
     text_ = msg->data;
     require_update_texture_ = true;
   }
 
   void StringDisplay::updateOvertakePositionProperties()
   {
-    if (!overtake_position_properties_ &&
-        overtake_position_properties_property_->getBool())
+    bool new_val = overtake_position_properties_property_->getBool();
+    if (!overtake_position_properties_ && new_val)
     {
       updateTop();
       updateLeft();
@@ -319,30 +316,31 @@ namespace jsk_rviz_plugins
       updateTextSize();
       require_update_texture_ = true;
     }
-    overtake_position_properties_
-      = overtake_position_properties_property_->getBool();
-    if (overtake_position_properties_)
+    if (new_val && !overtake_position_properties_)
     {
-      top_property_->show();
-      left_property_->show();
-      width_property_->show();
-      height_property_->show();
-      text_size_property_->show();
+      // Add properties to the Display tree
+      addChild(top_property_.get());
+      addChild(left_property_.get());
+      addChild(width_property_.get());
+      addChild(height_property_.get());
+      addChild(text_size_property_.get());
     }
-    else
+    else if (!new_val && overtake_position_properties_)
     {
-      top_property_->hide();
-      left_property_->hide();
-      width_property_->hide();
-      height_property_->hide();
-      text_size_property_->hide();
+      // Remove properties from the Display tree
+      takeChild(top_property_.get());
+      takeChild(left_property_.get());
+      takeChild(width_property_.get());
+      takeChild(height_property_.get());
+      takeChild(text_size_property_.get());
     }
+    overtake_position_properties_ = new_val;
   }
 
   void StringDisplay::updateOvertakeColorProperties()
   {
-    if (!overtake_color_properties_ &&
-        overtake_color_properties_property_->getBool())
+    bool new_val = overtake_color_properties_property_->getBool();
+    if (!overtake_color_properties_ && new_val)
     {
       // read all the parameters from properties
       updateFGColor();
@@ -353,25 +351,27 @@ namespace jsk_rviz_plugins
       updateLineWidth();
       require_update_texture_ = true;
     }
-    overtake_color_properties_ = overtake_color_properties_property_->getBool();
-    if (overtake_color_properties_)
+    if (new_val && !overtake_color_properties_)
     {
-      fg_color_property_->show();
-      fg_alpha_property_->show();
-      bg_color_property_->show();
-      bg_alpha_property_->show();
-      line_width_property_->show();
-      font_property_->show();
+      // Add properties to the Display tree
+      addChild(fg_color_property_.get());
+      addChild(fg_alpha_property_.get());
+      addChild(bg_color_property_.get());
+      addChild(bg_alpha_property_.get());
+      addChild(line_width_property_.get());
+      addChild(font_property_.get());
     }
-    else
+    else if (!new_val && overtake_color_properties_)
     {
-      fg_color_property_->hide();
-      fg_alpha_property_->hide();
-      bg_color_property_->hide();
-      bg_alpha_property_->hide();
-      line_width_property_->hide();
-      font_property_->hide();
+      // Remove properties from the Display tree
+      takeChild(fg_color_property_.get());
+      takeChild(fg_alpha_property_.get());
+      takeChild(bg_color_property_.get());
+      takeChild(bg_alpha_property_.get());
+      takeChild(line_width_property_.get());
+      takeChild(font_property_.get());
     }
+    overtake_color_properties_ = new_val;
   }
 
   void StringDisplay::updateAlignBottom()
@@ -479,7 +479,8 @@ namespace jsk_rviz_plugins
     }
     else
     {
-      ROS_FATAL("Unexpected error at selecting font index %d.", font_index);
+      RCLCPP_FATAL(context_->getRosNodeAbstraction().lock()->get_raw_node()->get_logger(),
+                   "Unexpected error at selecting font index %d.", font_index);
       return;
     }
     if (overtake_color_properties_)
@@ -517,4 +518,4 @@ namespace jsk_rviz_plugins
 
 }  // namespace jsk_rviz_plugins
 
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::StringDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::StringDisplay, rviz_common::Display )

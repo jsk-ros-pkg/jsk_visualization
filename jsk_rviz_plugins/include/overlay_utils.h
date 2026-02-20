@@ -36,36 +36,22 @@
 #ifndef JSK_RVIZ_PLUGIN_OVERLAY_UTIL_H_
 #define JSK_RVIZ_PLUGIN_OVERLAY_UTIL_H_
 
-
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreTechnique.h>
-#include <OGRE/OgreHardwarePixelBuffer.h>
-// see OGRE/OgrePrerequisites.h
-//#define OGRE_VERSION    ((OGRE_VERSION_MAJOR << 16) | (OGRE_VERSION_MINOR << 8) | OGRE_VERSION_PATCH)
-#if OGRE_VERSION < ((1 << 16) | (9 << 8) | 0)
-  #include <OGRE/OgrePanelOverlayElement.h>
-  #include <OGRE/OgreOverlayElement.h>
-  #include <OGRE/OgreOverlayContainer.h>
-  #include <OGRE/OgreOverlayManager.h>
-#else
-  #include <OGRE/Overlay/OgreOverlay.h>
-  #include <OGRE/Overlay/OgrePanelOverlayElement.h>
-  #include <OGRE/Overlay/OgreOverlayElement.h>
-  #include <OGRE/Overlay/OgreOverlayContainer.h>
-  #include <OGRE/Overlay/OgreOverlayManager.h>
-#endif
-
 #include <QImage>
 #include <QColor>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
+#include <Overlay/OgreOverlay.h>
+#include <Overlay/OgreOverlayManager.h>
+#include <Overlay/OgrePanelOverlayElement.h>
+#include <OgreMaterialManager.h>
+#include <OgreTextureManager.h>
+#include <OgreTechnique.h>
+#include <OgreHardwarePixelBuffer.h>
 
 namespace jsk_rviz_plugins
 {
   class OverlayObject;
-  
+
   class ScopedPixelBuffer
   {
   public:
@@ -79,25 +65,21 @@ namespace jsk_rviz_plugins
   protected:
     Ogre::HardwarePixelBufferSharedPtr pixel_buffer_;
   private:
-    
+
   };
 
-  
+
   // this is a class for put overlay object on rviz 3D panel.
   // This class suppose to be instantiated in onInitialize method
   // of rviz::Display class.
   class OverlayObject
   {
   public:
-#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<OverlayObject> Ptr;
-#else
-    typedef boost::shared_ptr<OverlayObject> Ptr;
-#endif
-    
+
     OverlayObject(const std::string& name);
     virtual ~OverlayObject();
-    
+
     virtual std::string getName();
     virtual void hide();
     virtual void show();
@@ -117,9 +99,9 @@ namespace jsk_rviz_plugins
     Ogre::TexturePtr texture_;
 
   private:
-    
+
   };
-  
+
   // Ogre::Overlay* createOverlay(std::string name);
   // Ogre::PanelOverlayElement* createOverlayPanel(Ogre::Overlay* overlay);
   // Ogre::MaterialPtr createOverlayMaterial(Ogre::Overlay* overlay);
