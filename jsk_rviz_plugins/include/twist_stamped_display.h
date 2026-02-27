@@ -33,48 +33,38 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-
 #ifndef JSK_RVIZ_PLUGINS_TWIST_STAMPED_H_
 #define JSK_RVIZ_PLUGINS_TWIST_STAMPED_H_
 
 #ifndef Q_MOC_RUN
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/bool_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/int_property.h>
-#include <rviz/message_filter_display.h>
-#include <rviz/ogre_helpers/shape.h>
-#include <rviz/ogre_helpers/mesh_shape.h>
-#include <rviz/ogre_helpers/arrow.h>
-#include <OGRE/OgreSceneNode.h>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/message_filter_display.hpp>
 
-#include <geometry_msgs/TwistStamped.h>
-#include <rviz/ogre_helpers/arrow.h>
-#include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+
+#include <geometry_msgs/msg/twist_stamped.hpp>
+
+#include <OgreSceneNode.h>
 #endif
-
 
 namespace jsk_rviz_plugins
 {
-  class TwistStampedDisplay: public rviz::MessageFilterDisplay<geometry_msgs::TwistStamped>
+  class TwistStampedDisplay: public rviz_common::MessageFilterDisplay<geometry_msgs::msg::TwistStamped>
   {
     Q_OBJECT
   public:
-#if ROS_VERSION_MINIMUM(1,12,0)
-    typedef std::shared_ptr<rviz::Arrow> ArrowPtr;
-    typedef std::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
-#else
-    typedef boost::shared_ptr<rviz::Arrow> ArrowPtr;
-    typedef boost::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
-#endif
+    typedef std::shared_ptr<rviz_rendering::Arrow> ArrowPtr;
+    typedef std::shared_ptr<rviz_rendering::BillboardLine> BillboardLinePtr;
+
     TwistStampedDisplay();
     virtual ~TwistStampedDisplay();
   protected:
-
     virtual void onInitialize();
     virtual void reset();
     virtual void processMessage(
-      const geometry_msgs::TwistStamped::ConstPtr& msg);
+      geometry_msgs::msg::TwistStamped::ConstSharedPtr msg);
     virtual void updateRotationVelocity(
       BillboardLinePtr circle,
       ArrowPtr arrow,
@@ -83,19 +73,17 @@ namespace jsk_rviz_plugins
       const Ogre::Vector3& uz,
       const double r,
       bool positive);
-    ////////////////////////////////////////////////////////
-    // properties
-    ////////////////////////////////////////////////////////
-    rviz::FloatProperty* linear_scale_property_;
-    rviz::FloatProperty* angular_scale_property_;
-    rviz::ColorProperty* linear_color_property_;
-    rviz::ColorProperty* angular_color_property_;
-    
+
+    rviz_common::properties::FloatProperty* linear_scale_property_;
+    rviz_common::properties::FloatProperty* angular_scale_property_;
+    rviz_common::properties::ColorProperty* linear_color_property_;
+    rviz_common::properties::ColorProperty* angular_color_property_;
+
     double linear_scale_;
     double angular_scale_;
     QColor linear_color_;
     QColor angular_color_;
-                         
+
     ArrowPtr linear_arrow_;
     BillboardLinePtr x_rotate_circle_;
     BillboardLinePtr y_rotate_circle_;

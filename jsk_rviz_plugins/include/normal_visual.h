@@ -2,14 +2,12 @@
 #ifndef NORMAL_VISUAL_H
 #define NORMAL_VISUAL_H
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
+#include <OgreVector.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
 
-#include <rviz/ogre_helpers/arrow.h>
-#include <geometry_msgs/Vector3.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <ros/ros.h>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <memory>
 
 namespace jsk_rviz_plugins
 {
@@ -28,11 +26,7 @@ namespace jsk_rviz_plugins
     void setScale( float scale );
 
   private:
-#if ROS_VERSION_MINIMUM(1,12,0)
-    std::shared_ptr<rviz::Arrow> normal_arrow_;
-#else
-    boost::shared_ptr<rviz::Arrow> normal_arrow_;
-#endif
+    std::shared_ptr<rviz_rendering::Arrow> normal_arrow_;
     Ogre::SceneNode* frame_node_;
     Ogre::SceneManager* scene_manager_;
   };

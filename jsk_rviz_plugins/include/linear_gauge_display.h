@@ -32,33 +32,35 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-#ifndef JSK_RVIZ_PLUGIN_PLOTTER_2D_H_
-#define JSK_RVIZ_PLUGIN_PLOTTER_2D_H_
+#ifndef JSK_RVIZ_PLUGIN_LINEAR_GAUGE_H_
+#define JSK_RVIZ_PLUGIN_LINEAR_GAUGE_H_
 
-#include "std_msgs/Float32.h"
+#include <std_msgs/msg/float32.hpp>
 #ifndef Q_MOC_RUN
-#include <rviz/display.h>
+#include <mutex>
+#include <rviz_common/display.hpp>
 #include "overlay_utils.h"
-#include <OGRE/OgreColourValue.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreMaterial.h>
-#include <rviz/properties/int_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/bool_property.h>
-#include <rviz/properties/ros_topic_property.h>
+#include <OgreColourValue.h>
+#include <OgreTexture.h>
+#include <OgreMaterial.h>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rclcpp/rclcpp.hpp>
 #endif
 
 namespace jsk_rviz_plugins
 {
 
-  class Plotter2DDisplay
-    : public rviz::Display
+  class LinearGaugeDisplay
+    : public rviz_common::Display
   {
     Q_OBJECT
   public:
-    Plotter2DDisplay();
-    virtual ~Plotter2DDisplay();
+    LinearGaugeDisplay();
+    virtual ~LinearGaugeDisplay();
     // methods for OverlayPickerTool
     virtual bool isInRegion(int x, int y);
     virtual void movePosition(int x, int y);
@@ -66,65 +68,52 @@ namespace jsk_rviz_plugins
     virtual int getX() { return left_; };
     virtual int getY() { return top_; };
   protected:
-    ////////////////////////////////////////////////////////
-    // methods
-    ////////////////////////////////////////////////////////
     virtual void update(float wall_dt, float ros_dt);
     virtual void subscribe();
     virtual void unsubscribe();
     virtual void onEnable();
     virtual void onDisable();
-    virtual void initializeBuffer();
     virtual void onInitialize();
-    virtual void processMessage(const std_msgs::Float32::ConstPtr& msg);
+    virtual void processMessage(const std_msgs::msg::Float32::SharedPtr msg);
     virtual void drawPlot();
-    ////////////////////////////////////////////////////////
-    // properties
-    ////////////////////////////////////////////////////////
-    rviz::RosTopicProperty* update_topic_property_;
-    rviz::BoolProperty* show_value_property_;
-    rviz::ColorProperty* fg_color_property_;
-    rviz::ColorProperty* bg_color_property_;
-    rviz::FloatProperty* fg_alpha_property_;
-    rviz::FloatProperty* bg_alpha_property_;
-    rviz::FloatProperty* update_interval_property_;
-    rviz::BoolProperty* show_border_property_;
-    rviz::IntProperty* buffer_length_property_;
-    rviz::IntProperty* width_property_;
-    rviz::IntProperty* height_property_;
-    rviz::IntProperty* left_property_;
-    rviz::IntProperty* top_property_;
-    rviz::IntProperty* line_width_property_;
-    rviz::BoolProperty* auto_color_change_property_;
-    rviz::ColorProperty* max_color_property_;
-    rviz::BoolProperty* show_caption_property_;
-    rviz::IntProperty* text_size_property_;
-    rviz::BoolProperty* auto_scale_property_;
-    rviz::FloatProperty* max_value_property_;
-    rviz::FloatProperty* min_value_property_;
-    rviz::BoolProperty* auto_text_size_in_plot_property_;
-    rviz::IntProperty* text_size_in_plot_property_;
+
+    rviz_common::properties::RosTopicProperty* update_topic_property_;
+    rviz_common::properties::BoolProperty* show_value_property_;
+    rviz_common::properties::BoolProperty* vertical_gauge_property_;
+    rviz_common::properties::ColorProperty* fg_color_property_;
+    rviz_common::properties::ColorProperty* bg_color_property_;
+    rviz_common::properties::FloatProperty* fg_alpha_property_;
+    rviz_common::properties::FloatProperty* bg_alpha_property_;
+    rviz_common::properties::FloatProperty* update_interval_property_;
+    rviz_common::properties::BoolProperty* show_border_property_;
+    rviz_common::properties::IntProperty* width_property_;
+    rviz_common::properties::IntProperty* height_property_;
+    rviz_common::properties::IntProperty* left_property_;
+    rviz_common::properties::IntProperty* top_property_;
+    rviz_common::properties::IntProperty* line_width_property_;
+    rviz_common::properties::BoolProperty* auto_color_change_property_;
+    rviz_common::properties::ColorProperty* max_color_property_;
+    rviz_common::properties::BoolProperty* show_caption_property_;
+    rviz_common::properties::IntProperty* text_size_property_;
+    rviz_common::properties::FloatProperty* max_value_property_;
+    rviz_common::properties::FloatProperty* min_value_property_;
 
     OverlayObject::Ptr overlay_;
     QColor fg_color_;
     QColor max_color_;
     QColor bg_color_;
-   
+
     double fg_alpha_;
     double bg_alpha_;
-    bool auto_scale_;
     bool show_border_;
     bool auto_color_change_;
     bool show_value_;
     bool show_caption_;
+    bool vertical_gauge_;
     bool draw_required_;
     float last_time_;
     float update_interval_;
-    bool auto_text_size_in_plot_;
-    int text_size_in_plot_;
-    
-    int buffer_length_;
-    std::vector<double> buffer_;
+
     uint16_t texture_width_;
     uint16_t texture_height_;
     int left_;
@@ -134,17 +123,19 @@ namespace jsk_rviz_plugins
     int caption_offset_;
     double min_value_;
     double max_value_;
-    
-    ////////////////////////////////////////////////////////
-    // ROS variables
-    ////////////////////////////////////////////////////////
-    boost::mutex mutex_;
-    ros::Subscriber sub_;
-                        
+    const int width_padding_;
+    const int height_padding_;
+
+    float data_;
+    bool first_time_;
+
+    std::mutex mutex_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_;
+
   protected Q_SLOTS:
     void updateTopic();
     void updateShowValue();
-    void updateBufferSize();
+    void updateVerticalGauge();
     void updateBGColor();
     void updateFGColor();
     void updateFGAlpha();
@@ -160,12 +151,8 @@ namespace jsk_rviz_plugins
     void updateUpdateInterval();
     void updateShowCaption();
     void updateTextSize();
-    void updateAutoScale();
     void updateMinValue();
     void updateMaxValue();
-    void updateTextSizeInPlot();
-    void updateAutoTextSizeInPlot();
-
   private:
   };
 }

@@ -37,25 +37,27 @@
 #define JSK_RVIZ_PLUGIN_DIAGNOSTICS_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
-#include <rviz/display.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/string_property.h>
-#include <rviz/properties/editable_enum_property.h>
-#include <rviz/properties/tf_frame_property.h>
-#include <rviz/properties/ros_topic_property.h>
-#include <rviz/properties/enum_property.h>
-#include <diagnostic_msgs/DiagnosticArray.h>
-#include <rviz/ogre_helpers/billboard_line.h>
-#include <rviz/display_context.h>
-#include <rviz/frame_manager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <rviz/ogre_helpers/movable_text.h>
+#include <set>
+#include <rviz_common/display.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/string_property.hpp>
+#include <rviz_common/properties/editable_enum_property.hpp>
+#include <rviz_common/properties/tf_frame_property.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/movable_text.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
 #endif
 
 namespace jsk_rviz_plugins
 {
-  class DiagnosticsDisplay : public rviz::Display
+  class DiagnosticsDisplay : public rviz_common::Display
   {
     Q_OBJECT
   public:
@@ -70,23 +72,23 @@ namespace jsk_rviz_plugins
     virtual void updateLine();
     virtual void update(float wall_dt, float ros_dt);
     virtual void processMessage
-    (const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
-    
-    rviz::RosTopicProperty* ros_topic_property_;
-    rviz::EditableEnumProperty* diagnostics_namespace_property_;
-    rviz::TfFrameProperty* frame_id_property_;
-    rviz::FloatProperty* radius_property_;
-    rviz::FloatProperty* line_width_property_;
-    rviz::FloatProperty* font_size_property_;
-    rviz::EnumProperty* axis_property_;
-    ros::Subscriber sub_;
-    
+    (const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg);
+
+    rviz_common::properties::RosTopicProperty* ros_topic_property_;
+    rviz_common::properties::EditableEnumProperty* diagnostics_namespace_property_;
+    rviz_common::properties::TfFrameProperty* frame_id_property_;
+    rviz_common::properties::FloatProperty* radius_property_;
+    rviz_common::properties::FloatProperty* line_width_property_;
+    rviz_common::properties::FloatProperty* font_size_property_;
+    rviz_common::properties::EnumProperty* axis_property_;
+    rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr sub_;
+
     double radius_;
     double line_width_;
     std::string frame_id_;
     std::string diagnostics_namespace_;
-    rviz::MovableText* msg_;
-    rviz::BillboardLine* line_;
+    rviz_rendering::MovableText* msg_;
+    rviz_rendering::BillboardLine* line_;
     Ogre::SceneNode* orbit_node_;
     std::set<std::string> namespaces_;
     int axis_;
@@ -102,10 +104,9 @@ namespace jsk_rviz_plugins
     virtual void updateFontSize();
     virtual void fillNamespaceList();
   private:
-    
-  };
-  
-}
 
+  };
+
+}
 
 #endif

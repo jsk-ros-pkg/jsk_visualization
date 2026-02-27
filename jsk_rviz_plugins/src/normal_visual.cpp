@@ -8,7 +8,7 @@ namespace jsk_rviz_plugins
   {
     scene_manager_ = scene_manager;
     frame_node_ = parent_node->createChildSceneNode();
-    normal_arrow_.reset(new rviz::Arrow( scene_manager_, frame_node_ ));
+    normal_arrow_.reset(new rviz_rendering::Arrow( scene_manager_, frame_node_ ));
   }
 
   NormalVisual::~NormalVisual()

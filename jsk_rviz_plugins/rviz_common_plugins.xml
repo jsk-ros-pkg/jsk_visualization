@@ -23,4 +23,73 @@
     </description>
     <message_type>std_msgs/msg/String</message_type>
   </class>
+
+  <class name="jsk_rviz_plugin/CloseAll"
+         type="jsk_rviz_plugins::CloseAllTool"
+         base_class_type="rviz_common::Tool">
+    <description>
+      Close all properties in the display tree
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/OpenAll"
+         type="jsk_rviz_plugins::OpenAllTool"
+         base_class_type="rviz_common::Tool">
+    <description>
+      Open all properties in the display tree
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/TwistStamped"
+         type="jsk_rviz_plugins::TwistStampedDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Displays geometry_msgs::TwistStamped message as arrows
+    </description>
+    <message_type>geometry_msgs/msg/TwistStamped</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/Plotter2D"
+         type="jsk_rviz_plugins::Plotter2DDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      2D plotter for std_msgs::Float32 messages
+    </description>
+    <message_type>std_msgs/msg/Float32</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/LinearGauge"
+         type="jsk_rviz_plugins::LinearGaugeDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Linear gauge for std_msgs::Float32 messages
+    </description>
+    <message_type>std_msgs/msg/Float32</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/Diagnostics"
+         type="jsk_rviz_plugins::DiagnosticsDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Displays diagnostic_msgs::DiagnosticArray as orbiting text
+    </description>
+    <message_type>diagnostic_msgs/msg/DiagnosticArray</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/Normal"
+         type="jsk_rviz_plugins::NormalDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Displays normals from sensor_msgs::PointCloud2
+    </description>
+    <message_type>sensor_msgs/msg/PointCloud2</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/CancelAction"
+         type="jsk_rviz_plugins::CancelAction"
+         base_class_type="rviz_common::Panel">
+    <description>
+      A panel widget to cancel actions
+    </description>
+  </class>
 </library>

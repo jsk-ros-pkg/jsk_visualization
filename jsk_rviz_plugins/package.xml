@@ -17,11 +17,14 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
+  <depend>actionlib_msgs</depend>
+  <depend>diagnostic_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>pluginlib</depend>
   <depend>rviz_common</depend>
   <depend>rviz_rendering</depend>
   <depend>rviz_ogre_vendor</depend>
+  <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
 

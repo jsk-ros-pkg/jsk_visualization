@@ -17,19 +17,22 @@ set(HEADER_FILES
   include/overlay_utils.h
   include/publish_topic.h
   include/string_display.h
+  include/close_all_tool.h
+  include/open_all_tool.h
+  include/twist_stamped_display.h
+  include/plotter_2d_display.h
+  include/linear_gauge_display.h
+  include/diagnostics_display.h
+  include/normal_display.h
+  include/cancel_action.h
   # src/ambient_sound_display_groovy.h
   # src/select_point_cloud_publish_action.h
   # src/footstep_display.h
-  # src/cancel_action.h
   # src/record_action.h
   # src/polygon_array_display.h
-  # src/normal_display.h
   # src/overlay_menu_display.h
   # src/overlay_image_display.h
   # src/overlay_camera_display.h
-  # src/plotter_2d_display.h
-  # src/linear_gauge_display.h
-  # src/diagnostics_display.h
   # src/quiet_interactive_marker_display.h
   # src/bounding_box_display.h
   # src/bounding_box_array_display.h
@@ -38,8 +41,6 @@ set(HEADER_FILES
   # src/target_visualizer_display.h
   # src/people_position_measurement_array_display.h
   # src/simple_occupancy_grid_array_display.h
-  # src/close_all_tool.h
-  # src/open_all_tool.h
   # src/overlay_picker_tool.h
   # src/object_fit_operator.h
   # src/robot_command_interface.h
@@ -49,7 +50,6 @@ set(HEADER_FILES
   # src/tablet_controller_panel.h
   # src/video_capture_display.h
   # src/rviz_scene_publisher.h
-  # src/twist_stamped_display.h
   # src/pose_array_display.h
   # src/tf_trajectory_display.h
   # src/yes_no_button_interface.h
@@ -62,21 +62,24 @@ set(SOURCE_FILES
   src/overlay_utils.cpp
   src/publish_topic.cpp
   src/string_display.cpp
+  src/close_all_tool.cpp
+  src/open_all_tool.cpp
+  src/twist_stamped_display.cpp
+  src/plotter_2d_display.cpp
+  src/linear_gauge_display.cpp
+  src/diagnostics_display.cpp
+  src/normal_display.cpp
+  src/normal_visual.cpp
+  src/cancel_action.cpp
 #   src/ambient_sound_display_groovy.cpp
 #   src/ambient_sound_visual.cpp
 #   src/footstep_display.cpp
-#   src/cancel_action.cpp
 #   src/record_action.cpp
 #   src/select_point_cloud_publish_action.cpp
 #   src/polygon_array_display.cpp
-#   src/normal_display.cpp
-#   src/normal_visual.cpp
 #   src/overlay_menu_display.cpp
 #   src/overlay_image_display.cpp
 #   src/overlay_camera_display.cpp
-#   src/plotter_2d_display.cpp
-#   src/linear_gauge_display.cpp
-#   src/diagnostics_display.cpp
 #   src/bounding_box_display.cpp
 #   src/bounding_box_array_display.cpp
 #   src/torus_array_display.cpp
@@ -86,8 +89,6 @@ set(SOURCE_FILES
 #   src/simple_occupancy_grid_array_display.cpp
 #   src/people_position_measurement_array_display.cpp
 #   src/facing_visualizer.cpp
-#   src/close_all_tool.cpp
-#   src/open_all_tool.cpp
 #   src/overlay_picker_tool.cpp
 #   src/screenshot_listener_tool.cpp
 #   src/object_fit_operator.cpp
@@ -98,7 +99,6 @@ set(SOURCE_FILES
 #   src/tablet_controller_panel.cpp
 #   src/video_capture_display.cpp
 #   src/rviz_scene_publisher.cpp
-#   src/twist_stamped_display.cpp
 #   src/pose_array_display.cpp
 #   src/tf_trajectory_display.cpp
 #   src/yes_no_button_interface.cpp
@@ -186,11 +186,6 @@ ament_auto_package()
 #     LIBRARIES ${LIBRARIES_PROJECT_NAME}
 # )
 
-
-# set(ROS_BUILD_TYPE Release)
-
-# include_directories(src ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
-
 # # TODO: fill in what other packages will need to use this package
 # ## LIBRARIES: libraries you create in this project that dependent projects also need
 # ## CATKIN_DEPENDS: catkin_packages dependent projects also need
@@ -204,120 +199,8 @@ ament_auto_package()
 # endif()
 # add_definitions(-DQT_NO_KEYWORDS -g)
 
-# include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 # #set(SOURCE_FILES src/ambient_sound_display.cpp src/ambient_sound_visual.cpp)
 
-# set(HEADER_FILES
-  # src/ambient_sound_display_groovy.h
-  # src/select_point_cloud_publish_action.h
-  # src/footstep_display.h
-  # src/publish_topic.h
-  # src/cancel_action.h
-  # src/record_action.h
-  # src/polygon_array_display.h
-  # src/normal_display.h
-  # src/overlay_text_display.h
-  # src/overlay_menu_display.h
-  # src/overlay_image_display.h
-  # src/overlay_camera_display.h
-  # src/plotter_2d_display.h
-  # src/pie_chart_display.h
-  # src/linear_gauge_display.h
-  # src/diagnostics_display.h
-  # src/quiet_interactive_marker_display.h
-  # src/bounding_box_display.h
-  # src/bounding_box_array_display.h
-  # src/torus_array_display.h
-  # src/overlay_diagnostic_display.h
-  # src/target_visualizer_display.h
-  # src/people_position_measurement_array_display.h
-  # src/simple_occupancy_grid_array_display.h
-  # src/camera_info_display.h
-  # src/close_all_tool.h
-  # src/open_all_tool.h
-  # src/overlay_picker_tool.h
-  # src/object_fit_operator.h
-  # src/robot_command_interface.h
-  # src/empty_service_call_interface.h
-  # src/pictogram_display.h
-  # src/pictogram_array_display.h
-  # src/view_controller/tablet_view_controller.h
-  # src/tablet_controller_panel.h
-  # src/video_capture_display.h
-  # src/rviz_scene_publisher.h
-  # src/twist_stamped_display.h
-  # src/pose_array_display.h
-  # src/tf_trajectory_display.h
-  # src/yes_no_button_interface.h
-  # src/segment_array_display.h
-  # src/image_transport_hints_property.h
-#   src/string_display.h
-  # src/human_skeleton_array_display.h
-# )
-
-# message(STATUS "Check rviz_FOUND: [${rviz_FOUND}], rviz_QT_VERSION: [${rviz_QT_VERSION}]")
-# if("${rviz_QT_VERSION}" STREQUAL "")
-#   message(WARNING "Compile without RVIZ package : skip qt_wrap_cpp")
-# elseif(rviz_QT_VERSION VERSION_LESS "5")
-#   qt4_wrap_cpp(MOC_FILES ${HEADER_FILES})
-# else()
-#   qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
-# endif()
-
-# set(SOURCE_FILES
-#   src/ambient_sound_display_groovy.cpp
-#   src/ambient_sound_visual.cpp
-#   src/footstep_display.cpp
-#   src/publish_topic.cpp
-#   src/cancel_action.cpp
-#   src/record_action.cpp
-#   src/select_point_cloud_publish_action.cpp
-#   src/polygon_array_display.cpp
-#   src/normal_display.cpp
-#   src/normal_visual.cpp
-#   src/overlay_text_display.cpp
-#   src/overlay_menu_display.cpp
-#   src/overlay_image_display.cpp
-#   src/overlay_camera_display.cpp
-#   src/plotter_2d_display.cpp
-#   src/pie_chart_display.cpp
-#   src/linear_gauge_display.cpp
-#   src/diagnostics_display.cpp
-#   src/bounding_box_display.cpp
-#   src/bounding_box_array_display.cpp
-#   src/torus_array_display.cpp
-#   src/quiet_interactive_marker_display.cpp
-#   src/target_visualizer_display.cpp
-#   src/overlay_diagnostic_display.cpp
-#   src/simple_occupancy_grid_array_display.cpp
-#   src/people_position_measurement_array_display.cpp
-#   src/overlay_utils.cpp
-#   src/facing_visualizer.cpp
-#   src/camera_info_display.cpp
-#   src/close_all_tool.cpp
-#   src/open_all_tool.cpp
-#   src/overlay_picker_tool.cpp
-#   src/screenshot_listener_tool.cpp
-#   src/object_fit_operator.cpp
-#   src/robot_command_interface.cpp
-#   src/empty_service_call_interface.cpp
-#   src/pictogram_display.cpp
-#   src/pictogram_array_display.cpp
-#   src/view_controller/tablet_view_controller.cpp
-#   src/tablet_controller_panel.cpp
-#   src/video_capture_display.cpp
-#   src/rviz_scene_publisher.cpp
-#   src/twist_stamped_display.cpp
-#   src/pose_array_display.cpp
-#   src/tf_trajectory_display.cpp
-#   src/yes_no_button_interface.cpp
-#   src/segment_array_display.cpp
-#   src/image_transport_hints_property.cpp
-#   src/string_display.cpp
-#   src/human_skeleton_array_display.cpp
-#   ${MOC_FILES}
-# )
 # if(jsk_recognition_msgs_VERSION VERSION_LESS 1.2.15)
 #   message(WARNING "jsk_recognition_msgs ${jsk_recognition_msgs_VERSION} < 1.2.15 does not support human_skeleton_array_display.cpp")
 #   list(REMOVE_ITEM HEADER_FILES src/human_skeleton_array_display.h)
@@ -354,20 +237,6 @@ ament_auto_package()
 #   set_target_properties(jsk_rviz_plugins PROPERTIES LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -z defs")
 # endif()
 
-# # From https://github.com/jsk-ros-pkg/jsk_recognition/pull/2345
-# # Install header files directly into ${CATKIN_PACKAGE_INCLUDE_DESTINATION}.
-# # If the package has setup.py and modules under src/${PROJECT_NAME}/,
-# # install python executables directly into ${CATKIN_PACKAGE_BIN_DESTINATION}.
-# # However, if it doesn't have setup.py, directories including python executables
-# # should be installed recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
-# # Also, other directories like 'launch' or 'sample' must be installed
-# # recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
-# # Be careful that 'launch' and 'launch/' are different: the former is directory
-# # and the latter is each content.
-# install(TARGETS jsk_rviz_plugins
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-# )
 # endif(rviz_FOUND)
 
 # file(GLOB PYTHON_SCRIPTS scripts/*.py)
@@ -376,9 +245,6 @@ ament_auto_package()
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
-# install(FILES plugin_description.xml
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
 # install(DIRECTORY cfg config icons launch test
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 #   USE_SOURCE_PERMISSIONS
