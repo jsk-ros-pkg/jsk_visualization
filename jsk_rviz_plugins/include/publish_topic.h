@@ -1,25 +1,26 @@
 #ifndef PUBLISH_TOPIC_H
 #define PUBLISH_TOPIC_H
 
-#ifndef Q_MOC_RUN
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/panel.hpp>
+#include <rviz_common/display_context.hpp>
 
-#include <rviz/panel.h>
-#endif
+#include <std_msgs/msg/empty.hpp>
 
 class QLineEdit;
 class QPushButton;
 
 namespace jsk_rviz_plugins
 {
-  class PublishTopic: public rviz::Panel
+  class PublishTopic: public rviz_common::Panel
     {
 Q_OBJECT
   public:
       PublishTopic( QWidget* parent = 0 );
 
-      virtual void load( const rviz::Config& config );
-      virtual void save( rviz::Config config ) const;
+      virtual void onInitialize() override;
+      virtual void load( const rviz_common::Config& config );
+      virtual void save( rviz_common::Config config ) const;
 
       public Q_SLOTS:
 
@@ -40,9 +41,8 @@ Q_OBJECT
 
       QPushButton* send_topic_button_;
 
-      ros::Publisher velocity_publisher_;
-
-      ros::NodeHandle nh_;
+      rclcpp::Node::SharedPtr node_;
+      rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr velocity_publisher_;
     };
 
 }

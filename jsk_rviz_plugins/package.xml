@@ -23,6 +23,7 @@
   <depend>rviz_rendering</depend>
   <depend>rviz_ogre_vendor</depend>
   <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
 
   <build_depend>rosidl_cmake</build_depend>
   <build_depend>rosidl_default_generators</build_depend>
@@ -82,7 +83,6 @@
 
   <export>
     <build_type>ament_cmake</build_type>
-    <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>
 
 </package>

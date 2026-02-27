@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include <QPainter>
 #include <QLineEdit>
 #include <QPushButton>
@@ -8,14 +6,12 @@
 #include <QLabel>
 #include <QTimer>
 
-#include <std_msgs/Empty.h>
-
 #include "publish_topic.h"
 
 namespace jsk_rviz_plugins
 {
   PublishTopic::PublishTopic( QWidget* parent )
-    : rviz::Panel( parent )
+    : rviz_common::Panel( parent )
   {
     QHBoxLayout* topic_layout = new QHBoxLayout;
     topic_layout->addWidget( new QLabel( "Topic:" ));
@@ -27,14 +23,17 @@ namespace jsk_rviz_plugins
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addLayout( topic_layout );
 
-    QPushButton* send_topic_button_ = new QPushButton("Send Topic");
+    send_topic_button_ = new QPushButton("Send Topic");
     layout->addWidget( send_topic_button_ );
     setLayout( layout );
 
-
     connect( send_topic_button_, SIGNAL( clicked() ), this, SLOT( sendTopic ()));
     connect( output_topic_editor_, SIGNAL( editingFinished() ), this, SLOT( updateTopic() ));
+  }
 
+  void PublishTopic::onInitialize()
+  {
+    node_ = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
   }
 
   void PublishTopic::updateTopic()
@@ -52,33 +51,33 @@ namespace jsk_rviz_plugins
 	// If the topic is the empty string, don't publish anything.
 	if( output_topic_ == "" )
 	  {
-	    velocity_publisher_.shutdown();
+	    velocity_publisher_.reset();
 	  }
 	else
 	  {
-	    velocity_publisher_ = nh_.advertise<std_msgs::Empty>( output_topic_.toStdString(), 1 );
+        velocity_publisher_ = node_->create_publisher<std_msgs::msg::Empty>(output_topic_.toStdString(), 1);
 	  }
 
 	Q_EMIT configChanged();
       }
   }
-  
+
   void PublishTopic::sendTopic(){
-    std_msgs::Empty msg;
-    velocity_publisher_.publish(msg);
+    std_msgs::msg::Empty msg;
+    velocity_publisher_->publish(msg);
   }
 
 
-  void PublishTopic::save( rviz::Config config ) const
+  void PublishTopic::save( rviz_common::Config config ) const
   {
-    rviz::Panel::save( config );
+    rviz_common::Panel::save( config );
     config.mapSetValue( "Topic", output_topic_ );
   }
 
   // Load all configuration data for this panel from the given Config object.
-  void PublishTopic::load( const rviz::Config& config )
+  void PublishTopic::load( const rviz_common::Config& config )
   {
-    rviz::Panel::load( config );
+    rviz_common::Panel::load( config );
     QString topic;
     if( config.mapGetString( "Topic", &topic ))
       {
@@ -89,6 +88,5 @@ namespace jsk_rviz_plugins
 
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::PublishTopic, rviz::Panel )
-
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::PublishTopic, rviz_common::Panel )

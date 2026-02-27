@@ -9,13 +9,102 @@ find_package(ament_cmake_auto REQUIRED)
 
 ament_auto_find_build_dependencies()
 
+# In ROS 2
+# overlay_text_display, pie_char_display are migrated to https://github.com/teamspatzenhirn/rviz_2d_overlay_plugins
+# camera_info_display is migrated to https://github.com/ros2/rviz
 set(HEADER_FILES
-  include/string_display.h
+  include/empty_service_call_interface.h
   include/overlay_utils.h
+  include/publish_topic.h
+  include/string_display.h
+  # src/ambient_sound_display_groovy.h
+  # src/select_point_cloud_publish_action.h
+  # src/footstep_display.h
+  # src/cancel_action.h
+  # src/record_action.h
+  # src/polygon_array_display.h
+  # src/normal_display.h
+  # src/overlay_menu_display.h
+  # src/overlay_image_display.h
+  # src/overlay_camera_display.h
+  # src/plotter_2d_display.h
+  # src/linear_gauge_display.h
+  # src/diagnostics_display.h
+  # src/quiet_interactive_marker_display.h
+  # src/bounding_box_display.h
+  # src/bounding_box_array_display.h
+  # src/torus_array_display.h
+  # src/overlay_diagnostic_display.h
+  # src/target_visualizer_display.h
+  # src/people_position_measurement_array_display.h
+  # src/simple_occupancy_grid_array_display.h
+  # src/close_all_tool.h
+  # src/open_all_tool.h
+  # src/overlay_picker_tool.h
+  # src/object_fit_operator.h
+  # src/robot_command_interface.h
+  # src/pictogram_display.h
+  # src/pictogram_array_display.h
+  # src/view_controller/tablet_view_controller.h
+  # src/tablet_controller_panel.h
+  # src/video_capture_display.h
+  # src/rviz_scene_publisher.h
+  # src/twist_stamped_display.h
+  # src/pose_array_display.h
+  # src/tf_trajectory_display.h
+  # src/yes_no_button_interface.h
+  # src/segment_array_display.h
+  # src/image_transport_hints_property.h
+  # src/human_skeleton_array_display.h
 )
 set(SOURCE_FILES
-  src/string_display.cpp
+  src/empty_service_call_interface.cpp
   src/overlay_utils.cpp
+  src/publish_topic.cpp
+  src/string_display.cpp
+#   src/ambient_sound_display_groovy.cpp
+#   src/ambient_sound_visual.cpp
+#   src/footstep_display.cpp
+#   src/cancel_action.cpp
+#   src/record_action.cpp
+#   src/select_point_cloud_publish_action.cpp
+#   src/polygon_array_display.cpp
+#   src/normal_display.cpp
+#   src/normal_visual.cpp
+#   src/overlay_menu_display.cpp
+#   src/overlay_image_display.cpp
+#   src/overlay_camera_display.cpp
+#   src/plotter_2d_display.cpp
+#   src/linear_gauge_display.cpp
+#   src/diagnostics_display.cpp
+#   src/bounding_box_display.cpp
+#   src/bounding_box_array_display.cpp
+#   src/torus_array_display.cpp
+#   src/quiet_interactive_marker_display.cpp
+#   src/target_visualizer_display.cpp
+#   src/overlay_diagnostic_display.cpp
+#   src/simple_occupancy_grid_array_display.cpp
+#   src/people_position_measurement_array_display.cpp
+#   src/facing_visualizer.cpp
+#   src/close_all_tool.cpp
+#   src/open_all_tool.cpp
+#   src/overlay_picker_tool.cpp
+#   src/screenshot_listener_tool.cpp
+#   src/object_fit_operator.cpp
+#   src/robot_command_interface.cpp
+#   src/pictogram_display.cpp
+#   src/pictogram_array_display.cpp
+#   src/view_controller/tablet_view_controller.cpp
+#   src/tablet_controller_panel.cpp
+#   src/video_capture_display.cpp
+#   src/rviz_scene_publisher.cpp
+#   src/twist_stamped_display.cpp
+#   src/pose_array_display.cpp
+#   src/tf_trajectory_display.cpp
+#   src/yes_no_button_interface.cpp
+#   src/segment_array_display.cpp
+#   src/image_transport_hints_property.cpp
+#   src/human_skeleton_array_display.cpp
 )
 
 set(CMAKE_AUTOMOC ON)
@@ -70,15 +159,6 @@ ament_auto_package()
 #   jsk_gui_msgs
 #   message_filters)
 
-# # Use ccache if installed to make it fast to generate object files
-# if (CMAKE_VERSION VERSION_LESS 3.4)
-#   find_program(CCACHE_FOUND ccache)
-#   if(CCACHE_FOUND)
-#     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-#     set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-#   endif(CCACHE_FOUND)
-# endif()
-
 # add_message_files(FILES
 #   OverlayText.msg OverlayMenu.msg TransformableMarkerOperate.msg ObjectFitCommand.msg
 #   Pictogram.msg PictogramArray.msg RecordCommand.msg StringStamped.msg)
@@ -129,51 +209,51 @@ ament_auto_package()
 # #set(SOURCE_FILES src/ambient_sound_display.cpp src/ambient_sound_visual.cpp)
 
 # set(HEADER_FILES
-#   # src/ambient_sound_display_groovy.h
-#   # src/select_point_cloud_publish_action.h
-#   # src/footstep_display.h
-#   # src/publish_topic.h
-#   # src/cancel_action.h
-#   # src/record_action.h
-#   # src/polygon_array_display.h
-#   # src/normal_display.h
-#   # src/overlay_text_display.h
-#   # src/overlay_menu_display.h
-#   # src/overlay_image_display.h
-#   # src/overlay_camera_display.h
-#   # src/plotter_2d_display.h
-#   # src/pie_chart_display.h
-#   # src/linear_gauge_display.h
-#   # src/diagnostics_display.h
-#   # src/quiet_interactive_marker_display.h
-#   # src/bounding_box_display.h
-#   # src/bounding_box_array_display.h
-#   # src/torus_array_display.h
-#   # src/overlay_diagnostic_display.h
-#   # src/target_visualizer_display.h
-#   # src/people_position_measurement_array_display.h
-#   # src/simple_occupancy_grid_array_display.h
-#   # src/camera_info_display.h
-#   # src/close_all_tool.h
-#   # src/open_all_tool.h
-#   # src/overlay_picker_tool.h
-#   # src/object_fit_operator.h
-#   # src/robot_command_interface.h
-#   # src/empty_service_call_interface.h
-#   # src/pictogram_display.h
-#   # src/pictogram_array_display.h
-#   # src/view_controller/tablet_view_controller.h
-#   # src/tablet_controller_panel.h
-#   # src/video_capture_display.h
-#   # src/rviz_scene_publisher.h
-#   # src/twist_stamped_display.h
-#   # src/pose_array_display.h
-#   # src/tf_trajectory_display.h
-#   # src/yes_no_button_interface.h
-#   # src/segment_array_display.h
-#   # src/image_transport_hints_property.h
+  # src/ambient_sound_display_groovy.h
+  # src/select_point_cloud_publish_action.h
+  # src/footstep_display.h
+  # src/publish_topic.h
+  # src/cancel_action.h
+  # src/record_action.h
+  # src/polygon_array_display.h
+  # src/normal_display.h
+  # src/overlay_text_display.h
+  # src/overlay_menu_display.h
+  # src/overlay_image_display.h
+  # src/overlay_camera_display.h
+  # src/plotter_2d_display.h
+  # src/pie_chart_display.h
+  # src/linear_gauge_display.h
+  # src/diagnostics_display.h
+  # src/quiet_interactive_marker_display.h
+  # src/bounding_box_display.h
+  # src/bounding_box_array_display.h
+  # src/torus_array_display.h
+  # src/overlay_diagnostic_display.h
+  # src/target_visualizer_display.h
+  # src/people_position_measurement_array_display.h
+  # src/simple_occupancy_grid_array_display.h
+  # src/camera_info_display.h
+  # src/close_all_tool.h
+  # src/open_all_tool.h
+  # src/overlay_picker_tool.h
+  # src/object_fit_operator.h
+  # src/robot_command_interface.h
+  # src/empty_service_call_interface.h
+  # src/pictogram_display.h
+  # src/pictogram_array_display.h
+  # src/view_controller/tablet_view_controller.h
+  # src/tablet_controller_panel.h
+  # src/video_capture_display.h
+  # src/rviz_scene_publisher.h
+  # src/twist_stamped_display.h
+  # src/pose_array_display.h
+  # src/tf_trajectory_display.h
+  # src/yes_no_button_interface.h
+  # src/segment_array_display.h
+  # src/image_transport_hints_property.h
 #   src/string_display.h
-#   # src/human_skeleton_array_display.h
+  # src/human_skeleton_array_display.h
 # )
 
 # message(STATUS "Check rviz_FOUND: [${rviz_FOUND}], rviz_QT_VERSION: [${rviz_QT_VERSION}]")

@@ -1,6 +1,26 @@
 <library path="jsk_rviz_plugins">
-  <class name="jsk_rviz_plugin/String" type="jsk_rviz_plugins::StringDisplay" base_class_type="rviz_common::Display">
-    <description>Displays std_msgs::String message</description>
+  <class name="jsk_rviz_plugin/EmptyServiceCallInterfaceAction"
+         type="jsk_rviz_plugins::EmptyServiceCallInterfaceAction"
+         base_class_type="rviz_common::Panel">
+    <description>
+      A panel widget to EmptyServiceCallInterfaceAction action
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/PublishTopic"
+         type="jsk_rviz_plugins::PublishTopic"
+         base_class_type="rviz_common::Panel">
+    <description>
+      A panel widget to publish a topic.
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/String"
+         type="jsk_rviz_plugins::StringDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Displays std_msgs::String message
+    </description>
     <message_type>std_msgs/msg/String</message_type>
   </class>
 </library>
