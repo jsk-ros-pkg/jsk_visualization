@@ -32,6 +32,7 @@
   <build_depend>rosidl_default_generators</build_depend>
 
   <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>rviz2</exec_depend>
 
   <!-- <build_depend>cv_bridge</build_depend> -->
   <!-- <build_depend>diagnostic_msgs</build_depend> -->
@@ -70,17 +71,17 @@
   <!-- <exec_depend>urdfdom_py</exec_depend> -->
   <!-- <exec_depend>view_controller_msgs</exec_depend> -->
 
-  <test_depend>rostest</test_depend>
-  <test_depend>pr2_description</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires pr2_description -->
-  <test_depend>joint_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires joint_state_publisher -->
-  <test_depend>robot_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires robot_state_publisher -->
-  <test_depend>jsk_data</test_depend> <!-- install_sample_data requries jsk_data -->
-  <test_depend>jsk_tools</test_depend> <!-- test_overlay_text_interface.test requries jsk_tools -->
-  <test_depend>openni2_launch</test_depend> <!-- normal.test, face_detector.test requires openni2_launch -->
-  <test_depend>image_transport</test_depend> <!-- normal.test, face_detector.test requires image_transport -->
-  <!--test_depend>jsk_pcl_ros_utils</test_depend--> <!-- normal.test requires jsk_pcl/NormalConcatenater -->
-  <!-- test_depend>jsk_pcl_ros</test_depend--> <!-- normal.test requires jsk_pcl/NormalConcatenater (for kinetic) -->
-  <test_depend>face_detector</test_depend> <!-- face_detector.test requires face_detector -->
+  <!-- <test_depend>rostest</test_depend> -->
+  <!-- <test_depend>pr2_description</test_depend> <!-\- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires pr2_description -\-> -->
+  <!-- <test_depend>joint_state_publisher</test_depend> <!-\- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires joint_state_publisher -\-> -->
+  <!-- <test_depend>robot_state_publisher</test_depend> <!-\- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires robot_state_publisher -\-> -->
+  <!-- <test_depend>jsk_data</test_depend> <!-\- install_sample_data requries jsk_data -\-> -->
+  <!-- <test_depend>jsk_tools</test_depend> <!-\- test_overlay_text_interface.test requries jsk_tools -\-> -->
+  <!-- <test_depend>openni2_launch</test_depend> <!-\- normal.test, face_detector.test requires openni2_launch -\-> -->
+  <!-- <test_depend>image_transport</test_depend> <!-\- normal.test, face_detector.test requires image_transport -\-> -->
+  <!-- <!-\-test_depend>jsk_pcl_ros_utils</test_depend-\-> <!-\- normal.test requires jsk_pcl/NormalConcatenater -\-> -->
+  <!-- <!-\- test_depend>jsk_pcl_ros</test_depend-\-> <!-\- normal.test requires jsk_pcl/NormalConcatenater (for kinetic) -\-> -->
+  <!-- <test_depend>face_detector</test_depend> <!-\- face_detector.test requires face_detector -\-> -->
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
