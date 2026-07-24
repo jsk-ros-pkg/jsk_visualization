@@ -6,6 +6,9 @@ on:
 
 env:
   DISPLAY: ':0.0'
+  # Temporary workaround for Ubuntu 14.04/16.04/18.04 containers.
+  # A glibc 2.17-compatible Node 20 is installed into /__e/node20 below.
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
 
 jobs:
   ros:
@@ -82,7 +85,7 @@ jobs:
           ls -lar /__e/node20/bin/
 
       - name: Chcekout
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v4
         with:
           submodules: true
 
