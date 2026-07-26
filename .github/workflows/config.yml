@@ -219,5 +219,17 @@ jobs:
           source /opt/ros/one/setup.bash
           set -x
           cd ~/ws/
-          catkin build --no-status -sv ${{ matrix.CATKIN_OPTIONS }} --cmake-args -DCATKIN_ENABLE_TESTING=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
+          catkin build --no-status -sv ${{ matrix.CATKIN_OPTIONS }} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
+        shell: bash
+
+      - name: Test Packages
+        run: |
+          apt install -qq -y xvfb
+          export LIBGL_ALWAYS_SOFTWARE=1
+          export QT_QPA_PLATFORM=offscreen
+          # or run under xvfb:
+          source /opt/ros/one/setup.bash
+          set -x
+          cd ~/ws/
+          xvfb-run -s "-screen 0 1280x1024x24" catkin run_tests --no-status -sv ${{ matrix.CATKIN_OPTIONS }} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
         shell: bash
