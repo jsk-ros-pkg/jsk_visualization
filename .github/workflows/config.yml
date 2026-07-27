@@ -234,5 +234,5 @@ jobs:
           source /opt/ros/one/setup.bash
           set -x
           cd ~/ws/
-          xvfb-run -s "-screen 0 1280x1024x24" catkin run_tests --no-status -sv ${{ matrix.CATKIN_OPTIONS }} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
+          xvfb-run -s "-screen 0 1280x1024x24 +extension GLX +render -noreset" catkin run_tests --no-status -sv ${{ matrix.CATKIN_OPTIONS }} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
         shell: bash
