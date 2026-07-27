@@ -144,13 +144,14 @@ class ImageView2Widget(QWidget):
         self.setLayout(vbox)
 
         self._image_topics = []
-        self._update_topic_thread = Thread(target=self.updateTopics)
-        self._update_topic_thread.start()
-
         self._active_topic = None
         self.setMouseTracking(True)
         self.label.setMouseTracking(True)
         self._dialog = ComboBoxDialog()
+
+        self._update_topic_thread = Thread(target=self.updateTopics)
+        self._update_topic_thread.start()
+
         self.show()
 
     def trigger_configuration(self):

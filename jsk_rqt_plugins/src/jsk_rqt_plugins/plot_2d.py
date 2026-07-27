@@ -348,13 +348,19 @@ class MatPlot2D(QWidget):
         def __init__(self, parent=None):
             super(MatPlot2D.Canvas, self).__init__(Figure())
             self.axes = self.figure.add_subplot(111)
-            self.figure.tight_layout()
+            try:
+                self.figure.tight_layout()
+            except Exception:
+                pass
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.updateGeometry()
 
         def resizeEvent(self, event):
             super(MatPlot2D.Canvas, self).resizeEvent(event)
-            self.figure.tight_layout()
+            try:
+                self.figure.tight_layout()
+            except Exception:
+                pass
 
     def __init__(self, parent=None):
         super(MatPlot2D, self).__init__(parent)

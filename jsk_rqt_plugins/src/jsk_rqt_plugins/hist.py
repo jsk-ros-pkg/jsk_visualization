@@ -241,13 +241,19 @@ class MatHistogramPlot(QWidget):
         def __init__(self, parent=None):
             super(MatHistogramPlot.Canvas, self).__init__(Figure())
             self.axes = self.figure.add_subplot(111)
-            self.figure.tight_layout()
+            try:
+                self.figure.tight_layout()
+            except Exception:
+                pass
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.updateGeometry()
 
         def resizeEvent(self, event):
             super(MatHistogramPlot.Canvas, self).resizeEvent(event)
-            self.figure.tight_layout()
+            try:
+                self.figure.tight_layout()
+            except Exception:
+                pass
 
     def __init__(self, parent=None):
         super(MatHistogramPlot, self).__init__(parent)
