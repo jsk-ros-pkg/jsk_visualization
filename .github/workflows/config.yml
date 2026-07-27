@@ -224,9 +224,12 @@ jobs:
 
       - name: Test Packages
         run: |
-          apt install -qq -y xvfb
+          apt install -qq -y xvfb xauth mesa-utils libgl1-mesa-dri
           export LIBGL_ALWAYS_SOFTWARE=1
+          export QT_X11_NO_MITSHM=1
           export QT_QPA_PLATFORM=offscreen
+          unset DISPLAY
+          xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX +render -noreset" bash -c 'set -eux; echo "DISPLAY=${DISPLAY}"; echo "QT_QPA_PLATFORM=${QT_QPA_PLATFORM}"; xdpyinfo >/dev/null; glxinfo -B'
           # or run under xvfb:
           source /opt/ros/one/setup.bash
           set -x
