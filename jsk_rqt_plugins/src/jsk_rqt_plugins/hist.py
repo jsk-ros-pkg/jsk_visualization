@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import argparse
-import collections
+try:
+    from collections.abc import Sequence  # Python >= 3.3
+except ImportError:
+    from collections import Sequence  # Python 2
 import os
 import sys
 
@@ -203,7 +206,7 @@ class HistogramPlotWidget(QWidget):
             pos = [y.min_value for y in data_y[-1].bins]
             widths = [y.max_value - y.min_value for y in data_y[-1].bins]
             axes.set_xlim(xmin=pos[0], xmax=pos[-1] + widths[-1])
-        elif isinstance(data_y[-1], collections.Sequence):
+        elif isinstance(data_y[-1], Sequence):
             xs = data_y[-1]
             pos = np.arange(len(xs))
             widths = [1] * len(xs)
