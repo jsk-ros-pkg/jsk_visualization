@@ -113,7 +113,8 @@ class StatusLightWidget(QWidget):
             qp.setPen(QPen(QBrush(color), 50))
             qp.setBrush(color)
             qp.drawEllipse(
-                (rect.width() - radius) / 2, (rect.height() - radius) / 2,
+                int((rect.width() - radius) / 2),
+                int((rect.height() - radius) / 2),
                 radius, radius)
             qp.end()
             return
