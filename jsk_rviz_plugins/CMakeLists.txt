@@ -134,11 +134,36 @@ if(BUILD_TESTING)
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+
+  # ROS 2 counterpart of the add_rostest() calls of the ROS 1 build: each test
+  # brings up a sample and checks that rviz survives it (see test/rviz_config_check.py).
+  # rviz needs a display, so the tests skip themselves unless DISPLAY is set;
+  # use `xvfb-run -a colcon test ...` to run them headless.
+  find_package(launch_testing_ament_cmake REQUIRED)
+  add_launch_test(test/test_overlay.py TIMEOUT 120)
+  add_launch_test(test/test_linear_gauge.py TIMEOUT 120)
+  add_launch_test(test/test_pictogram.py TIMEOUT 120)
+  add_launch_test(test/test_service_call_panel.py TIMEOUT 120)
+  add_launch_test(test/test_robot_command_interface.py TIMEOUT 120)
 endif()
 
 install(
   FILES rviz_common_plugins.xml
   DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY config icons launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  PROGRAMS
+    samples/overlay_menu_sample.py
+    samples/overlay_sample.py
+    samples/piechart_sample.py
+    samples/pictogram_sample.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 pluginlib_export_plugin_description_file(rviz_common rviz_common_plugins.xml)

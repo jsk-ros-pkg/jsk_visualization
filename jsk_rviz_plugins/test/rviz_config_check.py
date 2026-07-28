@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 ###############################################################################
 # Software License Agreement (BSD License)
 #
@@ -34,127 +34,131 @@
 ###############################################################################
 
 """
-Integration test node that checks if the rviz are working.
-see example below
+Shared pieces of the rviz integration tests.
 
-<test name="rviz_config_check"
-      test-name="rviz_config_check"
-      pkg="jsk_rviz_plugins" type="rviz_config_check.py">
-  <rosparam>
-    wait_time : 5
-    topics:
-      - name: another topic name
-        timeout: timeout for the topic
-  </rosparam>
-</test>
+This is the ROS 2 counterpart of the ROS 1 ``rviz_config_check.py`` rostest
+node: it checks that rviz comes up with a given config, stays alive for
+``test_duration`` seconds and ends up subscribing to the expected topics.
+
+``rostest`` is replaced by ``launch_testing``, so instead of a standalone test
+node each sample gets a ``test_*.py`` module which
+
+* returns the sample launch file from ``generate_test_description()``, and
+* derives its test case from :class:`RvizConfigCheck`.
+
+``RvizConfigCheck`` is deliberately *not* a ``unittest.TestCase`` so that
+importing it into a test module does not make launch_testing run it on its own.
 
 Author: Kei Okada <kei.okada@gmail.com>
 """
 
 import os
-import sys
 import time
-import unittest
 
-import rospy
-import rosnode
-import rosgraph
-import rosservice
-
-
-PKG = 'jsk_rviz_plugins'
-NAME = 'rviz_config_check'
+from ament_index_python.packages import get_package_share_directory
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+import rclpy
 
 
-class RvizConfigCheck(unittest.TestCase):
-    def __init__(self, *args):
-        super(self.__class__, self).__init__(*args)
-        rospy.init_node(NAME)
-        # scrape rosparam
-        # check rviz arive at least test_duration
-        self.test_duration = float(rospy.get_param('~test_duration', 5.))
-        # topics to check
-        self.topics = {}
-        params = rospy.get_param('~topics', [])
-        for param in params:
-            if 'name' not in param:
-                self.fail("'name' field in rosparam is required but not specified.")
-            topic = {'timeout': 10, 'type': None}  # this is not used
-            topic.update(param)
-            self.topics[topic['name']] = topic
+# Node name of rviz2. ROS 1 looked the node up through the `rviz/SendFilePath`
+# service; in ROS 2 rviz2 always names its node `rviz`.
+RVIZ_NODE_NAME = 'rviz'
+RVIZ_NODE_NAMESPACE = '/'
 
-    def setUp(self):
-        # warn on /use_sim_time is true
-        use_sim_time = rospy.get_param('/use_sim_time', False)
-        t_start = time.time()
-        while not rospy.is_shutdown() and \
-                use_sim_time and (rospy.Time.now() == rospy.Time(0)):
-            rospy.logwarn_throttle(
-                1, '/use_sim_time is specified and rostime is 0, /clock is published?')
-            if time.time() - t_start > 10:
-                self.fail('Timed out (10s) of /clock publication.')
-            # must use time.sleep because /clock isn't yet published, so rospy.sleep hangs.
-            time.sleep(0.1)
+# rviz needs a display. ROS 1 forced DISPLAY to :0.0, but on a headless machine
+# that only produces a confusing failure, so the tests are skipped instead.
+# Run them under `xvfb-run -a colcon test ...` to exercise them headless.
+DISPLAY_REQUIRED_MESSAGE = 'DISPLAY is not set, run the test under xvfb-run'
 
-        # Use `rosservice find rviz/SendFilePath` to get rviz node name
-        rviz_service_names = []
-        while not rospy.is_shutdown() and len(rviz_service_names) == 0:
-            rviz_service_names = rosservice.rosservice_find('rviz/SendFilePath')
-            if len(rviz_service_names) == 0:
-                rospy.logwarn("[{}] Waiting rviz service (rviz/SendFilePath) for {:.3f} sec".format(rospy.get_name(), time.time() - t_start))
-                # rviz/SendFilePath only available >melodic
-                if os.environ['ROS_DISTRO'] < 'melodic':
-                    rviz_service_names = rosservice.rosservice_find('std_srvs/Empty')
-            time.sleep(0.1)
 
-        # check if
-        rospy.logwarn("[{}] Found rviz service names {}".format(rospy.get_name(), rviz_service_names))
-        rviz_node_names = set(map(rosservice.get_service_node, rviz_service_names))
-        rospy.logwarn("[{}] Found rviz node names {}".format(rospy.get_name(), rviz_node_names))
-        if len(rviz_node_names) == 0:
-            rospy.logerr("[{}] Could not find rviz nodes".format(rospy.get_name()))
-            raise AssertionError
+def has_display():
+    return bool(os.environ.get('DISPLAY'))
 
-        self.rviz_node_name = list(rviz_node_names)[0]
+
+def include_sample_launch(launch_file_name, launch_arguments=None):
+    """Include one of the sample launch files of this package."""
+    launch_file = os.path.join(
+        get_package_share_directory('jsk_rviz_plugins'), 'launch',
+        launch_file_name)
+    return IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(launch_file),
+        launch_arguments=launch_arguments or {})
+
+
+class RvizConfigCheck(object):
+    """
+    Assert that rviz stays alive and subscribes to the expected topics.
+
+    Subclasses are expected to also derive from ``unittest.TestCase`` and may
+    override :attr:`test_duration` and :attr:`topics`.
+    """
+
+    # check rviz is alive at least test_duration seconds
+    test_duration = 5.0
+    # topics rviz is expected to subscribe to
+    topics = []
+    # how long to wait for the rviz node to show up in the graph
+    startup_timeout = 60.0
+
+    @classmethod
+    def setUpClass(cls):
+        rclpy.init()
+        cls.node = rclpy.create_node('rviz_config_check')
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.node.destroy_node()
+        rclpy.shutdown()
+
+    def _rviz_is_up(self):
+        return RVIZ_NODE_NAME in self.node.get_node_names()
+
+    def _rviz_subscriptions(self):
+        try:
+            names_and_types = self.node.get_subscriber_names_and_types_by_node(
+                RVIZ_NODE_NAME, RVIZ_NODE_NAMESPACE)
+        except Exception as e:
+            # NodeNameNonExistentError while the node is (dis)appearing
+            self.node.get_logger().warn(
+                'Could not read the subscriptions of {}: {}'.format(
+                    RVIZ_NODE_NAME, e))
+            return []
+        return [name for name, _ in names_and_types]
 
     def test_rviz_exists(self):
-        rospy.logwarn("[{}] Check rviz node exists {}".format(rospy.get_name(), self.rviz_node_name))
-        subs = []
+        # wait for rviz to appear in the graph
         t_start = time.time()
-        while not rospy.is_shutdown():
-            t_now = time.time()
-            t_elapsed = t_now - t_start
-            if t_elapsed > self.test_duration:
-                break
-
-            # info = rosnode.rosnode_info(self.rviz_node_name) does not return values, so we need to expand functions
-            node_api = rosnode.rosnode_ping(self.rviz_node_name, max_count=1, skip_cache=True)
-            if not node_api:
-                rospy.logerr("[{}] Could not find rviz node api on rosmaster".format(rospy.get_name()))
-                raise AssertionError
-
-            rospy.logwarn("[{}] {:.3f} Rviz node found at {}".format(rospy.get_name(), t_elapsed, node_api))
-
-            # check if topic exists
-            master = rosgraph.Master('/rosnode')
-
-            state = master.getSystemState()
-            subs.extend(sorted([t for t, l in state[1] if self.rviz_node_name in l]))
-            subs = list(set(subs))
-            rospy.logwarn('[{}] rviz subscribes {}'.format(rospy.get_name(), subs))
+        while not self._rviz_is_up():
+            if time.time() - t_start > self.startup_timeout:
+                self.fail('Timed out ({}s) waiting for the {} node'.format(
+                    self.startup_timeout, RVIZ_NODE_NAME))
+            self.node.get_logger().warn(
+                'Waiting for the {} node for {:.3f} sec'.format(
+                    RVIZ_NODE_NAME, time.time() - t_start))
             time.sleep(0.5)
+        self.node.get_logger().warn(
+            '{} node found after {:.3f} sec'.format(
+                RVIZ_NODE_NAME, time.time() - t_start))
+
+        # keep checking that rviz is alive and collect what it subscribes to
+        subs = set()
+        t_start = time.time()
+        while time.time() - t_start < self.test_duration:
+            self.assertTrue(
+                self._rviz_is_up(),
+                'The {} node disappeared after {:.3f} sec, rviz crashed?'
+                .format(RVIZ_NODE_NAME, time.time() - t_start))
+            subs.update(self._rviz_subscriptions())
+            time.sleep(0.5)
+        self.node.get_logger().warn(
+            'rviz subscribes {}'.format(sorted(subs)))
 
         for topic in self.topics:
-            if topic in subs:
-                rospy.logwarn('[{}] rviz subscribes {}'.format(rospy.get_name(), topic))
-            else:
-                rospy.logerr('[{}] rviz did not subscribes {}'.format(rospy.get_name(), topic))
-                raise AssertionError
+            self.assertIn(
+                topic, subs,
+                'rviz did not subscribe {}'.format(topic))
 
-        rospy.logwarn("[{}] rviz keep alive for {}[sec] and found {}".format(rospy.get_name(), self.test_duration, self.topics))
-        self.assertTrue(True, "check {}/rviz alives".format(rospy.get_name()))
-
-
-if __name__ == '__main__':
-    import rostest
-    rostest.run(PKG, NAME, RvizConfigCheck, sys.argv)
+        self.node.get_logger().warn(
+            'rviz kept alive for {}[sec] and found {}'.format(
+                self.test_duration, self.topics))
