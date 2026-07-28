@@ -38,18 +38,25 @@
 #define JSK_RVIZ_PLUGIN_PICTOGRAM_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
-#include <rviz/display.h>
-#include <rviz/message_filter_display.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/string_property.h>
-#include <rviz/properties/editable_enum_property.h>
-#include <rviz/properties/tf_frame_property.h>
-#include <rviz/properties/ros_topic_property.h>
-#include <rviz/properties/enum_property.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <jsk_rviz_plugins/Pictogram.h>
+#include <chrono>
+#include <memory>
+#include <mutex>
+#include <string>
+
+#include <rviz_common/display.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/editable_enum_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/string_property.hpp>
+#include <rviz_common/properties/tf_frame_property.hpp>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
+#include <jsk_rviz_plugins/msg/pictogram.hpp>
 #include "facing_visualizer.h"
 #endif
 
@@ -68,11 +75,7 @@ namespace jsk_rviz_plugins
   class PictogramObject: public FacingTexturedObject
   {
   public:
-#if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<PictogramObject> Ptr;
-#else
-    typedef boost::shared_ptr<PictogramObject> Ptr;
-#endif
     PictogramObject(Ogre::SceneManager* manager,
                     Ogre::SceneNode* parent,
                     double size);
@@ -83,60 +86,63 @@ namespace jsk_rviz_plugins
     virtual void setColor(QColor color);
     virtual void setSize(double size);
     virtual void setSpeed(double speed);
-    virtual void setPose(const geometry_msgs::Pose& pose,
+    virtual void setPose(const geometry_msgs::msg::Pose& pose,
                          const std::string& frame_id);
     virtual void start();
-    virtual void setContext(rviz::DisplayContext* context);
+    virtual void setContext(rviz_common::DisplayContext* context);
     virtual void setAction(uint8_t action);
     virtual void setMode(uint8_t mode);
     virtual void setTTL(double ttl);
   protected:
+    // wall clock used to animate the pictogram
+    typedef std::chrono::steady_clock WallClock;
+
     virtual void updatePose(float dt);
     virtual void updateColor();
     virtual void updateText();
-    
+
     bool need_to_update_;
     uint8_t action_;
-    geometry_msgs::Pose pose_;
+    geometry_msgs::msg::Pose pose_;
     std::string frame_id_;
-    rviz::DisplayContext* context_;
-    ros::WallTime time_;
+    rviz_common::DisplayContext* context_;
+    WallClock::time_point time_;
     double ttl_;
     double speed_;
     uint8_t mode_;
   private:
-    
+
   };
 
-  
+
   ////////////////////////////////////////////////////////
   // Display to visualize pictogram on rviz
   ////////////////////////////////////////////////////////
   class PictogramDisplay:
-    public rviz::MessageFilterDisplay<jsk_rviz_plugins::Pictogram>
+    public rviz_common::MessageFilterDisplay<jsk_rviz_plugins::msg::Pictogram>
   {
     Q_OBJECT
   public:
     PictogramDisplay();
     virtual ~PictogramDisplay();
   protected:
-    
+
     ////////////////////////////////////////////////////////
     // methods
     ////////////////////////////////////////////////////////
     virtual void onInitialize();
     virtual void reset();
     virtual void onEnable();
-    void processMessage(const jsk_rviz_plugins::Pictogram::ConstPtr& msg);
+    void processMessage(jsk_rviz_plugins::msg::Pictogram::ConstSharedPtr msg);
     void update(float wall_dt, float ros_dt);
 
     ////////////////////////////////////////////////////////
     // parameters
     ////////////////////////////////////////////////////////
-    boost::mutex mutex_;
+    std::mutex mutex_;
     PictogramObject::Ptr pictogram_;
   private Q_SLOTS:
-    
+
   private:
   };
 }

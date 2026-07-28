@@ -1,4 +1,4 @@
-// -*- mode: c++; -*-
+// -*- mode: c++ -*-
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
@@ -33,21 +33,64 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef JSK_RVIZ_PLUGINS_QUIET_INTERACTIVE_MARKER_H_
-#define JSK_RVIZ_PLUGINS_QUIET_INTERACTIVE_MARKER_H_
 
-#include <rviz/default_plugin/interactive_marker_display.h>
-#include <rviz/properties/status_property.h>
+#ifndef JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
+#define JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
+
+#ifndef Q_MOC_RUN
+#include <memory>
+#include <string>
+
+#include <rviz_common/display.hpp>
+#include <rviz_common/properties/string_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <opencv2/opencv.hpp>
+#endif
 
 namespace jsk_rviz_plugins
 {
-  class QuietInteractiveMarkerDisplay: public rviz::InteractiveMarkerDisplay
+  class VideoCaptureDisplay: public rviz_common::Display
   {
+    Q_OBJECT
   public:
-    QuietInteractiveMarkerDisplay();
-    virtual void setStatus( rviz::StatusProperty::Level level, const QString& name, const QString& text );
+    typedef std::shared_ptr<VideoCaptureDisplay> Ptr;
+    VideoCaptureDisplay();
+    virtual ~VideoCaptureDisplay();
   protected:
-    bool dummy_status_;
+    virtual void onInitialize();
+    virtual void onEnable();
+    virtual void update(float wall_dt, float ros_dt);
+    virtual void startCapture();
+    virtual void stopCapture();
+    ////////////////////////////////////////////////////////
+    // Variables
+    ////////////////////////////////////////////////////////
+    rviz_common::properties::StringProperty* file_name_property_;
+    rviz_common::properties::BoolProperty* start_capture_property_;
+    rviz_common::properties::FloatProperty* fps_property_;
+    rviz_common::properties::BoolProperty* use_3d_viewer_size_property_;
+    rviz_common::properties::IntProperty* width_property_;
+    rviz_common::properties::IntProperty* height_property_;
+    std::string file_name_;
+    bool capturing_;
+    double fps_;
+    bool use_3d_viewer_size_;
+    int width_;
+    int height_;
+    int frame_counter_;
+    bool first_time_;
+    cv::VideoWriter writer_;
+  protected Q_SLOTS:
+    void updateFileName();
+    void updateStartCapture();
+    void updateFps();
+    void updateUse3DViewerSize();
+    void updateWidth();
+    void updateHeight();
+  private:
+
   };
 }
 

@@ -35,11 +35,22 @@
 
 
 #include "tablet_controller_panel.h"
-#include <Eigen/Core>
-#include <Eigen/Geometry>
+
+#include <algorithm>
+#include <cmath>
+#include <string>
+#include <vector>
+
+#include <OgreVector.h>
+
 namespace jsk_rviz_plugins
 {
-  TabletCmdVelArea::TabletCmdVelArea(QWidget* parent, ros::Publisher& pub_cmd_vel):
+  static rclcpp::Logger logger()
+  {
+    return rclcpp::get_logger("TabletControllerPanel");
+  }
+
+  TabletCmdVelArea::TabletCmdVelArea(QWidget* parent, TwistPublisher pub_cmd_vel):
     QWidget(parent), mouse_x_(-1), mouse_y_(-1), pub_cmd_vel_(pub_cmd_vel)
   {
     setBackgroundRole(QPalette::Base);
@@ -66,14 +77,14 @@ namespace jsk_rviz_plugins
     mouse_y_ = event->y();
     repaint();
   }
-  void TabletCmdVelArea::mouseReleaseEvent(QMouseEvent* event){
+  void TabletCmdVelArea::mouseReleaseEvent(QMouseEvent* /*event*/){
     mouse_x_ = -1;
     mouse_y_ = -1;
     repaint();
     publishCmdVel(0, 0, 0);
   }
-  
-  void TabletCmdVelArea::paintEvent(QPaintEvent* event)
+
+  void TabletCmdVelArea::paintEvent(QPaintEvent* /*event*/)
   {
     QSize widget_size = size();
     int line_width = 20;
@@ -105,7 +116,7 @@ namespace jsk_rviz_plugins
       publishVelocity(mouse_x_, mouse_y_, center_x, center_y);
     }
     painter.drawArc(mouse_x_ - inner_size / 2,
-		    mouse_y_ - inner_size / 2, 
+		    mouse_y_ - inner_size / 2,
 		    inner_size, inner_size, 0, (360 + 1) * 16);
   }
 
@@ -114,14 +125,15 @@ namespace jsk_rviz_plugins
   {
     double diff_x = mouse_x - cx;
     double diff_y = mouse_y - cy;
-    Eigen::Vector3d ex(0, -1, 0);
-    Eigen::Vector3d vel(diff_x / cx, diff_y / cy, 0);
-    
+    // Ogre::Vector3 is used instead of Eigen so that no extra dependency is needed
+    Ogre::Vector3 ex(0, -1, 0);
+    Ogre::Vector3 vel(diff_x / cx, diff_y / cy, 0);
+
     int sign = 1;
-    if (ex.cross(vel).dot(Eigen::Vector3d(0, 0, -1)) < 0) {
+    if (ex.crossProduct(vel).dotProduct(Ogre::Vector3(0, 0, -1)) < 0) {
       sign = -1;
     }
-    double dot = ex.dot(vel) / ex.norm() / vel.norm();
+    double dot = ex.dotProduct(vel) / ex.length() / vel.length();
     if (dot < -1) {
       dot = -1.0;
     }
@@ -130,21 +142,23 @@ namespace jsk_rviz_plugins
     }
     double theta = sign * acos(dot);
     if (!std::isnan(theta)) {
-      Eigen::Vector3d vel_refined(-vel[1], -vel[0], 0);
-      
+      Ogre::Vector3 vel_refined(-vel[1], -vel[0], 0);
+
       publishCmdVel(vel_refined[0] * 0.2 , vel_refined[1] * 0.2, theta * 0.2);
     }
   }
 
   void TabletCmdVelArea::publishCmdVel(double x, double y, double theta)
   {
-    ROS_INFO("(%f, %f)", x, y);
-    ROS_INFO("theta: %f", theta);
-    geometry_msgs::Twist twist;
+    RCLCPP_INFO(logger(), "(%f, %f)", x, y);
+    RCLCPP_INFO(logger(), "theta: %f", theta);
+    geometry_msgs::msg::Twist twist;
     twist.linear.x = x;
     twist.linear.y = y;
     twist.angular.z = theta;
-    pub_cmd_vel_.publish(twist);
+    if (pub_cmd_vel_) {
+      pub_cmd_vel_->publish(twist);
+    }
   }
 
   QString TabletControllerPanel::defaultButtonStyleSheet()
@@ -161,24 +175,39 @@ namespace jsk_rviz_plugins
   {
     return "QRadioButton {font-size: 20pt; color: #424242;}";
   }
-  
+
   QString TabletControllerPanel::listStyleSheet()
   {
     return "QListWidget {font-size: 20pt; color: #424242;}";
   }
-  
-  TabletControllerPanel::TabletControllerPanel(QWidget* parent): rviz::Panel(parent)
+
+  TabletControllerPanel::TabletControllerPanel(QWidget* parent):
+    rviz_common::Panel(parent), cmd_vel_area_(NULL), task_dialog_(NULL), spot_dialog_(NULL)
   {
-    ros::NodeHandle nh;
-    pub_start_demo_ = nh.advertise<jsk_rviz_plugins::StringStamped>(
-      "/Tablet/StartDemo", 1);
-    pub_spot_ = nh.advertise<jsk_rviz_plugins::StringStamped>(
-      "/Tablet/MoveToSpot", 1);
-    sub_spots_ = nh.subscribe("/spots_marker_array",
-                              1, &TabletControllerPanel::spotCallback, this);
-    pub_cmd_vel_ = nh.advertise<geometry_msgs::Twist>(
-      "/navigation/unsafe_vel", 1);
     layout_ = new QVBoxLayout();
+    setLayout(layout_);
+    setBackgroundRole(QPalette::Base);
+    setAutoFillBackground(true);
+  }
+
+  TabletControllerPanel::~TabletControllerPanel()
+  {
+
+  }
+
+  void TabletControllerPanel::onInitialize()
+  {
+    node_ = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
+    pub_start_demo_ = node_->create_publisher<jsk_rviz_plugins::msg::StringStamped>(
+      "/Tablet/StartDemo", 1);
+    pub_spot_ = node_->create_publisher<jsk_rviz_plugins::msg::StringStamped>(
+      "/Tablet/MoveToSpot", 1);
+    sub_spots_ = node_->create_subscription<visualization_msgs::msg::MarkerArray>(
+      "/spots_marker_array", 1,
+      std::bind(&TabletControllerPanel::spotCallback, this, std::placeholders::_1));
+    pub_cmd_vel_ = node_->create_publisher<geometry_msgs::msg::Twist>(
+      "/navigation/unsafe_vel", 1);
+
     layout_->addStretch();
     task_button_ = new QPushButton("Task", this);
     task_button_->setMinimumHeight(100);
@@ -195,35 +224,25 @@ namespace jsk_rviz_plugins
     layout_->addSpacing(10);
     cmd_vel_area_ = new TabletCmdVelArea(this, pub_cmd_vel_);
     layout_->addWidget(cmd_vel_area_);
-    
-    
-    setLayout(layout_);
-    setBackgroundRole(QPalette::Base);
-    setAutoFillBackground(true);
   }
 
-  TabletControllerPanel::~TabletControllerPanel()
+  void TabletControllerPanel::load(const rviz_common::Config& config)
   {
-
+    rviz_common::Panel::load(config);
   }
 
-  void TabletControllerPanel::load(const rviz::Config& config)
+  void TabletControllerPanel::save(rviz_common::Config config) const
   {
-    rviz::Panel::load(config);
-  }
-  
-  void TabletControllerPanel::save(rviz::Config config) const
-  {
-    rviz::Panel::save(config);
+    rviz_common::Panel::save(config);
   }
 
   ////////////////////////////////////////////////////////
   // callbacks
   ////////////////////////////////////////////////////////
   void TabletControllerPanel::spotCallback(
-    const visualization_msgs::MarkerArray::ConstPtr& marker)
+    const visualization_msgs::msg::MarkerArray::ConstSharedPtr marker)
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     spots_.clear();
     for (size_t i = 0; i < marker->markers.size(); i++) {
       std::string text = marker->markers[i].text;
@@ -232,9 +251,9 @@ namespace jsk_rviz_plugins
       }
     }
   }
-  
 
-  
+
+
   void TabletControllerPanel::taskButtonClicked()
   {
     task_dialog_ = new QDialog();
@@ -260,7 +279,7 @@ namespace jsk_rviz_plugins
       task->setStyleSheet(radioButtonStyleSheet());
       task_radio_buttons_.push_back(task);
     }
-    
+
     for (size_t i = 0; i < task_radio_buttons_.size(); i++) {
       task_dialog_layout_->addWidget(task_radio_buttons_[i]);
     }
@@ -280,7 +299,7 @@ namespace jsk_rviz_plugins
     task_dialog_layout_->addLayout(task_dialog_button_layout_);
     task_dialog_->setLayout(task_dialog_layout_);
     task_dialog_->show();
-    
+
   }
 
   void TabletControllerPanel::taskCancelClicked()
@@ -294,20 +313,20 @@ namespace jsk_rviz_plugins
       QRadioButton* radio = task_radio_buttons_[i];
       if (radio->isChecked()) {
         std::string task = radio->text().toStdString();
-        ROS_INFO("task: %s", task.c_str());
+        RCLCPP_INFO(logger(), "task: %s", task.c_str());
         task_dialog_->reject();
-        jsk_rviz_plugins::StringStamped command;
+        jsk_rviz_plugins::msg::StringStamped command;
         command.data = task;
-        command.header.stamp = ros::Time::now();
-        pub_start_demo_.publish(command);
+        command.header.stamp = node_->now();
+        pub_start_demo_->publish(command);
         return;
       }
     }
   }
-  
+
   void TabletControllerPanel::spotButtonClicked()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     spot_dialog_ = new QDialog();
     spot_dialog_->setBackgroundRole(QPalette::Base);
     spot_dialog_->setAutoFillBackground(true);
@@ -331,7 +350,7 @@ namespace jsk_rviz_plugins
     connect(spot_go_button_, SIGNAL(released()),
             this, SLOT(spotGoClicked()));
     spot_dialog_button_layout_->addWidget(spot_go_button_);
-    
+
     spot_cancel_button_ = new QPushButton("Cancel", this);
     spot_cancel_button_->setMinimumHeight(50);
     spot_cancel_button_->setMinimumWidth(300);
@@ -354,15 +373,15 @@ namespace jsk_rviz_plugins
     QListWidgetItem* item = spot_list_->currentItem();
     if (item) {
       std::string spot = item->text().toStdString();
-      jsk_rviz_plugins::StringStamped spot_command;
+      jsk_rviz_plugins::msg::StringStamped spot_command;
       spot_command.data = spot;
-      spot_command.header.stamp = ros::Time::now();
-      pub_spot_.publish(spot_command);
+      spot_command.header.stamp = node_->now();
+      pub_spot_->publish(spot_command);
     }
     spot_dialog_->reject();
   }
 
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::TabletControllerPanel, rviz::Panel);
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::TabletControllerPanel, rviz_common::Panel);

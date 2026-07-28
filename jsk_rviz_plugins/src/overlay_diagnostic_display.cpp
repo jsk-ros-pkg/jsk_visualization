@@ -35,57 +35,69 @@
 
 #include "overlay_diagnostic_display.h"
 
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreHardwarePixelBuffer.h>
-#include <OGRE/OgreTechnique.h>
+#include <algorithm>
+#include <set>
+#include <string>
 
-#include <rviz/uniform_string_stream.h>
-#include <rviz/display_context.h>
-#include <rviz/view_manager.h>
-#include <rviz/render_panel.h>
+#include <OgreMaterialManager.h>
+#include <OgreTextureManager.h>
+#include <OgreTexture.h>
+#include <OgreHardwarePixelBuffer.h>
+#include <OgreTechnique.h>
+
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_rendering/render_system.hpp>
 
 namespace jsk_rviz_plugins
 {
   const double overlay_diagnostic_animation_duration = 5.0;
   const double overlay_diagnostic_animation_transition_duration = 0.2;
-  OverlayDiagnosticDisplay::OverlayDiagnosticDisplay()
-    : previous_state_(STALL_STATE), Display()
+
+  // elapsed wall time in seconds since the given time point
+  static double elapsedSec(
+    const std::chrono::steady_clock::time_point& since)
   {
-    ros_topic_property_ = new rviz::RosTopicProperty(
+    return std::chrono::duration<double>(
+      std::chrono::steady_clock::now() - since).count();
+  }
+
+  OverlayDiagnosticDisplay::OverlayDiagnosticDisplay()
+    : Display(), previous_state_(STALL_STATE)
+  {
+    ros_topic_property_ = new rviz_common::properties::RosTopicProperty(
       "Topic", "/diagnostics_agg",
-      ros::message_traits::datatype<diagnostic_msgs::DiagnosticArray>(),
+      rosidl_generator_traits::name<diagnostic_msgs::msg::DiagnosticArray>(),
       "diagnostic_msgs::DiagnosticArray topic to subscribe to.",
       this, SLOT( updateRosTopic() ));
-    diagnostics_namespace_property_ = new rviz::EditableEnumProperty(
+    diagnostics_namespace_property_ = new rviz_common::properties::EditableEnumProperty(
       "diagnostics namespace", "/",
       "diagnostics namespace to visualize diagnostics",
       this, SLOT(updateDiagnosticsNamespace()));
-    type_property_ = new rviz::EnumProperty(
+    type_property_ = new rviz_common::properties::EnumProperty(
       "type", "SAC", "Type of visualization", this, SLOT(updateType()));
     type_property_->addOptionStd("SAC", 0);
     type_property_->addOptionStd("EVA", 1);
-    top_property_ = new rviz::IntProperty(
+    top_property_ = new rviz_common::properties::IntProperty(
       "top", 128,
       "top positoin",
       this, SLOT(updateTop()));
-    left_property_ = new rviz::IntProperty(
+    left_property_ = new rviz_common::properties::IntProperty(
       "left", 128,
       "left positoin",
       this, SLOT(updateLeft()));
-    size_property_ = new rviz::IntProperty(
+    size_property_ = new rviz_common::properties::IntProperty(
       "size", 128,
       "size of the widget",
       this, SLOT(updateSize()));
     size_property_->setMin(1);
-    alpha_property_ = new rviz::FloatProperty(
+    alpha_property_ = new rviz_common::properties::FloatProperty(
       "alpha", 0.8,
       "alpha value",
       this, SLOT(updateAlpha()));
     alpha_property_->setMin(0.0);
     alpha_property_->setMax(1.0);
-    stall_duration_property_ = new rviz::FloatProperty(
+    stall_duration_property_ = new rviz_common::properties::FloatProperty(
       "stall duration", 5.0,
       "seconds to be regarded as stalled",
       this, SLOT(updateStallDuration())
@@ -98,8 +110,7 @@ namespace jsk_rviz_plugins
     if (overlay_) {
       overlay_->hide();
     }
-    // panel_material_->unload();
-    // Ogre::MaterialManager::getSingleton().remove(panel_material_->getName());
+    unsubscribe();
     delete ros_topic_property_;
     delete diagnostics_namespace_property_;
     delete top_property_;
@@ -107,18 +118,18 @@ namespace jsk_rviz_plugins
     delete alpha_property_;
     delete size_property_;
     delete type_property_;
+    delete stall_duration_property_;
   }
 
   void OverlayDiagnosticDisplay::processMessage(
-    const diagnostic_msgs::DiagnosticArray::ConstPtr& msg)
+    const diagnostic_msgs::msg::DiagnosticArray::ConstSharedPtr msg)
   {
-    //std::make_shared<diagnostic_msgs::DiagnosticStatus>
     // update namespaces_ if needed
     std::set<std::string> new_namespaces;
     for (size_t i = 0; i < msg->status.size(); i++) {
       new_namespaces.insert(msg->status[i].name);
     }
-    
+
     std::set<std::string> difference_namespaces;
     std::set_difference(namespaces_.begin(), namespaces_.end(),
                         new_namespaces.begin(), new_namespaces.end(),
@@ -139,39 +150,34 @@ namespace jsk_rviz_plugins
         fillNamespaceList();
       }
     }
-    
+
     if (diagnostics_namespace_.length() == 0) {
       return;
     }
 
     for (size_t i = 0; i < msg->status.size(); i++) {
-      diagnostic_msgs::DiagnosticStatus status = msg->status[i];
+      diagnostic_msgs::msg::DiagnosticStatus status = msg->status[i];
       if (status.name == diagnostics_namespace_) {
-#if ROS_VERSION_MINIMUM(1,12,0)
         latest_status_
-          = std::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
-#else
-        latest_status_
-          = boost::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
-#endif
-        latest_message_time_ = ros::WallTime::now();
+          = std::make_shared<diagnostic_msgs::msg::DiagnosticStatus>(status);
+        latest_message_time_ = WallClock::now();
         break;
       }
     }
   }
 
-  void OverlayDiagnosticDisplay::update(float wall_dt, float ros_dt)
+  void OverlayDiagnosticDisplay::update(float wall_dt, float /*ros_dt*/)
   {
     if (!isEnabled()) {
       return;
     }
     if (!overlay_) {
       static int count = 0;
-      rviz::UniformStringStream ss;
+      rviz_common::UniformStringStream ss;
       ss << "OverlayDiagnosticDisplayObject" << count++;
       overlay_.reset(new OverlayObject(ss.str()));
       overlay_->show();
-      animation_start_time_ = ros::WallTime::now();
+      animation_start_time_ = WallClock::now();
     }
     t_ += wall_dt;
 
@@ -179,7 +185,7 @@ namespace jsk_rviz_plugins
     if (!is_animating_) {
       if (previous_state_ != getLatestState()) {
         is_animating_ = true;
-        animation_start_time_ = ros::WallTime::now();
+        animation_start_time_ = WallClock::now();
       }
     }
     else {
@@ -188,7 +194,7 @@ namespace jsk_rviz_plugins
         previous_state_ = getLatestState();
       }
     }
-    
+
     overlay_->updateTextureSize(size_, size_);
     redraw();
     overlay_->setDimensions(overlay_->getTextureWidth(),
@@ -199,14 +205,16 @@ namespace jsk_rviz_plugins
 
   bool OverlayDiagnosticDisplay::isAnimating()
   {
-    return ((ros::WallTime::now() - animation_start_time_).toSec() < overlay_diagnostic_animation_transition_duration);
+    return elapsedSec(animation_start_time_)
+      < overlay_diagnostic_animation_transition_duration;
   }
-  
+
   double OverlayDiagnosticDisplay::animationRate()
   {
-    return ((ros::WallTime::now() - animation_start_time_).toSec() / overlay_diagnostic_animation_transition_duration);
+    return elapsedSec(animation_start_time_)
+      / overlay_diagnostic_animation_transition_duration;
   }
-  
+
   void OverlayDiagnosticDisplay::onEnable()
   {
     t_ = 0.0;
@@ -218,7 +226,6 @@ namespace jsk_rviz_plugins
 
   void OverlayDiagnosticDisplay::onDisable()
   {
-    ROS_INFO("onDisable");
     if (overlay_) {
       overlay_->hide();
     }
@@ -227,8 +234,8 @@ namespace jsk_rviz_plugins
 
   void OverlayDiagnosticDisplay::onInitialize()
   {
-    
-    ROS_DEBUG("onInitialize");
+    rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
+    ros_topic_property_->initialize(context_->getRosNodeAbstraction());
     updateType();
     updateDiagnosticsNamespace();
     updateSize();
@@ -238,49 +245,44 @@ namespace jsk_rviz_plugins
     updateStallDuration();
     updateRosTopic();
   }
-  
+
   void OverlayDiagnosticDisplay::unsubscribe()
   {
-    sub_.shutdown();
+    sub_.reset();
   }
-  
+
   void OverlayDiagnosticDisplay::subscribe()
   {
-    ros::NodeHandle n;
-    sub_ = n.subscribe(ros_topic_property_->getTopicStd(),
-                       1,
-                       &OverlayDiagnosticDisplay::processMessage,
-                       this);
+    std::string topic_name = ros_topic_property_->getTopicStd();
+    if (topic_name.length() > 0 && topic_name != "/") {
+      auto raw_node = context_->getRosNodeAbstraction().lock()->get_raw_node();
+      sub_ = raw_node->create_subscription<diagnostic_msgs::msg::DiagnosticArray>(
+        topic_name, 1,
+        std::bind(&OverlayDiagnosticDisplay::processMessage, this, std::placeholders::_1));
+    }
   }
 
   bool OverlayDiagnosticDisplay::isStalled()
   {
     if (latest_status_) {
-      ros::WallDuration message_duration
-        = ros::WallTime::now() - latest_message_time_;
-      if (message_duration.toSec() < stall_duration_) {
-        return false;
-      }
-      else {
-        return true;
-      }
+      return elapsedSec(latest_message_time_) >= stall_duration_;
     }
     else {
       return true;
     }
   }
-  
+
   std::string OverlayDiagnosticDisplay::statusText()
   {
     if (latest_status_) {
       if (!isStalled()) {
-        if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
+        if (latest_status_->level == diagnostic_msgs::msg::DiagnosticStatus::OK) {
           return "OK";
         }
-        else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::WARN) {
+        else if (latest_status_->level == diagnostic_msgs::msg::DiagnosticStatus::WARN) {
           return "WARN";
         }
-        else if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::ERROR) {
+        else if (latest_status_->level == diagnostic_msgs::msg::DiagnosticStatus::ERROR) {
           return "ERROR";
         }
         else {
@@ -295,21 +297,21 @@ namespace jsk_rviz_plugins
       return "UNKNOWN";
     }
   }
-  
+
   OverlayDiagnosticDisplay::State
   OverlayDiagnosticDisplay::getLatestState()
   {
     if (latest_status_) {
       if (!isStalled()) {
-        if (latest_status_->level == diagnostic_msgs::DiagnosticStatus::OK) {
+        if (latest_status_->level == diagnostic_msgs::msg::DiagnosticStatus::OK) {
           return OK_STATE;
         }
         else if (latest_status_->level
-                 == diagnostic_msgs::DiagnosticStatus::WARN) {
+                 == diagnostic_msgs::msg::DiagnosticStatus::WARN) {
           return WARN_STATE;
         }
         else if (latest_status_->level
-                 == diagnostic_msgs::DiagnosticStatus::ERROR) {
+                 == diagnostic_msgs::msg::DiagnosticStatus::ERROR) {
           return ERROR_STATE;
         }
         else {
@@ -322,7 +324,7 @@ namespace jsk_rviz_plugins
     }
     else {
       return STALL_STATE;
-    } 
+    }
   }
 
   QColor OverlayDiagnosticDisplay::foregroundColor()
@@ -331,7 +333,6 @@ namespace jsk_rviz_plugins
     QColor warn_color(240, 173, 78, alpha_ * 255.0);
     QColor error_color(217, 83, 79, alpha_ * 255.0);
     QColor stall_color(151, 151, 151, alpha_ * 255.0);
-    //QColor fg_color = stall_color;
     State state = getLatestState();
     if (state == OK_STATE) {
       return ok_color;
@@ -353,7 +354,6 @@ namespace jsk_rviz_plugins
     QColor warn_color(255, 255, 255, alpha_ * 255.0);
     QColor error_color(240, 173, 78, alpha_ * 255.0);
     QColor stall_color(240, 173, 78, alpha_ * 255.0);
-    //QColor fg_color = stall_color;
     State state = getLatestState();
     if (state == OK_STATE) {
       return ok_color;
@@ -369,8 +369,6 @@ namespace jsk_rviz_plugins
     }
   }
 
-
-  
   QColor OverlayDiagnosticDisplay::blendColor(QColor a, QColor b, double a_rate) {
     QColor ret (a.red() * a_rate + b.red() * (1 - a_rate),
                 a.green() * a_rate + b.green() * (1 - a_rate),
@@ -385,13 +383,11 @@ namespace jsk_rviz_plugins
     const double r = size_ / 128.0;
     QFont font("Liberation Sans", font_size * r, font_size * r, QFont::Bold);
     QPen pen;
-    QPainterPath path;
     pen.setWidth(1);
     painter.setFont(font);
     painter.setPen(pen);
     QFontMetrics metrics(font);
-    const int text_width = metrics.width(text.c_str());
-    const int text_height = metrics.height();
+    const int text_width = metrics.horizontalAdvance(text.c_str());
     painter.restore();
     return text_width;
   }
@@ -402,7 +398,6 @@ namespace jsk_rviz_plugins
     const double r = size_ / 128.0;
     QFont font("Liberation Sans", font_size * r, font_size * r, QFont::Bold);
     QPen pen;
-    QPainterPath path;
     pen.setWidth(1);
     painter.setFont(font);
     painter.setPen(pen);
@@ -411,8 +406,7 @@ namespace jsk_rviz_plugins
     painter.restore();
     return text_height;
   }
-  
-  
+
   double OverlayDiagnosticDisplay::drawAnimatingText(QPainter& painter,
                                                      QColor fg_color,
                                                      const double height,
@@ -429,9 +423,9 @@ namespace jsk_rviz_plugins
     painter.setPen(pen);
     painter.setBrush(fg_color);
     QFontMetrics metrics(font);
-    const int text_width = metrics.width(text.c_str());
+    const int text_width = metrics.horizontalAdvance(text.c_str());
     const int text_height = metrics.height();
-    if (overlay_->getTextureWidth() > text_width) {
+    if (static_cast<int>(overlay_->getTextureWidth()) > text_width) {
       path.addText((overlay_->getTextureWidth() - text_width) / 2.0,
                    height,
                    font, text.c_str());
@@ -444,7 +438,7 @@ namespace jsk_rviz_plugins
     painter.drawPath(path);
     return text_height;
   }
-  
+
   void OverlayDiagnosticDisplay::drawText(QPainter& painter, QColor fg_color,
                                           const std::string& text)
   {
@@ -479,21 +473,15 @@ namespace jsk_rviz_plugins
     // line-width - margin - inner-line-width < size
     QPainter painter( &Hud );
     const int line_width = 10;
-    const int margin = 10;
     const int inner_line_width = 20;
-    
+
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setPen(QPen(fg_color, line_width, Qt::SolidLine));
     painter.drawEllipse(line_width / 2, line_width / 2,
                         overlay_->getTextureWidth() - line_width,
                         overlay_->getTextureHeight() - line_width);
-    
-    painter.setPen(QPen(fg_color, inner_line_width, Qt::SolidLine));    
-    const double start_angle = fmod(t_, overlay_diagnostic_animation_duration) /
-      overlay_diagnostic_animation_duration * 360;
-    const double draw_angle = 250;
-    const double inner_circle_start
-      = line_width + margin + inner_line_width / 2.0;
+
+    painter.setPen(QPen(fg_color, inner_line_width, Qt::SolidLine));
     drawText(painter, fg_color, statusText());
   }
 
@@ -533,7 +521,6 @@ namespace jsk_rviz_plugins
     double A = S * 0.1;
     double B = 0.2 * S;
     double C = 0.2;
-    //double D = 0.05 * S;
     painter.setPen(QPen(color, width, Qt::SolidLine));
     QPainterPath large_rectangle_path;
     large_rectangle_path.moveTo(A, S - B);
@@ -551,7 +538,7 @@ namespace jsk_rviz_plugins
     large_rectangle_path2.lineTo(S, 0);
     painter.setPen(Qt::NoPen);
     painter.fillPath(large_rectangle_path2, QBrush(color));
-    
+
     QPainterPath small_rectangle_path;
     small_rectangle_path.moveTo(A, S - B);
     small_rectangle_path.lineTo(A, S - B + C * B);
@@ -560,7 +547,7 @@ namespace jsk_rviz_plugins
     painter.setPen(Qt::NoPen);
     painter.fillPath(small_rectangle_path, QBrush(small_color));
   }
-  
+
   void OverlayDiagnosticDisplay::drawEVA(QImage& Hud)
   {
     QColor line_color(240, 173, 78, alpha_ * 255.0);
@@ -572,7 +559,6 @@ namespace jsk_rviz_plugins
     double S = size_;
     double A = S * 0.1;
     double B = 0.2 * S;
-    double C = 0.2;
     double max_gap = 0.05 * S;
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setPen(QPen(line_color, line_width, Qt::SolidLine));
@@ -606,7 +592,7 @@ namespace jsk_rviz_plugins
     double text_box_height = cos(theta*M_PI/180) * B;
     double text_box_width = (S - A) / cos(theta*M_PI/180) - sin(theta*M_PI/180) * B * 2;
     double text_width = textWidth(painter, 12, diagnostics_namespace_);
-    
+
     painter.translate(A, S - B);
     painter.rotate(-theta);
     if (text_width > text_box_width) {
@@ -620,11 +606,11 @@ namespace jsk_rviz_plugins
                        diagnostics_namespace_.c_str());
     }
   }
-  
+
   void OverlayDiagnosticDisplay::redraw()
   {
     ScopedPixelBuffer buffer = overlay_->getBuffer();
-    QColor transparent(0, 0, 0, 0.0);    
+    QColor transparent(0, 0, 0, 0.0);
     QImage Hud = buffer.getQImage(*overlay_, transparent);
     if (type_ == 0) {
       drawSAC(Hud);
@@ -636,7 +622,6 @@ namespace jsk_rviz_plugins
 
   void OverlayDiagnosticDisplay::fillNamespaceList()
   {
-    //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     diagnostics_namespace_property_->clearOptions();
     for (std::set<std::string>::iterator it = namespaces_.begin();
          it != namespaces_.end();
@@ -645,7 +630,7 @@ namespace jsk_rviz_plugins
     }
     diagnostics_namespace_property_->sortOptions();
   }
-  
+
   void OverlayDiagnosticDisplay::updateRosTopic()
   {
     latest_status_.reset();
@@ -658,7 +643,7 @@ namespace jsk_rviz_plugins
     latest_status_.reset();
     diagnostics_namespace_ = diagnostics_namespace_property_->getStdString();
   }
-  
+
   void OverlayDiagnosticDisplay::updateSize()
   {
     size_ = size_property_->getInt();
@@ -673,12 +658,12 @@ namespace jsk_rviz_plugins
   {
     top_ = top_property_->getInt();
   }
-  
+
   void OverlayDiagnosticDisplay::updateLeft()
   {
     left_ = left_property_->getInt();
   }
-  
+
   void OverlayDiagnosticDisplay::updateStallDuration()
   {
     stall_duration_ = stall_duration_property_->getFloat();
@@ -708,5 +693,5 @@ namespace jsk_rviz_plugins
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayDiagnosticDisplay, rviz::Display)
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayDiagnosticDisplay, rviz_common::Display)

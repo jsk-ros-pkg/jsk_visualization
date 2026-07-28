@@ -2,17 +2,13 @@
 #define OBJECT_FIT_OPERATOR_H
 
 #ifndef Q_MOC_RUN
-#include <ros/ros.h>
-#include <rviz/panel.h>
-#include <QtGlobal>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-#  include <QtWidgets>
-#else
-#  include <QtGui>
-#endif
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/panel.hpp>
+#include <rviz_common/display_context.hpp>
+#include <QtWidgets>
 #include <QToolButton>
 #include <QCheckBox>
-#include <jsk_rviz_plugins/ObjectFitCommand.h>
+#include <jsk_rviz_plugins/msg/object_fit_command.hpp>
 #endif
 
 class QLineEdit;
@@ -20,14 +16,15 @@ class QToolButton;
 
 namespace jsk_rviz_plugins
 {
-  class ObjectFitOperatorAction: public rviz::Panel
+  class ObjectFitOperatorAction: public rviz_common::Panel
     {
       Q_OBJECT
       public:
       ObjectFitOperatorAction( QWidget* parent = 0 );
 
-      virtual void load( const rviz::Config& config );
-      virtual void save( rviz::Config config ) const;
+      virtual void onInitialize() override;
+      virtual void load( const rviz_common::Config& config );
+      virtual void save( rviz_common::Config config ) const;
 
     protected Q_SLOTS:
       void commandFit();
@@ -47,8 +44,8 @@ namespace jsk_rviz_plugins
       QVBoxLayout* layout;
       bool reverse_;
 
-      ros::NodeHandle nh_;
-      ros::Publisher pub_;
+      rclcpp::Node::SharedPtr node_;
+      rclcpp::Publisher<jsk_rviz_plugins::msg::ObjectFitCommand>::SharedPtr pub_;
     };
 }
 

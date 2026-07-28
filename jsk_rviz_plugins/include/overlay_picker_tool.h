@@ -36,24 +36,26 @@
 #ifndef JSK_RVIZ_PLUGIN_OVERLAY_PICKER_TOOL_H_
 #define JSK_RVIZ_PLUGIN_OVERLAY_PICKER_TOOL_H_
 
-#include <rviz/tool.h>
-#include <rviz/properties/property.h>
-#include <rviz/properties/property_tree_model.h>
-#include <rviz/viewport_mouse_event.h>
-#include <rviz/render_panel.h>
+#include <string>
+
+#include <rviz_common/tool.hpp>
+#include <rviz_common/properties/property.hpp>
+#include <rviz_common/properties/property_tree_model.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_common/viewport_mouse_event.hpp>
 
 namespace jsk_rviz_plugins
 {
-  class OverlayPickerTool: public rviz::Tool
+  class OverlayPickerTool: public rviz_common::Tool
   {
   public:
     OverlayPickerTool();
     virtual void activate() {}
     virtual void deactivate() {};
-    virtual int processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel);
-    virtual int processMouseEvent(rviz::ViewportMouseEvent& event);
+    virtual int processKeyEvent(QKeyEvent* event, rviz_common::RenderPanel* panel);
+    virtual int processMouseEvent(rviz_common::ViewportMouseEvent& event);
     template <class T>
-    T* isPropertyType(rviz::Property* p)
+    T* isPropertyType(rviz_common::properties::Property* p)
     {
       try {
         return dynamic_cast<T*>(p);
@@ -64,8 +66,8 @@ namespace jsk_rviz_plugins
     }
 
     template <class T>
-    bool startMovement(rviz::Property* property,
-                       rviz::ViewportMouseEvent& event, const std::string& type)
+    bool startMovement(rviz_common::properties::Property* property,
+                       rviz_common::ViewportMouseEvent& event, const std::string& type)
     {
       if (isPropertyType<T>(property)) {
         bool res = isPropertyType<T>(property)->isInRegion(event.x, event.y);
@@ -81,9 +83,9 @@ namespace jsk_rviz_plugins
         return false;
       }
     }
-    
+
     template <class T>
-    void movePosition(rviz::ViewportMouseEvent& event)
+    void movePosition(rviz_common::ViewportMouseEvent& event)
     {
       if (shift_pressing_) {
         int orig_x = event.x - move_offset_x_;
@@ -98,7 +100,7 @@ namespace jsk_rviz_plugins
     }
 
     template <class T>
-    void setPosition(rviz::ViewportMouseEvent& event)
+    void setPosition(rviz_common::ViewportMouseEvent& event)
     {
       if (shift_pressing_) {
         int orig_x = event.x - move_offset_x_;
@@ -111,20 +113,21 @@ namespace jsk_rviz_plugins
           event.x - move_offset_x_, event.y - move_offset_y_);
       }
     }
-    
+
   protected:
-    virtual void onClicked(rviz::ViewportMouseEvent& event);
-    virtual void onMove(rviz::ViewportMouseEvent& event);
-    virtual void onRelease(rviz::ViewportMouseEvent& event);
-    virtual bool handleDisplayClick(rviz::Property* property, rviz::ViewportMouseEvent& event);
+    virtual void onClicked(rviz_common::ViewportMouseEvent& event);
+    virtual void onMove(rviz_common::ViewportMouseEvent& event);
+    virtual void onRelease(rviz_common::ViewportMouseEvent& event);
+    virtual bool handleDisplayClick(rviz_common::properties::Property* property,
+                                    rviz_common::ViewportMouseEvent& event);
 
     bool is_moving_;
-    rviz::Property* target_property_;
+    rviz_common::properties::Property* target_property_;
     std::string target_property_type_;
     int move_offset_x_, move_offset_y_;
     bool shift_pressing_;
   private:
-    
+
   };
 }
 

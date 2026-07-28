@@ -2,15 +2,14 @@
 #define RECORD_ACTION_H
 
 #ifndef Q_MOC_RUN
-#include <ros/ros.h>
+#include <string>
+#include <vector>
 
-#include <rviz/panel.h>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-#  include <QtWidgets>
-#else
-#  include <QtGui>
-#endif
-#include <jsk_rviz_plugins/RecordCommand.h>
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/panel.hpp>
+#include <rviz_common/display_context.hpp>
+#include <QtWidgets>
+#include <jsk_rviz_plugins/msg/record_command.hpp>
 #endif
 
 class QLineEdit;
@@ -19,7 +18,7 @@ class QPushButton;
 
 namespace jsk_rviz_plugins
 {
-  class RecordAction: public rviz::Panel
+  class RecordAction: public rviz_common::Panel
   {
     enum RecordState{
       IDLE = 0,
@@ -29,12 +28,13 @@ namespace jsk_rviz_plugins
     public:
     RecordAction( QWidget* parent = 0 );
 
-    virtual void load( const rviz::Config& config );
-    virtual void save( rviz::Config config ) const;
+    virtual void onInitialize() override;
+    virtual void load( const rviz_common::Config& config );
+    virtual void save( rviz_common::Config config ) const;
 
   public Q_SLOTS:
 
-    void setTopic( const QString& topic ) {}
+    void setTopic( const QString& topic ) { (void)topic; }
 
   protected Q_SLOTS:
 
@@ -72,8 +72,8 @@ namespace jsk_rviz_plugins
 
     std::vector<motionListLayout> motion_list_layouts_;
 
-    ros::Publisher pub_;
-    ros::NodeHandle nh_;
+    rclcpp::Publisher<jsk_rviz_plugins::msg::RecordCommand>::SharedPtr pub_;
+    rclcpp::Node::SharedPtr node_;
     RecordState rstate_;
   };
 

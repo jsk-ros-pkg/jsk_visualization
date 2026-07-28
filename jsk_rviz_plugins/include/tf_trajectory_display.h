@@ -2,7 +2,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, JSK Lab
+ *  Copyright (c) 2015, JSK Lab
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,68 +33,57 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+#ifndef JSK_RVIZ_PLUGINS_TF_TRAJECTORY_DISPLAY_H_
+#define JSK_RVIZ_PLUGINS_TF_TRAJECTORY_DISPLAY_H_
 
-#ifndef JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
-#define JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
+#ifndef Q_MOC_RUN
+#include <string>
+#include <vector>
 
-#include <rviz/display.h>
-#include <rviz/properties/string_property.h>
-#include <rviz/properties/bool_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/int_property.h>
-#include <opencv2/opencv.hpp>
-
-#include <ros/ros.h>
+#include <rviz_common/display.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/status_property.hpp>
+#include <rviz_common/properties/tf_frame_property.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <geometry_msgs/msg/point_stamped.hpp>
+#endif
 
 namespace jsk_rviz_plugins
 {
-  class VideoCaptureDisplay: public rviz::Display
+
+  class TFTrajectoryDisplay: public rviz_common::Display
   {
     Q_OBJECT
   public:
-#if ROS_VERSION_MINIMUM(1,12,0)
-    typedef std::shared_ptr<VideoCaptureDisplay> Ptr;
-#else
-    typedef boost::shared_ptr<VideoCaptureDisplay> Ptr;
-#endif
-    VideoCaptureDisplay();
-    virtual ~VideoCaptureDisplay();
+    TFTrajectoryDisplay();
+    virtual ~TFTrajectoryDisplay();
   protected:
     virtual void onInitialize();
-    // virtual void subscribe();
-    // virtual void unsubscribe();
     virtual void onEnable();
-    // virtual void onDisable();
+    virtual void onDisable();
     virtual void update(float wall_dt, float ros_dt);
-    virtual void startCapture();
-    virtual void stopCapture();
-    ////////////////////////////////////////////////////////
-    // Variables
-    ////////////////////////////////////////////////////////
-    rviz::StringProperty* file_name_property_;
-    rviz::BoolProperty* start_capture_property_;
-    rviz::FloatProperty* fps_property_;
-    rviz::BoolProperty* use_3d_viewer_size_property_;
-    rviz::IntProperty* width_property_;
-    rviz::IntProperty* height_property_;
-    std::string file_name_;
-    bool capturing_;
-    double fps_;
-    bool use_3d_viewer_size_;
-    int width_;
-    int height_;
-    int frame_counter_;
-    bool first_time_;
-    cv::VideoWriter writer_;
+
+    rviz_common::properties::TfFrameProperty* frame_property_;
+    rviz_common::properties::FloatProperty* duration_property_;
+    rviz_common::properties::ColorProperty* color_property_;
+    rviz_common::properties::FloatProperty* line_width_property_;
+    rviz_rendering::BillboardLine* line_;
+    std::vector<geometry_msgs::msg::PointStamped> trajectory_;
+    std::string frame_;
+    // last fixed frame the trajectory was accumulated in; named differently from
+    // rviz_common::Display::fixed_frame_ (a QString) not to hide it
+    std::string last_fixed_frame_;
+    float duration_;
+    QColor color_;
+    float line_width_;
   protected Q_SLOTS:
-    void updateFileName();
-    void updateStartCapture();
-    void updateFps();
-    void updateUse3DViewerSize();
-    void updateWidth();
-    void updateHeight();
-  private:
-    
+    void updateFrame();
+    void updateDuration();
+    void updateColor();
+    void updateLineWidth();
   };
 }
 

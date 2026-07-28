@@ -37,11 +37,13 @@
 namespace jsk_rviz_plugins
 {
   QuietInteractiveMarkerDisplay::QuietInteractiveMarkerDisplay():
-    rviz::InteractiveMarkerDisplay(), dummy_status_(false)
+    rviz_default_plugins::displays::InteractiveMarkerDisplay(), dummy_status_(false)
   {
 
   }
-  void QuietInteractiveMarkerDisplay::setStatus( rviz::StatusProperty::Level level, const QString& name, const QString& text )
+  void QuietInteractiveMarkerDisplay::setStatus(
+    rviz_common::properties::StatusProperty::Level level,
+    const QString& name, const QString& text )
   {
     if (dummy_status_) {
       // do nothing
@@ -49,9 +51,9 @@ namespace jsk_rviz_plugins
     else {
       // in order to avoid SEGV at isEmpty, we call setStatus only once
       dummy_status_ = true;
-      rviz::InteractiveMarkerDisplay::setStatus(level, name, text);
+      rviz_default_plugins::displays::InteractiveMarkerDisplay::setStatus(level, name, text);
     }
   }
 }
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::QuietInteractiveMarkerDisplay, rviz::Display )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::QuietInteractiveMarkerDisplay, rviz_common::Display )

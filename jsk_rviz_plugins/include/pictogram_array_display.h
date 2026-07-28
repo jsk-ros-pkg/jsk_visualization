@@ -2,7 +2,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2020, Iori Yanokura
+ *  Copyright (c) 2014, JSK Lab
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,47 +33,50 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+#ifndef JSK_RVIZ_PLUGINS_PICTOGRAM_ARRAY_DISPLAY_H_
+#define JSK_RVIZ_PLUGINS_PICTOGRAM_ARRAY_DISPLAY_H_
 
-#ifndef JSK_RVIZ_PLUGIN_RVIZ_SCENE_PUBLISHER_H_
-#define JSK_RVIZ_PLUGIN_RVIZ_SCENE_PUBLISHER_H_
+#ifndef Q_MOC_RUN
+#include <mutex>
+#include <vector>
 
-#include <rviz/display.h>
-#include <rviz/properties/string_property.h>
-#include <rviz/properties/bool_property.h>
-#include <rviz/properties/float_property.h>
-#include <opencv2/opencv.hpp>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/Image.h>
-
-#include <ros/ros.h>
-
+#include "pictogram_display.h"
+#include <jsk_rviz_plugins/msg/pictogram_array.hpp>
+#endif
 namespace jsk_rviz_plugins
 {
-  class RvizScenePublisher: public rviz::Display
+  ////////////////////////////////////////////////////////
+  // Display to visualize pictogram on rviz
+  ////////////////////////////////////////////////////////
+  class PictogramArrayDisplay:
+    public rviz_common::MessageFilterDisplay<jsk_rviz_plugins::msg::PictogramArray>
   {
     Q_OBJECT
   public:
-#if ROS_VERSION_MINIMUM(1,12,0)
-    typedef std::shared_ptr<RvizScenePublisher> Ptr;
-#else
-    typedef boost::shared_ptr<RvizScenePublisher> Ptr;
-#endif
-    RvizScenePublisher();
-    virtual ~RvizScenePublisher();
+    PictogramArrayDisplay();
+    virtual ~PictogramArrayDisplay();
   protected:
+
+    ////////////////////////////////////////////////////////
+    // methods
+    ////////////////////////////////////////////////////////
     virtual void onInitialize();
+    virtual void reset();
     virtual void onEnable();
-    virtual void update(float wall_dt, float ros_dt);
-    rviz::StringProperty* topic_name_property_;
-    std::string topic_name_;
-    int image_id_;
-    ros::NodeHandle nh_;
-    image_transport::ImageTransport it_;
-    image_transport::Publisher publisher_;
-  protected Q_SLOTS:
-    void updateTopicName();
+    void processMessage(jsk_rviz_plugins::msg::PictogramArray::ConstSharedPtr msg);
+    void update(float wall_dt, float ros_dt);
+    void allocatePictograms(size_t num);
+
+    ////////////////////////////////////////////////////////
+    // parameters
+    ////////////////////////////////////////////////////////
+    std::mutex mutex_;
+    std::vector<PictogramObject::Ptr> pictograms_;
+  private Q_SLOTS:
+
+  private:
   };
+
 }
 
 #endif

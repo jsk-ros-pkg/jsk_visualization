@@ -1,12 +1,15 @@
 #include <stdio.h>
 
-#include "rviz/config.h"
-#include "robot_command_interface.h"
-#include "ros/time.h"
-#include <ros/package.h>
-#include <boost/format.hpp>
 #include <exception>
-#include <std_srvs/Empty.h>
+#include <string>
+#include <vector>
+
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <boost/format.hpp>
+#include <rviz_common/config.hpp>
+#include <std_srvs/srv/empty.hpp>
+
+#include "robot_command_interface.h"
 
 namespace jsk_rviz_plugins
 {
@@ -19,131 +22,130 @@ namespace jsk_rviz_plugins
   };
 
   RobotCommandInterfaceAction::RobotCommandInterfaceAction( QWidget* parent )
-    : rviz::Panel( parent )
+    : rviz_common::Panel( parent )
   {
-    resource_retriever::Retriever r;
+    layout_ = new QHBoxLayout();
+    setLayout( layout_ );
+  }
+
+  void RobotCommandInterfaceAction::onInitialize()
+  {
+    node_ = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
     signal_mapper_ = new QSignalMapper(this);
-    ros::NodeHandle nh("~");
-    QHBoxLayout* layout = new QHBoxLayout();
-    // Parse yaml file from parameter
-    if (nh.hasParam("robot_command_buttons")) {
-      try {
-        XmlRpc::XmlRpcValue robot_command_buttons_xmlrpc;
-        nh.param("robot_command_buttons", robot_command_buttons_xmlrpc, robot_command_buttons_xmlrpc);
-        if (robot_command_buttons_xmlrpc.getType() != XmlRpc::XmlRpcValue::TypeArray) {
-          throw RobotCommandParseException("~robot_comamnd_buttons should be an array");
+    parseROSParameters();
+    layout_->addStretch();
+    connect(signal_mapper_, SIGNAL(mapped(int)), this, SLOT(buttonCallback(int)));
+  }
+
+  // ROS 2 parameters cannot hold an array of structs, so the buttons are described
+  // as a list of ids in `robot_command_buttons` plus one parameter group per id:
+  //   robot_command_buttons: ["reset_pose", ...]
+  //   robot_command.reset_pose.name: "Reset Pose"
+  //   robot_command.reset_pose.icon: "package://jsk_rviz_plugins/icons/reset-pose.jpg"
+  //   robot_command.reset_pose.type: "euscommand"  # or "emptysrv"
+  //   robot_command.reset_pose.command: "(send *ri* :angle-vector ...)"
+  //   robot_command.reset_pose.srv: "/my_service"  # for type: emptysrv
+  void RobotCommandInterfaceAction::parseROSParameters()
+  {
+    std::vector<std::string> button_ids;
+    node_->declare_parameter<std::vector<std::string>>(
+      "robot_command_buttons", std::vector<std::string>{});
+    node_->get_parameter("robot_command_buttons", button_ids);
+
+    if (button_ids.empty()) {
+      popupDialog("You need to specify ~robot_command_buttons parameter.\n"
+                  "See package://jsk_rviz_plugins/config/default_robot_command.yaml");
+      return;
+    }
+
+    try {
+      for (size_t i = 0; i < button_ids.size(); i++) {
+        const std::string base = std::string("robot_command.") + button_ids[i] + ".";
+        node_->declare_parameter<std::string>(base + "name", "");
+        node_->declare_parameter<std::string>(base + "icon", "");
+        node_->declare_parameter<std::string>(base + "type", "");
+        node_->declare_parameter<std::string>(base + "command", "");
+        node_->declare_parameter<std::string>(base + "srv", "");
+
+        std::string name = node_->get_parameter(base + "name").as_string();
+        std::string icon = node_->get_parameter(base + "icon").as_string();
+        std::string type = node_->get_parameter(base + "type").as_string();
+        std::string command = node_->get_parameter(base + "command").as_string();
+        std::string srv = node_->get_parameter(base + "srv").as_string();
+
+        QToolButton* button = new QToolButton();
+        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+        if (name.empty()) {
+          throw RobotCommandParseException("element of ~robot_comamnd_buttons should have name field");
+        }
+        button->setText(QString(name.c_str()));
+        if (!icon.empty()) {
+          if (icon.find("package://") == 0) {
+            icon.erase(0, strlen("package://"));
+            size_t package_end = icon.find("/");
+            std::string package = icon.substr(0, package_end);
+            icon.erase(0, package_end);
+            icon = ament_index_cpp::get_package_share_directory(package) + icon;
+          }
+          button->setIcon(QIcon(QPixmap(QString(icon.c_str()))));
+          button->setIconSize(QSize(80, 80));
+          button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        }
+        if (type == "euscommand") {
+          if (command.empty()) {
+            throw RobotCommandParseException("type: euscommand requires command field");
+          }
+          euscommand_mapping_[i] = command;
+          button->setToolTip(euscommand_mapping_[i].c_str());
+        }
+        else if (type == "emptysrv") {
+          if (srv.empty()) {
+            throw RobotCommandParseException("type: emptysrv requires srv field");
+          }
+          emptyservice_mapping_[i] = srv;
+          button->setToolTip(emptyservice_mapping_[i].c_str());
         }
         else {
-          for (size_t i = 0; i < robot_command_buttons_xmlrpc.size(); i++) {
-            XmlRpc::XmlRpcValue button_xmlrpc = robot_command_buttons_xmlrpc[i];
-            if (button_xmlrpc.getType() != XmlRpc::XmlRpcValue::TypeStruct) {
-              throw RobotCommandParseException("element of ~robot_comamnd_buttons should be an struct");
-            }
-            else {
-              std::string name;
-              QToolButton* button = new QToolButton();
-              //button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-              button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-              if (button_xmlrpc.hasMember("name")) {
-                name = (std::string)button_xmlrpc["name"];
-              }
-              else {
-                throw RobotCommandParseException("element of ~robot_comamnd_buttons should have name field");
-              }
-              button->setText(QString(name.c_str()));
-              if (button_xmlrpc.hasMember("icon")) {
-                // TODO: resolve path
-                std::string icon;
-                icon = (std::string)button_xmlrpc["icon"];
-                if (icon.find("package://") == 0) {
-                  icon.erase(0, strlen("package://"));
-                  size_t package_end = icon.find("/");
-                  std::string package = icon.substr(0, package_end);
-                  icon.erase(0, package_end);
-                  std::string package_path;
-                  package_path = ros::package::getPath(package);
-                  icon = package_path + icon;
-                }
-                button->setIcon(QIcon(QPixmap(QString(icon.c_str()))));
-                button->setIconSize(QSize(80, 80));
-                button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-              }
-              std::string type;
-              if (button_xmlrpc.hasMember("type")) {
-                type = (std::string)button_xmlrpc["type"];
-              }
-              if (type == "euscommand") {
-                if (button_xmlrpc.hasMember("command")) {
-                  euscommand_mapping_[i] = (std::string)button_xmlrpc["command"];
-                  button->setToolTip(euscommand_mapping_[i].c_str());
-                }
-                else {
-                  throw RobotCommandParseException("type: euscommand requires command field");
-                }
-              }
-              else if (type == "emptysrv") {
-                if (button_xmlrpc.hasMember("srv")) {
-                  emptyservice_mapping_[i] = (std::string)button_xmlrpc["srv"];
-                  button->setToolTip(emptyservice_mapping_[i].c_str());
-                }
-                else {
-                  throw RobotCommandParseException("type: emptysrv requires srv field");
-                }
-              }
-              else {
-                throw RobotCommandParseException("type field is required");
-              }
-              // connect
-              connect(button, SIGNAL(clicked()), signal_mapper_, SLOT(map()));
-              signal_mapper_->setMapping(button, i);
-              layout->addWidget(button);
-            }
-          }
+          throw RobotCommandParseException("type field is required");
         }
-      }
-      catch (RobotCommandParseException& e) {
-        popupDialog((boost::format("Malformed ~robot_command_buttons parameter.\n"
-                                  "%s\n"
-                                  "See package://jsk_rviz_plugins/config/default_robot_command.yaml")
-                     % e.what()).str().c_str());
+        // connect
+        connect(button, SIGNAL(clicked()), signal_mapper_, SLOT(map()));
+        signal_mapper_->setMapping(button, i);
+        layout_->addWidget(button);
       }
     }
-    else {
-      popupDialog("You need to specify ~robot_command_buttons parameter.\n"
-                  "See package://jsk_rviz_plugins/launch/robot_command_interface_sample.launch");
+    catch (RobotCommandParseException& e) {
+      popupDialog((boost::format("Malformed ~robot_command_buttons parameter.\n"
+                                "%s\n"
+                                "See package://jsk_rviz_plugins/config/default_robot_command.yaml")
+                   % e.what()).str().c_str());
     }
-    layout->addStretch();
-    connect(signal_mapper_, SIGNAL(mapped(int)), this, SLOT(buttonCallback(int)));
-    // QToolButton* button = new QToolButton();
-    
-    // // button->setPopupMode(QToolButton::MenuButtonPopup);
-    // button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    // button->setIcon(QIcon(QPixmap(QString("/home/garaemon/ros/hydro/src/jsk-ros-pkg/jsk_visualization/jsk_rviz_plugins/icons/stop-imp.png"))));
-    
-    // button->setText("Hello worpld");
-    // layout->addWidget(button);
-    this->setLayout(layout);
   }
 
   bool RobotCommandInterfaceAction::callRequestEusCommand(const std::string& command){
-    ros::ServiceClient client = nh_.serviceClient<jsk_rviz_plugins::EusCommand>("/eus_command", true);
-    jsk_rviz_plugins::EusCommand srv;
-    srv.request.command = command;
-    return client.call(srv);
+    auto client = node_->create_client<jsk_rviz_plugins::srv::EusCommand>("/eus_command");
+    auto request = std::make_shared<jsk_rviz_plugins::srv::EusCommand::Request>();
+    request->command = command;
+    auto result = client->async_send_request(request);
+    return rclcpp::spin_until_future_complete(node_, result) ==
+      rclcpp::FutureReturnCode::SUCCESS;
   }
 
   void RobotCommandInterfaceAction::buttonCallback(int i)
   {
-    ROS_INFO("buttonCallback(%d)", i);
+    RCLCPP_INFO(node_->get_logger(), "buttonCallback(%d)", i);
     if (euscommand_mapping_.find(i) != euscommand_mapping_.end()) {
       if(!callRequestEusCommand(euscommand_mapping_[i])) {
         popupDialog((boost::format("Failed to call %s") % euscommand_mapping_[i]).str().c_str());
       }
     }
     else if (emptyservice_mapping_.find(i) != emptyservice_mapping_.end()) {
-      std_srvs::Empty emp;
-      if (!ros::service::call(emptyservice_mapping_[i], emp)) {
+      auto client = node_->create_client<std_srvs::srv::Empty>(emptyservice_mapping_[i]);
+      auto request = std::make_shared<std_srvs::srv::Empty::Request>();
+      auto result = client->async_send_request(request);
+      if (rclcpp::spin_until_future_complete(node_, result) !=
+          rclcpp::FutureReturnCode::SUCCESS) {
         popupDialog((boost::format("Failed to call %s") % emptyservice_mapping_[i]).str().c_str());
       }
     }
@@ -161,5 +163,5 @@ namespace jsk_rviz_plugins
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::RobotCommandInterfaceAction, rviz::Panel )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::RobotCommandInterfaceAction, rviz_common::Panel )

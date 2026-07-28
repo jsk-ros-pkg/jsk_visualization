@@ -33,18 +33,18 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-
 #ifndef JSK_RVIZ_PLUGINS_TABLET_CONTROLLER_PANEL_H_
 #define JSK_RVIZ_PLUGINS_TABLET_CONTROLLER_PANEL_H_
 
 #ifndef Q_MOC_RUN
-#include <ros/ros.h>
-#include <rviz/panel.h>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-#  include <QtWidgets>
-#else
-#  include <QtGui>
-#endif
+#include <mutex>
+#include <string>
+#include <vector>
+
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/panel.hpp>
+#include <rviz_common/display_context.hpp>
+#include <QtWidgets>
 #include <QPainter>
 #include <QLineEdit>
 #include <QPushButton>
@@ -58,10 +58,9 @@
 #include <QRadioButton>
 #include <QPaintEvent>
 #include <QMouseEvent>
-#include <geometry_msgs/Twist.h>
-#include <jsk_rviz_plugins/StringStamped.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <boost/thread.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <jsk_rviz_plugins/msg/string_stamped.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #endif
 
 namespace jsk_rviz_plugins
@@ -70,7 +69,8 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
-    TabletCmdVelArea(QWidget* parent, ros::Publisher& pub_cmd_vel);
+    typedef rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr TwistPublisher;
+    TabletCmdVelArea(QWidget* parent, TwistPublisher pub_cmd_vel);
     virtual QSize minimumSizeHint() const;
     virtual QSize sizeHint() const;
   protected:
@@ -82,24 +82,25 @@ namespace jsk_rviz_plugins
     virtual void publishCmdVel(double x, double y, double theta);
     int mouse_x_;
     int mouse_y_;
-    ros::Publisher pub_cmd_vel_;
+    TwistPublisher pub_cmd_vel_;
   };
-  
-  class TabletControllerPanel: public rviz::Panel
+
+  class TabletControllerPanel: public rviz_common::Panel
   {
     Q_OBJECT
   public:
     TabletControllerPanel(QWidget* parent = 0);
     virtual ~TabletControllerPanel();
-    virtual void load(const rviz::Config& config);
-    virtual void save(rviz::Config config) const;
+    virtual void onInitialize() override;
+    virtual void load(const rviz_common::Config& config);
+    virtual void save(rviz_common::Config config) const;
 
   protected:
     ////////////////////////////////////////////////////////
     // methods
     ////////////////////////////////////////////////////////
     virtual void spotCallback(
-      const visualization_msgs::MarkerArray::ConstPtr& marker);
+      const visualization_msgs::msg::MarkerArray::ConstSharedPtr marker);
     virtual QString defaultButtonStyleSheet();
     virtual QString executeButtonStyleSheet();
     virtual QString radioButtonStyleSheet();
@@ -107,12 +108,12 @@ namespace jsk_rviz_plugins
     ////////////////////////////////////////////////////////
     // GUI variables
     ////////////////////////////////////////////////////////
-    
+
     QVBoxLayout* layout_;
     QPushButton* task_button_;
     QPushButton* spot_button_;
     TabletCmdVelArea* cmd_vel_area_;
-    
+
     QDialog* task_dialog_;
     QVBoxLayout* task_dialog_layout_;
     QHBoxLayout* task_dialog_button_layout_;
@@ -130,13 +131,14 @@ namespace jsk_rviz_plugins
     ////////////////////////////////////////////////////////
     // ROS variables
     ////////////////////////////////////////////////////////
-    ros::Publisher pub_cmd_vel_;
-    ros::Publisher pub_spot_;
-    ros::Publisher pub_start_demo_;
-    ros::Subscriber sub_spots_;
-    boost::mutex mutex_;
-    
-    
+    rclcpp::Node::SharedPtr node_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_cmd_vel_;
+    rclcpp::Publisher<jsk_rviz_plugins::msg::StringStamped>::SharedPtr pub_spot_;
+    rclcpp::Publisher<jsk_rviz_plugins::msg::StringStamped>::SharedPtr pub_start_demo_;
+    rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr sub_spots_;
+    std::mutex mutex_;
+
+
   protected Q_SLOTS:
     ////////////////////////////////////////////////////////
     // callbacks
@@ -148,7 +150,7 @@ namespace jsk_rviz_plugins
     void spotGoClicked();
     void spotCancelClicked();
   private:
-    
+
   };
 }
 

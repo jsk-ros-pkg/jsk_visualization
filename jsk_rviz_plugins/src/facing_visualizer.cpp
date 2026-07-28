@@ -34,10 +34,15 @@
  *********************************************************************/
 
 #include "facing_visualizer.h"
-#include <rviz/uniform_string_stream.h>
-#include <rviz/render_panel.h>
-#include <rviz/view_manager.h>
-#include <rviz/properties/parse_color.h>
+
+#include <algorithm>
+#include <chrono>
+#include <string>
+
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/view_controller.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/properties/parse_color.hpp>
 #include <QPainter>
 
 namespace jsk_rviz_plugins
@@ -45,7 +50,14 @@ namespace jsk_rviz_plugins
 
   const double minimum_font_size = 0.2;
   const float arrow_animation_duration = 1.0;
-  
+
+  // wall clock in seconds, used to animate the visualizers
+  static double wallTimeSec()
+  {
+    return std::chrono::duration<double>(
+      std::chrono::steady_clock::now().time_since_epoch()).count();
+  }
+
   SquareObject::SquareObject(Ogre::SceneManager* manager,
                              double outer_radius,
                              double inner_radius,
@@ -91,7 +103,7 @@ namespace jsk_rviz_plugins
       for (size_t i = 0; i < resolution; i++) {
         double theta = 2.0 * M_PI / resolution * i;
         double next_theta = 2.0 * M_PI / resolution * (i + 1);
-      
+
         manual_->position(inner_radius_ * cos(theta) + inner_offset,
                           inner_radius_ * sin(theta) + inner_offset,
                           0.0f);
@@ -116,7 +128,7 @@ namespace jsk_rviz_plugins
         manual_->textureCoord((1 + cos(next_theta)) / 2.0,
                               (1.0 -sin(next_theta)) / 2.0);
         manual_->index(counter++);
-      
+
       }
     }
     else if (polygon_type_ == SQUARE) {
@@ -124,30 +136,27 @@ namespace jsk_rviz_plugins
                         0.0f);     // 1
       manual_->textureCoord(0, 0); // 4
       manual_->index(0);
-      
+
       manual_->position(-outer_radius_, outer_radius_,
                         0.0f);  // 2
       manual_->textureCoord(0, 1); // 3
       manual_->index(1);
-      
+
       manual_->position(-outer_radius_, -outer_radius_,
                         0.0f);  // 3
       manual_->textureCoord(1, 1); // 2
       manual_->index(2);
-      
+
       manual_->position(outer_radius_, -outer_radius_,
                         0.0f);  // 4
       manual_->textureCoord(1, 0); // 1
       manual_->index(3);
-      
+
       manual_->position(outer_radius_, outer_radius_,
                         0.0f);  // 1
       manual_->textureCoord(0, 0); // 4
       manual_->index(4);
     }
-    // for (size_t i = 0; i < resolution; i++) {
-    // }
-    // manual_->index(0);
     manual_->end();
   }
 
@@ -155,7 +164,7 @@ namespace jsk_rviz_plugins
   {
     polygon_type_ = type;
   }
-  
+
   TextureObject::TextureObject(const int width, const int height,
                                const std::string name):
     width_(width), height_(height), name_(name)
@@ -172,7 +181,7 @@ namespace jsk_rviz_plugins
     material_ = Ogre::MaterialManager::getSingleton().create(
       getMaterialName(), // name
       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
- 
+
     material_->getTechnique(0)->getPass(0)->createTextureUnitState(
       texture_->getName());
     material_->setReceiveShadows(false);
@@ -181,16 +190,10 @@ namespace jsk_rviz_plugins
     material_->getTechnique(0)->getPass(0)->setLightingEnabled(false);
     material_->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
     material_->getTechnique(0)->getPass(0)->setDepthCheckEnabled(true);
-      
+
     material_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
     material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_->getName());
     material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-
-    material_->getTechnique(0)->getPass(0)
-      ->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-     // material_->getTechnique(0)->getPass(0)
-     //   ->setSceneBlending(Ogre::SBT_MODULATE);
-
   }
 
   TextureObject::~TextureObject()
@@ -198,7 +201,7 @@ namespace jsk_rviz_plugins
     material_->unload();
     Ogre::MaterialManager::getSingleton().remove(material_->getName());
   }
-  
+
   ScopedPixelBuffer TextureObject::getBuffer()
   {
     return ScopedPixelBuffer(texture_->getBuffer());
@@ -222,17 +225,23 @@ namespace jsk_rviz_plugins
     node_->detachAllObjects();
     scene_manager_->destroySceneNode(node_);
   }
-  
+
   void FacingObject::setPosition(Ogre::Vector3& pos)
   {
     node_->setPosition(pos);
   }
-  
-  void FacingObject::setOrientation(rviz::DisplayContext* context)
+
+  void FacingObject::setOrientation(rviz_common::DisplayContext* context)
   {
-    rviz::ViewManager* manager = context->getViewManager();
-    rviz::RenderPanel* panel = manager->getRenderPanel();
-    Ogre::Camera* camera = panel->getCamera();
+    rviz_common::ViewManager* manager = context->getViewManager();
+    rviz_common::ViewController* controller = manager->getCurrent();
+    if (!controller) {
+      return;
+    }
+    Ogre::Camera* camera = controller->getCamera();
+    if (!camera) {
+      return;
+    }
     Ogre::Quaternion q = camera->getDerivedOrientation();
     setOrientation(q);
   }
@@ -279,27 +288,28 @@ namespace jsk_rviz_plugins
     color_ = color;
     updateColor();
   }
-  
+
   SimpleCircleFacingVisualizer::SimpleCircleFacingVisualizer(
     Ogre::SceneManager* manager,
     Ogre::SceneNode* parent,
-    rviz::DisplayContext* context,
+    rviz_common::DisplayContext* context,
     double size,
     std::string text):
     FacingObject(manager, parent, size)
   {
-    line_ = new rviz::BillboardLine(
+    line_ = new rviz_rendering::BillboardLine(
       context->getSceneManager(),
       node_);
-    text_under_line_ = new rviz::BillboardLine(
+    text_under_line_ = new rviz_rendering::BillboardLine(
       context->getSceneManager(),
       node_);
     target_text_node_ = node_->createChildSceneNode();
-    msg_ = new rviz::MovableText("not initialized", "Liberation Sans", 0.05);
+    msg_ = new rviz_rendering::MovableText("not initialized", "Liberation Sans", 0.05);
     msg_->setVisible(false);
-    msg_->setTextAlignment(rviz::MovableText::H_LEFT,
-                           rviz::MovableText::V_ABOVE);
+    msg_->setTextAlignment(rviz_rendering::MovableText::H_LEFT,
+                           rviz_rendering::MovableText::V_ABOVE);
     target_text_node_->attachObject(msg_);
+    text_ = text;
     createArrows(context);
     updateLine();
     updateTextUnderLine();
@@ -326,9 +336,9 @@ namespace jsk_rviz_plugins
     Ogre::MaterialManager::getSingleton().remove(right_material_->getName());
   }
 
-  void SimpleCircleFacingVisualizer::update(float wall_dt, float ros_dt)
+  void SimpleCircleFacingVisualizer::update(float /*wall_dt*/, float /*ros_dt*/)
   {
-    double t_ = ros::WallTime::now().toSec();
+    double t_ = wallTimeSec();
     double t_rate
       = fmod(t_, arrow_animation_duration) / arrow_animation_duration;
     upper_arrow_node_->setPosition(0, (1.3 - 0.3 * t_rate) * size_, 0);
@@ -336,7 +346,7 @@ namespace jsk_rviz_plugins
     left_arrow_node_->setPosition((1.3 - 0.3 * t_rate) * size_, 0, 0);
     right_arrow_node_->setPosition((-1.3 + 0.3 * t_rate) * size_, 0, 0);
   }
-  
+
   void SimpleCircleFacingVisualizer::reset()
   {
     line_->clear();
@@ -352,7 +362,7 @@ namespace jsk_rviz_plugins
     upper_arrow_->estimateVertexCount(3);
     upper_arrow_->begin(upper_material_name_,
                         Ogre::RenderOperation::OT_TRIANGLE_LIST);
-    
+
     upper_arrow_->colour(color);
     upper_arrow_->position(Ogre::Vector3(0, size_ * size_factor, 0));
     upper_arrow_->colour(color);
@@ -364,13 +374,13 @@ namespace jsk_rviz_plugins
                                          size_ * size_factor * 2,
                                          0));
     upper_arrow_->end();
-    
+
     lower_arrow_node_->setPosition(Ogre::Vector3(0, -size_ * 1.0, 0.0));
     lower_arrow_->clear();
     lower_arrow_->estimateVertexCount(3);
     lower_arrow_->begin(lower_material_name_,
                         Ogre::RenderOperation::OT_TRIANGLE_LIST);
-    
+
     lower_arrow_->colour(color);
     lower_arrow_->position(Ogre::Vector3(0,
                                          -size_ * size_factor,
@@ -389,7 +399,7 @@ namespace jsk_rviz_plugins
     left_arrow_->estimateVertexCount(3);
     left_arrow_->begin(left_material_name_,
                        Ogre::RenderOperation::OT_TRIANGLE_LIST);
-    
+
     left_arrow_->colour(color);
     left_arrow_->position(Ogre::Vector3(size_ * size_factor,
                                         0.0,
@@ -403,13 +413,13 @@ namespace jsk_rviz_plugins
                                         - size_ * size_factor,
                                         0));
     left_arrow_->end();
-    
+
     right_arrow_node_->setPosition(Ogre::Vector3(-size_ * 1.0, 0.0, 0.0));
     right_arrow_->clear();
     right_arrow_->estimateVertexCount(3);
     right_arrow_->begin(right_material_name_,
                         Ogre::RenderOperation::OT_TRIANGLE_LIST);
-    
+
     right_arrow_->colour(color);
     right_arrow_->position(Ogre::Vector3(-size_ * size_factor,
                                          0.0,
@@ -423,8 +433,8 @@ namespace jsk_rviz_plugins
                                          - size_ * size_factor,
                                          0));
     right_arrow_->end();
-    
-    
+
+
     upper_material_->getTechnique(0)->setLightingEnabled(false);
     upper_material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
     upper_material_->getTechnique(0)->setDepthWriteEnabled( false );
@@ -438,13 +448,13 @@ namespace jsk_rviz_plugins
     right_material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
     right_material_->getTechnique(0)->setDepthWriteEnabled( false );
   }
-  
+
   // allocate material and node for arrrows
   void SimpleCircleFacingVisualizer::createArrows(
-    rviz::DisplayContext* context)
+    rviz_common::DisplayContext* context)
   {
     static uint32_t count = 0;
-    rviz::UniformStringStream ss;
+    rviz_common::UniformStringStream ss;
     ss << "TargetVisualizerDisplayTriangle" << count++;
     ss << "Material";
     ss << "0";
@@ -467,7 +477,7 @@ namespace jsk_rviz_plugins
     right_material_ = Ogre::MaterialManager::getSingleton().create(
       right_material_name_,
       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    
+
     upper_material_->setReceiveShadows(false);
     upper_material_->getTechnique(0)->setLightingEnabled(true);
     upper_material_->setCullingMode(Ogre::CULL_NONE);
@@ -508,7 +518,7 @@ namespace jsk_rviz_plugins
     line_->setLineWidth(0.1 * size_);
     line_->setNumLines(1);
     line_->setMaxPointsPerLine(1024);
-    for (size_t i = 0; i < resolution + 1; i++) {
+    for (int i = 0; i < resolution + 1; i++) {
       double x = size_ * cos(i * 2 * M_PI / resolution);
       double y = size_ * sin(i * 2 * M_PI / resolution);
       double z = 0;
@@ -519,7 +529,7 @@ namespace jsk_rviz_plugins
       line_->addPoint(p);
     }
   }
-  
+
   // need msg to be initialized beforehand
   void SimpleCircleFacingVisualizer::updateTextUnderLine()
   {
@@ -529,10 +539,10 @@ namespace jsk_rviz_plugins
                                 + size_ / 2.0,
                                 0);
     target_text_node_->setPosition(text_position);
-    Ogre::Vector3 msg_size = msg_->GetAABB().getSize();
+    Ogre::Vector3 msg_size = msg_->getBoundingBox().getSize();
     text_under_line_->clear();
     text_under_line_->setColor(color_.r, color_.g, color_.b, color_.a);
-    
+
     text_under_line_->setLineWidth(0.01);
     text_under_line_->setNumLines(1);
     text_under_line_->setMaxPointsPerLine(1024);
@@ -561,7 +571,7 @@ namespace jsk_rviz_plugins
     line_->getSceneNode()->setVisible(enable);
     text_under_line_->getSceneNode()->setVisible(enable);
   }
-  
+
   void SimpleCircleFacingVisualizer::updateText()
   {
     msg_->setCaption(text_);
@@ -582,13 +592,13 @@ namespace jsk_rviz_plugins
     text_under_line_->setColor(color_.r, color_.g, color_.b, color_.a);
     updateArrowsObjects(color_);
   }
-  
+
   FacingTexturedObject::FacingTexturedObject(Ogre::SceneManager* manager,
                                              Ogre::SceneNode* parent,
                                              double size):
     FacingObject(manager, parent, size)
   {
-    rviz::UniformStringStream ss;
+    rviz_common::UniformStringStream ss;
     static int count = 0;
     ss << "FacingVisualizer" << count++;
     texture_object_.reset(new TextureObject(128, 128, ss.str()));
@@ -596,7 +606,7 @@ namespace jsk_rviz_plugins
                                           texture_object_->getMaterialName()));
     node_->attachObject(square_object_->getManualObject());
   }
-  
+
 
   void FacingTexturedObject::setSize(double size)
   {
@@ -609,40 +619,37 @@ namespace jsk_rviz_plugins
                                            Ogre::SceneNode* parent,
                                            double size,
                                            std::string text):
-    FacingTexturedObject(manager, parent, size), text_(text)
+    FacingTexturedObject(manager, parent, size), anonymous_(false), text_(text)
   {
 
   }
-  
-  void GISCircleVisualizer::update(float wall_dt, float ros_dt)
+
+  void GISCircleVisualizer::update(float /*wall_dt*/, float /*ros_dt*/)
   {
-    ros::WallTime now = ros::WallTime::now();
     std::string text = text_ + " ";
     {
       ScopedPixelBuffer buffer = texture_object_->getBuffer();
       QColor transparent(0, 0, 0, 0);
-      QColor foreground = rviz::ogreToQt(color_);
+      QColor foreground = rviz_common::properties::ogreToQt(color_);
       QColor white(255, 255, 255, color_.a * 255);
       QImage Hud = buffer.getQImage(128, 128, transparent);
       double line_width = 5;
       double inner_line_width = 10;
       double l = 128;
-      //double cx = l / 2 - line_width / 4.0;
       double cx = l / 2;
-      //double cy = l / 2 - line_width / 4.0;
       double cy = l / 2;
       double r = 48;
       double inner_r = 40;
       double mouse_r = 30;
       double mouse_cy_offset = 5;
-      
+
       QPainter painter( &Hud );
       painter.setRenderHint(QPainter::Antialiasing, true);
       painter.setPen(QPen(foreground, line_width, Qt::SolidLine));
       painter.setBrush(white);
       painter.drawEllipse(line_width / 2.0, line_width / 2.0,
                           l - line_width, l - line_width);
-      double offset_rate = fmod(now.toSec(), 10) / 10.0;
+      double offset_rate = fmod(wallTimeSec(), 10) / 10.0;
       double theta_offset = offset_rate * M_PI * 2.0;
       for (size_t ci = 0; ci < text.length(); ci++) {
         double theta = M_PI * 2.0 / text.length() * ci + theta_offset;
@@ -682,7 +689,7 @@ namespace jsk_rviz_plugins
     }
     else {
       square_object_->setInnerRadius(0.0);
-      
+
     }
     square_object_->rebuildPolygon();
   }
@@ -700,5 +707,5 @@ namespace jsk_rviz_plugins
     square_object_->rebuildPolygon();
   }
 
-  
+
 }

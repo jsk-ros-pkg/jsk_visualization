@@ -18,19 +18,29 @@
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <depend>actionlib_msgs</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>cv_bridge</depend>
   <depend>diagnostic_msgs</depend>
+  <depend>image_transport</depend>
   <depend>geometry_msgs</depend>
   <depend>pluginlib</depend>
+  <depend>resource_retriever</depend>
   <depend>rviz_common</depend>
+  <depend>rviz_default_plugins</depend>
   <depend>rviz_rendering</depend>
   <depend>rviz_ogre_vendor</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>visualization_msgs</depend>
 
   <build_depend>rosidl_cmake</build_depend>
   <build_depend>rosidl_default_generators</build_depend>
 
+  <!-- OpenCV is found explicitly in CMakeLists.txt (opencv_videoio for video_capture_display).
+       It is only an exec_depend because rosidl_auto_generate_interfaces() forwards every
+       build dependency to rosidl_generate_interfaces(), which rejects non-ament packages. -->
+  <exec_depend>libopencv-dev</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>rviz2</exec_depend>
 

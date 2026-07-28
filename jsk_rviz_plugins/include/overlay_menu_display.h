@@ -32,32 +32,36 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
+
 #ifndef JSK_RVIZ_PLUGIN_OVERLAY_MENU_DISPLAY_H_
 #define JSK_RVIZ_PLUGIN_OVERLAY_MENU_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
-#include <rviz/display.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreColourValue.h>
-#include <OGRE/OgreMaterial.h>
+#include <mutex>
+#include <string>
+
+#include <rviz_common/display.hpp>
+#include <OgreTexture.h>
+#include <OgreColourValue.h>
+#include <OgreMaterial.h>
 
 #include <QPainter>
 
-#include <rviz/properties/ros_topic_property.h>
-#include <rviz/properties/int_property.h>
-#include <rviz/properties/bool_property.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/float_property.h>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
 
-#include <std_msgs/ColorRGBA.h>
-#include <jsk_rviz_plugins/OverlayMenu.h>
+#include <std_msgs/msg/color_rgba.hpp>
+#include <jsk_rviz_plugins/msg/overlay_menu.hpp>
 
 #include "overlay_utils.h"
 #endif
 
 namespace jsk_rviz_plugins
 {
-  class OverlayMenuDisplay : public rviz::Display
+  class OverlayMenuDisplay : public rviz_common::Display
   {
     Q_OBJECT
   public:
@@ -80,25 +84,25 @@ namespace jsk_rviz_plugins
     virtual int getY() { return top_; };
 
   protected:
-    boost::mutex mutex_;
+    std::mutex mutex_;
     OverlayObject::Ptr overlay_;
-    ros::Subscriber sub_;
-    rviz::RosTopicProperty* update_topic_property_;
-    rviz::IntProperty* left_property_;
-    rviz::IntProperty* top_property_;
-    rviz::BoolProperty* keep_centered_property_;
-    rviz::BoolProperty* overtake_fg_color_properties_property_;
-    rviz::BoolProperty* overtake_bg_color_properties_property_;
-    rviz::ColorProperty* bg_color_property_;
-    rviz::FloatProperty* bg_alpha_property_;
-    rviz::ColorProperty* fg_color_property_;
-    rviz::FloatProperty* fg_alpha_property_;
+    rclcpp::Subscription<jsk_rviz_plugins::msg::OverlayMenu>::SharedPtr sub_;
+    rviz_common::properties::RosTopicProperty* update_topic_property_;
+    rviz_common::properties::IntProperty* left_property_;
+    rviz_common::properties::IntProperty* top_property_;
+    rviz_common::properties::BoolProperty* keep_centered_property_;
+    rviz_common::properties::BoolProperty* overtake_fg_color_properties_property_;
+    rviz_common::properties::BoolProperty* overtake_bg_color_properties_property_;
+    rviz_common::properties::ColorProperty* bg_color_property_;
+    rviz_common::properties::FloatProperty* bg_alpha_property_;
+    rviz_common::properties::ColorProperty* fg_color_property_;
+    rviz_common::properties::FloatProperty* fg_alpha_property_;
     AnimationState animation_state_;
     bool require_update_texture_;
     bool keep_centered_;
     int left_, top_;
-    jsk_rviz_plugins::OverlayMenu::ConstPtr current_menu_;
-    jsk_rviz_plugins::OverlayMenu::ConstPtr next_menu_;
+    jsk_rviz_plugins::msg::OverlayMenu::ConstSharedPtr current_menu_;
+    jsk_rviz_plugins::msg::OverlayMenu::ConstSharedPtr next_menu_;
     double animation_t_;
     bool overtake_fg_color_properties_;
     bool overtake_bg_color_properties_;
@@ -108,14 +112,14 @@ namespace jsk_rviz_plugins
     virtual void prepareOverlay();
     virtual void openingAnimation();
     virtual std::string getMenuString(
-      const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg,
+      const jsk_rviz_plugins::msg::OverlayMenu::ConstSharedPtr& msg,
       size_t index);
     virtual QFont font();
     virtual QFontMetrics fontMetrics();
     virtual int drawAreaWidth(
-      const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
+      const jsk_rviz_plugins::msg::OverlayMenu::ConstSharedPtr& msg);
     virtual int drawAreaHeight(
-      const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
+      const jsk_rviz_plugins::msg::OverlayMenu::ConstSharedPtr& msg);
     virtual bool isNeedToResize();
     virtual bool isNeedToRedraw();
     virtual void redraw();
@@ -126,7 +130,7 @@ namespace jsk_rviz_plugins
     virtual void subscribe();
     virtual void unsubscribe();
     virtual void processMessage
-    (const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg);
+    (const jsk_rviz_plugins::msg::OverlayMenu::ConstSharedPtr msg);
     virtual void setMenuLocation();
   protected Q_SLOTS:
     void updateTopic();
@@ -144,4 +148,3 @@ namespace jsk_rviz_plugins
 }
 
 #endif
-
