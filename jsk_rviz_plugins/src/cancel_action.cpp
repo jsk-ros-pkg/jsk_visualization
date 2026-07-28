@@ -8,13 +8,18 @@
 #include <QLabel>
 #include <QTimer>
 
-#include <actionlib_msgs/msg/goal_id.hpp>
+#include <string>
+
+#include <action_msgs/srv/cancel_goal.hpp>
 #include <rviz_common/display_context.hpp>
 
 #include "cancel_action.h"
 
 namespace jsk_rviz_plugins
 {
+  // Service every ROS 2 action server offers to cancel goals, see
+  // rcl_action/types.h. Cancelling with a zeroed goal_info cancels all goals.
+  static const char* CANCEL_GOAL_SUFFIX = "/_action/cancel_goal";
 
   CancelAction::CancelAction( QWidget* parent )
     : rviz_common::Panel( parent )
@@ -56,18 +61,23 @@ namespace jsk_rviz_plugins
   void CancelAction::initComboBox(){
     add_topic_box_->clear();
     add_topic_box_->addItem("");
-    auto topics = node_->get_topic_names_and_types();
-    for (const auto& topic_pair : topics) {
-      for (const auto& type : topic_pair.second) {
-        if (type == "actionlib_msgs/msg/GoalID") {
-          std::string action_name = topic_pair.first;
-          std::string delete_string = "/cancel";
-          std::string::size_type index = action_name.find_last_of(delete_string);
-          if (index != std::string::npos) {
-            action_name.erase(index - delete_string.length() + 1);
-            add_topic_box_->addItem(action_name.c_str());
-          }
+    const std::string suffix(CANCEL_GOAL_SUFFIX);
+    // Actions are discovered through their cancel service, because ROS 2 does
+    // not expose actions as topics.
+    for (const auto& service_pair : node_->get_service_names_and_types()) {
+      for (const auto& type : service_pair.second) {
+        if (type != "action_msgs/srv/CancelGoal") {
+          continue;
         }
+        const std::string& service_name = service_pair.first;
+        if (service_name.length() <= suffix.length() ||
+            service_name.compare(service_name.length() - suffix.length(),
+                                 suffix.length(), suffix) != 0) {
+          continue;
+        }
+        std::string action_name =
+          service_name.substr(0, service_name.length() - suffix.length());
+        add_topic_box_->addItem(action_name.c_str());
       }
     }
   }
@@ -84,7 +94,7 @@ namespace jsk_rviz_plugins
 	delete it->remove_button_;
 
 	delete it->layout_;
-	it->publisher_.reset();
+	it->client_.reset();
 	it = topic_list_layouts_.erase( it );
 	Q_EMIT configChanged();
       }else{
@@ -123,8 +133,8 @@ namespace jsk_rviz_plugins
 
     layout->addLayout(tll.layout_);
 
-    tll.publisher_ = node_->create_publisher<actionlib_msgs::msg::GoalID>(
-      topic_name + "/cancel", 1);
+    tll.client_ = node_->create_client<action_msgs::srv::CancelGoal>(
+      topic_name + CANCEL_GOAL_SUFFIX);
 
     topic_list_layouts_.push_back(tll);
 
@@ -136,8 +146,35 @@ namespace jsk_rviz_plugins
   void CancelAction::sendTopic(){
     std::vector<topicListLayout>::iterator it = topic_list_layouts_.begin();
     while( it != topic_list_layouts_.end()){
-      actionlib_msgs::msg::GoalID msg;
-      it->publisher_->publish(msg);
+      const std::string action_name = it->topic_name_->text().toStdString();
+      if (!it->client_->service_is_ready()) {
+        RCLCPP_WARN(node_->get_logger(),
+                    "%s%s is not available", action_name.c_str(),
+                    CANCEL_GOAL_SUFFIX);
+        it++;
+        continue;
+      }
+      // A zeroed goal_id and stamp cancels every goal of the action
+      auto request = std::make_shared<action_msgs::srv::CancelGoal::Request>();
+      // The response is handled in a callback so that the GUI thread does not
+      // block; rviz already spins the node this client belongs to.
+      it->client_->async_send_request(
+        request,
+        [this, action_name](
+          rclcpp::Client<action_msgs::srv::CancelGoal>::SharedFuture future) {
+          const auto response = future.get();
+          if (response->return_code ==
+              action_msgs::srv::CancelGoal::Response::ERROR_NONE) {
+            RCLCPP_INFO(node_->get_logger(), "Cancelled %zu goal(s) of %s",
+                        response->goals_canceling.size(), action_name.c_str());
+          }
+          else {
+            RCLCPP_WARN(node_->get_logger(),
+                        "Failed to cancel goals of %s, return_code=%d",
+                        action_name.c_str(),
+                        static_cast<int>(response->return_code));
+          }
+        });
       it++;
     }
   }

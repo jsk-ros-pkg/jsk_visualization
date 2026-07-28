@@ -17,7 +17,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
-  <depend>actionlib_msgs</depend>
+  <depend>action_msgs</depend>
   <depend>ament_index_cpp</depend>
   <depend>cv_bridge</depend>
   <depend>diagnostic_msgs</depend>

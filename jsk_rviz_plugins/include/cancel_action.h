@@ -2,8 +2,11 @@
 #define CANCEL_ACTION_H
 
 #ifndef Q_MOC_RUN
+#include <string>
+#include <vector>
+
 #include <rclcpp/rclcpp.hpp>
-#include <actionlib_msgs/msg/goal_id.hpp>
+#include <action_msgs/srv/cancel_goal.hpp>
 
 #include <rviz_common/panel.hpp>
 #include <QtWidgets>
@@ -59,7 +62,7 @@ Q_OBJECT
 	QHBoxLayout* layout_;
 	QPushButton* remove_button_;
 	QLabel* topic_name_;
-	rclcpp::Publisher<actionlib_msgs::msg::GoalID>::SharedPtr publisher_;
+	rclcpp::Client<action_msgs::srv::CancelGoal>::SharedPtr client_;
       };
 
       std::vector<topicListLayout> topic_list_layouts_;

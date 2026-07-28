@@ -19,7 +19,6 @@
   <exec_depend>rosidl_runtime_py</exec_depend>
   <exec_depend>rqt_gui</exec_depend>
   <exec_depend>rqt_gui_py</exec_depend>
-  <exec_depend>rqt_image_view</exec_depend>
   <exec_depend>rqt_plot</exec_depend>
   <exec_depend>rqt_py_common</exec_depend>
   <exec_depend>std_msgs</exec_depend>
@@ -36,7 +35,8 @@
   <!-- The plugins below are not migrated yet, see CMakeLists.txt.
        Their dependencies are listed here for reference:
        hist.py (HistogramPlot), plot_2d.py (Plot2D) -> jsk_recognition_msgs, cv_bridge
-       image_view2_wrapper.py (ImageView2Plugin)    -> image_view2, cv_bridge
+       image_view2_wrapper.py (ImageView2Plugin)    -> image_view2, cv_bridge,
+                                                       rqt_image_view
        yes_no_button.py (YesNoButton)               -> jsk_gui_msgs -->
   <!-- <exec_depend>cv_bridge</exec_depend> -->
   <!-- <exec_depend>image_view2</exec_depend> -->
