@@ -9,35 +9,52 @@
   <url type="bugtracker">http://github.com/jsk-ros-pkg/jsk_visualization/issues</url>
   <url type="website">https://jsk-visualization.readthedocs.io/en/latest/jsk_rqt_plugins/index.html</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
-  <build_depend>mk</build_depend>
-  <build_depend>rosbuild</build_depend>
-  <build_depend>image_view2</build_depend>
-  <build_depend>message_generation</build_depend>
-
-  <exec_depend>rqt_gui</exec_depend>
-  <exec_depend>rqt_gui_py</exec_depend>
-  <exec_depend>rqt_plot</exec_depend>
-  <exec_depend>rqt_gui</exec_depend>
-  <exec_depend>rqt_gui_py</exec_depend>
-  <exec_depend>rqt_plot</exec_depend>
-  <exec_depend>rqt_image_view</exec_depend>
+  <exec_depend>python_qt_binding</exec_depend>
   <exec_depend>qt_gui_py_common</exec_depend>
+  <exec_depend>rclpy</exec_depend>
   <exec_depend>resource_retriever</exec_depend>
-  <!-- https://github.com/ros-perception/image_pipeline/pull/318 -->
-  <exec_depend version_gte="1.12.23">image_publisher</exec_depend>
-  <exec_depend>image_view2</exec_depend>
-  <exec_depend version_gte="4.3.0" >jsk_gui_msgs</exec_depend>
-  <exec_depend>cv_bridge</exec_depend>
-  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-sklearn</exec_depend>
-  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-sklearn</exec_depend>
-  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>rosidl_runtime_py</exec_depend>
+  <exec_depend>rqt_gui</exec_depend>
+  <exec_depend>rqt_gui_py</exec_depend>
+  <exec_depend>rqt_image_view</exec_depend>
+  <exec_depend>rqt_plot</exec_depend>
+  <exec_depend>rqt_py_common</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <exec_depend>python3-matplotlib</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
 
-  <test_depend>roslaunch</test_depend>
-  <test_depend>rostest</test_depend>
+  <!-- needed by the sample launch files -->
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <!-- The plugins below are not migrated yet, see CMakeLists.txt.
+       Their dependencies are listed here for reference:
+       hist.py (HistogramPlot), plot_2d.py (Plot2D) -> jsk_recognition_msgs, cv_bridge
+       image_view2_wrapper.py (ImageView2Plugin)    -> image_view2, cv_bridge
+       yes_no_button.py (YesNoButton)               -> jsk_gui_msgs -->
+  <!-- <exec_depend>cv_bridge</exec_depend> -->
+  <!-- <exec_depend>image_view2</exec_depend> -->
+  <!-- <exec_depend>jsk_gui_msgs</exec_depend> -->
+  <!-- <exec_depend>jsk_recognition_msgs</exec_depend> -->
+  <!-- <exec_depend>image_publisher</exec_depend> -->
+  <!-- <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-sklearn</exec_depend> -->
+
+  <!-- test/test_util.py checks the string fields of jsk_rviz_plugins/OverlayText -->
+  <test_depend>jsk_rviz_plugins</test_depend>
+
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>launch_testing_ros</test_depend>
+  <test_depend>python3-pytest</test_depend>
 
   <export>
-    <rqt_gui plugin="${prefix}/plugin.xml" />
+    <build_type>ament_cmake</build_type>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
   </export>
 </package>
