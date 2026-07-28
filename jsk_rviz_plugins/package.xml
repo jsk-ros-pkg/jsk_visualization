@@ -44,7 +44,6 @@
   <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>rviz2</exec_depend>
 
-  <!-- needed by the sample launch files and the rclpy sample publishers -->
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>image_publisher</exec_depend>
   <exec_depend>launch</exec_depend>
@@ -54,55 +53,6 @@
   <test_depend>launch_testing_ament_cmake</test_depend>
   <test_depend>launch_testing_ros</test_depend>
   <test_depend>python3-pytest</test_depend>
-
-  <!-- <build_depend>cv_bridge</build_depend> -->
-  <!-- <build_depend>diagnostic_msgs</build_depend> -->
-  <!-- <build_depend>image_geometry</build_depend> -->
-  <!-- <build_depend>jsk_footstep_msgs</build_depend> -->
-  <!-- <build_depend>jsk_gui_msgs</build_depend> -->
-  <!-- <build_depend>jsk_hark_msgs</build_depend> -->
-  <!-- <build_depend>jsk_recognition_msgs</build_depend> -->
-  <!-- <build_depend>jsk_recognition_utils</build_depend> -->
-  <!-- <build_depend>jsk_topic_tools</build_depend> -->
-  <!-- <build_depend>message_generation</build_depend> -->
-  <!-- <build_depend>mk</build_depend> -->
-  <!-- <build_depend>people_msgs</build_depend> -->
-  <!-- <build_depend>rosbuild</build_depend> -->
-  <!-- <build_depend>rviz</build_depend> -->
-  <!-- <build_depend>urdfdom_py</build_depend> -->
-  <!-- <build_depend>view_controller_msgs</build_depend> -->
-
-  <!-- <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-scipy</exec_depend> -->
-  <!-- <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-scipy</exec_depend> -->
-  <!-- <exec_depend>cv_bridge</exec_depend> -->
-  <!-- <exec_depend>diagnostic_msgs</exec_depend> -->
-  <!-- <exec_depend>image_geometry</exec_depend> -->
-  <!-- <exec_depend>image_publisher</exec_depend> -->
-  <!-- <exec_depend>jsk_footstep_msgs</exec_depend> -->
-  <!-- <exec_depend>jsk_gui_msgs</exec_depend> -->
-  <!-- <exec_depend>jsk_hark_msgs</exec_depend> -->
-  <!-- <exec_depend>jsk_recognition_msgs</exec_depend> -->
-  <!-- <exec_depend>jsk_recognition_utils</exec_depend> -->
-  <!-- <exec_depend>jsk_topic_tools</exec_depend> -->
-  <!-- <exec_depend>message_generation</exec_depend> -->
-  <!-- <exec_depend>people_msgs</exec_depend> -->
-  <!-- <exec_depend>posedetection_msgs</exec_depend> -->
-  <!-- <exec_depend>rosidl_default_runtime</exec_depend> -->
-  <!-- <exec_depend>rviz</exec_depend> -->
-  <!-- <exec_depend>urdfdom_py</exec_depend> -->
-  <!-- <exec_depend>view_controller_msgs</exec_depend> -->
-
-  <!-- <test_depend>rostest</test_depend> -->
-  <!-- <test_depend>pr2_description</test_depend> <!-\- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires pr2_description -\-> -->
-  <!-- <test_depend>joint_state_publisher</test_depend> <!-\- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires joint_state_publisher -\-> -->
-  <!-- <test_depend>robot_state_publisher</test_depend> <!-\- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires robot_state_publisher -\-> -->
-  <!-- <test_depend>jsk_data</test_depend> <!-\- install_sample_data requries jsk_data -\-> -->
-  <!-- <test_depend>jsk_tools</test_depend> <!-\- test_overlay_text_interface.test requries jsk_tools -\-> -->
-  <!-- <test_depend>openni2_launch</test_depend> <!-\- normal.test, face_detector.test requires openni2_launch -\-> -->
-  <!-- <test_depend>image_transport</test_depend> <!-\- normal.test, face_detector.test requires image_transport -\-> -->
-  <!-- <!-\-test_depend>jsk_pcl_ros_utils</test_depend-\-> <!-\- normal.test requires jsk_pcl/NormalConcatenater -\-> -->
-  <!-- <!-\- test_depend>jsk_pcl_ros</test_depend-\-> <!-\- normal.test requires jsk_pcl/NormalConcatenater (for kinetic) -\-> -->
-  <!-- <test_depend>face_detector</test_depend> <!-\- face_detector.test requires face_detector -\-> -->
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
