@@ -64,14 +64,7 @@ install(
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(launch_testing_ament_cmake REQUIRED)
-
-  # ROS 2 counterpart of catkin_add_nosetests(test)
   ament_add_pytest_test(test_util test/test_util.py)
-
-  # ROS 2 counterpart of add_rostest(test/test_rqt_plugins.test): brings up the
-  # migrated rqt plugins and checks that none of them dies.
-  # rqt needs a display, so the test skips itself unless DISPLAY is set;
-  # use `xvfb-run -a colcon test ...` to run it headless.
   add_launch_test(test/test_rqt_plugins.py TIMEOUT 180)
 endif()
 
