@@ -6,7 +6,7 @@
 
 #include <QSignalMapper>
 
-#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <ament_index_cpp/get_package_share_path.hpp>
 #include <rviz_common/config.hpp>
 #include <std_srvs/srv/empty.hpp>
 
@@ -89,7 +89,7 @@ namespace jsk_rviz_plugins
             size_t package_end = icon.find("/");
             std::string package = icon.substr(0, package_end);
             icon.erase(0, package_end);
-            icon = ament_index_cpp::get_package_share_directory(package) + icon;
+            icon = ament_index_cpp::get_package_share_path(package).string() + icon;
           }
           button->setIcon(QIcon(QPixmap(QString(icon.c_str()))));
           button->setIconSize(QSize(80, 80));

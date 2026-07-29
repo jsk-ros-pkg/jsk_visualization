@@ -7,7 +7,7 @@
 #include <QTabWidget>
 #include <QCheckBox>
 #include <QLabel>
-#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <ament_index_cpp/get_package_share_path.hpp>
 
 #include "object_fit_operator.h"
 
@@ -28,7 +28,7 @@ namespace jsk_rviz_plugins
     horizontal_layout2_ = new QHBoxLayout();
 
     const std::string default_icon_dir =
-      ament_index_cpp::get_package_share_directory("jsk_rviz_plugins") + std::string("/icons/");
+      (ament_index_cpp::get_package_share_path("jsk_rviz_plugins") / "icons/").string();
     node_->declare_parameter("object_fit_icon", default_icon_dir + "fit.jpg");
     node_->declare_parameter("object_near_icon", default_icon_dir + "near.jpg");
     node_->declare_parameter("object_other_icon", default_icon_dir + "other.jpg");

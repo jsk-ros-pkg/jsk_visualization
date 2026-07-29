@@ -2,7 +2,7 @@
 #define EMPTY_SERCICE_CALL_INTERFACE_H
 
 #ifndef Q_MOC_RUN
-#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <ament_index_cpp/get_package_share_path.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/panel.hpp>
 #include <std_srvs/srv/empty.hpp>

@@ -47,7 +47,8 @@ namespace jsk_rviz_plugins
 
     std::string icon_path_prefix;
     if(!icon_package_name.empty())
-      icon_path_prefix = ament_index_cpp::get_package_share_directory(icon_package_name) + std::string("/icons/");
+      icon_path_prefix =
+        (ament_index_cpp::get_package_share_path(icon_package_name) / "icons/").string();
 
      std::vector<std::string> button_ids;
 
