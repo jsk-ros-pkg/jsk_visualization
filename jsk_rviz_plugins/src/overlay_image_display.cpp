@@ -45,6 +45,7 @@
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreTechnique.h>
 
+#include <image_transport/version.h>
 #include <cv_bridge/cv_bridge.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <rviz_common/display_context.hpp>
@@ -157,10 +158,21 @@ namespace jsk_rviz_plugins
       std::string topic_name = update_topic_property_->getTopicStd();
 
       if (topic_name.length() > 0 && topic_name != "/") {
+#if IMAGE_TRANSPORT_VERSION_GTE(7, 0, 0)
+        // image_transport 7 takes rclcpp node interfaces instead of a node pointer,
+        // and its custom_qos is a required rclcpp::QoS. The interfaces are built
+        // from a node reference, so the node is dereferenced here.
+        // QoS(10) reproduces the rmw_qos_profile_default of the older signature.
+        sub_ = image_transport::create_subscription(
+          *node_, topic_name,
+          std::bind(&OverlayImageDisplay::processMessage, this, std::placeholders::_1),
+          transport_hint_property_->getTransport(), rclcpp::QoS(10));
+#else
         sub_ = image_transport::create_subscription(
           node_.get(), topic_name,
           std::bind(&OverlayImageDisplay::processMessage, this, std::placeholders::_1),
           transport_hint_property_->getTransport());
+#endif
       }
     }
   }

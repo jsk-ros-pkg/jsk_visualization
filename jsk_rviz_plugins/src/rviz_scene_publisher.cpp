@@ -36,6 +36,7 @@
 
 #include <string>
 
+#include <image_transport/version.h>
 #include <rviz_common/display.hpp>
 #include <rviz_common/display_context.hpp>
 #include <rviz_common/display_group.hpp>
@@ -78,7 +79,12 @@ namespace jsk_rviz_plugins
   {
     topic_name_ = topic_name_property_->getStdString();
     if (node_) {
+#if IMAGE_TRANSPORT_VERSION_GTE(7, 0, 0)
+      // see the comment in overlay_image_display.cpp about image_transport 7
+      publisher_ = image_transport::create_publisher(*node_, topic_name_, rclcpp::QoS(10));
+#else
       publisher_ = image_transport::create_publisher(node_.get(), topic_name_);
+#endif
     }
   }
 
