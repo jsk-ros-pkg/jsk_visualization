@@ -109,7 +109,6 @@ set(SOURCE_FILES
 )
 
 set(CMAKE_AUTOMOC ON)
-qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
 
 # rosidl_auto_generate_interfaces() reserves the ${PROJECT_NAME} target name for
 # the interface generation, so the plugin library target is named differently and
@@ -118,7 +117,6 @@ ament_auto_add_library(
   ${PROJECT_NAME}_plugins SHARED
   ${HEADER_FILES}
   ${SOURCE_FILES}
-  ${MOC_FILES}
 )
 set_target_properties(${PROJECT_NAME}_plugins PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 

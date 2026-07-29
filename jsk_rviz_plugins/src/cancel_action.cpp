@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QSignalMapper>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -40,7 +41,9 @@ namespace jsk_rviz_plugins
 
     m_sigmap = new QSignalMapper(this);
 
-    connect(m_sigmap, SIGNAL(mapped(int)),this, SLOT(OnClickDeleteButton(int)));
+    // QSignalMapper::mapped() was removed in Qt6, mappedInt() replaces it
+    connect(m_sigmap, &QSignalMapper::mappedInt,
+            this, &CancelAction::OnClickDeleteButton);
 
     //Button to send cancel topic
     QPushButton* send_topic_button_ = new QPushButton("Cancel Action");

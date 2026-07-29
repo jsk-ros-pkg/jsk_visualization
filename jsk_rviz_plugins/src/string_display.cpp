@@ -41,6 +41,7 @@
 #include <rviz_rendering/render_system.hpp>
 #include <QFontDatabase>
 #include <QPainter>
+#include <QRegularExpression>
 #include <QStaticText>
 #include <rviz_common/uniform_string_stream.hpp>
 
@@ -127,8 +128,13 @@ namespace jsk_rviz_plugins
     bg_alpha_property_->setMin(0.0);
     bg_alpha_property_->setMax(1.0);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    // QFontDatabase is static-only from Qt6 on, its constructor was removed
+    font_families_ = QFontDatabase::families();
+#else
     QFontDatabase database;
     font_families_ = database.families();
+#endif
     font_property_ = std::make_unique<rviz_common::properties::EnumProperty>(
       "font", "DejaVu Sans Mono",
       "font", nullptr,
@@ -277,7 +283,8 @@ namespace jsk_rviz_plugins
           QFontMetrics fm(painter.fontMetrics());
           QRect text_rect = fm.boundingRect(0, 0, w, h,
                                             Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
-                                            only_wrapped_text.text().remove(QRegExp("<[^>]*>")));
+                                            only_wrapped_text.text().remove(
+                                              QRegularExpression("<[^>]*>")));
           painter.drawStaticText(0, h - text_rect.height(), static_text);
         }
       }

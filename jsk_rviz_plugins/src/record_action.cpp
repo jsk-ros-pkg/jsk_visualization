@@ -4,6 +4,7 @@
 
 #include <QLineEdit>
 #include <QPushButton>
+#include <QSignalMapper>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -30,10 +31,13 @@ namespace jsk_rviz_plugins
     layout->addLayout( motion_record_layout );
     //End of Text Box and Add Button
     m_play_sigmap_ = new QSignalMapper(this);
-    connect(m_play_sigmap_, SIGNAL(mapped(int)),this, SLOT(OnClickPlayButton(int)));
+    // QSignalMapper::mapped() was removed in Qt6, mappedInt() replaces it
+    connect(m_play_sigmap_, &QSignalMapper::mappedInt,
+            this, &RecordAction::OnClickPlayButton);
 
     m_delete_sigmap_ = new QSignalMapper(this);
-    connect(m_delete_sigmap_, SIGNAL(mapped(int)),this, SLOT(OnClickDeleteButton(int)));
+    connect(m_delete_sigmap_, &QSignalMapper::mappedInt,
+            this, &RecordAction::OnClickDeleteButton);
 
     setLayout( layout );
     connect( record_interface_button_, SIGNAL( clicked() ), this, SLOT( recordClick() ));

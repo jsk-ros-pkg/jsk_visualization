@@ -67,14 +67,24 @@ namespace jsk_rviz_plugins
     return QSize(300, 300);
   }
 
+  // QMouseEvent::x()/y() were removed in Qt6, position() replaces them
+  static void mousePosition(QMouseEvent* event, int& x, int& y)
+  {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    x = static_cast<int>(event->position().x());
+    y = static_cast<int>(event->position().y());
+#else
+    x = event->x();
+    y = event->y();
+#endif
+  }
+
   void TabletCmdVelArea::mouseMoveEvent(QMouseEvent* event){
-    mouse_x_ = event->x();
-    mouse_y_ = event->y();
+    mousePosition(event, mouse_x_, mouse_y_);
     repaint();
   }
   void TabletCmdVelArea::mousePressEvent(QMouseEvent* event){
-    mouse_x_ = event->x();
-    mouse_y_ = event->y();
+    mousePosition(event, mouse_x_, mouse_y_);
     repaint();
   }
   void TabletCmdVelArea::mouseReleaseEvent(QMouseEvent* /*event*/){

@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include <QSignalMapper>
+
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <rviz_common/config.hpp>
 #include <std_srvs/srv/empty.hpp>
@@ -33,7 +35,9 @@ namespace jsk_rviz_plugins
     signal_mapper_ = new QSignalMapper(this);
     parseROSParameters();
     layout_->addStretch();
-    connect(signal_mapper_, SIGNAL(mapped(int)), this, SLOT(buttonCallback(int)));
+    // QSignalMapper::mapped() was removed in Qt6, mappedInt() replaces it
+    connect(signal_mapper_, &QSignalMapper::mappedInt,
+            this, &RobotCommandInterfaceAction::buttonCallback);
   }
 
   // ROS 2 parameters cannot hold an array of structs, so the buttons are described

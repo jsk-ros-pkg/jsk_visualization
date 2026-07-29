@@ -32,8 +32,9 @@ namespace jsk_rviz_plugins
       signal_mapper->setMapping(tbutton, i);
       h_layout->addWidget(tbutton);
     };
-    connect(signal_mapper, SIGNAL(mapped(int)),
-            this, SLOT(callRequestEmptyCommand(int)));
+    // QSignalMapper::mapped() was removed in Qt6, mappedInt() replaces it
+    connect(signal_mapper, &QSignalMapper::mappedInt,
+            this, &EmptyServiceCallInterfaceAction::callRequestEmptyCommand);
     layout->addLayout(h_layout);
   }
 
