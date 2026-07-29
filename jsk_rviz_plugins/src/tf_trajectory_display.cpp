@@ -38,8 +38,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/format.hpp>
-
 namespace jsk_rviz_plugins
 {
   // from rviz_rendering/src/rviz_rendering/objects/billboard_line.cpp
@@ -144,8 +142,9 @@ namespace jsk_rviz_plugins
     if(!context_->getFrameManager()->getTransform(
          header, position, orientation)) {
       setStatus(rviz_common::properties::StatusProperty::Error, "transformation",
-                (boost::format("Failed transforming from frame '%s' to frame '%s'")
-                 % header.frame_id.c_str() % fixed_frame_id.c_str()).str().c_str());
+                QString("Failed transforming from frame '%1' to frame '%2'")
+                  .arg(QString::fromStdString(header.frame_id))
+                  .arg(QString::fromStdString(fixed_frame_id)));
       return;
     }
     setStatus(rviz_common::properties::StatusProperty::Ok, "transformation", "Ok");

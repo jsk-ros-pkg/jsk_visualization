@@ -37,8 +37,6 @@
 
 #include <string>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/format.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <rviz_rendering/render_system.hpp>
 #include <QFontDatabase>
@@ -262,12 +260,12 @@ namespace jsk_rviz_plugins
       }
       if (text_.length() > 0)
       {
-        std::string color_wrapped_text
-          = (boost::format("<span style=\"color: rgba(%2%, %3%, %4%, %5%)\">%1%</span>")
-             % text_ % fg_color_.red() % fg_color_.green() % fg_color_.blue() %
-             fg_color_.alpha()).str();
+        QString color_wrapped_text
+          = QString("<span style=\"color: rgba(%1, %2, %3, %4)\">%5</span>")
+            .arg(fg_color_.red()).arg(fg_color_.green()).arg(fg_color_.blue())
+            .arg(fg_color_.alpha()).arg(QString::fromStdString(text_));
         QStaticText static_text(
-          boost::algorithm::replace_all_copy(color_wrapped_text, "\n", "<br >").c_str());
+          QString(color_wrapped_text).replace("\n", "<br >"));
         static_text.setTextWidth(w);
         if (!align_bottom_)
         {
@@ -275,7 +273,7 @@ namespace jsk_rviz_plugins
         }
         else
         {
-          QStaticText only_wrapped_text(color_wrapped_text.c_str());
+          QStaticText only_wrapped_text(color_wrapped_text);
           QFontMetrics fm(painter.fontMetrics());
           QRect text_rect = fm.boundingRect(0, 0, w, h,
                                             Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,

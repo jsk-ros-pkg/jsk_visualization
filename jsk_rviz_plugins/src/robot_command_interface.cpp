@@ -5,7 +5,6 @@
 #include <vector>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <boost/format.hpp>
 #include <rviz_common/config.hpp>
 #include <std_srvs/srv/empty.hpp>
 
@@ -116,10 +115,9 @@ namespace jsk_rviz_plugins
       }
     }
     catch (RobotCommandParseException& e) {
-      popupDialog((boost::format("Malformed ~robot_command_buttons parameter.\n"
-                                "%s\n"
-                                "See package://jsk_rviz_plugins/config/default_robot_command.yaml")
-                   % e.what()).str().c_str());
+      popupDialog(std::string("Malformed ~robot_command_buttons parameter.\n")
+                  + e.what() + "\n"
+                  "See package://jsk_rviz_plugins/config/default_robot_command.yaml");
     }
   }
 
@@ -137,7 +135,7 @@ namespace jsk_rviz_plugins
     RCLCPP_INFO(node_->get_logger(), "buttonCallback(%d)", i);
     if (euscommand_mapping_.find(i) != euscommand_mapping_.end()) {
       if(!callRequestEusCommand(euscommand_mapping_[i])) {
-        popupDialog((boost::format("Failed to call %s") % euscommand_mapping_[i]).str().c_str());
+        popupDialog("Failed to call " + euscommand_mapping_[i]);
       }
     }
     else if (emptyservice_mapping_.find(i) != emptyservice_mapping_.end()) {
@@ -146,11 +144,12 @@ namespace jsk_rviz_plugins
       auto result = client->async_send_request(request);
       if (rclcpp::spin_until_future_complete(node_, result) !=
           rclcpp::FutureReturnCode::SUCCESS) {
-        popupDialog((boost::format("Failed to call %s") % emptyservice_mapping_[i]).str().c_str());
+        popupDialog("Failed to call " + emptyservice_mapping_[i]);
       }
     }
     else {
-      popupDialog((boost::format("Failed to find corresponding command for %d") % i).str().c_str());
+      popupDialog("Failed to find corresponding command for "
+                  + std::to_string(i));
     }
   }
 
