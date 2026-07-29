@@ -24,11 +24,10 @@ def test_get_slot_type_field_names():
 
 
 def test_get_slot_type_field_names_array_of_primitive():
-    # ROS 1 used jsk_recognition_msgs/Histogram (float64[] histogram) here,
-    # which is not migrated to ROS 2 yet, so a core message is used instead.
+    # jsk_recognition_msgs/Histogram is not migrated yet, so a core message
+    # with a float64[] field is used instead
     msg = get_message('std_msgs/msg/Float64MultiArray')
-    # asking for the array type itself matches the field as-is, the way the
-    # ROS 1 test did with slot_type='float64[]'
+    # asking for the array type itself matches the field as-is
     field_names = get_slot_type_field_names(
         msg, slot_type='sequence<double>')
     assert field_names == ['/data']

@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""ROS 2 port of the ROS 1 test_rqt_plugins.test rostest.
-
-The ROS 1 test launched every rqt plugin with ``required="true"`` and then
-checked, from a separate test node, that the expected topics were subscribed.
-Here launch_testing brings up the same set of plugins (minus the ones that are
-not migrated yet, see CMakeLists.txt) and the checks run against the ROS graph.
-"""
+"""Check that the rqt plugins come up and subscribe the expected topics."""
 
 import os
 import time
@@ -23,8 +17,7 @@ import launch_testing.markers
 import pytest
 import rclpy
 
-# rqt needs a display. On a headless machine the test skips itself instead of
-# failing; run it under `xvfb-run -a colcon test ...` to exercise it.
+# rqt needs a display; without one the test skips itself
 DISPLAY_REQUIRED_MESSAGE = 'DISPLAY is not set, run the test under xvfb-run'
 
 BUTTON_LAYOUT = ('package://jsk_rqt_plugins/resource/'

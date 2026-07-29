@@ -36,15 +36,8 @@
 """
 Shared pieces of the rviz integration tests.
 
-This is the ROS 2 counterpart of the ROS 1 ``rviz_config_check.py`` rostest
-node: it checks that rviz comes up with a given config, stays alive for
-``test_duration`` seconds and ends up subscribing to the expected topics.
-
-``rostest`` is replaced by ``launch_testing``, so instead of a standalone test
-node each sample gets a ``test_*.py`` module which
-
-* returns the sample launch file from ``generate_test_description()``, and
-* derives its test case from :class:`RvizConfigCheck`.
+Checks that rviz comes up with a given config, stays alive for
+``test_duration`` seconds and subscribes to the expected topics.
 
 ``RvizConfigCheck`` is deliberately *not* a ``unittest.TestCase`` so that
 importing it into a test module does not make launch_testing run it on its own.
@@ -61,14 +54,11 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 import rclpy
 
 
-# Node name of rviz2. ROS 1 looked the node up through the `rviz/SendFilePath`
-# service; in ROS 2 rviz2 always names its node `rviz`.
+# rviz2 always names its node `rviz`
 RVIZ_NODE_NAME = 'rviz'
 RVIZ_NODE_NAMESPACE = '/'
 
-# rviz needs a display. ROS 1 forced DISPLAY to :0.0, but on a headless machine
-# that only produces a confusing failure, so the tests are skipped instead.
-# Run them under `xvfb-run -a colcon test ...` to exercise them headless.
+# rviz needs a display; without one the tests skip themselves
 DISPLAY_REQUIRED_MESSAGE = 'DISPLAY is not set, run the test under xvfb-run'
 
 

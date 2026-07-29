@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""ROS 2 port of the ROS 1 service_call_panel.test rostest (rviz crash test)."""
+"""Check that rviz does not crash with the service_call_panel sample."""
 
 import os
 import sys
@@ -14,7 +14,7 @@ import launch_testing.asserts
 import launch_testing.markers
 import pytest
 
-# launch_test.py loads this file by path, so make the helper module importable
+# launch_test.py loads this file by path, so make the helper importable
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from rviz_config_check import DISPLAY_REQUIRED_MESSAGE  # noqa: E402
