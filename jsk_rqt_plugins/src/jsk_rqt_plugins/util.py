@@ -6,6 +6,13 @@ from rqt_plot.rosplot import ROSData as _ROSData
 from rqt_plot.rosplot import RosPlotException
 
 
+def next_data(rosdata):
+    """Read the buffered data; rqt_plot renamed ROSData.next() after jazzy."""
+    if hasattr(rosdata, 'next_data'):
+        return rosdata.next_data()
+    return rosdata.next()
+
+
 def get_slot_type_field_names(msg, slot_type, field_name=None, found=None):
     if field_name is None:
         field_name = ''

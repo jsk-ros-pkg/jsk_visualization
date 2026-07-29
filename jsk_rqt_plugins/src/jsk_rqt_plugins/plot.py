@@ -32,6 +32,8 @@ from rqt_plot.rosplot import ROSData
 from rqt_plot.rosplot import RosPlotException
 from rqt_py_common.topic_completer import TopicCompleter
 
+from .util import next_data
+
 # Qt6 moved QAction from QtWidgets to QtGui
 try:
     from python_qt_binding.QtGui import QAction
@@ -437,7 +439,7 @@ class Plot3DWidget(QWidget):
             needs_redraw = False
             for topic_name, rosdata in self._rosdata.items():
                 try:
-                    data_x, data_y = rosdata.next()
+                    data_x, data_y = next_data(rosdata)
                     if data_x or data_y:
                         self.data_plot.update_values(
                             topic_name, data_x, data_y)
@@ -481,7 +483,7 @@ class Plot3DWidget(QWidget):
             del self._rosdata[topic_name]
             return False
 
-        data_x, data_y = self._rosdata[topic_name].next()
+        data_x, data_y = next_data(self._rosdata[topic_name])
         self.data_plot.add_curve(topic_name, topic_name, data_x, data_y)
 
         self._subscribed_topics_changed()
