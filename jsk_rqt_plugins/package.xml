@@ -46,6 +46,8 @@
   <!-- <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-sklearn</exec_depend> -->
 
   <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
   <test_depend>jsk_rviz_plugins</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
   <test_depend>launch_testing_ros</test_depend>

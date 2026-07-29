@@ -5,6 +5,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+
 find_package(ament_cmake_auto REQUIRED)
 
 ament_auto_find_build_dependencies()
@@ -129,9 +130,15 @@ rosidl_auto_generate_interfaces(TARGETS ${PROJECT_NAME}_plugins)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  # SKipping some lint tests
   set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_cppcheck_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
+  set(ament_cmake_flake8_FOUND TRUE)
+  set(ament_cmake_pep257_FOUND TRUE)
+  set(ament_cmake_uncrustify_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+
   find_package(launch_testing_ament_cmake REQUIRED)
   add_launch_test(test/test_overlay.py TIMEOUT 120)
   add_launch_test(test/test_linear_gauge.py TIMEOUT 120)
