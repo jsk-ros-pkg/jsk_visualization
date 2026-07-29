@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 
+from jsk_rqt_plugins.label import StringLabel  # noqa: F401
 from rqt_gui.main import Main
 
-plugin = 'StringLabel'
+plugin = 'jsk_rqt_plugins.label.StringLabel'
 main = Main(filename=plugin)
 sys.exit(main.main(standalone=plugin))

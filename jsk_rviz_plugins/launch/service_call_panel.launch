@@ -1,9 +1,0 @@
-<launch>
-  <!-- <arg name="" value=""/> -->
-  <!-- <param name="depth_registered" value="true"/> -->
-  <node pkg="rviz" name="rviz" type="rviz"
-	args="-d $(find jsk_rviz_plugins)/config/service_call_panel.rviz"
-	output="screen" clear_params="true">
-    <rosparam command="load" file="$(find jsk_rviz_plugins)/config/command_samples.yaml"/>
-  </node>
-</launch>

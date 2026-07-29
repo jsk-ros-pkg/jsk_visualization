@@ -1,23 +1,20 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import argparse
-from distutils.version import LooseVersion
 import os
 import sys
-if not hasattr(sys, 'maxint'): ## In python3, sys.maxint changed to sys.maxsize
-    sys.maxint = sys.maxsize
 
-import matplotlib
+from ament_index_python.packages import get_package_share_directory
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT \
+    as NavigationToolbar
 from matplotlib.collections import LineCollection
-from matplotlib.collections import PathCollection
 from matplotlib.collections import PolyCollection
-from matplotlib.colors import colorConverter
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
-from mpl_toolkits.mplot3d import Axes3D  # <-- Note the capitalization!
-import numpy
-import python_qt_binding
+# mpl_toolkits.mplot3d has to be imported for the '3d' projection to register
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtCore import QTimer
@@ -25,70 +22,33 @@ from python_qt_binding.QtCore import qWarning
 from python_qt_binding.QtCore import Slot
 from python_qt_binding.QtGui import QColor
 from python_qt_binding.QtGui import QIcon
-
-import rospkg
-import rospy
+from python_qt_binding.QtWidgets import QMenu
+from python_qt_binding.QtWidgets import QSizePolicy
+from python_qt_binding.QtWidgets import QVBoxLayout
+from python_qt_binding.QtWidgets import QWidget
 from rqt_gui_py.plugin import Plugin
-from rqt_plot.rosplot import ROSData, RosPlotException
+from rqt_plot.plot_widget import is_plottable
+from rqt_plot.rosplot import ROSData
+from rqt_plot.rosplot import RosPlotException
 from rqt_py_common.topic_completer import TopicCompleter
-from rqt_py_common.topic_helpers import is_slot_numeric
 
-# Support both qt4 and qt5
-if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
-    from python_qt_binding.QtWidgets import QAction
-    from python_qt_binding.QtWidgets import QMenu
-    from python_qt_binding.QtWidgets import QSizePolicy
-    from python_qt_binding.QtWidgets import QVBoxLayout
-    from python_qt_binding.QtWidgets import QWidget
-    try:
-        from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg \
-            as FigureCanvas
-    except ImportError:
-        # work around bug in dateutil
-        import thread
-        sys.modules['_thread'] = thread
-        from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg \
-            as FigureCanvas
-    try:
-        from matplotlib.backends.backend_qt5agg \
-            import NavigationToolbar2QTAgg as NavigationToolbar
-    except ImportError:
-        from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT \
-            as NavigationToolbar
+from .util import next_data
 
-else:
+# Qt6 moved QAction from QtWidgets to QtGui
+try:
     from python_qt_binding.QtGui import QAction
-    from python_qt_binding.QtGui import QMenu
-    from python_qt_binding.QtGui import QSizePolicy
-    from python_qt_binding.QtGui import QVBoxLayout
-    from python_qt_binding.QtGui import QWidget
-    try:
-        from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg \
-            as FigureCanvas
-    except ImportError:
-        # work around bug in dateutil
-        import thread
-        sys.modules['_thread'] = thread
-        from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg \
-            as FigureCanvas
-    try:
-        from matplotlib.backends.backend_qt4agg \
-            import NavigationToolbar2QTAgg as NavigationToolbar
-    except ImportError:
-        from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT \
-            as NavigationToolbar
+except ImportError:
+    from python_qt_binding.QtWidgets import QAction
 
 
 class MatDataPlot3D(QWidget):
+
     class Canvas(FigureCanvas):
-        """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.).
-"""
+        """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
+
         def __init__(self, parent=None):
             super(MatDataPlot3D.Canvas, self).__init__(Figure())
-            # self.fig = fig = plt.figure()
             self.axes = self.figure.add_subplot(111, projection='3d')
-            # self.axes = self.figure.gca(projection="3d")
-            # self.axes.grid(True, color='gray')
             self.axes.set_xlabel('t')
             self.axes.set_xlim3d(0, 10)
             self.axes.set_ylabel('Y')
@@ -96,17 +56,35 @@ class MatDataPlot3D(QWidget):
             self.axes.set_zlabel('Z')
             self.axes.set_zlim3d(0, 1)
 
-            self.figure.tight_layout()
-            self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            self._tight_layout()
+            self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.updateGeometry()
+
+        def _tight_layout(self):
+            # matplotlib >= 3.6 raises when the 3d axes would be laid out at a
+            # non-positive size, which happens while Qt is still sizing the
+            # canvas. There is nothing to lay out in that case.
+            try:
+                self.figure.tight_layout()
+            except ValueError:
+                pass
+
+        def draw(self):
+            # Qt also triggers draws on its own (backend_qt._draw_idle), so the
+            # guard has to live here rather than only in MatDataPlot3D.redraw().
+            if self.width() <= 0 or self.height() <= 0:
+                return
+            super(MatDataPlot3D.Canvas, self).draw()
 
         def resizeEvent(self, event):
             super(MatDataPlot3D.Canvas, self).resizeEvent(event)
-            self.figure.tight_layout()
+            self._tight_layout()
 
     _colors = [QColor(c) for c in [
-        Qt.red, Qt.blue, Qt.magenta, Qt.cyan, Qt.green, Qt.darkYellow,
-        Qt.black, Qt.darkRed, Qt.gray, Qt.darkCyan]]
+        Qt.GlobalColor.red, Qt.GlobalColor.blue, Qt.GlobalColor.magenta,
+        Qt.GlobalColor.cyan, Qt.GlobalColor.green, Qt.GlobalColor.darkYellow,
+        Qt.GlobalColor.black, Qt.GlobalColor.darkRed, Qt.GlobalColor.gray,
+        Qt.GlobalColor.darkCyan]]
 
     def __init__(self, parent=None, buffer_length=100, use_poly=True,
                  no_legend=False):
@@ -131,9 +109,6 @@ class MatDataPlot3D(QWidget):
     def add_curve(self, curve_id, curve_name, x, y):
         color = QColor(self._colors[self._color_index % len(self._colors)])
         self._color_index += 1
-        # line = self._canvas.axes.plot(
-        #     [], [], label=curve_name, linewidth=1, picker=5,
-        #     color=color.name())[0]
         line = None
         self._curves[curve_id] = [[], [], line, [None, None],
                                   (color.red() / 255.0,
@@ -181,11 +156,16 @@ class MatDataPlot3D(QWidget):
             range_y[1] = ymax
 
     def redraw(self):
+        if self._canvas.width() <= 0 or self._canvas.height() <= 0:
+            # Qt has not sized the canvas yet. matplotlib >= 3.6 raises
+            # ValueError("'box_aspect' and 'fig_aspect' must be positive") when
+            # laying out 3d axes at that point, and there is nothing to show anyway.
+            return
         self._canvas.axes.grid(True, color='gray')
         # Set axis bounds
         ymin = ymax = None
         xmax = 0
-        xmin = sys.maxint
+        xmin = sys.maxsize
         for curve in self._curves.values():
             data_x, _, _, range_y, c = curve
             if len(data_x) == 0:
@@ -198,11 +178,6 @@ class MatDataPlot3D(QWidget):
             else:
                 ymin = min(range_y[0], ymin)
                 ymax = max(range_y[1], ymax)
-
-            # pad the min/max
-            # delta = max(ymax - ymin, 0.1)
-            # ymin -= .05 * delta
-            # ymax += .05 * delta
 
         if self._autoscroll and ymin is not None:
             self._canvas.axes.set_xbound(lower=xmin, upper=xmax)
@@ -227,24 +202,53 @@ class MatDataPlot3D(QWidget):
             poly = LineCollection(verts, colors=colors)
         poly.set_alpha(0.7)
         self._canvas.axes.cla()
-        self._canvas.axes.add_collection3d(poly,
-                                           zs=range(line_num), zdir='y')
+        self._canvas.axes.add_collection3d(
+            poly, zs=range(line_num), zdir='y')
         self._update_legend()
         self._canvas.draw()
 
 
 class Plot3D(Plugin):
+
     def __init__(self, context):
         super(Plot3D, self).__init__(context)
         self.setObjectName('Plot3D')
+        self._node = context.node
         self._args = self._parse_args(context.argv())
         self._widget = Plot3DWidget(
+            self._node,
             initial_topics=self._args.topics,
             start_paused=self._args.start_paused,
             buffer_length=self._args.buffer,
             use_poly=not self._args.show_line,
             no_legend=self._args.no_legend)
         context.add_widget(self._widget)
+
+    def shutdown_plugin(self):
+        self._widget.shutdown()
+
+    def _resolve_topic_name(self, script_name, name):
+        """
+        Resolve a topic name given on the command line.
+
+        rosgraph.names.script_resolve_name has no ROS 2 equivalent, so this
+        mirrors what rqt_plot does in ROS 2.
+        """
+        sep = '/'
+        priv_name = '~'
+
+        # empty string resolves to namespace
+        if not name:
+            return self._node.get_namespace()
+        # Check for global name: /foo/name resolves to /foo/name
+        if name[0] == sep:
+            return name
+        # Check for private name: ~name resolves to /caller_id/name
+        elif name[0] == priv_name:
+            if script_name[-1] == sep:
+                return script_name + name[1:]
+            return script_name + sep + name[1:]
+        return self._node.get_namespace() + name
 
     def _parse_args(self, argv):
         parser = argparse.ArgumentParser(prog='rqt_3d_plot', add_help=False)
@@ -262,24 +266,20 @@ class Plot3D(Plugin):
                     # the first prefix includes a field name,
                     # so save then strip it off
                     c_topics.append(base)
-                    if not '/' in base:
+                    if '/' not in base:
                         parser.error(
-                            "%s must contain a topic and field name" % sub_t)
+                            '%s must contain a topic and field name' % sub_t)
                     base = base[:base.rfind('/')]
 
                     # compute the rest of the field names
                     fields = sub_t.split(':')[1:]
-                    c_topics.extend(["%s/%s" % (base, f) for f in fields if f])
+                    c_topics.extend(['%s/%s' % (base, f) for f in fields if f])
                 else:
                     c_topics.append(sub_t)
             # #1053: resolve command-line topic names
-            import rosgraph
-            c_topics = [rosgraph.names.script_resolve_name('rqt_plot', n)
+            c_topics = [self._resolve_topic_name('rqt_3d_plot', n)
                         for n in c_topics]
-            if type(c_topics) == list:
-                topic_list.extend(c_topics)
-            else:
-                topic_list.append(c_topics)
+            topic_list.extend(c_topics)
         args.topics = topic_list
 
         return args
@@ -297,11 +297,8 @@ class Plot3D(Plugin):
             '--no-legend', action='store_true', dest='no_legend',
             help='do not show legend')
         group.add_argument(
-            '-B', '--buffer', dest='buffer', action="store",
+            '-B', '--buffer', dest='buffer', action='store',
             help='the length of the buffer', default=100, type=int)
-        # group.add_argument(
-        #     '-e', '--empty', action='store_true', dest='start_empty',
-        #     help='Start without restoring previous topics')
         group.add_argument(
             'topics', nargs='*', default=[], help='Topics to plot')
 
@@ -309,16 +306,17 @@ class Plot3D(Plugin):
 class Plot3DWidget(QWidget):
     _redraw_interval = 40
 
-    def __init__(self, initial_topics=None, start_paused=False,
+    def __init__(self, node, initial_topics=None, start_paused=False,
                  buffer_length=100, use_poly=True, no_legend=False):
         super(Plot3DWidget, self).__init__()
         self.setObjectName('Plot3DWidget')
+        self._node = node
         self._buffer_length = buffer_length
         self._initial_topics = initial_topics
 
-        rp = rospkg.RosPack()
-        ui_file = os.path.join(rp.get_path('jsk_rqt_plugins'),
-                               'resource', 'plot3d.ui')
+        ui_file = os.path.join(
+            get_package_share_directory('jsk_rqt_plugins'),
+            'resource', 'plot3d.ui')
         loadUi(ui_file, self)
         self.subscribe_topic_button.setIcon(QIcon.fromTheme('add'))
         self.remove_topic_button.setIcon(QIcon.fromTheme('remove'))
@@ -336,20 +334,39 @@ class Plot3DWidget(QWidget):
             self.pause_button.setChecked(True)
 
         self._topic_completer = TopicCompleter(self.topic_edit)
-        self._topic_completer.update_topics()
+        self._topic_completer.update_topics(self._node)
         self.topic_edit.setCompleter(self._topic_completer)
 
-        self._start_time = rospy.get_time()
+        self._start_time = self._node.get_clock().now().nanoseconds * 1e-9
         self._rosdata = {}
         self._remove_topic_menu = QMenu()
 
         # init and start update timer for plot
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.update_plot)
+        # ROS 2's rqt_plot.rosplot.ROSData needs the topic type at subscribe
+        # time, so a topic given on the command line cannot be added before its
+        # publisher has been discovered. ROS 1 subscribed lazily; here the
+        # initial topics are retried until they resolve.
+        self._initial_topic_timer = QTimer(self)
+        self._initial_topic_timer.timeout.connect(self._add_initial_topics)
         if self._initial_topics:
-            for topic_name in self._initial_topics:
-                self.add_topic(topic_name)
-            self._initial_topics = None
+            self._add_initial_topics()
+            if self._initial_topics:
+                self._initial_topic_timer.start(1000)
+
+    def _add_initial_topics(self):
+        remaining = [topic_name for topic_name in self._initial_topics
+                     if not self.add_topic(topic_name)]
+        self._initial_topics = remaining
+        if not remaining:
+            self._initial_topic_timer.stop()
+
+    def shutdown(self):
+        # The Qt timers outlive the rclpy context otherwise
+        self._update_plot_timer.stop()
+        self._initial_topic_timer.stop()
+        self.clean_up_subscribers()
 
     @Slot('QDragEnterEvent*')
     def dragEnterEvent(self, event):
@@ -358,20 +375,21 @@ class Plot3DWidget(QWidget):
             if not hasattr(event.source(), 'selectedItems') or \
                len(event.source().selectedItems()) == 0:
                 qWarning(
-                    'Plot.dragEnterEvent(): not hasattr(event.source(), selectedItems) or len(event.source().selectedItems()) == 0')  # NOQA
+                    'Plot.dragEnterEvent(): not hasattr(event.source(), '
+                    'selectedItems) or len(event.source().selectedItems()) == 0')
                 return
             item = event.source().selectedItems()[0]
-            topic_name = item.data(0, Qt.UserRole)
-            if topic_name == None:
+            topic_name = item.data(0, Qt.ItemDataRole.UserRole)
+            if topic_name is None:
                 qWarning(
-                    'Plot.dragEnterEvent(): not hasattr(item, ros_topic_name_)')  # NOQA
+                    'Plot.dragEnterEvent(): not hasattr(item, ros_topic_name_)')
                 return
         else:
             topic_name = str(event.mimeData().text())
 
         # check for numeric field type
-        is_numeric, is_array, message = is_slot_numeric(topic_name)
-        if is_numeric and not is_array:
+        plottable, message = is_plottable(self._node, topic_name)
+        if plottable:
             event.acceptProposedAction()
         else:
             qWarning('Plot.dragEnterEvent(): rejecting: "%s"' % (message))
@@ -382,17 +400,17 @@ class Plot3DWidget(QWidget):
             topic_name = str(event.mimeData().text())
         else:
             droped_item = event.source().selectedItems()[0]
-            topic_name = str(droped_item.data(0, Qt.UserRole))
+            topic_name = str(droped_item.data(0, Qt.ItemDataRole.UserRole))
         self.add_topic(topic_name)
 
     @Slot(str)
     def on_topic_edit_textChanged(self, topic_name):
         # on empty topic name, update topics
         if topic_name in ('', '/'):
-            self._topic_completer.update_topics()
+            self._topic_completer.update_topics(self._node)
 
-        is_numeric, is_array, message = is_slot_numeric(topic_name)
-        self.subscribe_topic_button.setEnabled(is_numeric and not is_array)
+        plottable, message = is_plottable(self._node, topic_name)
+        self.subscribe_topic_button.setEnabled(plottable)
         self.subscribe_topic_button.setToolTip(message)
 
     @Slot()
@@ -421,7 +439,7 @@ class Plot3DWidget(QWidget):
             needs_redraw = False
             for topic_name, rosdata in self._rosdata.items():
                 try:
-                    data_x, data_y = rosdata.next()
+                    data_x, data_y = next_data(rosdata)
                     if data_x or data_y:
                         self.data_plot.update_values(
                             topic_name, data_x, data_y)
@@ -452,19 +470,24 @@ class Plot3DWidget(QWidget):
         self.remove_topic_button.setMenu(self._remove_topic_menu)
 
     def add_topic(self, topic_name):
+        """Subscribe topic_name, returning whether it could be resolved."""
         if topic_name in self._rosdata:
-            qWarning('PlotWidget.add_topic(): topic already subscribed: %s' % topic_name)  # NOQA
-            return
+            qWarning('PlotWidget.add_topic(): topic already subscribed: %s'
+                     % topic_name)
+            return True
 
-        self._rosdata[topic_name] = ROSData(topic_name, self._start_time)
+        self._rosdata[topic_name] = ROSData(
+            self._node, topic_name, self._start_time)
         if self._rosdata[topic_name].error is not None:
             qWarning(str(self._rosdata[topic_name].error))
             del self._rosdata[topic_name]
-        else:
-            data_x, data_y = self._rosdata[topic_name].next()
-            self.data_plot.add_curve(topic_name, topic_name, data_x, data_y)
+            return False
 
-            self._subscribed_topics_changed()
+        data_x, data_y = next_data(self._rosdata[topic_name])
+        self.data_plot.add_curve(topic_name, topic_name, data_x, data_y)
+
+        self._subscribed_topics_changed()
+        return True
 
     def remove_topic(self, topic_name):
         self._rosdata[topic_name].close()

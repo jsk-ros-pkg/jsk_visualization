@@ -59,7 +59,7 @@ namespace jsk_rviz_plugins
       pictograms_[i]->setEnable(false);
     }
   }
-  
+
   void PictogramArrayDisplay::onEnable()
   {
     subscribe();
@@ -78,7 +78,6 @@ namespace jsk_rviz_plugins
     }
     else if (pictograms_.size() < num) {
       for (size_t i = pictograms_.size(); i < num; i++) {
-        //pictograms_[i]->setEnable(false);
         PictogramObject::Ptr pictogram(new PictogramObject(scene_manager_,
                                                            scene_node_,
                                                            1.0));
@@ -91,11 +90,11 @@ namespace jsk_rviz_plugins
       }
     }
   }
-  
+
   void PictogramArrayDisplay::processMessage(
-    const jsk_rviz_plugins::PictogramArray::ConstPtr& msg)
+    jsk_rviz_plugins::msg::PictogramArray::ConstSharedPtr msg)
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     allocatePictograms(msg->pictograms.size());
     for (size_t i = 0; i < pictograms_.size(); i++) {
       pictograms_[i]->setEnable(isEnabled());
@@ -106,10 +105,10 @@ namespace jsk_rviz_plugins
     for (size_t i = 0; i < msg->pictograms.size(); i++) {
       PictogramObject::Ptr pictogram = pictograms_[i];
       pictogram->setAction(msg->pictograms[i].action);
-      if (msg->pictograms[i].action == jsk_rviz_plugins::Pictogram::DELETE) {
+      if (msg->pictograms[i].action == jsk_rviz_plugins::msg::Pictogram::DELETE) {
         continue;
       }
-    
+
       if (msg->pictograms[i].size <= 0.0) {
         pictogram->setSize(0.5);
       }
@@ -131,12 +130,12 @@ namespace jsk_rviz_plugins
 
   void PictogramArrayDisplay::update(float wall_dt, float ros_dt)
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     for (size_t i = 0; i < pictograms_.size(); i++) {
       pictograms_[i]->update(wall_dt, ros_dt);
     }
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::PictogramArrayDisplay, rviz::Display);
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::PictogramArrayDisplay, rviz_common::Display);

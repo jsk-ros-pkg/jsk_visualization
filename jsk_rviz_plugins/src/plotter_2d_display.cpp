@@ -34,116 +34,126 @@
  *********************************************************************/
 
 #include "plotter_2d_display.h"
-#include <OGRE/OgreHardwarePixelBuffer.h>
-#include <rviz/uniform_string_stream.h>
-#include <rviz/display_context.h>
+#include <OgreHardwarePixelBuffer.h>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_rendering/render_system.hpp>
 #include <QPainter>
 
 namespace jsk_rviz_plugins
 {
   Plotter2DDisplay::Plotter2DDisplay()
-    : rviz::Display(), min_value_(0.0), max_value_(0.0)
+    : rviz_common::Display(), min_value_(0.0), max_value_(0.0)
   {
-    update_topic_property_ = new rviz::RosTopicProperty(
+    update_topic_property_ = new rviz_common::properties::RosTopicProperty(
       "Topic", "",
-      ros::message_traits::datatype<std_msgs::Float32>(),
+      rosidl_generator_traits::name<std_msgs::msg::Float32>(),
       "std_msgs::Float32 topic to subscribe to.",
       this, SLOT(updateTopic()));
-    show_value_property_ = new rviz::BoolProperty(
+    show_value_property_ = new rviz_common::properties::BoolProperty(
       "Show Value", true,
       "Show value on plotter",
       this, SLOT(updateShowValue()));
-    buffer_length_property_ = new rviz::IntProperty(
+    buffer_length_property_ = new rviz_common::properties::IntProperty(
       "Buffer length", 100,
-      ros::message_traits::datatype<std_msgs::Float32>(),
+      "length of the buffer",
       this, SLOT(updateBufferSize()));
-    width_property_ = new rviz::IntProperty("width", 128,
-                                            "width of the plotter window",
-                                            this, SLOT(updateWidth()));
+    width_property_ = new rviz_common::properties::IntProperty(
+      "width", 128,
+      "width of the plotter window",
+      this, SLOT(updateWidth()));
     width_property_->setMin(1);
     width_property_->setMax(2000);
-    height_property_ = new rviz::IntProperty("height", 128,
-                                             "height of the plotter window",
-                                             this, SLOT(updateHeight()));
+    height_property_ = new rviz_common::properties::IntProperty(
+      "height", 128,
+      "height of the plotter window",
+      this, SLOT(updateHeight()));
     height_property_->setMin(1);
     height_property_->setMax(2000);
-    left_property_ = new rviz::IntProperty("left", 128,
-                                           "left of the plotter window",
-                                           this, SLOT(updateLeft()));
+    left_property_ = new rviz_common::properties::IntProperty(
+      "left", 128,
+      "left of the plotter window",
+      this, SLOT(updateLeft()));
     left_property_->setMin(0);
-    top_property_ = new rviz::IntProperty("top", 128,
-                                          "top of the plotter window",
-                                          this, SLOT(updateTop()));
+    top_property_ = new rviz_common::properties::IntProperty(
+      "top", 128,
+      "top of the plotter window",
+      this, SLOT(updateTop()));
     top_property_->setMin(0);
-    auto_scale_property_ = new rviz::BoolProperty(
+    auto_scale_property_ = new rviz_common::properties::BoolProperty(
       "auto scale", true,
       "enable auto scale",
       this, SLOT(updateAutoScale()));
-    max_value_property_ = new rviz::FloatProperty(
+    max_value_property_ = new rviz_common::properties::FloatProperty(
       "max value", 1.0,
       "max value, used only if auto scale is disabled",
       this, SLOT(updateMaxValue()));
-    min_value_property_ = new rviz::FloatProperty(
+    min_value_property_ = new rviz_common::properties::FloatProperty(
       "min value", -1.0,
       "min value, used only if auto scale is disabled",
       this, SLOT(updateMinValue()));
-    fg_color_property_ = new rviz::ColorProperty(
+    fg_color_property_ = new rviz_common::properties::ColorProperty(
       "foreground color", QColor(25, 255, 240),
       "color to draw line",
       this, SLOT(updateFGColor()));
-    fg_alpha_property_ = new rviz::FloatProperty(
+    fg_alpha_property_ = new rviz_common::properties::FloatProperty(
       "foreground alpha", 0.7,
       "alpha belnding value for foreground",
       this, SLOT(updateFGAlpha()));
     fg_alpha_property_->setMin(0);
     fg_alpha_property_->setMax(1.0);
-    bg_color_property_ = new rviz::ColorProperty(
+    bg_color_property_ = new rviz_common::properties::ColorProperty(
       "background color", QColor(0, 0, 0),
       "background color",
       this, SLOT(updateBGColor()));
-    bg_alpha_property_ = new rviz::FloatProperty(
+    bg_alpha_property_ = new rviz_common::properties::FloatProperty(
       "backround alpha", 0.0,
       "alpha belnding value for background",
       this, SLOT(updateBGAlpha()));
     bg_alpha_property_->setMin(0);
     bg_alpha_property_->setMax(1.0);
-    line_width_property_ = new rviz::IntProperty("linewidth", 1,
-                                                 "linewidth of the plot",
-                                                 this, SLOT(updateLineWidth()));
+    line_width_property_ = new rviz_common::properties::IntProperty(
+      "linewidth", 1,
+      "linewidth of the plot",
+      this, SLOT(updateLineWidth()));
     line_width_property_->setMin(1);
     line_width_property_->setMax(1000);
-    show_border_property_ = new rviz::BoolProperty(
+    show_border_property_ = new rviz_common::properties::BoolProperty(
       "border", true,
       "show border or not",
       this, SLOT(updateShowBorder()));
-    text_size_property_ = new rviz::IntProperty("text size", 12,
-                                                "text size of the caption",
-                                                this, SLOT(updateTextSize()));
-    auto_text_size_in_plot_property_ = new rviz::BoolProperty("auto text size in plot", true,
-                                                              "automatiacally adjust text size of the value in plot",
-                                                              this, SLOT(updateAutoTextSizeInPlot()));
-    text_size_in_plot_property_ = new rviz::IntProperty("text size in plot", 12,
-                                                        "text size of the value in plot",
-                                                        this, SLOT(updateTextSizeInPlot()));
+    text_size_property_ = new rviz_common::properties::IntProperty(
+      "text size", 12,
+      "text size of the caption",
+      this, SLOT(updateTextSize()));
+    auto_text_size_in_plot_property_ = new rviz_common::properties::BoolProperty(
+      "auto text size in plot", true,
+      "automatiacally adjust text size of the value in plot",
+      this, SLOT(updateAutoTextSizeInPlot()));
+    text_size_in_plot_property_ = new rviz_common::properties::IntProperty(
+      "text size in plot", 12,
+      "text size of the value in plot",
+      this, SLOT(updateTextSizeInPlot()));
     text_size_property_->setMin(1);
     text_size_property_->setMax(1000);
-    show_caption_property_ = new rviz::BoolProperty(
+    show_caption_property_ = new rviz_common::properties::BoolProperty(
       "show caption", true,
       "show caption or not",
       this, SLOT(updateShowCaption()));
-    update_interval_property_ = new rviz::FloatProperty(
+    update_interval_property_ = new rviz_common::properties::FloatProperty(
       "update interval", 0.04,
       "update interval of the plotter",
       this, SLOT(updateUpdateInterval()));
     update_interval_property_->setMin(0.0);
     update_interval_property_->setMax(100);
     auto_color_change_property_
-      = new rviz::BoolProperty("auto color change",
-                               false,
-                               "change the color automatically",
-                               this, SLOT(updateAutoColorChange()));
+      = new rviz_common::properties::BoolProperty(
+        "auto color change",
+        false,
+        "change the color automatically",
+        this, SLOT(updateAutoColorChange()));
     max_color_property_
-      = new rviz::ColorProperty(
+      = new rviz_common::properties::ColorProperty(
         "max color",
         QColor(255, 0, 0),
         "only used if auto color change is set to True.",
@@ -153,26 +163,6 @@ namespace jsk_rviz_plugins
   Plotter2DDisplay::~Plotter2DDisplay()
   {
     onDisable();
-    // delete update_topic_property_;
-    // delete buffer_length_property_;
-    // delete fg_color_property_;
-    // delete bg_color_property_;
-    // delete fg_alpha_property_;
-    // delete bg_alpha_property_;
-    // delete top_property_;
-    // delete left_property_;
-    // delete width_property_;
-    // delete height_property_;
-    // delete line_width_property_;
-    // delete show_border_property_;
-    // delete auto_color_change_property_;
-    // delete max_color_property_;
-    // delete update_interval_property_;
-    // delete show_caption_property_;
-    // delete text_size_property_;
-    // delete min_value_property_;
-    // delete max_value_property_;
-    // delete auto_color_change_property_;
   }
 
   void Plotter2DDisplay::initializeBuffer()
@@ -189,8 +179,11 @@ namespace jsk_rviz_plugins
 
   void Plotter2DDisplay::onInitialize()
   {
+    rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
+    update_topic_property_->initialize(context_->getRosNodeAbstraction());
+
     static int count = 0;
-    rviz::UniformStringStream ss;
+    rviz_common::UniformStringStream ss;
     ss << "Plotter2DDisplayObject" << count++;
     overlay_.reset(new OverlayObject(ss.str()));
     updateBufferSize();
@@ -224,7 +217,7 @@ namespace jsk_rviz_plugins
   {
     QColor fg_color(fg_color_);
     QColor bg_color(bg_color_);
-    
+
     fg_color.setAlpha(fg_alpha_);
     bg_color.setAlpha(bg_alpha_);
 
@@ -242,54 +235,48 @@ namespace jsk_rviz_plugins
                          + fg_color_.blue());
       }
     }
-    
+
     {
       ScopedPixelBuffer buffer = overlay_->getBuffer();
       QImage Hud = buffer.getQImage(*overlay_);
-      // initilize by the background color
       for (int i = 0; i < overlay_->getTextureWidth(); i++) {
         for (int j = 0; j < overlay_->getTextureHeight(); j++) {
           Hud.setPixel(i, j, bg_color.rgba());
         }
       }
-      // paste in HUD speedometer. I resize the image and offset it by 8 pixels from
-      // the bottom left edge of the render window
       QPainter painter( &Hud );
       painter.setRenderHint(QPainter::Antialiasing, true);
       painter.setPen(QPen(fg_color, line_width_, Qt::SolidLine));
-      
+
       uint16_t w = overlay_->getTextureWidth();
       uint16_t h = overlay_->getTextureHeight() - caption_offset_;
 
       double margined_max_value = max_value_ + (max_value_ - min_value_) / 2;
       double margined_min_value = min_value_ - (max_value_ - min_value_) / 2;
-      
+
       for (size_t i = 1; i < buffer_length_; i++) {
         double v_prev = (margined_max_value - buffer_[i - 1]) / (margined_max_value - margined_min_value);
         double v = (margined_max_value - buffer_[i]) / (margined_max_value - margined_min_value);
         double u_prev = (i - 1) / (float)buffer_length_;
         double u = i / (float)buffer_length_;
 
-        // chop within 0 ~ 1
         v_prev = std::max(std::min(v_prev, 1.0), 0.0);
         u_prev = std::max(std::min(u_prev, 1.0), 0.0);
         v = std::max(std::min(v, 1.0), 0.0);
         u = std::max(std::min(u, 1.0), 0.0);
-        
+
         uint16_t x_prev = (int)(u_prev * w);
         uint16_t x = (int)(u * w);
         uint16_t y_prev = (int)(v_prev * h);
         uint16_t y = (int)(v * h);
         painter.drawLine(x_prev, y_prev, x, y);
       }
-      // draw border
       if (show_border_) {
         painter.drawLine(0, 0, 0, h);
         painter.drawLine(0, h, w, h);
         painter.drawLine(w, h, w, 0);
         painter.drawLine(w, 0, 0, 0);
       }
-      // draw caption
       if (show_caption_) {
         QFont font = painter.font();
         font.setPointSize(text_size_);
@@ -314,20 +301,18 @@ namespace jsk_rviz_plugins
                          Qt::AlignCenter | Qt::AlignVCenter,
                          ss.str().c_str());
       }
-      
-      // done
+
       painter.end();
     }
   }
-  
-  void Plotter2DDisplay::processMessage(const std_msgs::Float32::ConstPtr& msg)
+
+  void Plotter2DDisplay::processMessage(const std_msgs::msg::Float32::SharedPtr msg)
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     if (!isEnabled()) {
       return;
     }
-    // add the message to the buffer
     double min_value = buffer_[0];
     double max_value = buffer_[0];
     for (size_t i = 0; i < buffer_length_ - 1; i++) {
@@ -357,7 +342,7 @@ namespace jsk_rviz_plugins
     if (!overlay_->isVisible()) {
       return;
     }
-    
+
     draw_required_ = true;
   }
 
@@ -378,20 +363,22 @@ namespace jsk_rviz_plugins
       }
     }
   }
-  
+
   void Plotter2DDisplay::subscribe()
   {
     initializeBuffer();
     std::string topic_name = update_topic_property_->getTopicStd();
     if (topic_name.length() > 0 && topic_name != "/") {
-      ros::NodeHandle n;
-      sub_ = n.subscribe(topic_name, 1, &Plotter2DDisplay::processMessage, this);
+      auto raw_node = context_->getRosNodeAbstraction().lock()->get_raw_node();
+      sub_ = raw_node->create_subscription<std_msgs::msg::Float32>(
+        topic_name, 1,
+        std::bind(&Plotter2DDisplay::processMessage, this, std::placeholders::_1));
     }
   }
 
   void Plotter2DDisplay::unsubscribe()
   {
-    sub_.shutdown();
+    sub_.reset();
   }
 
   void Plotter2DDisplay::onEnable()
@@ -405,31 +392,33 @@ namespace jsk_rviz_plugins
   void Plotter2DDisplay::onDisable()
   {
     unsubscribe();
-    overlay_->hide();
+    if (overlay_) {
+      overlay_->hide();
+    }
   }
 
   void Plotter2DDisplay::updateWidth()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     texture_width_ = width_property_->getInt();
   }
-  
+
   void Plotter2DDisplay::updateHeight()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     texture_height_ = height_property_->getInt();
   }
-  
+
   void Plotter2DDisplay::updateTop()
   {
     top_ = top_property_->getInt();
   }
-  
+
   void Plotter2DDisplay::updateLeft()
   {
     left_ = left_property_->getInt();
   }
-  
+
   void Plotter2DDisplay::updateBGColor()
   {
     bg_color_ = bg_color_property_->getColor();
@@ -449,7 +438,7 @@ namespace jsk_rviz_plugins
   {
     bg_alpha_ = bg_alpha_property_->getFloat() * 255.0;
   }
-  
+
   void Plotter2DDisplay::updateTopic()
   {
     unsubscribe();
@@ -460,17 +449,17 @@ namespace jsk_rviz_plugins
   {
     show_value_ = show_value_property_->getBool();
   }
-  
+
   void Plotter2DDisplay::updateShowBorder()
   {
     show_border_ = show_border_property_->getBool();
   }
-  
+
   void Plotter2DDisplay::updateLineWidth()
   {
     line_width_ = line_width_property_->getInt();
   }
-  
+
   void Plotter2DDisplay::updateBufferSize()
   {
     buffer_length_ = buffer_length_property_->getInt();
@@ -492,7 +481,7 @@ namespace jsk_rviz_plugins
   {
     max_color_ = max_color_property_->getColor();
   }
-  
+
   void Plotter2DDisplay::updateUpdateInterval()
   {
     update_interval_ = update_interval_property_->getFloat();
@@ -505,7 +494,7 @@ namespace jsk_rviz_plugins
     font.setPointSize(text_size_);
     caption_offset_ = QFontMetrics(font).height();
   }
-  
+
   void Plotter2DDisplay::updateShowCaption()
   {
     show_caption_  = show_caption_property_->getBool();
@@ -578,9 +567,7 @@ namespace jsk_rviz_plugins
     top_property_->setValue(y);
     left_property_->setValue(x);
   }
-
-  
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::Plotter2DDisplay, rviz::Display )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::Plotter2DDisplay, rviz_common::Display )

@@ -2,7 +2,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, JSK Lab
+ *  Copyright (c) 2015, JSK Lab
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,33 +33,44 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+#include "overlay_picker_tool.h"
+
+#include <string>
+
 #include <QApplication>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QTimer>
-#include <ros/ros.h>
-#include <rviz/tool_manager.h>
-#include <rviz/display_context.h>
-#include <rviz/view_manager.h>
-#include <rviz/display_group.h>
-#include <rviz/display.h>
+#include <rviz_common/display.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/display_group.hpp>
+#include <rviz_common/tool_manager.hpp>
+#include <rviz_common/view_manager.hpp>
 
-#include "overlay_picker_tool.h"
-#include "overlay_text_display.h"
-#include "plotter_2d_display.h"
-#include "pie_chart_display.h"
-#include "overlay_image_display.h"
+// OverlayText and PieChart are provided by rviz_2d_overlay_plugins in ROS 2,
+// so only the displays living in this package are pickable here.
+#include "linear_gauge_display.h"
 #include "overlay_diagnostic_display.h"
+#include "overlay_image_display.h"
 #include "overlay_menu_display.h"
+#include "plotter_2d_display.h"
+#include "string_display.h"
 
 namespace jsk_rviz_plugins
 {
+  static rclcpp::Logger logger()
+  {
+    return rclcpp::get_logger("OverlayPickerTool");
+  }
+
   OverlayPickerTool::OverlayPickerTool()
-    : is_moving_(false), shift_pressing_(false), rviz::Tool()
+    : rviz_common::Tool(), is_moving_(false), target_property_(NULL),
+      move_offset_x_(0), move_offset_y_(0), shift_pressing_(false)
   {
 
   }
 
-  int OverlayPickerTool::processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel)
+  int OverlayPickerTool::processKeyEvent(QKeyEvent* event, rviz_common::RenderPanel* /*panel*/)
   {
     if (event->type() == QEvent::KeyPress && event->key() == Qt::Key_Shift) { // shift
       shift_pressing_ = true;
@@ -69,9 +80,9 @@ namespace jsk_rviz_plugins
     }
     return 0;
   }
-  
-  
-  int OverlayPickerTool::processMouseEvent(rviz::ViewportMouseEvent& event)
+
+
+  int OverlayPickerTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
   {
     if (event.left() && event.leftDown()) {
       if (!is_moving_) {
@@ -87,10 +98,11 @@ namespace jsk_rviz_plugins
     return 0;
   }
 
-  bool OverlayPickerTool::handleDisplayClick(rviz::Property* property, rviz::ViewportMouseEvent& event)
+  bool OverlayPickerTool::handleDisplayClick(rviz_common::properties::Property* property,
+                                             rviz_common::ViewportMouseEvent& event)
   {
-    if (isPropertyType<rviz::DisplayGroup>(property)) {
-      rviz::DisplayGroup* group_property = isPropertyType<rviz::DisplayGroup>(property);
+    if (isPropertyType<rviz_common::DisplayGroup>(property)) {
+      rviz_common::DisplayGroup* group_property = isPropertyType<rviz_common::DisplayGroup>(property);
       for (int i = 0; i < group_property->numChildren(); i++) {
         if (handleDisplayClick(group_property->childAt(i), event)) {
           return true;
@@ -98,13 +110,13 @@ namespace jsk_rviz_plugins
       }
     }
     else {
-      if (startMovement<OverlayTextDisplay>(property, event, "overlay_text_display")) {
+      if (startMovement<StringDisplay>(property, event, "string_display")) {
         return true;
       }
       else if (startMovement<Plotter2DDisplay>(property, event, "plotter_2d_display")) {
         return true;
       }
-      else if (startMovement<PieChartDisplay>(property, event, "pie_chart_display")) {
+      else if (startMovement<LinearGaugeDisplay>(property, event, "linear_gauge_display")) {
         return true;
       }
       else if (startMovement<OverlayImageDisplay>(property, event, "overlay_image_display")) {
@@ -123,29 +135,29 @@ namespace jsk_rviz_plugins
     return false;
   }
 
-  void OverlayPickerTool::onClicked(rviz::ViewportMouseEvent& event)
+  void OverlayPickerTool::onClicked(rviz_common::ViewportMouseEvent& event)
   {
-    ROS_DEBUG("onClicked");
+    RCLCPP_DEBUG(logger(), "onClicked");
     is_moving_ = true;
-    ROS_DEBUG("clicked: (%d, %d)", event.x, event.y);
+    RCLCPP_DEBUG(logger(), "clicked: (%d, %d)", event.x, event.y);
     // check the active overlay plugin
-    rviz::DisplayGroup* display_group = context_->getRootDisplayGroup();
+    rviz_common::DisplayGroup* display_group = context_->getRootDisplayGroup();
     handleDisplayClick(display_group, event);
   }
 
-  void OverlayPickerTool::onMove(rviz::ViewportMouseEvent& event)
+  void OverlayPickerTool::onMove(rviz_common::ViewportMouseEvent& event)
   {
-    ROS_DEBUG("onMove");
-    ROS_DEBUG("moving: (%d, %d)", event.x, event.y);
+    RCLCPP_DEBUG(logger(), "onMove");
+    RCLCPP_DEBUG(logger(), "moving: (%d, %d)", event.x, event.y);
     if (target_property_) {
-      if (target_property_type_ == "overlay_text_display") {
-        movePosition<OverlayTextDisplay>(event);
+      if (target_property_type_ == "string_display") {
+        movePosition<StringDisplay>(event);
       }
       else if (target_property_type_ == "plotter_2d_display") {
         movePosition<Plotter2DDisplay>(event);
       }
-      else if (target_property_type_ == "pie_chart_display") {
-        movePosition<PieChartDisplay>(event);
+      else if (target_property_type_ == "linear_gauge_display") {
+        movePosition<LinearGaugeDisplay>(event);
       }
       else if (target_property_type_ == "overlay_image_display") {
         movePosition<OverlayImageDisplay>(event);
@@ -158,21 +170,21 @@ namespace jsk_rviz_plugins
       }
     }
   }
-  
-  void OverlayPickerTool::onRelease(rviz::ViewportMouseEvent& event)
+
+  void OverlayPickerTool::onRelease(rviz_common::ViewportMouseEvent& event)
   {
-    ROS_DEBUG("onRelease");
+    RCLCPP_DEBUG(logger(), "onRelease");
     is_moving_ = false;
-    ROS_DEBUG("released: (%d, %d)", event.x, event.y);
+    RCLCPP_DEBUG(logger(), "released: (%d, %d)", event.x, event.y);
     if (target_property_) {
-      if (target_property_type_ == "overlay_text_display") {
-        setPosition<OverlayTextDisplay>(event);
+      if (target_property_type_ == "string_display") {
+        setPosition<StringDisplay>(event);
       }
       else if (target_property_type_ == "plotter_2d_display") {
         setPosition<Plotter2DDisplay>(event);
       }
-      else if (target_property_type_ == "pie_chart_display") {
-        setPosition<PieChartDisplay>(event);
+      else if (target_property_type_ == "linear_gauge_display") {
+        setPosition<LinearGaugeDisplay>(event);
       }
       else if (target_property_type_ == "overlay_image_display") {
         setPosition<OverlayImageDisplay>(event);
@@ -188,8 +200,8 @@ namespace jsk_rviz_plugins
     target_property_ = NULL;
     target_property_type_ = "";
   }
-  
+
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayPickerTool, rviz::Tool )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayPickerTool, rviz_common::Tool )

@@ -1,13 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 
+from jsk_rqt_plugins.button import ServiceButtons  # noqa: F401
 from rqt_gui.main import Main
-try:
-    from jsk_rqt_plugins.button import ServiceButtons
-except:
-    import roslib; roslib.load_manifest('jsk_rqt_plugins')
-    from jsk_rqt_plugins.button import ServiceButtons
 
-plugin = 'ServiceButtons'
+plugin = 'jsk_rqt_plugins.button.ServiceButtons'
 main = Main(filename=plugin)
 sys.exit(main.main(standalone=plugin))
