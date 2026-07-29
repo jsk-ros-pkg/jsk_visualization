@@ -22,7 +22,6 @@ from python_qt_binding.QtCore import qWarning
 from python_qt_binding.QtCore import Slot
 from python_qt_binding.QtGui import QColor
 from python_qt_binding.QtGui import QIcon
-from python_qt_binding.QtWidgets import QAction
 from python_qt_binding.QtWidgets import QMenu
 from python_qt_binding.QtWidgets import QSizePolicy
 from python_qt_binding.QtWidgets import QVBoxLayout
@@ -32,6 +31,12 @@ from rqt_plot.plot_widget import is_plottable
 from rqt_plot.rosplot import ROSData
 from rqt_plot.rosplot import RosPlotException
 from rqt_py_common.topic_completer import TopicCompleter
+
+# Qt6 moved QAction from QtWidgets to QtGui
+try:
+    from python_qt_binding.QtGui import QAction
+except ImportError:
+    from python_qt_binding.QtWidgets import QAction
 
 
 class MatDataPlot3D(QWidget):
