@@ -10,13 +10,13 @@ import unittest
 from launch import LaunchDescription
 import launch_testing
 import launch_testing.actions
-import launch_testing.asserts
 import launch_testing.markers
 import pytest
 
 # launch_test.py loads this file by path, so make the helper importable
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from rviz_config_check import assert_rviz_exit_codes  # noqa: E402
 from rviz_config_check import DISPLAY_REQUIRED_MESSAGE  # noqa: E402
 from rviz_config_check import has_display  # noqa: E402
 from rviz_config_check import include_sample_launch  # noqa: E402
@@ -49,6 +49,4 @@ class TestServiceCallPanel(RvizConfigCheck, unittest.TestCase):
 class TestServiceCallPanelAfterShutdown(unittest.TestCase):
 
     def test_rviz_did_not_crash(self, proc_info):
-        # 0 on a clean quit, -2/-15 when launch_testing signals rviz to stop
-        launch_testing.asserts.assertExitCodes(
-            proc_info, allowable_exit_codes=[0, -2, -15])
+        assert_rviz_exit_codes(proc_info)

@@ -51,7 +51,9 @@
   <test_depend>jsk_rviz_plugins</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
   <test_depend>launch_testing_ros</test_depend>
+  <test_depend>opengl</test_depend>
   <test_depend>python3-pytest</test_depend>
+  <test_depend>xvfb</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

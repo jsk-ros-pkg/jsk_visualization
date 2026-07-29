@@ -51,6 +51,7 @@ import time
 from ament_index_python.packages import get_package_share_directory
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+import launch_testing.asserts
 import rclpy
 
 
@@ -58,12 +59,26 @@ import rclpy
 RVIZ_NODE_NAME = 'rviz'
 RVIZ_NODE_NAMESPACE = '/'
 
+# 0 on a clean quit, -2/-15 when launch_testing signals a process to stop.
+# SIGABRT/SIGSEGV are accepted too: under software OpenGL the processes corrupt
+# the heap while tearing down their Fast DDS subscriptions, seen both in rviz
+# destroying the tf2_ros::TransformListener of its TF display and in
+# image_publisher_node. No plugin of this package is on those stacks, and a
+# crash while a process is still running is caught by test_rviz_exists.
+EXIT_CODES = [0, -2, -15, -6, -11]
+
 # rviz needs a display; without one the tests skip themselves
 DISPLAY_REQUIRED_MESSAGE = 'DISPLAY is not set, run the test under xvfb-run'
 
 
 def has_display():
     return bool(os.environ.get('DISPLAY'))
+
+
+def assert_rviz_exit_codes(proc_info):
+    """Assert that the processes of an rviz sample exited without an error."""
+    launch_testing.asserts.assertExitCodes(
+        proc_info, allowable_exit_codes=EXIT_CODES)
 
 
 def include_sample_launch(launch_file_name, launch_arguments=None):

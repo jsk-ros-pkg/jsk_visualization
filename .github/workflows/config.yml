@@ -28,3 +28,11 @@ jobs:
       - uses: ros-industrial/industrial_ci@master
         env:
           ROS_DISTRO: ${{ matrix.ros_distro }}
+          # The rviz and rqt tests need an X display and skip themselves without one.
+          # The _EMBED variant is required: the plain BEFORE_RUN_TARGET_TEST hook is
+          # run in a sub shell by industrial_ci, so the exported DISPLAY would be lost.
+          # Xvfb is backgrounded, hence the wait for its socket before the tests start.
+          BEFORE_RUN_TARGET_TEST_EMBED: >-
+            Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp &
+            for _ in $(seq 50); do [ -e /tmp/.X11-unix/X99 ] && break; sleep 0.2; done;
+            export DISPLAY=:99
