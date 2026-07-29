@@ -6,6 +6,9 @@ on:
 
 env:
   DISPLAY: ':0.0'
+  # Temporary workaround for Ubuntu 14.04/16.04/18.04 containers.
+  # A glibc 2.17-compatible Node 20 is installed into /__e/node20 below.
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
 
 jobs:
   ros:
@@ -82,7 +85,7 @@ jobs:
           ls -lar /__e/node20/bin/
 
       - name: Chcekout
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -142,7 +145,13 @@ jobs:
       matrix:
         include:
           - DISTRO: ubuntu:22.04
-            ROS_REPOSITORY_URL: https://raw.githubusercontent.com/v4hn/ros-o-builder/jammy-one/repository
+            ROS_ONE_VARIANT: v4hn
+            ROS_REPOSITORY_URL: "deb [trusted=yes] https://raw.githubusercontent.com/v4hn/ros-o-builder/jammy-one/repository ./"
+            ROSDEP_PACKAGE_MAPPING: "yaml https://raw.githubusercontent.com/v4hn/ros-o-builder/jammy-one/repository/local.yaml debian"
+          - DISTRO: ubuntu:24.04
+            ROS_ONE_VARIANT: techfak
+            ROS_REPOSITORY_URL: "deb [trusted=yes] https://ros.packages.techfak.net noble main"
+            ROSDEP_PACKAGE_MAPPING: "yaml https://ros.packages.techfak.net/ros-one.yaml ubuntu"
 
     container: ${{ matrix.DISTRO }}
 
@@ -156,21 +165,36 @@ jobs:
       - name: Setup ROS-O deb repository
         run: |
           set -x
-          apt update && apt install -qq -y ca-certificates
-          echo "deb [trusted=yes] ${{ matrix.ROS_REPOSITORY_URL }}/ ./" | tee /etc/apt/sources.list.d/ros-o-builder.list
+          apt update && apt install -qq -y ca-certificates git
+          echo ${{ matrix.ROS_REPOSITORY_URL }} | tee /etc/apt/sources.list.d/ros-o-builder.list
           apt update
-          apt install -qq -y python3-rosdep2
-          echo "yaml ${{ matrix.ROS_REPOSITORY_URL }}/local.yaml debian" | tee /etc/ros/rosdep/sources.list.d/1-ros-o-builder.list
+          if [[ "${{ matrix.ROS_ONE_VARIANT }}" == "v4hn" ]]; then
+              apt install -qq -y python3-rosdep2
+          fi
+          if [[ "${{ matrix.ROS_ONE_VARIANT }}" == "techfak"  ]]; then
+              # Do not install python3-rosdep2, which is an outdated version of rosdep shipped via the Ubuntu repositories (instead of ROS)!
+              apt install -qq -y python3-rosdep
+              rosdep init
+          fi
+          echo ${{ matrix.ROSDEP_PACKAGE_MAPPING }} | tee /etc/ros/rosdep/sources.list.d/1-ros-o-builder.list
           rosdep update
+        shell: bash
 
       - name: Setup catkin-tools
         run: |
           set -x
           # setup catkin tools
           apt install -qq -y python3-pip
-          pip3 install catkin-tools==0.9.4
+          if [[ "${{ matrix.ROS_ONE_VARIANT }}" == "v4hn" ]]; then
+              pip3 install catkin-tools==0.9.4
+              apt install -qq -y catkin
+          fi
+          if [[ "${{ matrix.ROS_ONE_VARIANT }}" == "techfak" ]]; then
+              apt install -qq -y ros-one-catkin python3-catkin-tools
+          fi
           # setup build tools
-          apt install -qq -y cmake build-essential catkin ros-one-rosbash
+          apt install -qq -y cmake build-essential ros-one-rosbash
+        shell: bash
 
       - name: Setup Workspace
         run: |
@@ -179,8 +203,15 @@ jobs:
           # setup workspace
           mkdir -p ~/ws/src
           cd ~/ws/src
+          if [[ "${{ matrix.ROS_ONE_VARIANT }}" == "techfak" ]]; then
+          # TODO: remove these lines and uncomment https://github.com/ubi-agni/ros-builder-action/blob/191fab06004ad5784c28cf2ba2b18f6d163a860d/ros-one.repos#L1089
+              git clone https://github.com/locusrobotics/catkin_virtualenv.git
+          fi
           ln -sf $GITHUB_WORKSPACE .
           rosdep install -qq -r -y --from-path . --ignore-src || echo "OK"
+          # check all system packages are able to install, because ROS-O build deb files that needs all packages
+          PIP_BREAK_SYSTEM_PACKAGES=1 rosdep install -qq --simulate -y --from-path . --ignore-src -t exec -t buildtool_export -t buildtool -t build -t build_export | tee rosdep-install.sh
+          sed 's/apt-get install/apt-get -y install/;/install ros-one/s/^/#/;/pip3 install/s/^/#/' rosdep-install.sh | bash -xe
         shell: bash
 
       - name: Compile Packages
@@ -188,5 +219,28 @@ jobs:
           source /opt/ros/one/setup.bash
           set -x
           cd ~/ws/
-          catkin build --no-status -sv ${{ matrix.CATKIN_OPTIONS }} --cmake-args -DCATKIN_ENABLE_TESTING=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
+          catkin build --no-status -sv ${{ matrix.CATKIN_OPTIONS }} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
         shell: bash
+
+      - name: Test Packages
+        run: |
+          apt install -qq -y xvfb xauth mesa-utils libgl1-mesa-dri
+          export LIBGL_ALWAYS_SOFTWARE=1
+          export QT_X11_NO_MITSHM=1
+          export QT_QPA_PLATFORM=xcb
+          unset DISPLAY
+          xvfb-run -a -s "-screen 0 1280x1024x24 +extension GLX +render -noreset" bash -c 'set -ex; echo "DISPLAY=${DISPLAY}"; echo "QT_QPA_PLATFORM=${QT_QPA_PLATFORM}"; xdpyinfo >/dev/null; glxinfo -B'
+          # or run under xvfb:
+          source /opt/ros/one/setup.bash
+          set -x
+          cd ~/ws/
+          xvfb-run -s "-screen 0 1280x1024x24 +extension GLX +render -noreset" catkin run_tests --no-status -sv ${{ matrix.CATKIN_OPTIONS }} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
+        shell: bash
+
+      - name: Upload rosout/node logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roslogs-${{ matrix.DISTRO }}-${{ matrix.ROS_ONE_VARIANT }}
+          path: ~/.ros/log
+          retention-days: 5

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import argparse
-import collections
+try:
+    from collections.abc import Sequence  # Python >= 3.3
+except ImportError:
+    from collections import Sequence  # Python 2
 import os
 import sys
 
@@ -203,7 +206,7 @@ class HistogramPlotWidget(QWidget):
             pos = [y.min_value for y in data_y[-1].bins]
             widths = [y.max_value - y.min_value for y in data_y[-1].bins]
             axes.set_xlim(xmin=pos[0], xmax=pos[-1] + widths[-1])
-        elif isinstance(data_y[-1], collections.Sequence):
+        elif isinstance(data_y[-1], Sequence):
             xs = data_y[-1]
             pos = np.arange(len(xs))
             widths = [1] * len(xs)
@@ -238,13 +241,19 @@ class MatHistogramPlot(QWidget):
         def __init__(self, parent=None):
             super(MatHistogramPlot.Canvas, self).__init__(Figure())
             self.axes = self.figure.add_subplot(111)
-            self.figure.tight_layout()
+            try:
+                self.figure.tight_layout()
+            except Exception:
+                pass
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.updateGeometry()
 
         def resizeEvent(self, event):
             super(MatHistogramPlot.Canvas, self).resizeEvent(event)
-            self.figure.tight_layout()
+            try:
+                self.figure.tight_layout()
+            except Exception:
+                pass
 
     def __init__(self, parent=None):
         super(MatHistogramPlot, self).__init__(parent)

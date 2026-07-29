@@ -67,7 +67,7 @@ class DRCEnvironmentViewerWidget(QWidget):
             Time, self.nextWhiteoutTimeCallback)
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
-        self._update_plot_timer.start(1000 / 15)
+        self._update_plot_timer.start(int(1000 / 15))
 
     def isDisabledCallback(self, msg):
         with self.lock:
@@ -118,9 +118,9 @@ class DRCEnvironmentViewerWidget(QWidget):
                 if time_ratio > 0:
                     rad = int(math.fmod(time_ratio * 360 + 90*16, 360) * 16)
                     qp.drawArc(
-                        (rect.width() - radius) / 2,
-                        (rect.height() - radius) / 2, radius, radius, 90*16,
-                        rad)
+                        int((rect.width() - radius) / 2),
+                        int((rect.height() - radius) / 2), radius, radius,
+                        90*16, rad)
             else:
                 qp.fillRect(rect, self._OK_COLOR)
                 qp.drawText(rect, QtCore.Qt.AlignCenter, self._SMILEY)

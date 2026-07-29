@@ -96,13 +96,19 @@ class MatDataPlot3D(QWidget):
             self.axes.set_zlabel('Z')
             self.axes.set_zlim3d(0, 1)
 
-            self.figure.tight_layout()
+            try:
+                self.figure.tight_layout()
+            except Exception:
+                pass
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.updateGeometry()
 
         def resizeEvent(self, event):
             super(MatDataPlot3D.Canvas, self).resizeEvent(event)
-            self.figure.tight_layout()
+            try:
+                self.figure.tight_layout()
+            except Exception:
+                pass
 
     _colors = [QColor(c) for c in [
         Qt.red, Qt.blue, Qt.magenta, Qt.cyan, Qt.green, Qt.darkYellow,

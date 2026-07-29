@@ -92,7 +92,7 @@ class StatusLightWidget(QWidget):
         self._dialog = ComboBoxDialog()
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
-        self._update_plot_timer.start(1000 / 15)
+        self._update_plot_timer.start(int(1000 / 15))
 
     def redraw(self):
         self.update()
@@ -113,7 +113,8 @@ class StatusLightWidget(QWidget):
             qp.setPen(QPen(QBrush(color), 50))
             qp.setBrush(color)
             qp.drawEllipse(
-                (rect.width() - radius) / 2, (rect.height() - radius) / 2,
+                int((rect.width() - radius) / 2),
+                int((rect.height() - radius) / 2),
                 radius, radius)
             qp.end()
             return
