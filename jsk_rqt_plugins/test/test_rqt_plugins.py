@@ -122,7 +122,7 @@ class TestRqtPlugins(unittest.TestCase):
             names_and_types = self.node.get_subscriber_names_and_types_by_node(
                 node_name, '/')
         except Exception as e:
-            self.node.get_logger().warn(
+            self.node.get_logger().warning(
                 'Could not read the subscriptions of {}: {}'.format(
                     node_name, e))
             return []
@@ -139,7 +139,7 @@ class TestRqtPlugins(unittest.TestCase):
             if time.time() - t_start > self.startup_timeout:
                 self.fail('Timed out ({}s) waiting for {}'.format(
                     self.startup_timeout, missing))
-            self.node.get_logger().warn('Waiting for {}'.format(missing))
+            self.node.get_logger().warning('Waiting for {}'.format(missing))
             time.sleep(1.0)
 
     def _wait_for_subscription(self, node_name, topic, timeout):

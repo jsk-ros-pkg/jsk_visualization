@@ -101,7 +101,7 @@ class StringLabelWidget(QWidget):
         try:
             self.label.setText(self.string)
         except TypeError as e:
-            self._node.get_logger().warn(str(e))
+            self._node.get_logger().warning(str(e))
 
     def updateTopics(self):
         need_to_update = False
@@ -137,7 +137,7 @@ class StringLabelWidget(QWidget):
             self._rosdata.close()
             self._rosdata = ROSData(self._node, topic, self._start_time)
         else:
-            self._node.get_logger().warn('%s is already subscribed' % topic)
+            self._node.get_logger().warning('%s is already subscribed' % topic)
         self._active_topic = topic
 
     def onActivated(self, number):

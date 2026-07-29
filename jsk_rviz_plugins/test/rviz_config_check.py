@@ -110,7 +110,7 @@ class RvizConfigCheck(object):
                 RVIZ_NODE_NAME, RVIZ_NODE_NAMESPACE)
         except Exception as e:
             # NodeNameNonExistentError while the node is (dis)appearing
-            self.node.get_logger().warn(
+            self.node.get_logger().warning(
                 'Could not read the subscriptions of {}: {}'.format(
                     RVIZ_NODE_NAME, e))
             return []
@@ -123,11 +123,11 @@ class RvizConfigCheck(object):
             if time.time() - t_start > self.startup_timeout:
                 self.fail('Timed out ({}s) waiting for the {} node'.format(
                     self.startup_timeout, RVIZ_NODE_NAME))
-            self.node.get_logger().warn(
+            self.node.get_logger().warning(
                 'Waiting for the {} node for {:.3f} sec'.format(
                     RVIZ_NODE_NAME, time.time() - t_start))
             time.sleep(0.5)
-        self.node.get_logger().warn(
+        self.node.get_logger().warning(
             '{} node found after {:.3f} sec'.format(
                 RVIZ_NODE_NAME, time.time() - t_start))
 
@@ -141,7 +141,7 @@ class RvizConfigCheck(object):
                 .format(RVIZ_NODE_NAME, time.time() - t_start))
             subs.update(self._rviz_subscriptions())
             time.sleep(0.5)
-        self.node.get_logger().warn(
+        self.node.get_logger().warning(
             'rviz subscribes {}'.format(sorted(subs)))
 
         for topic in self.topics:
@@ -149,6 +149,6 @@ class RvizConfigCheck(object):
                 topic, subs,
                 'rviz did not subscribe {}'.format(topic))
 
-        self.node.get_logger().warn(
+        self.node.get_logger().warning(
             'rviz kept alive for {}[sec] and found {}'.format(
                 self.test_duration, self.topics))
