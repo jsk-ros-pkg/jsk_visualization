@@ -6,8 +6,8 @@ import os
 import sys
 
 from ament_index_python.packages import get_package_share_directory
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT \
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT \
     as NavigationToolbar
 from matplotlib.collections import LineCollection
 from matplotlib.collections import PolyCollection
@@ -50,7 +50,7 @@ class MatDataPlot3D(QWidget):
             self.axes.set_zlim3d(0, 1)
 
             self._tight_layout()
-            self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.updateGeometry()
 
         def _tight_layout(self):
@@ -74,8 +74,10 @@ class MatDataPlot3D(QWidget):
             self._tight_layout()
 
     _colors = [QColor(c) for c in [
-        Qt.red, Qt.blue, Qt.magenta, Qt.cyan, Qt.green, Qt.darkYellow,
-        Qt.black, Qt.darkRed, Qt.gray, Qt.darkCyan]]
+        Qt.GlobalColor.red, Qt.GlobalColor.blue, Qt.GlobalColor.magenta,
+        Qt.GlobalColor.cyan, Qt.GlobalColor.green, Qt.GlobalColor.darkYellow,
+        Qt.GlobalColor.black, Qt.GlobalColor.darkRed, Qt.GlobalColor.gray,
+        Qt.GlobalColor.darkCyan]]
 
     def __init__(self, parent=None, buffer_length=100, use_poly=True,
                  no_legend=False):
@@ -370,7 +372,7 @@ class Plot3DWidget(QWidget):
                     'selectedItems) or len(event.source().selectedItems()) == 0')
                 return
             item = event.source().selectedItems()[0]
-            topic_name = item.data(0, Qt.UserRole)
+            topic_name = item.data(0, Qt.ItemDataRole.UserRole)
             if topic_name is None:
                 qWarning(
                     'Plot.dragEnterEvent(): not hasattr(item, ros_topic_name_)')
@@ -391,7 +393,7 @@ class Plot3DWidget(QWidget):
             topic_name = str(event.mimeData().text())
         else:
             droped_item = event.source().selectedItems()[0]
-            topic_name = str(droped_item.data(0, Qt.UserRole))
+            topic_name = str(droped_item.data(0, Qt.ItemDataRole.UserRole))
         self.add_topic(topic_name)
 
     @Slot(str)

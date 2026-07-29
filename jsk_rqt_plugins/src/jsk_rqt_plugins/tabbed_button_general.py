@@ -92,7 +92,7 @@ class ServiceButtonGeneralWidgetInTab(ServiceButtonGeneralWidget):
 
         self._layout_param = None
         self._dialog = QFileDialog()
-        self._dialog.setFileMode(QFileDialog.ExistingFile)
+        self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         self._dialog.setNameFilter(
             self._translator.tr('YAML files (*.yaml *.yml)'))
 

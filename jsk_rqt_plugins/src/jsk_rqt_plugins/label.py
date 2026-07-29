@@ -51,9 +51,9 @@ class StringLabelWidget(QWidget):
         self.string = ''
         vbox = QVBoxLayout(self)
         self.label = QLabel()
-        self.label.setAlignment(Qt.AlignLeft)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.label.setSizePolicy(
-            QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
+            QSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored))
         font = QFont('Helvetica', 14)
         self.label.setFont(font)
         self.label.setWordWrap(True)

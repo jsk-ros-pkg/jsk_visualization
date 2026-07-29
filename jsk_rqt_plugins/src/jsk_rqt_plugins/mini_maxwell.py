@@ -94,10 +94,10 @@ class DRCEnvironmentViewerWidget(QWidget):
 
             if self.is_disabled:
                 qp.fillRect(rect, self._DISABLED_COLOR)
-                qp.drawText(rect, QtCore.Qt.AlignCenter, self._FROWN)
+                qp.drawText(rect, QtCore.Qt.AlignmentFlag.AlignCenter, self._FROWN)
             elif self.is_blackout:
                 qp.fillRect(rect, self._BLACKOUT_COLOR)
-                qp.drawText(rect, QtCore.Qt.AlignCenter, self._FROWN)
+                qp.drawText(rect, QtCore.Qt.AlignmentFlag.AlignCenter, self._FROWN)
                 now = self._node.get_clock().now()
                 time_diff = (
                     self.next_whiteout_time - now).nanoseconds * 1e-9
@@ -111,7 +111,7 @@ class DRCEnvironmentViewerWidget(QWidget):
                 qp.setFont(QFont('Helvetica', 30))
                 qp.drawText(
                     0, rect.height() - 150, rect.width(), 150,
-                    QtCore.Qt.AlignCenter, '%.1f sec' % time_diff)
+                    QtCore.Qt.AlignmentFlag.AlignCenter, '%.1f sec' % time_diff)
                 # 0-360
                 if time_ratio > 0:
                     rad = int(math.fmod(time_ratio * 360 + 90 * 16, 360) * 16)
@@ -121,5 +121,5 @@ class DRCEnvironmentViewerWidget(QWidget):
                         90 * 16, rad)
             else:
                 qp.fillRect(rect, self._OK_COLOR)
-                qp.drawText(rect, QtCore.Qt.AlignCenter, self._SMILEY)
+                qp.drawText(rect, QtCore.Qt.AlignmentFlag.AlignCenter, self._SMILEY)
             qp.end()

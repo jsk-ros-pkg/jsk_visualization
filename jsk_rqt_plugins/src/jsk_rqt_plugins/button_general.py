@@ -38,7 +38,7 @@ class ServiceButtonGeneralWidget(QWidget):
         self._layout_param = None
         self._translator = QTranslator()
         self._dialog = QFileDialog()
-        self._dialog.setFileMode(QFileDialog.ExistingFile)
+        self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
 
         # ROS 2 parameters have to be declared before they can be read
         if not self._node.has_parameter('layout_yaml_file'):
@@ -127,7 +127,7 @@ class ServiceButtonGeneralWidget(QWidget):
             else:  # self.button_type == "radio":
                 button = QRadioButton()
             button.setSizePolicy(
-                QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
+                QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred))
             if 'image' in button_data:
                 image_file = get_filename(
                     button_data['image'])[len('file://'):]
@@ -169,7 +169,7 @@ class ServiceButtonGeneralWidget(QWidget):
                         button_data['service'], service_type, button))
             if self.button_type == 'push':
                 button.setToolButtonStyle(
-                    QtCore.Qt.ToolButtonTextUnderIcon)
+                    QtCore.Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
             if ((self.button_type == 'radio' or service_type == SetBool)
                     and ('default_value' in button_data
                          and button_data['default_value'])):
