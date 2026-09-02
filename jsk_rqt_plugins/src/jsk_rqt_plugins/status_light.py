@@ -1,66 +1,28 @@
-from distutils.version import LooseVersion
-import math
-import os
-import sys
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from threading import Lock
 
-import python_qt_binding
-import python_qt_binding.QtCore as QtCore
-from python_qt_binding.QtCore import QEvent
-from python_qt_binding.QtCore import QSize
-from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtCore import QTimer
-from python_qt_binding.QtCore import qWarning
-from python_qt_binding.QtCore import Slot
-import python_qt_binding.QtGui as QtGui
 from python_qt_binding.QtGui import QBrush
 from python_qt_binding.QtGui import QColor
 from python_qt_binding.QtGui import QFont
-from python_qt_binding.QtGui import QIcon
 from python_qt_binding.QtGui import QPainter
 from python_qt_binding.QtGui import QPen
-import yaml
-
-from resource_retriever import get_filename
-import rospy
+from python_qt_binding.QtWidgets import QWidget
 from rqt_gui_py.plugin import Plugin
-from std_msgs.msg import Bool
-from std_msgs.msg import Time
 from std_msgs.msg import UInt8
 
-from .image_view2_wrapper import ComboBoxDialog
-
-if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
-    from python_qt_binding.QtWidgets import QAction
-    from python_qt_binding.QtWidgets import QComboBox
-    from python_qt_binding.QtWidgets import QLabel
-    from python_qt_binding.QtWidgets import QMenu
-    from python_qt_binding.QtWidgets import QMessageBox
-    from python_qt_binding.QtWidgets import QSizePolicy
-    from python_qt_binding.QtWidgets import QWidget
-
-else:
-    from python_qt_binding.QtGui import QAction
-    from python_qt_binding.QtGui import QComboBox
-    from python_qt_binding.QtGui import QLabel
-    from python_qt_binding.QtGui import QMenu
-    from python_qt_binding.QtGui import QMessageBox
-    from python_qt_binding.QtGui import QSizePolicy
-    from python_qt_binding.QtGui import QWidget
+from .dialogs import ComboBoxDialog
 
 
 class StatusLight(Plugin):
-    """
-    rqt plugin to show light like ultra-man's light.
-    It subscribes std_msgs/UInt8 topic and the value means:
-    0 == Unknown (gray)
-    1 == Success (green)
-    2 == Warn    (yellow)
-    """
+    """rqt plugin to visualize a status as a colored light."""
+
     def __init__(self, context):
         super(StatusLight, self).__init__(context)
-        self.setObjectName("StatusLight")
-        self._widget = StatusLightWidget()
+        self.setObjectName('StatusLight')
+        self._widget = StatusLightWidget(context.node)
         context.add_widget(self._widget)
 
     def save_settings(self, plugin_settings, instance_settings):
@@ -72,15 +34,19 @@ class StatusLight(Plugin):
     def trigger_configuration(self):
         self._widget.trigger_configuration()
 
+    def shutdown_plugin(self):
+        self._widget.shutdown()
+
 
 class StatusLightWidget(QWidget):
-    _UNKNOWN_COLOR = QColor("#dddddd")
-    _SUCCESS_COLOR = QColor("#18FFFF")
-    _WARN_COLOR = QColor("#FFCA00")
-    _ERROR_COLOR = QColor("#F44336")
+    _UNKNOWN_COLOR = QColor('#dddddd')
+    _SUCCESS_COLOR = QColor('#18FFFF')
+    _WARN_COLOR = QColor('#FFCA00')
+    _ERROR_COLOR = QColor('#F44336')
 
-    def __init__(self):
+    def __init__(self, node):
         super(StatusLightWidget, self).__init__()
+        self._node = node
         self.lock = Lock()
         self.status_sub = None
         self.status = 0
@@ -92,7 +58,13 @@ class StatusLightWidget(QWidget):
         self._dialog = ComboBoxDialog()
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
-        self._update_plot_timer.start(1000 / 15)
+        self._update_plot_timer.start(int(1000 / 15))
+
+    def shutdown(self):
+        # The Qt timers outlive the rclpy context otherwise, and querying the
+        # graph from a destroyed context raises RCLError.
+        self._update_topic_timer.stop()
+        self._update_plot_timer.stop()
 
     def redraw(self):
         self.update()
@@ -113,7 +85,8 @@ class StatusLightWidget(QWidget):
             qp.setPen(QPen(QBrush(color), 50))
             qp.setBrush(color)
             qp.drawEllipse(
-                (rect.width() - radius) / 2, (rect.height() - radius) / 2,
+                int((rect.width() - radius) / 2),
+                int((rect.height() - radius) / 2),
                 radius, radius)
             qp.end()
             return
@@ -124,9 +97,9 @@ class StatusLightWidget(QWidget):
 
     def updateTopics(self):
         need_to_update = False
-        for (topic, topic_type) in rospy.get_published_topics():
-            if topic_type == "std_msgs/UInt8":
-                if not topic in self._status_topics:
+        for topic, topic_types in self._node.get_topic_names_and_types():
+            if 'std_msgs/msg/UInt8' in topic_types:
+                if topic not in self._status_topics:
                     self._status_topics.append(topic)
                     need_to_update = True
         if need_to_update:
@@ -143,9 +116,9 @@ class StatusLightWidget(QWidget):
 
     def setupSubscriber(self, topic):
         if self.status_sub:
-            self.status_sub.unregister()
-        self.status_sub = rospy.Subscriber(topic, UInt8,
-                                           self.statusCallback)
+            self._node.destroy_subscription(self.status_sub)
+        self.status_sub = self._node.create_subscription(
+            UInt8, topic, self.statusCallback, 1)
         self._active_topic = topic
 
     def onActivated(self, number):
@@ -156,10 +129,10 @@ class StatusLightWidget(QWidget):
 
     def save_settings(self, plugin_settings, instance_settings):
         if self._active_topic:
-            instance_settings.set_value("active_topic", self._active_topic)
+            instance_settings.set_value('active_topic', self._active_topic)
 
     def restore_settings(self, plugin_settings, instance_settings):
-        if instance_settings.value("active_topic"):
-            topic = instance_settings.value("active_topic")
+        if instance_settings.value('active_topic'):
+            topic = instance_settings.value('active_topic')
             self._dialog.combo_box.addItem(topic)
             self.setupSubscriber(topic)

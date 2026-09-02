@@ -1,56 +1,81 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.28.3)
 project(jsk_rqt_plugins)
 
-find_package(catkin REQUIRED
-  message_generation
+find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+
+# The following rqt plugins are still waiting for an upstream dependency to be
+# released for ROS 2. They are left as ROS 1 code under src/jsk_rqt_plugins/ and
+# are not registered in plugin.xml. Port them once the listed package is available:
+#   src/jsk_rqt_plugins/hist.py (HistogramPlot)
+#     -> jsk_recognition_msgs (HistogramWithRange)
+#   src/jsk_rqt_plugins/plot_2d.py (Plot2D)
+#     -> jsk_recognition_msgs (PlotData, PlotDataArray)
+#   src/jsk_rqt_plugins/image_view2_wrapper.py (ImageView2Plugin)
+#     -> image_view2 (MouseEvent); it is in jsk_common/jsk_ros_patch/image_view2
+#        but still a catkin package
+#   src/jsk_rqt_plugins/yes_no_button.py (YesNoButton)
+#     -> jsk_gui_msgs (YesNo); same blocker as
+#        jsk_rviz_plugins/src/yes_no_button_interface.cpp
+#
+# ServiceRadioButtons has no standalone bin/ entry point, exactly as on ROS 1: it
+# is launched through resource/rqt_service_radio_buttons.perspective, or as the
+# radio tab of ServiceTabbedButtons.
+#
+# The corresponding bin/ entry points (rqt_histogram_plot, rqt_2d_plot,
+# rqt_image_view2, rqt_yn_btn), sample_scripts/{sample_hist_pub,sample_2d_plot}.py
+# and sample/{sample_histogram,sample_2dplot,sample_image_view2}.launch are kept
+# as ROS 1 files for the same reason and are not installed.
+
+ament_python_install_package(${PROJECT_NAME}
+  PACKAGE_DIR src/${PROJECT_NAME}
 )
 
-catkin_python_setup()
-catkin_package()
-
-# From https://github.com/jsk-ros-pkg/jsk_recognition/pull/2345
-# Install header files directly into ${CATKIN_PACKAGE_INCLUDE_DESTINATION}.
-# If the package has setup.py and modules under src/${PROJECT_NAME}/,
-# install python executables directly into ${CATKIN_PACKAGE_BIN_DESTINATION}.
-# However, if it doesn't have setup.py, directories including python executables
-# should be installed recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
-# Also, other directories like 'launch' or 'sample' must be installed
-# recursively into ${CATKIN_PACKAGE_SHARE_DESTINATION}.
-# Be careful that 'launch' and 'launch/' are different: the former is directory
-# and the latter is each content.
-file(GLOB PYTHON_SCRIPTS bin/*)
-catkin_install_python(
-  PROGRAMS ${PYTHON_SCRIPTS}
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-install(FILES plugin.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
-install(DIRECTORY launch resource sample sample_scripts
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  USE_SOURCE_PERMISSIONS
-)
-file(GLOB PYTHON_SAMPLES sample_scripts/*.py)
-catkin_install_python(
-  PROGRAMS ${PYTHON_SAMPLES}
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/sample_scripts
+install(
+  PROGRAMS
+    bin/rqt_3d_plot
+    bin/rqt_drc_mini_maxwell
+    bin/rqt_service_buttons
+    bin/rqt_status_light
+    bin/rqt_string_label
+    bin/rqt_tabbed_buttons
+  DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY test
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  USE_SOURCE_PERMISSIONS
-  PATTERN "*.launch"
-)
-file(GLOB PYTHON_TEST test/*.py)
-catkin_install_python(
-  PROGRAMS ${PYTHON_TEST}
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
+install(
+  PROGRAMS
+    sample_scripts/sample_3d_plot.py
+    sample_scripts/sample_drc_mini_maxwell.py
+    sample_scripts/sample_service_buttons.py
+    sample_scripts/sample_service_radio_buttons.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
-if (CATKIN_ENABLE_TESTING)
-  find_package(rostest REQUIRED)
-  if(NOT "$ENV{ROS_DISTRO}" STREQUAL "indigo")
-    catkin_add_nosetests(test)
-    add_rostest(test/test_rqt_plugins.test)
-  endif()
+install(
+  FILES plugin.xml
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY launch resource sample
+  DESTINATION share/${PROJECT_NAME}
+)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  # Skipping some lint tests
+  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_cppcheck_FOUND TRUE)
+  set(ament_cmake_cpplint_FOUND TRUE)
+  set(ament_cmake_flake8_FOUND TRUE)
+  set(ament_cmake_pep257_FOUND TRUE)
+  set(ament_cmake_uncrustify_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+
+  find_package(ament_cmake_pytest REQUIRED)
+  find_package(launch_testing_ament_cmake REQUIRED)
+  ament_add_pytest_test(test_util test/test_util.py)
+  add_launch_test(test/test_rqt_plugins.py TIMEOUT 180)
 endif()
+
+ament_package()

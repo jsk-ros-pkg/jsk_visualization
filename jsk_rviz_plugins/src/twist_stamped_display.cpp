@@ -34,23 +34,28 @@
  *********************************************************************/
 
 #include "twist_stamped_display.h"
+#include <rviz_common/properties/parse_color.hpp>
 
 namespace jsk_rviz_plugins
 {
   TwistStampedDisplay::TwistStampedDisplay()
   {
-    linear_scale_property_ = new rviz::FloatProperty("linear scale", 1.0,
-                                                     "linear velocity scale",
-                                                     this, SLOT(updateLinearScale()));
-    angular_scale_property_ = new rviz::FloatProperty("angular scale", 1.0,
-                                                      "angular velocity scale",
-                                                     this, SLOT(updateAngularScale()));
-    linear_color_property_ = new rviz::ColorProperty("linear color", QColor(0, 255, 0),
-                                                     "linear velocity color",
-                                                     this, SLOT(updateLinearColor()));
-    angular_color_property_ = new rviz::ColorProperty("angular color", QColor(255, 0, 0),
-                                                      "angular velocity color",
-                                                     this, SLOT(updateAngularColor()));
+    linear_scale_property_ = new rviz_common::properties::FloatProperty(
+      "linear scale", 1.0,
+      "linear velocity scale",
+      this, SLOT(updateLinearScale()));
+    angular_scale_property_ = new rviz_common::properties::FloatProperty(
+      "angular scale", 1.0,
+      "angular velocity scale",
+      this, SLOT(updateAngularScale()));
+    linear_color_property_ = new rviz_common::properties::ColorProperty(
+      "linear color", QColor(0, 255, 0),
+      "linear velocity color",
+      this, SLOT(updateLinearColor()));
+    angular_color_property_ = new rviz_common::properties::ColorProperty(
+      "angular color", QColor(255, 0, 0),
+      "angular velocity color",
+      this, SLOT(updateAngularColor()));
     linear_scale_property_->setMin(0.0);
     angular_scale_property_->setMin(0.0);
   }
@@ -64,13 +69,13 @@ namespace jsk_rviz_plugins
   void TwistStampedDisplay::onInitialize()
   {
     MFDClass::onInitialize();
-    linear_arrow_.reset(new rviz::Arrow(scene_manager_, scene_node_));
-    x_rotate_circle_.reset(new rviz::BillboardLine(scene_manager_, scene_node_));
-    y_rotate_circle_.reset(new rviz::BillboardLine(scene_manager_, scene_node_));
-    z_rotate_circle_.reset(new rviz::BillboardLine(scene_manager_, scene_node_));
-    x_rotate_arrow_.reset(new rviz::Arrow(scene_manager_, scene_node_));
-    y_rotate_arrow_.reset(new rviz::Arrow(scene_manager_, scene_node_));
-    z_rotate_arrow_.reset(new rviz::Arrow(scene_manager_, scene_node_));
+    linear_arrow_.reset(new rviz_rendering::Arrow(scene_manager_, scene_node_));
+    x_rotate_circle_.reset(new rviz_rendering::BillboardLine(scene_manager_, scene_node_));
+    y_rotate_circle_.reset(new rviz_rendering::BillboardLine(scene_manager_, scene_node_));
+    z_rotate_circle_.reset(new rviz_rendering::BillboardLine(scene_manager_, scene_node_));
+    x_rotate_arrow_.reset(new rviz_rendering::Arrow(scene_manager_, scene_node_));
+    y_rotate_arrow_.reset(new rviz_rendering::Arrow(scene_manager_, scene_node_));
+    z_rotate_arrow_.reset(new rviz_rendering::Arrow(scene_manager_, scene_node_));
     updateLinearScale();
     updateAngularScale();
     updateLinearColor();
@@ -86,23 +91,24 @@ namespace jsk_rviz_plugins
   {
     MFDClass::reset();
   }
-  
+
   void TwistStampedDisplay::processMessage(
-    const geometry_msgs::TwistStamped::ConstPtr& msg)
+    geometry_msgs::msg::TwistStamped::ConstSharedPtr msg)
   {
-    // move scene_node_ to the frame pose
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
     if(!context_->getFrameManager()->getTransform(
          msg->header, position, orientation)) {
-      ROS_DEBUG("Error transforming from frame '%s' to frame '%s'",
-                msg->header.frame_id.c_str(), qPrintable(fixed_frame_));
+      RCLCPP_DEBUG(
+        rclcpp::get_logger("TwistStampedDisplay"),
+        "Error transforming from frame '%s' to frame '%s'",
+        msg->header.frame_id.c_str(), qPrintable(fixed_frame_));
       return;
     }
     scene_node_->setPosition(position);
     scene_node_->setOrientation(orientation);
     // linear velocity
-    linear_arrow_->setColor(rviz::qtToOgre(linear_color_));
+    linear_arrow_->setColor(rviz_common::properties::qtToOgre(linear_color_));
     Ogre::Vector3 linear_direction(msg->twist.linear.x, msg->twist.linear.y, msg->twist.linear.z);
     Ogre::Vector3 linear_scale(linear_scale_ * linear_direction.length(),
                                linear_scale_ * linear_direction.length(),
@@ -132,7 +138,7 @@ namespace jsk_rviz_plugins
                            Ogre::Vector3(0, 0, 1),
                            std::abs(msg->twist.angular.z),
                            msg->twist.angular.z > 0);
-    Ogre::ColourValue c = rviz::qtToOgre(angular_color_);
+    Ogre::ColourValue c = rviz_common::properties::qtToOgre(angular_color_);
     x_rotate_circle_->setColor(c.r, c.g, c.b, 1.0);
     y_rotate_circle_->setColor(c.r, c.g, c.b, 1.0);
     z_rotate_circle_->setColor(c.r, c.g, c.b, 1.0);
@@ -151,21 +157,20 @@ namespace jsk_rviz_plugins
       bool positive)
   {
     circle->clear();
-    if (r < 1.0e-9) {           // too small to visualize it
+    if (r < 1.0e-9) {
       arrow->set(0, 0, 0, 0);
       return;
     }
-    const double step = 10;     // per 10 deg
+    const double step = 10;
     const double start_theta = 20;
     const double end_theta = 340;
-    circle->setMaxPointsPerLine((end_theta - start_theta) / step + 1); // +1?
+    circle->setMaxPointsPerLine((end_theta - start_theta) / step + 1);
     circle->setLineWidth(r * angular_scale_ / 2 * 0.1);
     for (double theta = start_theta; theta < end_theta; theta += step) {
       double rad = theta / 180 * M_PI;
       Ogre::Vector3 p = ux * cos(rad) * r * angular_scale_ + uy * sin(rad) * r * angular_scale_;
       circle->addPoint(p);
     }
-    // put arrow
     if (positive) {
       double end_rad = (end_theta - step) / 180 * M_PI;
       Ogre::Vector3 endpoint = ux * cos(end_rad) * r * angular_scale_ + uy * sin(end_rad) * r * angular_scale_;
@@ -182,30 +187,27 @@ namespace jsk_rviz_plugins
     }
     arrow->set(0, 0, r * angular_scale_ / 2, r * angular_scale_ / 2);
   }
-  
-  ////////////////////////////////////////////////////////
-  // update methods
-  ////////////////////////////////////////////////////////
+
   void TwistStampedDisplay::updateLinearScale()
   {
     linear_scale_ = linear_scale_property_->getFloat();
   }
-  
+
   void TwistStampedDisplay::updateAngularScale()
   {
     angular_scale_ = angular_scale_property_->getFloat();
   }
-  
+
   void TwistStampedDisplay::updateLinearColor()
   {
     linear_color_ = linear_color_property_->getColor();
   }
-  
+
   void TwistStampedDisplay::updateAngularColor()
   {
     angular_color_ = angular_color_property_->getColor();
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TwistStampedDisplay, rviz::Display )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TwistStampedDisplay, rviz_common::Display )

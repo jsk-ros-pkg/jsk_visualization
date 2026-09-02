@@ -33,20 +33,25 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <ros/ros.h>
-#include <rviz/tool_manager.h>
-#include <rviz/display_context.h>
-#include <rviz/view_manager.h>
-#include <rviz/display_group.h>
-#include <rviz/display.h>
-#include <rviz/render_panel.h>
-#include <QImageWriter>
 #include "screenshot_listener_tool.h"
+
+#include <memory>
+
+#include <QGuiApplication>
+#include <QImageWriter>
+#include <QScreen>
+#include <rviz_common/display.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/display_group.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_common/tool_manager.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_rendering/render_window.hpp>
 
 namespace jsk_rviz_plugins
 {
   ScreenshotListenerTool::ScreenshotListenerTool()
-    : rviz::Tool()
+    : rviz_common::Tool()
   {
 
   }
@@ -57,34 +62,35 @@ namespace jsk_rviz_plugins
 
   void ScreenshotListenerTool::onInitialize()
   {
-    ros::NodeHandle nh;
-    screenshot_service_ = nh.advertiseService(
+    auto raw_node = context_->getRosNodeAbstraction().lock()->get_raw_node();
+    screenshot_service_ = raw_node->create_service<jsk_rviz_plugins::srv::Screenshot>(
       "/rviz/screenshot",
-      &ScreenshotListenerTool::takeScreenShot, this);
+      std::bind(&ScreenshotListenerTool::takeScreenShot, this,
+                std::placeholders::_1, std::placeholders::_2));
   }
-  
+
   void ScreenshotListenerTool::activate()
   {
-    
+
   }
 
   void ScreenshotListenerTool::deactivate()
   {
-   
+
   }
 
-  bool ScreenshotListenerTool::takeScreenShot(
-    jsk_rviz_plugins::Screenshot::Request& req,
-    jsk_rviz_plugins::Screenshot::Response& res)
+  void ScreenshotListenerTool::takeScreenShot(
+    const std::shared_ptr<jsk_rviz_plugins::srv::Screenshot::Request> req,
+    std::shared_ptr<jsk_rviz_plugins::srv::Screenshot::Response> /*res*/)
   {
-    QPixmap screenshot = QPixmap::grabWindow(context_->getViewManager()->getRenderPanel()->winId());
-    QString output_file = QString::fromStdString(req.file_name);
+    QPixmap screenshot = QGuiApplication::primaryScreen()->grabWindow(
+      context_->getViewManager()->getRenderPanel()->getRenderWindow()->winId());
+    QString output_file = QString::fromStdString(req->file_name);
     QImageWriter writer(output_file);
     writer.write(screenshot.toImage());
-    return true;
   }
 
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::ScreenshotListenerTool, rviz::Tool )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::ScreenshotListenerTool, rviz_common::Tool )

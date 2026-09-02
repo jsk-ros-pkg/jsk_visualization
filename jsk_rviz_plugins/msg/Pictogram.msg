@@ -1,4 +1,4 @@
-Header header
+std_msgs/Header header
 geometry_msgs/Pose pose
 uint8 ADD=0
 uint8 DELETE=1
@@ -9,7 +9,7 @@ uint8 JUMP=5
 uint8 JUMP_ONCE=6
 uint8 action
 
-uint8 PICTOGRAM_MODE=0 
+uint8 PICTOGRAM_MODE=0
 uint8 STRING_MODE=1
 
 uint8 mode

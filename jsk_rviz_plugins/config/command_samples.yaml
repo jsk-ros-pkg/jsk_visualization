@@ -1,7 +1,21 @@
-icon_include_package: jsk_rviz_plugins
-
-rviz_service_call:
-    buttons:
-    - {icon: reset-pose.jpg, service_name: "/target", text: "Reset Pose"}
-    - {icon: reset-manip-pose.jpg, service_name: "/target2", text: "Reset Manip"}
-    - {icon: init-pose.jpg, service_name: "/target3", text: "Init Pose"}
+# Parameters for jsk_rviz_plugin/EmptyServiceCallInterfaceAction.
+# ROS 2 parameters cannot hold an array of structs, so the buttons are described as
+# a list of ids in `rviz_service_call.buttons` plus one parameter group per id.
+# The node name has to match the rviz node ("rviz" is the default of rviz2).
+rviz:
+  ros__parameters:
+    icon_include_package: jsk_rviz_plugins
+    rviz_service_call:
+      buttons: ["reset_pose", "reset_manip", "init_pose"]
+      reset_pose:
+        icon: reset-pose.jpg
+        service_name: /target
+        text: Reset Pose
+      reset_manip:
+        icon: reset-manip-pose.jpg
+        service_name: /target2
+        text: Reset Manip
+      init_pose:
+        icon: init-pose.jpg
+        service_name: /target3
+        text: Init Pose

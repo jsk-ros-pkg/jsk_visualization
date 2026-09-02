@@ -1,3 +1,5 @@
+#include <string>
+
 #include <QLineEdit>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -5,26 +7,34 @@
 #include <QTabWidget>
 #include <QCheckBox>
 #include <QLabel>
-#include <ros/package.h>
+#include <ament_index_cpp/get_package_share_path.hpp>
 
 #include "object_fit_operator.h"
 
-using namespace rviz;
 namespace jsk_rviz_plugins
 {
   ObjectFitOperatorAction::ObjectFitOperatorAction( QWidget* parent )
-    : rviz::Panel( parent )
+    : rviz_common::Panel( parent ), reverse_(false)
   {
     layout = new QVBoxLayout;
+    setLayout( layout );
+  }
+
+  void ObjectFitOperatorAction::onInitialize()
+  {
+    node_ = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
 
     horizontal_layout1_ = new QHBoxLayout();
     horizontal_layout2_ = new QHBoxLayout();
 
-    //Button to send cancel topic
-    std::string fit_button_name, reverse_fit_button_name, near_button_name, other_button_name;
-    nh_.param<std::string>("/object_fit_icon", fit_button_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/fit.jpg"));
-    nh_.param<std::string>("/object_near_icon", near_button_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/near.jpg"));
-    nh_.param<std::string>("/object_other_icon", other_button_name, ros::package::getPath("jsk_rviz_plugins")+std::string("/icons/other.jpg"));
+    const std::string default_icon_dir =
+      (ament_index_cpp::get_package_share_path("jsk_rviz_plugins") / "icons/").string();
+    node_->declare_parameter("object_fit_icon", default_icon_dir + "fit.jpg");
+    node_->declare_parameter("object_near_icon", default_icon_dir + "near.jpg");
+    node_->declare_parameter("object_other_icon", default_icon_dir + "other.jpg");
+    const std::string fit_button_name = node_->get_parameter("object_fit_icon").as_string();
+    const std::string near_button_name = node_->get_parameter("object_near_icon").as_string();
+    const std::string other_button_name = node_->get_parameter("object_other_icon").as_string();
 
     QSize iconSize(150, 150);
     fit_button_ = new QToolButton();
@@ -53,14 +63,14 @@ namespace jsk_rviz_plugins
 
     layout->addLayout(horizontal_layout1_);
     layout->addLayout(horizontal_layout2_);
-    setLayout( layout );
 
     connect( fit_button_, SIGNAL( clicked() ), this, SLOT( commandFit()));
     connect( check_box_, SIGNAL(clicked(bool)), this, SLOT(checkBoxChanged(bool)));
     connect( near_button_, SIGNAL( clicked() ), this, SLOT( commandNear()));
     connect( other_button_, SIGNAL( clicked() ), this, SLOT( commandOther()));
 
-    pub_ = nh_.advertise<jsk_rviz_plugins::ObjectFitCommand>( "/object_fit_command", 1 );
+    pub_ = node_->create_publisher<jsk_rviz_plugins::msg::ObjectFitCommand>(
+      "/object_fit_command", 1);
   }
 
   void ObjectFitOperatorAction::checkBoxChanged(bool state){
@@ -69,41 +79,41 @@ namespace jsk_rviz_plugins
 
   void ObjectFitOperatorAction::commandFit(){
     if(reverse_)
-      publishObjectFitOder(jsk_rviz_plugins::ObjectFitCommand::REVERSE_FIT);
+      publishObjectFitOder(jsk_rviz_plugins::msg::ObjectFitCommand::REVERSE_FIT);
     else
-      publishObjectFitOder(jsk_rviz_plugins::ObjectFitCommand::FIT);
+      publishObjectFitOder(jsk_rviz_plugins::msg::ObjectFitCommand::FIT);
   }
 
   void ObjectFitOperatorAction::commandNear(){
     if(reverse_)
-      publishObjectFitOder(jsk_rviz_plugins::ObjectFitCommand::REVERSE_NEAR);
+      publishObjectFitOder(jsk_rviz_plugins::msg::ObjectFitCommand::REVERSE_NEAR);
     else
-      publishObjectFitOder(jsk_rviz_plugins::ObjectFitCommand::NEAR);
+      publishObjectFitOder(jsk_rviz_plugins::msg::ObjectFitCommand::NEAR);
   }
 
   void ObjectFitOperatorAction::commandOther(){
     if(reverse_)
-      publishObjectFitOder(jsk_rviz_plugins::ObjectFitCommand::REVERSE_OTHER);
+      publishObjectFitOder(jsk_rviz_plugins::msg::ObjectFitCommand::REVERSE_OTHER);
     else
-      publishObjectFitOder(jsk_rviz_plugins::ObjectFitCommand::OTHER);
+      publishObjectFitOder(jsk_rviz_plugins::msg::ObjectFitCommand::OTHER);
   }
 
   void ObjectFitOperatorAction::publishObjectFitOder(int type){
-    jsk_rviz_plugins::ObjectFitCommand msg;
+    jsk_rviz_plugins::msg::ObjectFitCommand msg;
     msg.command = type;
-    pub_.publish(msg);
+    pub_->publish(msg);
   }
 
-  void ObjectFitOperatorAction::save( rviz::Config config ) const
+  void ObjectFitOperatorAction::save( rviz_common::Config config ) const
   {
-    rviz::Panel::save( config );
+    rviz_common::Panel::save( config );
   }
 
-  void ObjectFitOperatorAction::load( const rviz::Config& config )
+  void ObjectFitOperatorAction::load( const rviz_common::Config& config )
   {
-    rviz::Panel::load( config );
+    rviz_common::Panel::load( config );
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::ObjectFitOperatorAction, rviz::Panel )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::ObjectFitOperatorAction, rviz_common::Panel )

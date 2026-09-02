@@ -1,55 +1,64 @@
 // -*- mode: C++ -*-
 #include "normal_display.h"
 
-using namespace rviz;
+#include <rclcpp/rclcpp.hpp>
 
 namespace jsk_rviz_plugins
 {
 
-  NormalDisplay::NormalDisplay():skip_rate_(1),scale_(0.3),alpha_(1.0)
+  NormalDisplay::NormalDisplay():skip_rate_(1),scale_(0.3),alpha_(1.0),
+                                 visuals_capacity_(0)
   {
     skip_rate_property_
-      = new FloatProperty("Display Rate (%)", 1,
-                                            "Skip the display normals for speed up. Around 1% is recommended",
-                                            this, SLOT( updateSkipRate() ));
+      = new rviz_common::properties::FloatProperty(
+        "Display Rate (%)", 1,
+        "Skip the display normals for speed up. Around 1% is recommended",
+        this, SLOT( updateSkipRate() ));
     skip_rate_property_->setMax(100.0);
     skip_rate_property_->setMin(  0.0);
 
     scale_property_
-      = new rviz::FloatProperty("Scale", 0.3,
-                                "set the scale of arrow",
-                                this, SLOT(updateScale()));
+      = new rviz_common::properties::FloatProperty(
+        "Scale", 0.3,
+        "set the scale of arrow",
+        this, SLOT(updateScale()));
 
     scale_property_->setMin(0.0);
 
     alpha_property_
-      = new rviz::FloatProperty("Alpha", 1,
-                                "set the alpha of arrow",
-                                this, SLOT(updateAlpha()));
+      = new rviz_common::properties::FloatProperty(
+        "Alpha", 1,
+        "set the alpha of arrow",
+        this, SLOT(updateAlpha()));
 
     alpha_property_->setMax(1.0);
     alpha_property_->setMin(0.0);
 
-    style_property_ = new EnumProperty( "Style", "PointsColor",
-                                        "Rendering mode to use, in order of computational complexity.",
-                                        this, SLOT( updateStyle() ), this);
+    style_property_ = new rviz_common::properties::EnumProperty(
+      "Style", "PointsColor",
+      "Rendering mode to use, in order of computational complexity.",
+      this, SLOT( updateStyle() ), this);
     style_property_->addOption( "PointsColor", NormalDisplay::POINTS_COLOR );
     style_property_->addOption( "FlatColor", NormalDisplay::FLAT_COLOR );
     style_property_->addOption( "DirectionColor", NormalDisplay::DIRECTION_COLOR );
     style_property_->addOption( "CurvatureColor", NormalDisplay::CURVATURE_COLOR );
 
-    color_property_ = new ColorProperty( "Color", Qt::white,
-                                         "Color to assign to every point.",this);
+    color_property_ = new rviz_common::properties::ColorProperty(
+      "Color", Qt::white,
+      "Color to assign to every point.", this);
     color_property_->hide();
 
-    rainbow_property_ = new BoolProperty( "Use Rainbow", true, "Set rainbow range", this, SLOT( updateRainbow() ), this);
+    rainbow_property_ = new rviz_common::properties::BoolProperty(
+      "Use Rainbow", true, "Set rainbow range", this, SLOT( updateRainbow() ), this);
     rainbow_property_->hide();
 
-    min_color_property_ = new ColorProperty( "MinColor", Qt::green,
-                                         "Min color.",this);
+    min_color_property_ = new rviz_common::properties::ColorProperty(
+      "MinColor", Qt::green,
+      "Min color.", this);
     min_color_property_->hide();
-    max_color_property_ = new ColorProperty( "Max Color", Qt::red,
-                                             "Max color.",this);
+    max_color_property_ = new rviz_common::properties::ColorProperty(
+      "Max Color", Qt::red,
+      "Max color.", this);
     max_color_property_->hide();
   }
 
@@ -140,7 +149,7 @@ namespace jsk_rviz_plugins
   }
 
 
-  void NormalDisplay::processMessage( const sensor_msgs::PointCloud2::ConstPtr& msg )
+  void NormalDisplay::processMessage( sensor_msgs::msg::PointCloud2::ConstSharedPtr msg )
   {
     //check x,y,z
     int32_t xi = findChannelIndex(msg, "x");
@@ -149,7 +158,7 @@ namespace jsk_rviz_plugins
 
     if (xi == -1 || yi == -1 || zi == -1)
       {
-        ROS_ERROR("doesn't have x, y, z");
+        RCLCPP_ERROR(rclcpp::get_logger("NormalDisplay"), "doesn't have x, y, z");
         return;
       }
 
@@ -165,7 +174,7 @@ namespace jsk_rviz_plugins
 
     if (normal_xi == -1 || normal_yi == -1 || normal_zi == -1 || curvature_i == -1)
       {
-        ROS_ERROR("doesn't have normal_x, normal_y, normal_z, curvature");
+        RCLCPP_ERROR(rclcpp::get_logger("NormalDisplay"), "doesn't have normal_x, normal_y, normal_z, curvature");
         return;
       }
 
@@ -176,7 +185,7 @@ namespace jsk_rviz_plugins
 
     //check rgba color
     int32_t rgbai = findChannelIndex(msg, "rgb");
-    uint32_t rgbaoff = -1;
+    uint32_t rgbaoff = 0;
     if(rgbai != -1)
       rgbaoff = msg->fields[rgbai].offset;
 
@@ -186,7 +195,7 @@ namespace jsk_rviz_plugins
 
     if (point_count == 0)
       {
-        ROS_ERROR("doesn't have point_count > 0");
+        RCLCPP_ERROR(rclcpp::get_logger("NormalDisplay"), "doesn't have point_count > 0");
         return;
       }
 
@@ -196,7 +205,8 @@ namespace jsk_rviz_plugins
                                                     msg->header.stamp,
                                                     position, orientation ))
       {
-        ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
+        RCLCPP_DEBUG( rclcpp::get_logger("NormalDisplay"),
+                   "Error transforming from frame '%s' to frame '%s'",
                    msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
         return;
       }
@@ -204,7 +214,7 @@ namespace jsk_rviz_plugins
     int skip_time = int( 100 / skip_rate_ );
     skip_time = std::max(skip_time, 1);
     skip_time = std::min(skip_time, int(point_count / 2));
-    visuals_.rset_capacity(int(point_count/skip_time));
+    visuals_capacity_ = int(point_count/skip_time);
     const uint8_t* ptr = &msg->data.front();
 
     //Use Prev Curvature max, min
@@ -228,17 +238,13 @@ namespace jsk_rviz_plugins
         float normal_y = *reinterpret_cast<const float*>(ptr + normal_yoff);
         float normal_z = *reinterpret_cast<const float*>(ptr + normal_zoff);
         float curvature = *reinterpret_cast<const float*>(ptr + curvature_off);
-        int r=1,g=0,b=0;
 
-        if (validateFloats(Ogre::Vector3(x, y, z)) && validateFloats(Ogre::Vector3(normal_x, normal_y, normal_z)))
+        if (rviz_common::validateFloats(Ogre::Vector3(x, y, z)) && rviz_common::validateFloats(Ogre::Vector3(normal_x, normal_y, normal_z)))
           {
-#if ROS_VERSION_MINIMUM(1,12,0)
             std::shared_ptr<NormalVisual> visual;
-#else
-            boost::shared_ptr<NormalVisual> visual;
-#endif
-            if(visuals_.full()){
+            if(visuals_.size() >= visuals_capacity_){
               visual = visuals_.front();
+              visuals_.pop_front();
             }else{
               visual.reset(new NormalVisual( context_->getSceneManager(), scene_node_ ));
             }
@@ -300,5 +306,5 @@ namespace jsk_rviz_plugins
   }
 }
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::NormalDisplay,rviz::Display )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::NormalDisplay, rviz_common::Display )
