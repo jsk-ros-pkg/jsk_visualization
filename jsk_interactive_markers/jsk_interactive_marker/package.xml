@@ -27,12 +27,12 @@
   <depend>interactive_markers</depend>
   <depend>yaml-cpp</depend>
   <depend>tinyxml</depend>
+  <depend>jsk_rviz_plugins</depend>
 
   <!-- The nodes which need the following packages are ROS 1 only (see
        CMakeLists.txt): jsk_recognition_msgs, jsk_recognition_utils,
-       jsk_footstep_msgs (footstep_marker), jsk_rviz_plugins
-       (transformable_server_sample and the TransformableMarkerOperator rviz
-       panel), rviz, moveit_msgs, roseus (euslisp/), dynamic_tf_publisher,
+       jsk_footstep_msgs (footstep_marker), rviz (the
+       TransformableMarkerOperator rviz panel), moveit_msgs, roseus (euslisp/), dynamic_tf_publisher,
        urdf and tf_conversions (urdf_model_marker, urdf_control_marker,
        interactive_marker_interface), actionlib and message_filters. -->
   <depend condition="$ROS_VERSION == 1">roseus</depend>
@@ -47,7 +47,6 @@
   <depend condition="$ROS_VERSION == 1">roscpp</depend>
   <depend condition="$ROS_VERSION == 1">roslib</depend>
   <depend condition="$ROS_VERSION == 1">message_filters</depend>
-  <depend condition="$ROS_VERSION == 1">jsk_rviz_plugins</depend>
   <depend condition="$ROS_VERSION == 1">moveit_msgs</depend>
   <build_depend condition="$ROS_VERSION == 1" version_gte="1.2.0">jsk_recognition_msgs</build_depend>
   <build_export_depend condition="$ROS_VERSION == 1" version_gte="1.0.0">jsk_recognition_msgs</build_export_depend>
@@ -66,6 +65,8 @@
   <depend condition="$ROS_VERSION == 2">tf2_ros</depend>
   <depend condition="$ROS_VERSION == 2">tf2_geometry_msgs</depend>
   <depend condition="$ROS_VERSION == 2">boost</depend>
+  <depend condition="$ROS_VERSION == 2">std_srvs</depend>
+  <depend condition="$ROS_VERSION == 2">tf2_eigen</depend>
   <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>
 
   <member_of_group condition="$ROS_VERSION == 2">rosidl_interface_packages</member_of_group>

@@ -166,6 +166,33 @@ namespace jsk_interactive_marker
     rclcpp::Node::SharedPtr node_;
   };
 
+  // ROS 1's ros::Publisher for `pub.publish(msg)`, assigned from
+  // node->create_publisher<MsgT>()
+  template<typename MsgT>
+  class Publisher
+  {
+  public:
+    Publisher() {}
+    Publisher(typename rclcpp::Publisher<MsgT>::SharedPtr pub) : pub_(pub) {}
+    void publish(const MsgT& msg) const { pub_->publish(msg); }
+  protected:
+    typename rclcpp::Publisher<MsgT>::SharedPtr pub_;
+  };
+
+  // ROS 1's nh.advertiseService(name, callback) with a callback of
+  // (Request&, Response&), e.g. boost::bind(&Foo::service, this, _1, _2)
+  template<typename SrvT, typename CallbackT>
+  typename rclcpp::Service<SrvT>::SharedPtr advertiseService(
+    rclcpp::Node::SharedPtr node, const std::string& name, CallbackT callback)
+  {
+    return node->create_service<SrvT>(
+      name,
+      [callback](const std::shared_ptr<typename SrvT::Request> req,
+                 std::shared_ptr<typename SrvT::Response> res) {
+        callback(*req, *res);
+      });
+  }
+
   // ROS 1's nh.createTimer(ros::Duration(period), callback), with the
   // ros::TimerEvent above for the callback
   template<typename CallbackT>

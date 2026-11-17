@@ -1,5 +1,17 @@
 #include <jsk_interactive_marker/transformable_object.h>
+#if ROS_VERSION_MAJOR != 1
+// ROS 1's eigen_conversions is tf2_eigen's fromMsg()/toMsg() on ROS 2
+#include <tf2_eigen/tf2_eigen.hpp>
+namespace tf
+{
+  inline void poseMsgToEigen(const geometry_msgs::msg::Pose& msg, Eigen::Affine3d& out) { tf2::fromMsg(msg, out); }
+  inline void poseEigenToMsg(const Eigen::Affine3d& in, geometry_msgs::msg::Pose& msg) { msg = tf2::toMsg(in); }
+  inline void quaternionMsgToEigen(const geometry_msgs::msg::Quaternion& msg, Eigen::Quaterniond& out) { tf2::fromMsg(msg, out); }
+  inline void quaternionEigenToMsg(const Eigen::Quaterniond& in, geometry_msgs::msg::Quaternion& msg) { msg = tf2::toMsg(in); }
+}
+#else
 #include <eigen_conversions/eigen_msg.h>
+#endif
 #include <math.h>
 
 #define PI 3.14159265
@@ -16,6 +28,9 @@ inline geometry_msgs::Pose inverse(geometry_msgs::Pose pose){
 
 TransformableObject::TransformableObject(){
   ROS_INFO("Init TransformableObject");
+#if ROS_VERSION_MAJOR != 1
+  br.reset(new tf2_ros::TransformBroadcaster(ROS1_ROS2_COMPAT::g_node));
+#endif
   control_offset_pose_.orientation.x = 0;
   control_offset_pose_.orientation.y = 0;
   control_offset_pose_.orientation.z = 0;
@@ -170,9 +185,22 @@ void TransformableObject::addPose(geometry_msgs::Pose msg, bool relative){
 }
 
 void TransformableObject::publishTF(){
+#if ROS_VERSION_MAJOR != 1
+  geometry_msgs::msg::Pose pose = getPose();
+  geometry_msgs::msg::TransformStamped transform;
+  transform.header.stamp = ROS1_ROS2_COMPAT::g_node->now();
+  transform.header.frame_id = frame_id_;
+  transform.child_frame_id = name_;
+  transform.transform.translation.x = pose.position.x;
+  transform.transform.translation.y = pose.position.y;
+  transform.transform.translation.z = pose.position.z;
+  transform.transform.rotation = pose.orientation;
+  br->sendTransform(transform);
+#else
   tf::Transform transform;
   tf::poseMsgToTF(getPose(), transform);
   br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), frame_id_, name_));
+#endif
 }
 
 namespace jsk_interactive_marker{

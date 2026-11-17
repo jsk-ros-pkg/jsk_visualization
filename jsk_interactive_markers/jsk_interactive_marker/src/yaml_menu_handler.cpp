@@ -2,7 +2,11 @@
 #include <fstream>
 
 using namespace jsk_interactive_marker;
+#if ROS_VERSION_MAJOR != 1
+YamlMenuHandler::YamlMenuHandler(rclcpp::Node::SharedPtr node_ptr, std::string file_name) {
+#else
 YamlMenuHandler::YamlMenuHandler(ros::NodeHandle* node_ptr, std::string file_name) {
+#endif
   _node_ptr = node_ptr;
   initMenu(file_name);
 }
@@ -42,20 +46,34 @@ bool YamlMenuHandler::initMenu(std::string file_name) {
     topic_name = single_menu["topic"].as<std::string>();
 #endif
     ROS_INFO("Regist %s, %s", text.c_str(), topic_name.c_str());
+#if ROS_VERSION_MAJOR != 1
+    // relative to the private namespace as with ROS 1's NodeHandle("~")
+    _publisher_map[topic_name] = _node_ptr->create_publisher<std_msgs::msg::String>(
+      (!topic_name.empty() && topic_name[0] == '/') ? topic_name : "~/" + topic_name, 1);
+#else
     _publisher_map[topic_name] = _node_ptr->advertise<std_msgs::String>(topic_name, 1);
+#endif
     _menu_handler.insert(text, boost::bind(&YamlMenuHandler::pubTopic, this, _1, topic_name));
   }
   return true;
 }
 
 void YamlMenuHandler::pubTopic(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, std::string topic_name) {
+#if ROS_VERSION_MAJOR != 1
+  std_msgs::msg::String text_msg;
+#else
   std_msgs::String text_msg;
+#endif
   text_msg.data = feedback->marker_name;
   if (_publisher_map.find(topic_name)==_publisher_map.end()) {
     return;
   }
   else {
+#if ROS_VERSION_MAJOR != 1
+    _publisher_map[topic_name]->publish(text_msg);
+#else
     _publisher_map[topic_name].publish(text_msg);
+#endif
   }
 }
 

@@ -1,6 +1,61 @@
 #ifndef __TRANSFORMABLE_INTERACTIVE_SERVER_H__
 #define __TRANSFORMABLE_INTERACTIVE_SERVER_H__
 
+#include "jsk_interactive_marker/ros1_ros2_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <interactive_markers/interactive_marker_server.hpp>
+#include <jsk_interactive_marker/transformable_object.h>
+#include <jsk_interactive_marker/yaml_menu_handler.h>
+// ParentAndChildInteractiveMarkerServer (~use_parent_and_child) is ROS 1 only
+#include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <std_msgs/msg/header.hpp>
+#include <std_srvs/srv/empty.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <map>
+#include <jsk_rviz_plugins/msg/overlay_text.hpp>
+#include <jsk_rviz_plugins/srv/request_marker_operate.hpp>
+#include <iostream>
+#include <sstream>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <jsk_interactive_marker/srv/get_transformable_marker_pose.hpp>
+#include <jsk_interactive_marker/srv/set_transformable_marker_pose.hpp>
+#include <jsk_interactive_marker/srv/get_transformable_marker_color.hpp>
+#include <jsk_interactive_marker/srv/set_transformable_marker_color.hpp>
+#include <jsk_interactive_marker/srv/get_transformable_marker_focus.hpp>
+#include <jsk_interactive_marker/srv/set_transformable_marker_focus.hpp>
+#include <jsk_interactive_marker/srv/get_marker_dimensions.hpp>
+#include <jsk_interactive_marker/srv/set_marker_dimensions.hpp>
+#include <jsk_interactive_marker/srv/get_type.hpp>
+#include <jsk_interactive_marker/srv/get_transformable_marker_existence.hpp>
+#include <jsk_interactive_marker/msg/marker_dimensions.hpp>
+#include <jsk_interactive_marker/msg/pose_stamped_with_name.hpp>
+#include <boost/thread/mutex.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(std_msgs, String)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(std_msgs, Header)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, PoseStamped)
+JSK_ROS1_ROS2_COMPAT_CONST_PTR_ALIAS(geometry_msgs, PoseStamped)
+JSK_ROS1_ROS2_COMPAT_CONST_PTR_ALIAS(visualization_msgs, InteractiveMarkerFeedback)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, InteractiveMarkerFeedback)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(std_srvs, Empty)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_rviz_plugins, OverlayText)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_rviz_plugins, RequestMarkerOperate)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_interactive_marker, GetTransformableMarkerPose)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_interactive_marker, SetTransformableMarkerPose)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_interactive_marker, GetTransformableMarkerColor)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_interactive_marker, SetTransformableMarkerColor)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_interactive_marker, GetTransformableMarkerFocus)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_interactive_marker, SetTransformableMarkerFocus)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_interactive_marker, GetMarkerDimensions)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_interactive_marker, SetMarkerDimensions)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_interactive_marker, GetType)
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_interactive_marker, GetTransformableMarkerExistence)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_interactive_marker, MarkerDimensions)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_interactive_marker, PoseStampedWithName)
+#include <jsk_ros1_ros2_compat/const_ptr.h>
+#else
 #include <ros/ros.h>
 #include <interactive_markers/interactive_marker_server.h>
 #include <jsk_interactive_marker/transformable_object.h>
@@ -29,6 +84,7 @@
 #include <jsk_interactive_marker/GetTransformableMarkerExistence.h>
 #include <jsk_interactive_marker/MarkerDimensions.h>
 #include <jsk_interactive_marker/PoseStampedWithName.h>
+#endif
 
 using namespace std;
 
@@ -99,6 +155,32 @@ namespace jsk_interactive_marker
     bool setPoseWithTfTransformation(TransformableObject* tobject, geometry_msgs::PoseStamped pose_stamped, bool for_interactive_control=false);
     
     std::string focus_object_marker_name_;
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Node::SharedPtr node_;
+    // n_->param() as on ROS 1
+    jsk_interactive_marker::ParamHandle* n_;
+    rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr config_srv_;
+    std::vector<rclcpp::SubscriptionBase::SharedPtr> subscribers_;
+    std::vector<rclcpp::ServiceBase::SharedPtr> services_;
+    jsk_interactive_marker::Publisher<jsk_interactive_marker::msg::MarkerDimensions> marker_dimensions_pub_;
+    jsk_interactive_marker::Publisher<jsk_rviz_plugins::msg::OverlayText> focus_name_text_pub_;
+    jsk_interactive_marker::Publisher<jsk_rviz_plugins::msg::OverlayText> focus_pose_text_pub_;
+    jsk_interactive_marker::Publisher<std_msgs::msg::String> focus_object_marker_name_pub_;
+    jsk_interactive_marker::Publisher<geometry_msgs::msg::PoseStamped> pose_pub_;
+    jsk_interactive_marker::Publisher<jsk_interactive_marker::msg::PoseStampedWithName> pose_with_name_pub_;
+    interactive_markers::InteractiveMarkerServer* server_;
+    map<string, TransformableObject*> transformable_objects_map_;
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+    int torus_udiv_;
+    int torus_vdiv_;
+    jsk_interactive_marker::InteractiveSettingConfig config_;
+    bool strict_tf_;
+    int interactive_manipulator_orientation_;
+    rclcpp::TimerBase::SharedPtr tf_timer;
+    std::shared_ptr <YamlMenuHandler> yaml_menu_handler_ptr_;
+    boost::mutex mutex_;
+#else
     ros::NodeHandle* n_;
 
     boost::mutex mutex_;
@@ -153,6 +235,7 @@ namespace jsk_interactive_marker
     int interactive_manipulator_orientation_;
     ros::Timer tf_timer;
     std::shared_ptr <YamlMenuHandler> yaml_menu_handler_ptr_;
+#endif
   };
 }
 

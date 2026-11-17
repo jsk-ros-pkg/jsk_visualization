@@ -21,8 +21,9 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   # - footstep_marker, polygon_marker, bounding_box_marker,
   #   interactive_point_cloud, urdf_model_marker (jsk_recognition_msgs,
   #   jsk_recognition_utils, jsk_footstep_msgs)
-  # - transformable_server_sample and the TransformableMarkerOperator rviz
-  #   panel (jsk_rviz_plugins messages, jsk_recognition_msgs, rviz)
+  # - the TransformableMarkerOperator rviz panel (jsk_recognition_msgs, rviz)
+  # - ~use_parent_and_child of transformable_server_sample
+  #   (ParentAndChildInteractiveMarkerServer)
   # - interactive_marker_interface, urdf_control_marker (dynamic_tf_publisher,
   #   urdf/kdl/tf_conversions of interactive_marker_utils.cpp; built with
   #   jsk_recognition_utils on ROS 1)
@@ -93,6 +94,9 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   find_package(jsk_ros1_ros2_compat REQUIRED)
   find_package(Boost REQUIRED COMPONENTS thread)
   find_package(yaml-cpp REQUIRED)
+  find_package(std_srvs REQUIRED)
+  find_package(tf2_eigen REQUIRED)
+  find_package(jsk_rviz_plugins REQUIRED)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(TinyXML REQUIRED tinyxml)
   rosidl_get_typesupport_target(_cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
@@ -123,7 +127,19 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   add_executable(world2yaml src/world2yaml.cpp)
   target_include_directories(world2yaml PRIVATE ${TinyXML_INCLUDE_DIRS})
   target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
-  set(_nodes marker_6dof camera_info_publisher world2yaml)
+  # ~use_parent_and_child (ParentAndChildInteractiveMarkerServer) is ROS 1 only
+  add_executable(transformable_server_sample
+    src/transformable_object.cpp
+    src/yaml_menu_handler.cpp
+    src/transformable_interactive_server.cpp
+    src/transformable_server_sample.cpp
+  )
+  target_link_libraries(transformable_server_sample
+    yaml-cpp
+    ${std_srvs_TARGETS}
+    ${jsk_rviz_plugins_TARGETS}
+    tf2_eigen::tf2_eigen)
+  set(_nodes marker_6dof camera_info_publisher world2yaml transformable_server_sample)
   foreach(_node ${_nodes})
     target_link_libraries(${_node}
       ${PROJECT_NAME}_lib
