@@ -1,3 +1,228 @@
+# $ENV{ROS_VERSION} is set by ros_environment, which is missing on
+# pre-ros_environment distros (e.g. indigo) and on ROS 2 builds that do not
+# depend on it (e.g. the buildfarm's binary jobs). Guess it then: ament sets
+# AMENT_PREFIX_PATH (bloom's debian/rules passes it to cmake, setup.sh and
+# colcon set the environment variable), catkin never does.
+if("$ENV{ROS_VERSION}" STREQUAL "")
+  if(DEFINED AMENT_PREFIX_PATH OR DEFINED ENV{AMENT_PREFIX_PATH})
+    set(ENV{ROS_VERSION} 2)
+  else()
+    set(ENV{ROS_VERSION} 1)
+  endif()
+  message(WARNING "ROS_VERSION is not set, assuming ROS_VERSION=$ENV{ROS_VERSION}")
+endif()
+
+if("$ENV{ROS_VERSION}" EQUAL 2)
+  cmake_minimum_required(VERSION 3.8)
+  project(jsk_rviz_plugins)
+
+  if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wall -Wextra)
+  endif()
+
+  # The sources are shared with ROS 1 and tell the two apart with
+  # `#if ROS_VERSION_MAJOR != 1` (src/rviz_compat.h). On ROS 2 they are
+  # built against rviz_common, rviz_rendering and rviz_default_plugins.
+  #
+  # The following plugins are provided by upstream packages on ROS 2 and
+  # therefore not built here:
+  #   overlay_text_display, pie_chart_display
+  #     -> rviz_2d_overlay_plugins (https://github.com/teamspatzenhirn/rviz_2d_overlay_plugins)
+  #   camera_info_display -> rviz_default_plugins/CameraInfo (https://github.com/ros2/rviz)
+  #   pose_array_display  -> rviz_default_plugins/PoseArray, which already provides the
+  #                          Arrow/Axes shapes this plugin added on ROS 1
+  #
+  # The following plugins wait for their dependencies to be released for
+  # ROS 2 and stay ROS 1 only until then:
+  #   src/ambient_sound_display.{h,cpp}                     -> jsk_hark_msgs
+  #   src/ambient_sound_display_groovy.{h,cpp}              -> jsk_hark_msgs
+  #   src/ambient_sound_visual.{h,cpp}                      -> jsk_hark_msgs
+  #   src/footstep_display.{h,cpp}                          -> jsk_footstep_msgs
+  #   src/bounding_box_display.{h,cpp}                      -> jsk_recognition_msgs, jsk_topic_tools
+  #   src/bounding_box_array_display.{h,cpp}                -> jsk_recognition_msgs, jsk_topic_tools
+  #   src/bounding_box_display_common.h                     -> jsk_recognition_msgs, jsk_topic_tools
+  #   src/torus_array_display.{h,cpp}                       -> jsk_recognition_msgs
+  #   src/segment_array_display.{h,cpp}                     -> jsk_recognition_msgs
+  #   src/human_skeleton_array_display.{h,cpp}              -> jsk_recognition_msgs
+  #   src/polygon_array_display.{h,cpp}                     -> jsk_recognition_msgs, jsk_recognition_utils
+  #   src/simple_occupancy_grid_array_display.{h,cpp}       -> jsk_recognition_msgs, jsk_recognition_utils
+  #   src/rviz_util.h                                       -> only used by simple_occupancy_grid_array_display
+  #   src/people_position_measurement_array_display.{h,cpp} -> people_msgs
+  #   src/view_controller/tablet_view_controller.{h,cpp}    -> view_controller_msgs
+  #   src/yes_no_button_interface.{h,cpp}                   -> jsk_gui_msgs
+  #
+  # src/overlay_camera_display.{h,cpp} is blocked on rviz itself: it reads the rendered
+  # scene back with Ogre::RenderTarget::copyContentsToMemory(), but rviz_rendering does
+  # not expose the Ogre render target behind rviz_common::RenderPanel::getRenderWindow()
+  # (see rviz_rendering::RenderWindowOgreAdapter). Port it once rviz_rendering exposes it.
+  #
+  # The dynamic_reconfigure configs (cfg/), the python module (python/,
+  # dynamic_reconfigure based) and the scripts/ are ROS 1 only as well.
+  find_package(ament_cmake REQUIRED)
+  find_package(rosidl_default_generators REQUIRED)
+  find_package(action_msgs REQUIRED)
+  find_package(ament_index_cpp REQUIRED)
+  find_package(cv_bridge REQUIRED)
+  find_package(diagnostic_msgs REQUIRED)
+  find_package(geometry_msgs REQUIRED)
+  find_package(image_transport REQUIRED)
+  find_package(jsk_ros1_ros2_compat REQUIRED)
+  find_package(pluginlib REQUIRED)
+  find_package(rclcpp REQUIRED)
+  find_package(resource_retriever REQUIRED)
+  find_package(rviz_common REQUIRED)
+  find_package(rviz_default_plugins REQUIRED)
+  find_package(rviz_ogre_vendor REQUIRED)
+  find_package(rviz_rendering REQUIRED)
+  find_package(sensor_msgs REQUIRED)
+  find_package(std_msgs REQUIRED)
+  find_package(std_srvs REQUIRED)
+  find_package(visualization_msgs REQUIRED)
+  find_package(Qt5 REQUIRED COMPONENTS Widgets)
+  # cv_bridge only exports opencv_core/opencv_imgproc; video_capture_display
+  # uses cv::VideoWriter of opencv_videoio
+  find_package(OpenCV REQUIRED COMPONENTS core imgproc videoio)
+
+  rosidl_generate_interfaces(${PROJECT_NAME}
+    msg/ObjectFitCommand.msg
+    msg/OverlayMenu.msg
+    msg/OverlayText.msg
+    msg/Pictogram.msg
+    msg/PictogramArray.msg
+    msg/RecordCommand.msg
+    msg/StringStamped.msg
+    msg/TransformableMarkerOperate.msg
+    srv/EusCommand.srv
+    srv/RequestMarkerOperate.srv
+    srv/Screenshot.srv
+    DEPENDENCIES std_msgs geometry_msgs
+  )
+  rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
+
+  set(HEADER_FILES
+    src/cancel_action.h
+    src/close_all_tool.h
+    src/diagnostics_display.h
+    src/empty_service_call_interface.h
+    src/facing_visualizer.h
+    src/image_transport_hints_property.h
+    src/linear_gauge_display.h
+    src/normal_display.h
+    src/normal_visual.h
+    src/object_fit_operator.h
+    src/open_all_tool.h
+    src/overlay_diagnostic_display.h
+    src/overlay_image_display.h
+    src/overlay_menu_display.h
+    src/overlay_picker_tool.h
+    src/overlay_utils.h
+    src/pictogram_array_display.h
+    src/pictogram_display.h
+    src/plotter_2d_display.h
+    src/publish_topic.h
+    src/quiet_interactive_marker_display.h
+    src/record_action.h
+    src/robot_command_interface.h
+    src/rviz_scene_publisher.h
+    src/screenshot_listener_tool.h
+    src/select_point_cloud_publish_action.h
+    src/string_display.h
+    src/tablet_controller_panel.h
+    src/target_visualizer_display.h
+    src/tf_trajectory_display.h
+    src/twist_stamped_display.h
+    src/video_capture_display.h
+  )
+  set(SOURCE_FILES
+    src/cancel_action.cpp
+    src/close_all_tool.cpp
+    src/diagnostics_display.cpp
+    src/empty_service_call_interface.cpp
+    src/facing_visualizer.cpp
+    src/image_transport_hints_property.cpp
+    src/linear_gauge_display.cpp
+    src/normal_display.cpp
+    src/normal_visual.cpp
+    src/object_fit_operator.cpp
+    src/open_all_tool.cpp
+    src/overlay_diagnostic_display.cpp
+    src/overlay_image_display.cpp
+    src/overlay_menu_display.cpp
+    src/overlay_picker_tool.cpp
+    src/overlay_utils.cpp
+    src/pictogram_array_display.cpp
+    src/pictogram_display.cpp
+    src/plotter_2d_display.cpp
+    src/publish_topic.cpp
+    src/quiet_interactive_marker_display.cpp
+    src/record_action.cpp
+    src/robot_command_interface.cpp
+    src/rviz_scene_publisher.cpp
+    src/screenshot_listener_tool.cpp
+    src/select_point_cloud_publish_action.cpp
+    src/string_display.cpp
+    src/tablet_controller_panel.cpp
+    src/target_visualizer_display.cpp
+    src/tf_trajectory_display.cpp
+    src/twist_stamped_display.cpp
+    src/video_capture_display.cpp
+  )
+
+  set(CMAKE_AUTOMOC ON)
+  # rosidl_generate_interfaces() owns the ${PROJECT_NAME} target, so the
+  # library target is named differently and renamed back on output, to keep
+  # the libjsk_rviz_plugins.so that rviz_common_plugins.xml loads.
+  add_library(${PROJECT_NAME}_plugins SHARED ${HEADER_FILES} ${SOURCE_FILES})
+  set_target_properties(${PROJECT_NAME}_plugins PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+  target_compile_features(${PROJECT_NAME}_plugins PUBLIC cxx_std_17)
+  # The sources include the Ogre headers as <OGRE/...>, as on ROS 1, while
+  # rviz_ogre_vendor exports .../include/OGRE itself.
+  target_include_directories(${PROJECT_NAME}_plugins PRIVATE
+    src
+    ${jsk_ros1_ros2_compat_INCLUDE_DIRS}
+  )
+  target_include_directories(${PROJECT_NAME}_plugins SYSTEM PRIVATE
+    ${rviz_ogre_vendor_DIR}/../../../opt/rviz_ogre_vendor/include
+  )
+  target_link_libraries(${PROJECT_NAME}_plugins
+    ${cpp_typesupport_target}
+    ${action_msgs_TARGETS}
+    ${diagnostic_msgs_TARGETS}
+    ${geometry_msgs_TARGETS}
+    ${sensor_msgs_TARGETS}
+    ${std_msgs_TARGETS}
+    ${std_srvs_TARGETS}
+    ${visualization_msgs_TARGETS}
+    ament_index_cpp::ament_index_cpp
+    cv_bridge::cv_bridge
+    image_transport::image_transport
+    pluginlib::pluginlib
+    rclcpp::rclcpp
+    resource_retriever::resource_retriever
+    rviz_common::rviz_common
+    rviz_default_plugins::rviz_default_plugins
+    rviz_ogre_vendor::OgreMain
+    rviz_ogre_vendor::OgreOverlay
+    rviz_rendering::rviz_rendering
+    Qt5::Widgets
+    opencv_videoio
+  )
+  install(TARGETS ${PROJECT_NAME}_plugins
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+  )
+
+  pluginlib_export_plugin_description_file(rviz_common rviz_common_plugins.xml)
+
+  install(DIRECTORY config icons launch
+    DESTINATION share/${PROJECT_NAME}
+  )
+
+  ament_export_dependencies(rosidl_default_runtime)
+  ament_package()
+
+else() # if("$ENV{ROS_VERSION}" EQUAL 2)
 # these plugins should be uploaded to upstream repository
 # https://github.com/ros-visualization/rviz/pull/634
 
@@ -299,3 +524,4 @@ if (CATKIN_ENABLE_TESTING)
     endforeach()
   endif()
 endif()
+endif() # if("$ENV{ROS_VERSION}" EQUAL 2)

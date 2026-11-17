@@ -9,67 +9,99 @@
   <author email="youhei@jsk.t.u-tokyo.ac.jp">Yohei Kakiuchi</author>
   <author email="s-fujii@jsk.t.u-tokyo.ac.jp">Shohei Fujii</author>
   <author email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</author>
+  <author email="obinata@jsk.t.u-tokyo.ac.jp">Yoshiki Obinata</author>
   <url type="repository">http://github.com/jsk-ros-pkg/jsk_visualization</url>
   <url type="bugtracker">http://github.com/jsk-ros-pkg/jsk_visualization/issues</url>
   <url type="website">https://jsk-visualization.readthedocs.io/en/latest/jsk_rviz_plugins/index.html</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ros_environment</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">rosidl_default_generators</buildtool_depend>
 
   <build_depend>cv_bridge</build_depend>
   <build_depend>diagnostic_msgs</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">dynamic_reconfigure</build_depend>
   <build_depend>geometry_msgs</build_depend>
-  <build_depend>image_geometry</build_depend>
-  <build_depend>jsk_footstep_msgs</build_depend>
-  <build_depend>jsk_gui_msgs</build_depend>
-  <build_depend>jsk_hark_msgs</build_depend>
-  <build_depend>jsk_recognition_msgs</build_depend>
-  <build_depend>jsk_recognition_utils</build_depend>
-  <build_depend>jsk_topic_tools</build_depend>
-  <build_depend>message_generation</build_depend>
-  <build_depend>mk</build_depend>
-  <build_depend>people_msgs</build_depend>
-  <build_depend>rosbuild</build_depend>
-  <build_depend>rviz</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">image_geometry</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">jsk_footstep_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">jsk_gui_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">jsk_hark_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">jsk_recognition_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">jsk_topic_tools</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">message_generation</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">mk</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">people_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rosbuild</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rviz</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>urdfdom_py</build_depend>
-  <build_depend>view_controller_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">urdfdom_py</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">view_controller_msgs</build_depend>
+  <!-- ROS 2: the plugins are built against rviz_common/rviz_rendering/rviz_default_plugins;
+       the jsk_hark_msgs, jsk_footstep_msgs, jsk_recognition_msgs, jsk_gui_msgs, people_msgs
+       and view_controller_msgs based plugins are ROS 1 only, see CMakeLists.txt -->
+  <build_depend condition="$ROS_VERSION == 2">jsk_ros1_ros2_compat</build_depend>
+  <!-- header only boost (mutex, circular_buffer, format) and Eigen, shared with the ROS 1 code -->
+  <build_depend condition="$ROS_VERSION == 2">boost</build_depend>
+  <build_depend condition="$ROS_VERSION == 2">eigen</build_depend>
+  <depend condition="$ROS_VERSION == 2">action_msgs</depend>
+  <depend condition="$ROS_VERSION == 2">ament_index_cpp</depend>
+  <depend condition="$ROS_VERSION == 2">image_transport</depend>
+  <depend condition="$ROS_VERSION == 2">libopencv-dev</depend>
+  <depend condition="$ROS_VERSION == 2">pluginlib</depend>
+  <depend condition="$ROS_VERSION == 2">qtbase5-dev</depend>
+  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
+  <depend condition="$ROS_VERSION == 2">resource_retriever</depend>
+  <depend condition="$ROS_VERSION == 2">rviz_common</depend>
+  <depend condition="$ROS_VERSION == 2">rviz_default_plugins</depend>
+  <depend condition="$ROS_VERSION == 2">rviz_ogre_vendor</depend>
+  <depend condition="$ROS_VERSION == 2">rviz_rendering</depend>
+  <depend condition="$ROS_VERSION == 2">sensor_msgs</depend>
+  <depend condition="$ROS_VERSION == 2">std_srvs</depend>
+  <depend condition="$ROS_VERSION == 2">visualization_msgs</depend>
 
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-scipy</exec_depend>
-  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-scipy</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1 and $ROS_PYTHON_VERSION == 3">python3-scipy</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>diagnostic_msgs</exec_depend>
-  <exec_depend>dynamic_reconfigure</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">dynamic_reconfigure</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>image_geometry</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">image_geometry</exec_depend>
   <exec_depend>image_publisher</exec_depend>
-  <exec_depend>jsk_footstep_msgs</exec_depend>
-  <exec_depend>jsk_gui_msgs</exec_depend>
-  <exec_depend>jsk_hark_msgs</exec_depend>
-  <exec_depend>jsk_recognition_msgs</exec_depend>
-  <exec_depend>jsk_recognition_utils</exec_depend>
-  <exec_depend>jsk_topic_tools</exec_depend>
-  <exec_depend>message_generation</exec_depend>
-  <exec_depend>people_msgs</exec_depend>
-  <exec_depend>posedetection_msgs</exec_depend>
-  <exec_depend>rviz</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">jsk_footstep_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">jsk_gui_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">jsk_hark_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">jsk_recognition_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">jsk_topic_tools</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">message_generation</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">people_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">posedetection_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rviz</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>urdfdom_py</exec_depend>
-  <exec_depend>view_controller_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">urdfdom_py</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">view_controller_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">rviz2</exec_depend>
 
-  <test_depend>rostest</test_depend>
-  <test_depend>pr2_description</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires pr2_description -->
-  <test_depend>joint_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires joint_state_publisher -->
-  <test_depend>robot_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires robot_state_publisher -->
-  <test_depend>jsk_data</test_depend> <!-- install_sample_data requries jsk_data -->
-  <test_depend>jsk_tools</test_depend> <!-- test_overlay_text_interface.test requries jsk_tools -->
-  <test_depend>openni2_launch</test_depend> <!-- normal.test, face_detector.test requires openni2_launch -->
-  <test_depend>image_transport</test_depend> <!-- normal.test, face_detector.test requires image_transport -->
+  <test_depend condition="$ROS_VERSION == 1">rostest</test_depend>
+  <test_depend condition="$ROS_VERSION == 1">pr2_description</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires pr2_description -->
+  <test_depend condition="$ROS_VERSION == 1">joint_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires joint_state_publisher -->
+  <test_depend condition="$ROS_VERSION == 1">robot_state_publisher</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires robot_state_publisher -->
+  <test_depend condition="$ROS_VERSION == 1">jsk_data</test_depend> <!-- install_sample_data requries jsk_data -->
+  <test_depend condition="$ROS_VERSION == 1">jsk_tools</test_depend> <!-- test_overlay_text_interface.test requries jsk_tools -->
+  <test_depend condition="$ROS_VERSION == 1">openni2_launch</test_depend> <!-- normal.test, face_detector.test requires openni2_launch -->
+  <test_depend condition="$ROS_VERSION == 1">image_transport</test_depend> <!-- normal.test, face_detector.test requires image_transport -->
   <!--test_depend>jsk_pcl_ros_utils</test_depend--> <!-- normal.test requires jsk_pcl/NormalConcatenater -->
   <!-- test_depend>jsk_pcl_ros</test_depend--> <!-- normal.test requires jsk_pcl/NormalConcatenater (for kinetic) -->
-  <test_depend>face_detector</test_depend> <!-- face_detector.test requires face_detector -->
+  <test_depend condition="$ROS_VERSION == 1">face_detector</test_depend> <!-- face_detector.test requires face_detector -->
+
+  <member_of_group condition="$ROS_VERSION == 2">rosidl_interface_packages</member_of_group>
 
   <export>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
     <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>
 
