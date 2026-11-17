@@ -74,6 +74,9 @@ class StatusLight(Plugin):
     def trigger_configuration(self):
         self._widget.trigger_configuration()
 
+    def shutdown_plugin(self):
+        self._widget.shutdown()
+
 
 class StatusLightWidget(QWidget):
     _UNKNOWN_COLOR = QColor("#dddddd")
@@ -96,6 +99,12 @@ class StatusLightWidget(QWidget):
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
         self._update_plot_timer.start(int(1000 / 15))
+
+    def shutdown(self):
+        # The Qt timers outlive the rclpy context otherwise, and querying
+        # the graph from a destroyed context raises RCLError (ROS 2).
+        self._update_topic_timer.stop()
+        self._update_plot_timer.stop()
 
     def redraw(self):
         self.update()

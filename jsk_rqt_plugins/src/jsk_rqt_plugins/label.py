@@ -83,6 +83,9 @@ class StringLabel(Plugin):
     def trigger_configuration(self):
         self._widget.trigger_configuration()
 
+    def shutdown_plugin(self):
+        self._widget.shutdown()
+
 
 class StringLabelWidget(QWidget):
     def __init__(self, node=None):
@@ -113,6 +116,12 @@ class StringLabelWidget(QWidget):
         self._update_label_timer = QTimer(self)
         self._update_label_timer.timeout.connect(self.updateLabel)
         self._update_label_timer.start(40)
+
+    def shutdown(self):
+        # The Qt timers outlive the rclpy context otherwise, and querying
+        # the graph from a destroyed context raises RCLError (ROS 2).
+        self._update_topic_timer.stop()
+        self._update_label_timer.stop()
 
     def trigger_configuration(self):
         self._dialog.exec_()

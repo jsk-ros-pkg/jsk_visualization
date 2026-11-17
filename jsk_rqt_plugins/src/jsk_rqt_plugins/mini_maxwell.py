@@ -47,6 +47,9 @@ class DRCEnvironmentViewer(Plugin):
         self._widget = DRCEnvironmentViewerWidget(getattr(context, 'node', None))
         context.add_widget(self._widget)
 
+    def shutdown_plugin(self):
+        self._widget.shutdown()
+
 
 class DRCEnvironmentViewerWidget(QWidget):
     _SMILEY = ":)"
@@ -76,6 +79,10 @@ class DRCEnvironmentViewerWidget(QWidget):
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
         self._update_plot_timer.start(int(1000 / 15))
+
+    def shutdown(self):
+        # The Qt timer outlives the rclpy context otherwise (ROS 2)
+        self._update_plot_timer.stop()
 
     def isDisabledCallback(self, msg):
         with self.lock:

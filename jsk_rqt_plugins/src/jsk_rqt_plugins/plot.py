@@ -272,6 +272,9 @@ class Plot3D(Plugin):
             no_legend=self._args.no_legend)
         context.add_widget(self._widget)
 
+    def shutdown_plugin(self):
+        self._widget.shutdown()
+
     def _resolve_topic_name(self, name):
         """
         rosgraph.names.script_resolve_name() for ROS 2, which has no
@@ -406,6 +409,12 @@ class Plot3DWidget(QWidget):
             self._add_initial_topics()
             if self._initial_topics:
                 self._initial_topic_timer.start(1000)
+
+    def shutdown(self):
+        # The Qt timers outlive the rclpy context otherwise (ROS 2)
+        self._update_plot_timer.stop()
+        self._initial_topic_timer.stop()
+        self.clean_up_subscribers()
 
     def _add_initial_topics(self):
         self._initial_topics = [topic_name for topic_name in self._initial_topics
