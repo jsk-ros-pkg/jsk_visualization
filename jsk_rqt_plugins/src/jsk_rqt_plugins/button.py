@@ -8,7 +8,7 @@ class ServiceButtons(Plugin):
     def __init__(self, context):
         super(ServiceButtons, self).__init__(context)
         self.setObjectName("ServiceButtons")
-        self._widget = ServiceButtonWidget()
+        self._widget = ServiceButtonWidget(getattr(context, 'node', None))
         context.add_widget(self._widget)
     def save_settings(self, plugin_settings, instance_settings):
         self._widget.save_settings(plugin_settings, instance_settings)
@@ -21,5 +21,5 @@ class ServiceButtonWidget(ServiceButtonGeneralWidget):
     """
     Qt widget to visualize multiple buttons
     """
-    def __init__(self):
-        super(ServiceButtonWidget, self).__init__(button_type = "push")
+    def __init__(self, node=None):
+        super(ServiceButtonWidget, self).__init__(button_type = "push", node=node)

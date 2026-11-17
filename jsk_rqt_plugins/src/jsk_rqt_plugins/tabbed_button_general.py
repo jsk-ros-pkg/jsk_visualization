@@ -21,7 +21,7 @@ from python_qt_binding.QtGui import QPen
 import yaml
 
 from resource_retriever import get_filename
-import rospy
+from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
 from std_msgs.msg import Time
@@ -66,12 +66,13 @@ from jsk_rqt_plugins.button_general import ServiceButtonGeneralWidget
 
 
 class ServiceTabbedButtonGeneralWidget(QWidget):
-    def __init__(self):
+    def __init__(self, node=None):
         super(ServiceTabbedButtonGeneralWidget, self).__init__()
+        self._node = node
         self._tab_settings = None
 
-        if rospy.has_param("~tabbed_layout"):
-            tabbed_layout = rospy.get_param("~tabbed_layout")
+        if ros_compat.has_param(self._node, "~tabbed_layout"):
+            tabbed_layout = ros_compat.get_param(self._node, "~tabbed_layout")
             self._tab_list = []
             if not 'tab_list' in tabbed_layout:
                 self.showError("Cannot find tab_list in %s"%(tabbed_layout))
@@ -113,7 +114,7 @@ class ServiceTabbedButtonGeneralWidget(QWidget):
 
         qtab = QTabWidget()
         for tb in self._tab_list:
-            wg = ServiceButtonGeneralWidget_in_tab(tb)
+            wg = ServiceButtonGeneralWidget_in_tab(tb, node=self._node)
             qtab.addTab(wg, tb['name'] )
 
         #self.setWindowTitle('Tab Layout')
@@ -139,8 +140,8 @@ class ServiceButtonGeneralWidget_in_tab(ServiceButtonGeneralWidget):
     """
     Qt widget to visualize multiple buttons
     """
-    def __init__(self, settings):
-        super(ServiceButtonGeneralWidget_in_tab, self).__init__()
+    def __init__(self, settings, node=None):
+        super(ServiceButtonGeneralWidget_in_tab, self).__init__(node=node)
         yaml_file = settings['yaml_file']
         namespace = None
         if 'type' in settings:

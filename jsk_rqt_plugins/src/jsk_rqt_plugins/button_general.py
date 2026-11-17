@@ -23,6 +23,7 @@ import yaml
 
 from resource_retriever import get_filename
 import rospy
+from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
 from std_msgs.msg import Time
@@ -63,15 +64,16 @@ class ServiceButtonGeneralWidget(QWidget):
     """
     Qt widget to visualize multiple buttons
     """
-    def __init__(self, button_type="push"):
+    def __init__(self, button_type="push", node=None):
         super(ServiceButtonGeneralWidget, self).__init__()
+        self._node = node
         self.button_type = button_type
         self._layout_param = None
         self._translator = QTranslator()
         self._dialog = QFileDialog()
         self._dialog.setFileMode(QFileDialog.ExistingFile)
 
-        if rospy.has_param("~layout_yaml_file"):
+        if ros_compat.has_param(self._node, "~layout_yaml_file"):
             self.loadLayoutYaml(None)
 
         self.show()
@@ -82,7 +84,7 @@ class ServiceButtonGeneralWidget(QWidget):
     def loadLayoutYaml(self, layout_param):
         # Initialize layout of the buttons from yaml file
         # The yaml file can be specified by rosparam
-        layout_yaml_file = rospy.get_param("~layout_yaml_file", layout_param)
+        layout_yaml_file = ros_compat.get_param(self._node, "~layout_yaml_file", layout_param)
         resolved_layout_yaml_file = get_filename(layout_yaml_file)
         if (resolved_layout_yaml_file is not None
                 and resolved_layout_yaml_file.startswith("file://")):
@@ -240,17 +242,17 @@ class ServiceButtonGeneralWidget(QWidget):
     def save_settings(self, plugin_settings, instance_settings):
         if self._layout_param:
             instance_settings.set_value("layout_param", self._layout_param)
-            rospy.loginfo("save setting is called. %s" % self._layout_param)
+            ros_compat.loginfo(self._node, "save setting is called. %s" % self._layout_param)
 
     def restore_settings(self, plugin_settings, instance_settings):
         if instance_settings.value("layout_param"):
             self._layout_param = instance_settings.value("layout_param")
-            rospy.loginfo("restore setting is called. %s" % self._layout_param)
+            ros_compat.loginfo(self._node, "restore setting is called. %s" % self._layout_param)
             updated = self.loadLayoutYaml(self._layout_param)
             if updated:
-                rospy.loginfo("succeeded to restore. %s" % self._layout_param)
+                ros_compat.loginfo(self._node, "succeeded to restore. %s" % self._layout_param)
             else:
-                rospy.logerr("failed to restore. %s" % self._layout_param)
+                ros_compat.logerr(self._node, "failed to restore. %s" % self._layout_param)
 
     def trigger_configuration(self):
         self._layout_param = self._dialog.getOpenFileName(
@@ -259,12 +261,12 @@ class ServiceButtonGeneralWidget(QWidget):
 
         if self._layout_param:
             updated = self.loadLayoutYaml(self._layout_param)
-            rospy.loginfo(
+            ros_compat.loginfo(self._node,
                 "trigger configuration is called. %s" % self._layout_param)
             if updated:
-                rospy.loginfo(
+                ros_compat.loginfo(self._node,
                     "succeeded to configure. %s" % self._layout_param)
             else:
-                rospy.logerr(
+                ros_compat.logerr(self._node,
                     "failed to configure. %s" % self._layout_param)
                 self.trigger_configuration()

@@ -33,6 +33,8 @@
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-sklearn</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-sklearn</exec_depend>
   <exec_depend>message_runtime</exec_depend>
+  <!-- rospy_rclpy_compat.py, the ROS 1 / ROS 2 compatibility helpers -->
+  <exec_depend>jsk_ros1_ros2_compat</exec_depend>
 
   <test_depend>roslaunch</test_depend>
   <test_depend>rostest</test_depend>

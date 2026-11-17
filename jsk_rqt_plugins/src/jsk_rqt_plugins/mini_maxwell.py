@@ -18,7 +18,7 @@ from python_qt_binding.QtGui import QIcon
 from python_qt_binding.QtGui import QPainter
 from python_qt_binding.QtGui import QPen
 
-import rospy
+from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool, Time
 
@@ -37,7 +37,7 @@ class DRCEnvironmentViewer(Plugin):
     def __init__(self, context):
         super(DRCEnvironmentViewer, self).__init__(context)
         self.setObjectName("DRCEnvironmentViewer")
-        self._widget = DRCEnvironmentViewerWidget()
+        self._widget = DRCEnvironmentViewerWidget(getattr(context, 'node', None))
         context.add_widget(self._widget)
 
 
@@ -48,21 +48,22 @@ class DRCEnvironmentViewerWidget(QWidget):
     _DISABLED_COLOR = QColor("#BDBDBD")
     _BLACKOUT_COLOR = QColor("#F44336")
 
-    def __init__(self):
+    def __init__(self, node=None):
         self.lock = Lock()
         super(DRCEnvironmentViewerWidget, self).__init__()
+        self._node = node
         self.is_disabled = False
         self.is_blackout = False
-        self.next_whiteout_time = rospy.Time.now()
-        self.blackout_time = rospy.Time.now()
+        self.next_whiteout_time = ros_compat.now_sec(self._node)
+        self.blackout_time = ros_compat.now_sec(self._node)
         self.event = None
-        self.sub_is_disabled = rospy.Subscriber(
+        self.sub_is_disabled = ros_compat.create_subscription(self._node,
             "/drc_2015_environment/is_disabled",
             Bool, self.isDisabledCallback)
-        self.sub_is_blackout = rospy.Subscriber(
+        self.sub_is_blackout = ros_compat.create_subscription(self._node,
             "/drc_2015_environment/is_blackout",
             Bool, self.isBlackoutCallback)
-        self.sub_next_whiteout_time = rospy.Subscriber(
+        self.sub_next_whiteout_time = ros_compat.create_subscription(self._node,
             "/drc_2015_environment/next_whiteout_time",
             Time, self.nextWhiteoutTimeCallback)
         self._update_plot_timer = QTimer(self)
@@ -76,12 +77,12 @@ class DRCEnvironmentViewerWidget(QWidget):
     def isBlackoutCallback(self, msg):
         with self.lock:
             if not self.is_blackout and msg.data:
-                self.blackout_time = rospy.Time.now()
+                self.blackout_time = ros_compat.now_sec(self._node)
             self.is_blackout = msg.data
 
     def nextWhiteoutTimeCallback(self, msg):
         with self.lock:
-            self.next_whiteout_time = msg.data
+            self.next_whiteout_time = ros_compat.stamp_to_sec(msg.data)
 
     def redraw(self):
         self.update()
@@ -105,11 +106,11 @@ class DRCEnvironmentViewerWidget(QWidget):
                 qp.fillRect(rect, self._BLACKOUT_COLOR)
                 qp.drawText(rect, QtCore.Qt.AlignCenter, self._FROWN)
                 time_diff = (
-                    self.next_whiteout_time - rospy.Time.now()).to_sec()
+                    self.next_whiteout_time - ros_compat.now_sec(self._node))
                 if time_diff < 0:
                     time_diff = 0
                 time_ratio = time_diff / (
-                    self.next_whiteout_time - self.blackout_time).to_sec()
+                    self.next_whiteout_time - self.blackout_time)
                 qp.setFont(QFont('Helvetica', 30))
                 qp.drawText(
                     0, rect.height() - 150, rect.width(), 150,

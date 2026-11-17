@@ -24,6 +24,7 @@ import yaml
 from resource_retriever import get_filename
 import roslib
 import rospy
+from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
 from rqt_gui_py.plugin import Plugin
 import rqt_plot
 from std_msgs.msg import Bool
@@ -100,7 +101,7 @@ class StringLabel(Plugin):
     def __init__(self, context):
         super(StringLabel, self).__init__(context)
         self.setObjectName("StringLabel")
-        self._widget = StringLabelWidget()
+        self._widget = StringLabelWidget(getattr(context, 'node', None))
         context.add_widget(self._widget)
 
     def save_settings(self, plugin_settings, instance_settings):
@@ -114,8 +115,9 @@ class StringLabel(Plugin):
 
 
 class StringLabelWidget(QWidget):
-    def __init__(self):
+    def __init__(self, node=None):
         super(StringLabelWidget, self).__init__()
+        self._node = node
         self.lock = Lock()
         vbox = QVBoxLayout(self)
         self.label = QLabel()
@@ -135,7 +137,7 @@ class StringLabelWidget(QWidget):
         # to update label visualization
         self._dialog = LineEditDialog()
         self._rosdata = None
-        self._start_time = rospy.get_time()
+        self._start_time = ros_compat.now_sec(self._node)
         self._update_label_timer = QTimer(self)
         self._update_label_timer.timeout.connect(self.updateLabel)
         self._update_label_timer.start(40)
@@ -163,7 +165,7 @@ class StringLabelWidget(QWidget):
         try:
             self.label.setText(self.string)
         except TypeError as e:
-            rospy.logwarn(e)
+            ros_compat.logwarn(self._node, str(e))
 
     def updateTopics(self):
         need_to_update = False
@@ -195,7 +197,7 @@ class StringLabelWidget(QWidget):
                 self._rosdata.close()
                 self._rosdata = ROSData(topic, self._start_time)
             else:
-                rospy.logwarn("%s is already subscribed", topic)
+                ros_compat.logwarn(self._node, "%s is already subscribed" % topic)
         self._active_topic = topic
 
     def onActivated(self, number):

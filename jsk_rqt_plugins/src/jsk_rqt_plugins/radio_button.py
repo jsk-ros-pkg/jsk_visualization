@@ -8,7 +8,7 @@ class ServiceRadioButtons(Plugin):
     def __init__(self, context):
         super(ServiceRadioButtons, self).__init__(context)
         self.setObjectName("ServiceRadioButtons")
-        self._widget = ServiceRadioButtonWidget()
+        self._widget = ServiceRadioButtonWidget(getattr(context, 'node', None))
         context.add_widget(self._widget)
     def save_settings(self, plugin_settings, instance_settings):
         self._widget.save_settings(plugin_settings, instance_settings)
@@ -21,5 +21,5 @@ class ServiceRadioButtonWidget(ServiceButtonGeneralWidget):
     """
     Qt widget to visualize multiple radio buttons
     """
-    def __init__(self):
-        super(ServiceRadioButtonWidget, self).__init__(button_type = "radio")
+    def __init__(self, node=None):
+        super(ServiceRadioButtonWidget, self).__init__(button_type = "radio", node=node)

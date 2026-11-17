@@ -27,7 +27,7 @@ from python_qt_binding.QtGui import QColor
 from python_qt_binding.QtGui import QIcon
 
 import rospkg
-import rospy
+from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
 from rqt_gui_py.plugin import Plugin
 from rqt_plot.rosplot import ROSData, RosPlotException
 from rqt_py_common.topic_completer import TopicCompleter
@@ -245,6 +245,7 @@ class Plot3D(Plugin):
         self.setObjectName('Plot3D')
         self._args = self._parse_args(context.argv())
         self._widget = Plot3DWidget(
+            node=getattr(context, 'node', None),
             initial_topics=self._args.topics,
             start_paused=self._args.start_paused,
             buffer_length=self._args.buffer,
@@ -316,8 +317,9 @@ class Plot3DWidget(QWidget):
     _redraw_interval = 40
 
     def __init__(self, initial_topics=None, start_paused=False,
-                 buffer_length=100, use_poly=True, no_legend=False):
+                 buffer_length=100, use_poly=True, no_legend=False, node=None):
         super(Plot3DWidget, self).__init__()
+        self._node = node
         self.setObjectName('Plot3DWidget')
         self._buffer_length = buffer_length
         self._initial_topics = initial_topics
@@ -345,7 +347,7 @@ class Plot3DWidget(QWidget):
         self._topic_completer.update_topics()
         self.topic_edit.setCompleter(self._topic_completer)
 
-        self._start_time = rospy.get_time()
+        self._start_time = ros_compat.now_sec(self._node)
         self._rosdata = {}
         self._remove_topic_menu = QMenu()
 

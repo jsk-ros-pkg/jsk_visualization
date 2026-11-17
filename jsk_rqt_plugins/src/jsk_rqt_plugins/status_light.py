@@ -23,6 +23,7 @@ import yaml
 
 from resource_retriever import get_filename
 import rospy
+from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
 from std_msgs.msg import Time
@@ -60,7 +61,7 @@ class StatusLight(Plugin):
     def __init__(self, context):
         super(StatusLight, self).__init__(context)
         self.setObjectName("StatusLight")
-        self._widget = StatusLightWidget()
+        self._widget = StatusLightWidget(getattr(context, 'node', None))
         context.add_widget(self._widget)
 
     def save_settings(self, plugin_settings, instance_settings):
@@ -79,8 +80,9 @@ class StatusLightWidget(QWidget):
     _WARN_COLOR = QColor("#FFCA00")
     _ERROR_COLOR = QColor("#F44336")
 
-    def __init__(self):
+    def __init__(self, node=None):
         super(StatusLightWidget, self).__init__()
+        self._node = node
         self.lock = Lock()
         self.status_sub = None
         self.status = 0
@@ -145,7 +147,7 @@ class StatusLightWidget(QWidget):
     def setupSubscriber(self, topic):
         if self.status_sub:
             self.status_sub.unregister()
-        self.status_sub = rospy.Subscriber(topic, UInt8,
+        self.status_sub = ros_compat.create_subscription(self._node, topic, UInt8,
                                            self.statusCallback)
         self._active_topic = topic
 
