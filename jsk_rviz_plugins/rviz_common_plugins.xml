@@ -253,4 +253,12 @@
     </description>
     <message_type>jsk_footstep_msgs/msg/FootstepArray</message_type>
   </class>
+
+  <class name="jsk_rviz_plugin/YesNoButton"
+         type="jsk_rviz_plugins::YesNoButtonInterface"
+         base_class_type="rviz_common::Panel">
+    <description>
+      A panel widget for yes/no button
+    </description>
+  </class>
 </library>

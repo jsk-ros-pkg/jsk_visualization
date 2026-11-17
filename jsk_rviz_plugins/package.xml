@@ -25,7 +25,7 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend condition="$ROS_VERSION == 1">image_geometry</build_depend>
   <build_depend>jsk_footstep_msgs</build_depend>
-  <build_depend condition="$ROS_VERSION == 1">jsk_gui_msgs</build_depend>
+  <build_depend>jsk_gui_msgs</build_depend>
   <build_depend>jsk_hark_msgs</build_depend>
   <build_depend condition="$ROS_VERSION == 1">jsk_recognition_msgs</build_depend>
   <build_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</build_depend>
@@ -39,8 +39,8 @@
   <build_depend condition="$ROS_VERSION == 1">urdfdom_py</build_depend>
   <build_depend condition="$ROS_VERSION == 1">view_controller_msgs</build_depend>
   <!-- ROS 2: the plugins are built against rviz_common/rviz_rendering/rviz_default_plugins;
-       the jsk_hark_msgs, jsk_footstep_msgs, jsk_recognition_msgs, jsk_gui_msgs, people_msgs
-       and view_controller_msgs based plugins are ROS 1 only, see CMakeLists.txt -->
+       the jsk_recognition_msgs, people_msgs and view_controller_msgs based plugins
+       are ROS 1 only, see CMakeLists.txt -->
   <build_depend condition="$ROS_VERSION == 2">jsk_ros1_ros2_compat</build_depend>
   <!-- header only boost (mutex, circular_buffer, format) and Eigen, shared with the ROS 1 code -->
   <build_depend condition="$ROS_VERSION == 2">boost</build_depend>
@@ -70,7 +70,7 @@
   <exec_depend condition="$ROS_VERSION == 1">image_geometry</exec_depend>
   <exec_depend>image_publisher</exec_depend>
   <exec_depend>jsk_footstep_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">jsk_gui_msgs</exec_depend>
+  <exec_depend>jsk_gui_msgs</exec_depend>
   <exec_depend>jsk_hark_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">jsk_recognition_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</exec_depend>

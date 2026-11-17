@@ -47,7 +47,6 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   #   src/rviz_util.h                                       -> only used by simple_occupancy_grid_array_display
   #   src/people_position_measurement_array_display.{h,cpp} -> people_msgs
   #   src/view_controller/tablet_view_controller.{h,cpp}    -> view_controller_msgs
-  #   src/yes_no_button_interface.{h,cpp}                   -> jsk_gui_msgs
   #
   # src/overlay_camera_display.{h,cpp} is blocked on rviz itself: it reads the rendered
   # scene back with Ogre::RenderTarget::copyContentsToMemory(), but rviz_rendering does
@@ -66,6 +65,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   find_package(image_transport REQUIRED)
   find_package(jsk_hark_msgs REQUIRED)
   find_package(jsk_footstep_msgs REQUIRED)
+  find_package(jsk_gui_msgs REQUIRED)
   find_package(jsk_ros1_ros2_compat REQUIRED)
   find_package(pluginlib REQUIRED)
   find_package(rclcpp REQUIRED)
@@ -135,6 +135,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     src/tf_trajectory_display.h
     src/twist_stamped_display.h
     src/video_capture_display.h
+    src/yes_no_button_interface.h
   )
   set(SOURCE_FILES
     src/ambient_sound_display_groovy.cpp
@@ -172,6 +173,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     src/tf_trajectory_display.cpp
     src/twist_stamped_display.cpp
     src/video_capture_display.cpp
+    src/yes_no_button_interface.cpp
   )
 
   set(CMAKE_AUTOMOC ON)
@@ -192,6 +194,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   )
   target_link_libraries(${PROJECT_NAME}_plugins
     ${cpp_typesupport_target}
+    ${jsk_gui_msgs_TARGETS}
     ${jsk_footstep_msgs_TARGETS}
     ${jsk_hark_msgs_TARGETS}
     ${action_msgs_TARGETS}
