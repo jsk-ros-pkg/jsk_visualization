@@ -2,15 +2,25 @@
 #define RECORD_ACTION_H
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/panel.hpp>
+#else
 #include <ros/ros.h>
 
 #include <rviz/panel.h>
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  include <QtWidgets>
 #else
 #  include <QtGui>
 #endif
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_rviz_plugins/msg/record_command.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_rviz_plugins, RecordCommand)
+#else
 #include <jsk_rviz_plugins/RecordCommand.h>
+#endif
 #endif
 
 class QLineEdit;
@@ -29,6 +39,9 @@ namespace jsk_rviz_plugins
     public:
     RecordAction( QWidget* parent = 0 );
 
+#if ROS_VERSION_MAJOR != 1
+    virtual void onInitialize();
+#endif
     virtual void load( const rviz::Config& config );
     virtual void save( rviz::Config config ) const;
 
@@ -72,8 +85,13 @@ namespace jsk_rviz_plugins
 
     std::vector<motionListLayout> motion_list_layouts_;
 
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Publisher<jsk_rviz_plugins::RecordCommand>::SharedPtr pub_;
+    rclcpp::Node::SharedPtr node_;
+#else
     ros::Publisher pub_;
     ros::NodeHandle nh_;
+#endif
     RecordState rstate_;
   };
 

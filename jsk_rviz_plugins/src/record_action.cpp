@@ -6,6 +6,9 @@
 #include <QLabel>
 
 #include "record_action.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#endif
 
 namespace jsk_rviz_plugins
 {
@@ -34,9 +37,20 @@ namespace jsk_rviz_plugins
 
     setLayout( layout );
     connect( record_interface_button_, SIGNAL( clicked() ), this, SLOT( recordClick() ));
+#if ROS_VERSION_MAJOR != 1
+    rstate_ = IDLE;
+  }
+
+  void RecordAction::onInitialize()
+  {
+    node_ = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
+    pub_ = node_->create_publisher<jsk_rviz_plugins::RecordCommand>( "/record_command", 1 );
+  }
+#else
     pub_ = nh_.advertise<jsk_rviz_plugins::RecordCommand>( "/record_command", 1 );
     rstate_ = IDLE;
   }
+#endif
 
   void RecordAction::OnClickPlayButton(int id){
     std::vector<motionListLayout>::iterator it = motion_list_layouts_.begin();
@@ -45,7 +59,11 @@ namespace jsk_rviz_plugins
         jsk_rviz_plugins::RecordCommand msg;
         msg.target = (it->target_name_)->text().toStdString();
         msg.command = jsk_rviz_plugins::RecordCommand::PLAY;
+#if ROS_VERSION_MAJOR != 1
+        pub_->publish(msg);
+#else
         pub_.publish(msg);
+#endif
         break;
       }
       ++it;
@@ -88,7 +106,11 @@ namespace jsk_rviz_plugins
       jsk_rviz_plugins::RecordCommand msg;
       msg.target = topic_name;
       msg.command = jsk_rviz_plugins::RecordCommand::RECORD;
+#if ROS_VERSION_MAJOR != 1
+      pub_->publish(msg);
+#else
       pub_.publish(msg);
+#endif
       rstate_ = RECORD;
       record_interface_button_->setText(QString("Stop"));
       record_motion_name_editor_->setDisabled(true);
@@ -99,7 +121,11 @@ namespace jsk_rviz_plugins
       jsk_rviz_plugins::RecordCommand msg;
       msg.target = topic_name;
       msg.command = jsk_rviz_plugins::RecordCommand::RECORD_STOP;
+#if ROS_VERSION_MAJOR != 1
+      pub_->publish(msg);
+#else
       pub_.publish(msg);
+#endif
       rstate_ = IDLE;
 
       motionListLayout tll;
@@ -141,5 +167,9 @@ namespace jsk_rviz_plugins
 
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::RecordAction, rviz::Panel )

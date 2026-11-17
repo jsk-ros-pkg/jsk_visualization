@@ -2,9 +2,16 @@
 #define CANCEL_ACTION_H
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <action_msgs/srv/cancel_goal.hpp>
+
+#include <rviz_common/panel.hpp>
+#else
 #include <ros/ros.h>
 
 #include <rviz/panel.h>
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  include <QtWidgets>
 #else
@@ -28,6 +35,9 @@ Q_OBJECT
       CancelAction( QWidget* parent = 0 );
 
       
+#if ROS_VERSION_MAJOR != 1
+      virtual void onInitialize();
+#endif
       virtual void load( const rviz::Config& config );
       virtual void save( rviz::Config config ) const;
 
@@ -65,16 +75,24 @@ Q_OBJECT
 	QHBoxLayout* layout_;
 	QPushButton* remove_button_;
 	QLabel* topic_name_;
+#if ROS_VERSION_MAJOR != 1
+	rclcpp::Client<action_msgs::srv::CancelGoal>::SharedPtr client_;
+#else
 	ros::Publisher publisher_;
+#endif
       };
 
       std::vector<topicListLayout> topic_list_layouts_;
 
+#if ROS_VERSION_MAJOR != 1
+      rclcpp::Node::SharedPtr node_;
+#else
       // The ROS publisher for the command velocity.
       ros::Publisher velocity_publisher_;
 
       // The ROS node handle.
       ros::NodeHandle nh_;
+#endif
 
     };
 

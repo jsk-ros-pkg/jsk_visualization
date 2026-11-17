@@ -2,9 +2,15 @@
 #define PUBLISH_TOPIC_H
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/panel.hpp>
+#include <std_msgs/msg/empty.hpp>
+#else
 #include <ros/ros.h>
 
 #include <rviz/panel.h>
+#endif
 #endif
 
 class QLineEdit;
@@ -18,6 +24,9 @@ Q_OBJECT
   public:
       PublishTopic( QWidget* parent = 0 );
 
+#if ROS_VERSION_MAJOR != 1
+      virtual void onInitialize();
+#endif
       virtual void load( const rviz::Config& config );
       virtual void save( rviz::Config config ) const;
 
@@ -40,9 +49,15 @@ Q_OBJECT
 
       QPushButton* send_topic_button_;
 
+#if ROS_VERSION_MAJOR != 1
+      rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr velocity_publisher_;
+
+      rclcpp::Node::SharedPtr node_;
+#else
       ros::Publisher velocity_publisher_;
 
       ros::NodeHandle nh_;
+#endif
     };
 
 }
