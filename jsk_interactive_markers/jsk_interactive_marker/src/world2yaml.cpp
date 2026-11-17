@@ -2,7 +2,25 @@
 #include <fstream>
 #include <vector>
 #include <boost/algorithm/string.hpp>
+#if defined(__has_include)
+#if __has_include(<ros/ros.h>)
+#include <ros/ros.h>
+#endif
+#else
+#include <ros/ros.h>
+#endif
+#if ROS_VERSION_MAJOR != 1
+// tf2's LinearMath is ROS 1 tf's
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2/LinearMath/Quaternion.h>
+namespace tf
+{
+  using tf2::Matrix3x3;
+  using tf2::Quaternion;
+}
+#else
 #include <tf/transform_broadcaster.h>
+#endif
 #include <sstream>
 
 // tutorial demo program

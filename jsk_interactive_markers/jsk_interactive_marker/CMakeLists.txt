@@ -93,6 +93,8 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   find_package(jsk_ros1_ros2_compat REQUIRED)
   find_package(Boost REQUIRED COMPONENTS thread)
   find_package(yaml-cpp REQUIRED)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(TinyXML REQUIRED tinyxml)
   rosidl_get_typesupport_target(_cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
 
   # ROS 1's library jsk_interactive_marker (im_helpers::), with the
@@ -117,7 +119,11 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   add_executable(marker_6dof src/marker_6dof.cpp)
   add_executable(camera_info_publisher src/camera_info_publisher.cpp)
   target_link_libraries(camera_info_publisher yaml-cpp)
-  set(_nodes marker_6dof camera_info_publisher)
+  # world2yaml is not a ROS node, only tf's (tf2's) LinearMath
+  add_executable(world2yaml src/world2yaml.cpp)
+  target_include_directories(world2yaml PRIVATE ${TinyXML_INCLUDE_DIRS})
+  target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
+  set(_nodes marker_6dof camera_info_publisher world2yaml)
   foreach(_node ${_nodes})
     target_link_libraries(${_node}
       ${PROJECT_NAME}_lib
