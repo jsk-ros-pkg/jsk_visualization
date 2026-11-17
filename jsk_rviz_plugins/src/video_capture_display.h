@@ -37,6 +37,15 @@
 #ifndef JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
 #define JSK_RVIZ_PLUGIN_VIDEO_CAPTURE_DISPLAY_H_
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display.hpp>
+#include <rviz_common/properties/string_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <opencv2/opencv.hpp>
+#else
 #include <rviz/display.h>
 #include <rviz/properties/string_property.h>
 #include <rviz/properties/bool_property.h>
@@ -45,6 +54,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <ros/ros.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

@@ -37,6 +37,17 @@
 #ifndef JSK_RVIZ_PLUGIN_RVIZ_SCENE_PUBLISHER_H_
 #define JSK_RVIZ_PLUGIN_RVIZ_SCENE_PUBLISHER_H_
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display.hpp>
+#include <rviz_common/properties/string_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <opencv2/opencv.hpp>
+#include <image_transport/image_transport.hpp>
+#include <cv_bridge/cv_bridge.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#else
 #include <rviz/display.h>
 #include <rviz/properties/string_property.h>
 #include <rviz/properties/bool_property.h>
@@ -47,6 +58,7 @@
 #include <sensor_msgs/Image.h>
 
 #include <ros/ros.h>
+#endif
 
 namespace jsk_rviz_plugins
 {
@@ -68,8 +80,12 @@ namespace jsk_rviz_plugins
     rviz::StringProperty* topic_name_property_;
     std::string topic_name_;
     int image_id_;
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Node::SharedPtr node_;
+#else
     ros::NodeHandle nh_;
     image_transport::ImageTransport it_;
+#endif
     image_transport::Publisher publisher_;
   protected Q_SLOTS:
     void updateTopicName();

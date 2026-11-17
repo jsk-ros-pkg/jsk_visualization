@@ -38,17 +38,31 @@
 #include <opencv2/videoio/legacy/constants_c.h>
 #include <opencv2/imgproc/types_c.h>
 #endif
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/display_group.hpp>
+#include <rviz_common/display.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_rendering/render_window.hpp>
+#include <unistd.h>
+#else
 #include <rviz/display_context.h>
 #include <rviz/view_manager.h>
 #include <rviz/display_group.h>
 #include <rviz/display.h>
 #include <rviz/render_panel.h>
+#endif
 #include <QImage>
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QScreen>
 #include <QGuiApplication>
 #endif
+#if ROS_VERSION_MAJOR != 1
+#include <filesystem>
+#else
 #include <boost/filesystem.hpp>
+#endif
 
 namespace jsk_rviz_plugins
 {
@@ -125,7 +139,11 @@ namespace jsk_rviz_plugins
       }
       else {                    // do not exists, check directory permission
         ROS_INFO("%s do not exists", file_name_.c_str());
+#if ROS_VERSION_MAJOR != 1
+        std::filesystem::path pathname(file_name_);
+#else
         boost::filesystem::path pathname(file_name_);
+#endif
         std::string dirname  = pathname.parent_path().string();
         if (dirname.length() == 0) { // Special case for without path
           dirname = ".";
@@ -224,8 +242,14 @@ namespace jsk_rviz_plugins
     if (capturing_) {
       rviz::RenderPanel* panel = context_->getViewManager()->getRenderPanel();
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#if ROS_VERSION_MAJOR != 1
+      // rviz_common::RenderPanel is not the native window, its render window is
+      QPixmap screenshot
+        = QGuiApplication::primaryScreen()->grabWindow(context_->getViewManager()->getRenderPanel()->getRenderWindow()->winId());
+#else
       QPixmap screenshot
         = QGuiApplication::primaryScreen()->grabWindow(context_->getViewManager()->getRenderPanel()->winId());
+#endif
 #else
       QPixmap screenshot
         = QPixmap::grabWindow(context_->getViewManager()->getRenderPanel()->winId());
@@ -248,6 +272,10 @@ namespace jsk_rviz_plugins
 }
 
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::VideoCaptureDisplay, rviz::Display)
 
