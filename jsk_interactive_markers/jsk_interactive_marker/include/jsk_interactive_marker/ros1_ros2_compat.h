@@ -61,6 +61,121 @@
 // _1 through roscpp's headers there
 #include <boost/bind/bind.hpp>
 using namespace boost::placeholders;
+
+#include <chrono>
+#include <string>
+#include <vector>
+
+namespace ros
+{
+  // the ros::TimerEvent of ROS 1's timer callbacks, given by
+  // jsk_interactive_marker::createTimer() below
+  struct TimerEvent
+  {
+    rclcpp::Time current_real;
+  };
+}
+
+namespace jsk_interactive_marker
+{
+  // ROS 1's `ros::NodeHandle pnh("~")` for the parameters:
+  // pnh.param(name, value, default), getParam() and hasParam() on the
+  // parameters of the node. They are declared when first read, dynamically
+  // typed as rospy does, so that e.g. `object_x: 1` is read as a double as
+  // on ROS 1.
+  class ParamHandle
+  {
+  public:
+    explicit ParamHandle(rclcpp::Node::SharedPtr node) : node_(node) {}
+
+    bool hasParam(const std::string& name)
+    {
+      return value(name).get_type() != rclcpp::ParameterType::PARAMETER_NOT_SET;
+    }
+
+    template<typename T>
+    bool getParam(const std::string& name, T& out)
+    {
+      return convert(value(name), out);
+    }
+
+    template<typename T>
+    void param(const std::string& name, T& out, const T& default_value)
+    {
+      if (!getParam(name, out)) {
+        out = default_value;
+        // shown by `ros2 param get` as with rospy.get_param()'s default
+        node_->set_parameter(rclcpp::Parameter(name, rclcpp::ParameterValue(default_value)));
+      }
+    }
+
+  protected:
+    rclcpp::ParameterValue value(const std::string& name)
+    {
+      if (!node_->has_parameter(name)) {
+        rcl_interfaces::msg::ParameterDescriptor descriptor;
+        descriptor.dynamic_typing = true;
+        node_->declare_parameter(name, rclcpp::ParameterValue(), descriptor);
+      }
+      return node_->get_parameter(name).get_parameter_value();
+    }
+
+    static bool convert(const rclcpp::ParameterValue& v, bool& out)
+    {
+      if (v.get_type() != rclcpp::ParameterType::PARAMETER_BOOL) return false;
+      out = v.get<bool>();
+      return true;
+    }
+    static bool convert(const rclcpp::ParameterValue& v, int& out)
+    {
+      if (v.get_type() != rclcpp::ParameterType::PARAMETER_INTEGER) return false;
+      out = v.get<int64_t>();
+      return true;
+    }
+    static bool convert(const rclcpp::ParameterValue& v, double& out)
+    {
+      if (v.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE) out = v.get<double>();
+      else if (v.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) out = v.get<int64_t>();
+      else return false;
+      return true;
+    }
+    static bool convert(const rclcpp::ParameterValue& v, std::string& out)
+    {
+      if (v.get_type() != rclcpp::ParameterType::PARAMETER_STRING) return false;
+      out = v.get<std::string>();
+      return true;
+    }
+    static bool convert(const rclcpp::ParameterValue& v, std::vector<double>& out)
+    {
+      if (v.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY) {
+        out = v.get<std::vector<double> >();
+      }
+      else if (v.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY) {
+        std::vector<int64_t> integers = v.get<std::vector<int64_t> >();
+        out.assign(integers.begin(), integers.end());
+      }
+      else return false;
+      return true;
+    }
+
+    rclcpp::Node::SharedPtr node_;
+  };
+
+  // ROS 1's nh.createTimer(ros::Duration(period), callback), with the
+  // ros::TimerEvent above for the callback
+  template<typename CallbackT>
+  rclcpp::TimerBase::SharedPtr createTimer(rclcpp::Node::SharedPtr node, double period, CallbackT callback)
+  {
+    rclcpp::Clock::SharedPtr clock = node->get_clock();
+    return node->create_timer(
+      std::chrono::duration<double>(period),
+      [clock, callback]() {
+        ros::TimerEvent event;
+        event.current_real = clock->now();
+        callback(event);
+      });
+  }
+}
 #endif
 
 #endif  // JSK_INTERACTIVE_MARKER_ROS1_ROS2_COMPAT_H_

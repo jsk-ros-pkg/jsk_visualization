@@ -113,7 +113,8 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     Boost::boost)
 
   # the nodes ported to ROS 2
-  set(_nodes)
+  add_executable(marker_6dof src/marker_6dof.cpp)
+  set(_nodes marker_6dof)
   foreach(_node ${_nodes})
     target_link_libraries(${_node}
       ${PROJECT_NAME}_lib
