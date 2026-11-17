@@ -169,6 +169,12 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   install(DIRECTORY launch
     DESTINATION share/${PROJECT_NAME}
     FILES_MATCHING PATTERN "*.launch.py")
+
+  # The ROS 2 tests are in test/ros2/; ROS 1 has none.
+  if(BUILD_TESTING)
+    find_package(launch_testing_ament_cmake REQUIRED)
+    add_launch_test(test/ros2/test_samples.py TIMEOUT 120)
+  endif()
   ament_export_include_directories(include)
   ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
   ament_export_dependencies(rclcpp interactive_markers tf2 tf2_geometry_msgs
