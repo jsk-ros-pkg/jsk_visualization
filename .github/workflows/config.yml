@@ -129,9 +129,15 @@ jobs:
           CATKIN_PARALLEL_JOBS : "-p8"
           ROS_PARALLEL_TEST_JOBS : "-j8"
           CATKIN_PARALLEL_TEST_JOBS : "-p8"
-          BEFORE_SCRIPT : ${{ matrix.BEFORE_SCRIPT }}
+          # jsk_common and jsk_common_msgs are built from source (.travis.rosinstall,
+          # which jsk_travis merges only with USE_DEB=false) until jsk_common 3.x
+          # (jsk_ros1_ros2_compat) is released for ROS 1. rosdep skips the packages
+          # jsk_common marks with AMENT_IGNORE (not ported to ROS 2), but catkin
+          # builds them, so the markers are removed first, as jsk_common's CI does.
+          # BEFORE_SCRIPT runs in the src directory of the workspace, before rosdep.
+          BEFORE_SCRIPT : "find . -name AMENT_IGNORE -delete; ${{ matrix.BEFORE_SCRIPT }}"
           ROS_DISTRO : ${{ matrix.ROS_DISTRO }}
-          USE_DEB :  ${{ matrix.USE_DEB }}
+          USE_DEB :  ${{ matrix.USE_DEB || 'false' }}
           NOT_TEST_INSTALL : ${{ matrix.NOT_TEST_INSTALL }}
           TEST_PKGS : ${{ matrix.TEST_PKGS }}
           EXTRA_DEB : ${{ matrix.EXTRA_DEB }}
@@ -208,6 +214,12 @@ jobs:
               git clone https://github.com/locusrobotics/catkin_virtualenv.git
           fi
           ln -sf $GITHUB_WORKSPACE .
+          # jsk_common and jsk_common_msgs from source until jsk_common 3.x
+          # (jsk_ros1_ros2_compat) is released for ROS-O, see .travis.rosinstall;
+          # rosdep skips AMENT_IGNORE'd packages, which catkin builds anyway
+          PIP_BREAK_SYSTEM_PACKAGES=1 pip3 install vcstool
+          vcs import --input $GITHUB_WORKSPACE/.travis.rosinstall .
+          find jsk-ros-pkg -name AMENT_IGNORE -delete
           rosdep install -qq -r -y --from-path . --ignore-src || echo "OK"
           # check all system packages are able to install, because ROS-O build deb files that needs all packages
           PIP_BREAK_SYSTEM_PACKAGES=1 rosdep install -qq --simulate -y --from-path . --ignore-src -t exec -t buildtool_export -t buildtool -t build -t build_export | tee rosdep-install.sh
@@ -234,7 +246,8 @@ jobs:
           source /opt/ros/one/setup.bash
           set -x
           cd ~/ws/
-          xvfb-run -s "-screen 0 1280x1024x24 +extension GLX +render -noreset" catkin run_tests --no-status -sv ${{ matrix.CATKIN_OPTIONS }} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
+          # the packages of this repository only, not jsk_common/jsk_common_msgs from source
+          xvfb-run -s "-screen 0 1280x1024x24 +extension GLX +render -noreset" catkin run_tests --no-deps $(catkin_topological_order $GITHUB_WORKSPACE --only-names) --no-status -sv ${{ matrix.CATKIN_OPTIONS }} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${{ matrix.CMAKE_OPTIONS }}
         shell: bash
 
       - name: Upload rosout/node logs on failure
