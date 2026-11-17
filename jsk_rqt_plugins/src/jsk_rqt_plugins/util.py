@@ -24,7 +24,7 @@ def _fields_and_types(msg):
     array, 'std_msgs/Header' for a message)"""
     if ROS_VERSION == 2:
         return msg.get_fields_and_field_types().items()
-    return zip(msg.__slots__, msg._slot_types)
+    return list(zip(msg.__slots__, msg._slot_types))
 
 
 def _array_element_type(slot_t):
