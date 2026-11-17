@@ -9,11 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Only jsk_rqt_plugins and jsk_rviz_plugins build on ROS 2 so far; the
-      # other packages are still catkin only. COLCON_IGNORE hides them from
-      # colcon and from rosdep (catkin_pkg's find_packages skips the directory too).
-      - name: Ignore the packages not ported to ROS 2
-        run: touch jsk_interactive_markers/COLCON_IGNORE jsk_visualization/COLCON_IGNORE
+      # All packages build on ROS 2 but jsk_interactive and
+      # jsk_interactive_test (euslisp), which have AMENT_IGNORE, so colcon and
+      # rosdep (catkin_pkg's find_packages) skip them.
       # jsk_recognition_msgs is not released for ROS 2 yet; the plugins of
       # jsk_rviz_plugins/jsk_rqt_plugins for its messages are built only when it
       # is found, so only its package is checked out (sparse, shallow) into the
