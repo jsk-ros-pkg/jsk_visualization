@@ -30,6 +30,9 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   # - pointcloud_cropper (pcl_ros)
   # - srv/IndexRequest.srv (jsk_recognition_msgs/Int32Stamped)
   # - euslisp/ (roseus)
+  # Not ported yet, though they need nothing missing on ROS 2: the DRC
+  # (Atlas) tools triangle_foot, door_foot (its ~foot_list is a list of
+  # dicts, which ROS 2 parameters can not hold) and point_cloud_config_marker.
   find_package(ament_cmake REQUIRED)
   find_package(rosidl_default_generators REQUIRED)
   find_package(geometry_msgs REQUIRED)
