@@ -43,10 +43,17 @@
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreManualObject.h>
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/movable_text.hpp>
+#else
 #include <rviz/display_context.h>
 #include <ros/time.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/movable_text.h>
+#endif
 #include "overlay_utils.h"
 
 namespace jsk_rviz_plugins

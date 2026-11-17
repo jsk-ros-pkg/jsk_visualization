@@ -38,6 +38,22 @@
 #define JSK_RVIZ_PLUGIN_PICTOGRAM_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/message_filter_display.hpp>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <geometry_msgs/msg/pose.hpp>
+#include <std_msgs/msg/header.hpp>
+#include <jsk_rviz_plugins/msg/pictogram.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, Pose)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(std_msgs, Header)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_rviz_plugins, Pictogram)
+#include <boost/thread/mutex.hpp>
+#else
 #include <rviz/display.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
@@ -50,6 +66,7 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <jsk_rviz_plugins/Pictogram.h>
+#endif
 #include "facing_visualizer.h"
 #endif
 
@@ -127,7 +144,11 @@ namespace jsk_rviz_plugins
     virtual void onInitialize();
     virtual void reset();
     virtual void onEnable();
+#if ROS_VERSION_MAJOR != 1
+    void processMessage(jsk_rviz_plugins::Pictogram::ConstSharedPtr msg);
+#else
     void processMessage(const jsk_rviz_plugins::Pictogram::ConstPtr& msg);
+#endif
     void update(float wall_dt, float ros_dt);
 
     ////////////////////////////////////////////////////////

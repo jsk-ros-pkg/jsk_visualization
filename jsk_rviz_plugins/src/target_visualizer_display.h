@@ -38,6 +38,23 @@
 
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/string_property.hpp>
+#include <rviz_common/properties/status_property.hpp>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, PoseStamped)
+#include <boost/thread/mutex.hpp>
+#else
 #include <rviz/display.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
@@ -55,6 +72,7 @@
 #include <OGRE/OgreSceneManager.h>
 #include <rviz/ogre_helpers/movable_text.h>
 #include <geometry_msgs/PoseStamped.h>
+#endif
 
 #include "facing_visualizer.h"
 #endif
@@ -78,7 +96,11 @@ namespace jsk_rviz_plugins
     virtual void onInitialize();
     virtual void reset();
     virtual void onEnable();
+#if ROS_VERSION_MAJOR != 1
+    void processMessage(geometry_msgs::PoseStamped::ConstSharedPtr msg);
+#else
     void processMessage(const geometry_msgs::PoseStamped::ConstPtr& msg);
+#endif
     void update(float wall_dt, float ros_dt);
     rviz::StringProperty* target_name_property_;
     rviz::FloatProperty* alpha_property_;

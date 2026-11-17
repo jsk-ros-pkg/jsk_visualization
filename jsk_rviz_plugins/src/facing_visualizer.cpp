@@ -34,10 +34,17 @@
  *********************************************************************/
 
 #include "facing_visualizer.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/view_controller.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/properties/parse_color.hpp>
+#else
 #include <rviz/uniform_string_stream.h>
 #include <rviz/render_panel.h>
 #include <rviz/view_manager.h>
 #include <rviz/properties/parse_color.h>
+#endif
 #include <QPainter>
 
 namespace jsk_rviz_plugins
@@ -231,8 +238,21 @@ namespace jsk_rviz_plugins
   void FacingObject::setOrientation(rviz::DisplayContext* context)
   {
     rviz::ViewManager* manager = context->getViewManager();
+#if ROS_VERSION_MAJOR != 1
+    // rviz_common::RenderPanel has no getCamera(); the camera is the one
+    // of the current view controller
+    rviz_common::ViewController* controller = manager->getCurrent();
+    if (!controller) {
+      return;
+    }
+    Ogre::Camera* camera = controller->getCamera();
+    if (!camera) {
+      return;
+    }
+#else
     rviz::RenderPanel* panel = manager->getRenderPanel();
     Ogre::Camera* camera = panel->getCamera();
+#endif
     Ogre::Quaternion q = camera->getDerivedOrientation();
     setOrientation(q);
   }
@@ -529,7 +549,11 @@ namespace jsk_rviz_plugins
                                 + size_ / 2.0,
                                 0);
     target_text_node_->setPosition(text_position);
+#if ROS_VERSION_MAJOR != 1
+    Ogre::Vector3 msg_size = msg_->getBoundingBox().getSize();
+#else
     Ogre::Vector3 msg_size = msg_->GetAABB().getSize();
+#endif
     text_under_line_->clear();
     text_under_line_->setColor(color_.r, color_.g, color_.b, color_.a);
     

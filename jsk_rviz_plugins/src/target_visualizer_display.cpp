@@ -32,9 +32,14 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/uniform_string_stream.hpp>
+#else
 #include <rviz/view_manager.h>
 #include <rviz/render_panel.h>
 #include <rviz/uniform_string_stream.h>
+#endif
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreMaterialManager.h>
 #include "target_visualizer_display.h"
@@ -87,12 +92,23 @@ namespace jsk_rviz_plugins
   void TargetVisualizerDisplay::onEnable()
   {
     subscribe();
+#if ROS_VERSION_MAJOR != 1
+    // rviz_common may enable the display before onInitialize() made it
+    if (!visualizer_) {
+      return;
+    }
+#endif
     visualizer_->setEnable(false); // keep false, it will be true
                                    // in side of processMessae callback.
   }
   
+#if ROS_VERSION_MAJOR != 1
+  void TargetVisualizerDisplay::processMessage(
+    geometry_msgs::PoseStamped::ConstSharedPtr msg)
+#else
   void TargetVisualizerDisplay::processMessage(
     const geometry_msgs::PoseStamped::ConstPtr& msg)
+#endif
   {
     boost::mutex::scoped_lock lock(mutex_);
     message_recieved_ = true;
@@ -219,6 +235,10 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TargetVisualizerDisplay, rviz::Display )
 
