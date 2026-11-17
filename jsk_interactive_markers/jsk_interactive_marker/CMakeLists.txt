@@ -92,6 +92,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   find_package(tf2_geometry_msgs REQUIRED)
   find_package(jsk_ros1_ros2_compat REQUIRED)
   find_package(Boost REQUIRED COMPONENTS thread)
+  find_package(yaml-cpp REQUIRED)
   rosidl_get_typesupport_target(_cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
 
   # ROS 1's library jsk_interactive_marker (im_helpers::), with the
@@ -114,7 +115,9 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
 
   # the nodes ported to ROS 2
   add_executable(marker_6dof src/marker_6dof.cpp)
-  set(_nodes marker_6dof)
+  add_executable(camera_info_publisher src/camera_info_publisher.cpp)
+  target_link_libraries(camera_info_publisher yaml-cpp)
+  set(_nodes marker_6dof camera_info_publisher)
   foreach(_node ${_nodes})
     target_link_libraries(${_node}
       ${PROJECT_NAME}_lib

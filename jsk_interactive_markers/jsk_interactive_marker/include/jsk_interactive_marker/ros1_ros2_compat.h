@@ -62,6 +62,11 @@
 #include <boost/bind/bind.hpp>
 using namespace boost::placeholders;
 
+// not in jsk_ros1_ros2_compat/logging.h
+#ifndef ROS_FATAL
+#define ROS_FATAL(...) RCLCPP_FATAL(ROS1_ROS2_COMPAT::g_node->get_logger(), __VA_ARGS__)
+#endif
+
 #include <chrono>
 #include <string>
 #include <vector>
