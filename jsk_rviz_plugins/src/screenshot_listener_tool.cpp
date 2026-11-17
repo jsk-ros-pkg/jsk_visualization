@@ -33,6 +33,18 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <QGuiApplication>
+#include <QScreen>
+#include <rviz_common/tool_manager.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/display_group.hpp>
+#include <rviz_common/display.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_rendering/render_window.hpp>
+#else
 #include <ros/ros.h>
 #include <rviz/tool_manager.h>
 #include <rviz/display_context.h>
@@ -40,6 +52,7 @@
 #include <rviz/display_group.h>
 #include <rviz/display.h>
 #include <rviz/render_panel.h>
+#endif
 #include <QImageWriter>
 #include "screenshot_listener_tool.h"
 
@@ -57,10 +70,18 @@ namespace jsk_rviz_plugins
 
   void ScreenshotListenerTool::onInitialize()
   {
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Node::SharedPtr node = context_->getRosNodeAbstraction().lock()->get_raw_node();
+    screenshot_service_ = node->create_service<jsk_rviz_plugins::Screenshot>(
+      "/rviz/screenshot",
+      std::bind(&ScreenshotListenerTool::takeScreenShot, this,
+                std::placeholders::_1, std::placeholders::_2));
+#else
     ros::NodeHandle nh;
     screenshot_service_ = nh.advertiseService(
       "/rviz/screenshot",
       &ScreenshotListenerTool::takeScreenShot, this);
+#endif
   }
   
   void ScreenshotListenerTool::activate()
@@ -73,18 +94,35 @@ namespace jsk_rviz_plugins
    
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void ScreenshotListenerTool::takeScreenShot(
+    const std::shared_ptr<jsk_rviz_plugins::Screenshot::Request> req,
+    std::shared_ptr<jsk_rviz_plugins::Screenshot::Response> /*res*/)
+  {
+    // the 3D view is a window of its own (rviz_rendering::RenderWindow)
+    QPixmap screenshot = QGuiApplication::primaryScreen()->grabWindow(
+      context_->getViewManager()->getRenderPanel()->getRenderWindow()->winId());
+    QString output_file = QString::fromStdString(req->file_name);
+#else
   bool ScreenshotListenerTool::takeScreenShot(
     jsk_rviz_plugins::Screenshot::Request& req,
     jsk_rviz_plugins::Screenshot::Response& res)
   {
     QPixmap screenshot = QPixmap::grabWindow(context_->getViewManager()->getRenderPanel()->winId());
     QString output_file = QString::fromStdString(req.file_name);
+#endif
     QImageWriter writer(output_file);
     writer.write(screenshot.toImage());
+#if ROS_VERSION_MAJOR == 1
     return true;
+#endif
   }
 
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::ScreenshotListenerTool, rviz::Tool )

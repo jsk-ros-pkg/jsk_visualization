@@ -37,10 +37,20 @@
 #ifndef JSK_RVIZ_PLUGIN_SCREENSHOT_LISTENER_H_
 #define JSK_RVIZ_PLUGIN_SCREENSHOT_LISTENER_H_
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <memory>
+#include <rviz_common/tool.hpp>
+#include <rviz_common/properties/property.hpp>
+#include <rviz_common/properties/property_tree_model.hpp>
+#include <jsk_rviz_plugins/srv/screenshot.hpp>
+JSK_ROS1_ROS2_COMPAT_SRV_ALIAS(jsk_rviz_plugins, Screenshot)
+#else
 #include <rviz/tool.h>
 #include <rviz/properties/property.h>
 #include <rviz/properties/property_tree_model.h>
 #include <jsk_rviz_plugins/Screenshot.h>
+#endif
 
 namespace jsk_rviz_plugins
 {
@@ -53,10 +63,17 @@ namespace jsk_rviz_plugins
     virtual void activate();
     virtual void deactivate();
   protected:
+#if ROS_VERSION_MAJOR != 1
+    virtual void takeScreenShot(
+      const std::shared_ptr<jsk_rviz_plugins::Screenshot::Request> req,
+      std::shared_ptr<jsk_rviz_plugins::Screenshot::Response> res);
+    rclcpp::Service<jsk_rviz_plugins::Screenshot>::SharedPtr screenshot_service_;
+#else
     virtual bool takeScreenShot(
       jsk_rviz_plugins::Screenshot::Request& req,
       jsk_rviz_plugins::Screenshot::Response& res);
     ros::ServiceServer screenshot_service_;
+#endif
   private:
     
   };

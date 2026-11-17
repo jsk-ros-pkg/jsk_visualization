@@ -36,17 +36,36 @@
 #include <QApplication>
 #include <QMenu>
 #include <QTimer>
+#include <QKeyEvent>
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/tool_manager.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/display_group.hpp>
+#include <rviz_common/display.hpp>
+#else
 #include <ros/ros.h>
 #include <rviz/tool_manager.h>
 #include <rviz/display_context.h>
 #include <rviz/view_manager.h>
 #include <rviz/display_group.h>
 #include <rviz/display.h>
+#endif
 
 #include "overlay_picker_tool.h"
+#if ROS_VERSION_MAJOR != 1
+// OverlayText and PieChart are not built on ROS 2 (rviz_2d_overlay_plugins
+// provides them), StringDisplay and LinearGaugeDisplay are picked instead
+#include "string_display.h"
+#include "linear_gauge_display.h"
+#else
 #include "overlay_text_display.h"
+#endif
 #include "plotter_2d_display.h"
+#if ROS_VERSION_MAJOR == 1
 #include "pie_chart_display.h"
+#endif
 #include "overlay_image_display.h"
 #include "overlay_diagnostic_display.h"
 #include "overlay_menu_display.h"
@@ -56,6 +75,9 @@ namespace jsk_rviz_plugins
   OverlayPickerTool::OverlayPickerTool()
     : is_moving_(false), shift_pressing_(false), rviz::Tool()
   {
+#if ROS_VERSION_MAJOR != 1
+    target_property_ = NULL;
+#endif
 
   }
 
@@ -98,13 +120,21 @@ namespace jsk_rviz_plugins
       }
     }
     else {
+#if ROS_VERSION_MAJOR != 1
+      if (startMovement<StringDisplay>(property, event, "string_display")) {
+#else
       if (startMovement<OverlayTextDisplay>(property, event, "overlay_text_display")) {
+#endif
         return true;
       }
       else if (startMovement<Plotter2DDisplay>(property, event, "plotter_2d_display")) {
         return true;
       }
+#if ROS_VERSION_MAJOR != 1
+      else if (startMovement<LinearGaugeDisplay>(property, event, "linear_gauge_display")) {
+#else
       else if (startMovement<PieChartDisplay>(property, event, "pie_chart_display")) {
+#endif
         return true;
       }
       else if (startMovement<OverlayImageDisplay>(property, event, "overlay_image_display")) {
@@ -138,15 +168,27 @@ namespace jsk_rviz_plugins
     ROS_DEBUG("onMove");
     ROS_DEBUG("moving: (%d, %d)", event.x, event.y);
     if (target_property_) {
+#if ROS_VERSION_MAJOR != 1
+      if (target_property_type_ == "string_display") {
+        movePosition<StringDisplay>(event);
+      }
+#else
       if (target_property_type_ == "overlay_text_display") {
         movePosition<OverlayTextDisplay>(event);
       }
+#endif
       else if (target_property_type_ == "plotter_2d_display") {
         movePosition<Plotter2DDisplay>(event);
       }
+#if ROS_VERSION_MAJOR != 1
+      else if (target_property_type_ == "linear_gauge_display") {
+        movePosition<LinearGaugeDisplay>(event);
+      }
+#else
       else if (target_property_type_ == "pie_chart_display") {
         movePosition<PieChartDisplay>(event);
       }
+#endif
       else if (target_property_type_ == "overlay_image_display") {
         movePosition<OverlayImageDisplay>(event);
       }
@@ -165,15 +207,27 @@ namespace jsk_rviz_plugins
     is_moving_ = false;
     ROS_DEBUG("released: (%d, %d)", event.x, event.y);
     if (target_property_) {
+#if ROS_VERSION_MAJOR != 1
+      if (target_property_type_ == "string_display") {
+        setPosition<StringDisplay>(event);
+      }
+#else
       if (target_property_type_ == "overlay_text_display") {
         setPosition<OverlayTextDisplay>(event);
       }
+#endif
       else if (target_property_type_ == "plotter_2d_display") {
         setPosition<Plotter2DDisplay>(event);
       }
+#if ROS_VERSION_MAJOR != 1
+      else if (target_property_type_ == "linear_gauge_display") {
+        setPosition<LinearGaugeDisplay>(event);
+      }
+#else
       else if (target_property_type_ == "pie_chart_display") {
         setPosition<PieChartDisplay>(event);
       }
+#endif
       else if (target_property_type_ == "overlay_image_display") {
         setPosition<OverlayImageDisplay>(event);
       }
@@ -191,5 +245,9 @@ namespace jsk_rviz_plugins
   
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayPickerTool, rviz::Tool )

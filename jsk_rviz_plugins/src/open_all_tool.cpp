@@ -33,12 +33,20 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/tool_manager.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/display_group.hpp>
+#include <rviz_common/display.hpp>
+#else
 #include <ros/ros.h>
 #include <rviz/tool_manager.h>
 #include <rviz/display_context.h>
 #include <rviz/view_manager.h>
 #include <rviz/display_group.h>
 #include <rviz/display.h>
+#endif
 #include "open_all_tool.h"
 
 
@@ -86,5 +94,9 @@ namespace jsk_rviz_plugins
 
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OpenAllTool, rviz::Tool )
