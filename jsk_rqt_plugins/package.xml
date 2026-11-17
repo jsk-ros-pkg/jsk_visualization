@@ -63,6 +63,16 @@
 
   <test_depend condition="$ROS_VERSION == 1">roslaunch</test_depend>
   <test_depend condition="$ROS_VERSION == 1">rostest</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">ament_cmake_pytest</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">diagnostic_msgs</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">launch_testing</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">launch_testing_ament_cmake</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">launch_ros</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">python3-pytest</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">rosidl_runtime_py</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">visualization_msgs</test_depend>
+  <!-- the rqt test needs an X display; CI runs it under Xvfb -->
+  <test_depend condition="$ROS_VERSION == 2">xvfb</test_depend>
 
   <export>
     <build_type condition="$ROS_VERSION == 1">catkin</build_type>

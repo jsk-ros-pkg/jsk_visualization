@@ -56,6 +56,15 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     FILES_MATCHING PATTERN "*.launch.py"
   )
 
+  # The ROS 2 tests are in test/ros2/, where ROS 1's
+  # catkin_add_nosetests(test) does not look.
+  if(BUILD_TESTING)
+    find_package(ament_cmake_pytest REQUIRED)
+    find_package(launch_testing_ament_cmake REQUIRED)
+    ament_add_pytest_test(test_util test/ros2/test_util.py)
+    add_launch_test(test/ros2/test_rqt_plugins.py TIMEOUT 180)
+  endif()
+
   ament_package()
 
 else() # if("$ENV{ROS_VERSION}" EQUAL 2)
