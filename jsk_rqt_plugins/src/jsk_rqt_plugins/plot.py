@@ -115,6 +115,16 @@ class MatDataPlot3D(QWidget):
             except Exception:
                 pass
 
+        def draw(self):
+            # matplotlib >= 3.6 raises ValueError("'box_aspect' and
+            # 'fig_aspect' must be positive") when it lays out the 3d axes
+            # of a canvas Qt has not sized yet, and there is nothing to
+            # show then. Qt also draws on its own (backend_qt._draw_idle),
+            # so the guard has to be here rather than only in redraw().
+            if self.width() <= 0 or self.height() <= 0:
+                return
+            super(MatDataPlot3D.Canvas, self).draw()
+
     _colors = [QColor(c) for c in [
         Qt.red, Qt.blue, Qt.magenta, Qt.cyan, Qt.green, Qt.darkYellow,
         Qt.black, Qt.darkRed, Qt.gray, Qt.darkCyan]]
@@ -192,6 +202,9 @@ class MatDataPlot3D(QWidget):
             range_y[1] = ymax
 
     def redraw(self):
+        if self._canvas.width() <= 0 or self._canvas.height() <= 0:
+            # not sized by Qt yet, see Canvas.draw()
+            return
         self._canvas.axes.grid(True, color='gray')
         # Set axis bounds
         ymin = ymax = None
