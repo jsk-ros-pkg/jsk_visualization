@@ -26,12 +26,17 @@ from python_qt_binding.QtCore import Slot
 from python_qt_binding.QtGui import QColor
 from python_qt_binding.QtGui import QIcon
 
-import rospkg
 from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
 from rqt_gui_py.plugin import Plugin
 from rqt_plot.rosplot import ROSData, RosPlotException
 from rqt_py_common.topic_completer import TopicCompleter
-from rqt_py_common.topic_helpers import is_slot_numeric
+if ROS_VERSION == 2:
+    from ament_index_python.packages import get_package_share_directory
+    from rqt_plot.plot_widget import is_plottable
+else:
+    import rospkg
+    from rqt_py_common.topic_helpers import is_slot_numeric
 
 # Support both qt4 and qt5
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
@@ -243,15 +248,33 @@ class Plot3D(Plugin):
     def __init__(self, context):
         super(Plot3D, self).__init__(context)
         self.setObjectName('Plot3D')
+        self._node = getattr(context, 'node', None)
         self._args = self._parse_args(context.argv())
         self._widget = Plot3DWidget(
-            node=getattr(context, 'node', None),
+            node=self._node,
             initial_topics=self._args.topics,
             start_paused=self._args.start_paused,
             buffer_length=self._args.buffer,
             use_poly=not self._args.show_line,
             no_legend=self._args.no_legend)
         context.add_widget(self._widget)
+
+    def _resolve_topic_name(self, name):
+        """
+        rosgraph.names.script_resolve_name() for ROS 2, which has no
+        rosgraph: resolve name in the namespace of the node, as rqt_plot
+        does on ROS 2.
+        """
+        namespace = self._node.get_namespace()
+        if not namespace.endswith('/'):
+            namespace += '/'
+        if not name:
+            return namespace
+        if name[0] == '/':
+            return name
+        if name[0] == '~':
+            return namespace + self._node.get_name() + '/' + name[1:]
+        return namespace + name
 
     def _parse_args(self, argv):
         parser = argparse.ArgumentParser(prog='rqt_3d_plot', add_help=False)
@@ -280,9 +303,12 @@ class Plot3D(Plugin):
                 else:
                     c_topics.append(sub_t)
             # #1053: resolve command-line topic names
-            import rosgraph
-            c_topics = [rosgraph.names.script_resolve_name('rqt_plot', n)
-                        for n in c_topics]
+            if ROS_VERSION == 2:
+                c_topics = [self._resolve_topic_name(n) for n in c_topics]
+            else:
+                import rosgraph
+                c_topics = [rosgraph.names.script_resolve_name('rqt_plot', n)
+                            for n in c_topics]
             if type(c_topics) == list:
                 topic_list.extend(c_topics)
             else:
@@ -324,9 +350,12 @@ class Plot3DWidget(QWidget):
         self._buffer_length = buffer_length
         self._initial_topics = initial_topics
 
-        rp = rospkg.RosPack()
-        ui_file = os.path.join(rp.get_path('jsk_rqt_plugins'),
-                               'resource', 'plot3d.ui')
+        if ROS_VERSION == 2:
+            package_path = get_package_share_directory('jsk_rqt_plugins')
+        else:
+            rp = rospkg.RosPack()
+            package_path = rp.get_path('jsk_rqt_plugins')
+        ui_file = os.path.join(package_path, 'resource', 'plot3d.ui')
         loadUi(ui_file, self)
         self.subscribe_topic_button.setIcon(QIcon.fromTheme('add'))
         self.remove_topic_button.setIcon(QIcon.fromTheme('remove'))
@@ -344,7 +373,7 @@ class Plot3DWidget(QWidget):
             self.pause_button.setChecked(True)
 
         self._topic_completer = TopicCompleter(self.topic_edit)
-        self._topic_completer.update_topics()
+        self._update_topics()
         self.topic_edit.setCompleter(self._topic_completer)
 
         self._start_time = ros_compat.now_sec(self._node)
@@ -358,6 +387,20 @@ class Plot3DWidget(QWidget):
             for topic_name in self._initial_topics:
                 self.add_topic(topic_name)
             self._initial_topics = None
+
+    def _update_topics(self):
+        # the topics are listed through the node on ROS 2
+        if ROS_VERSION == 2:
+            self._topic_completer.update_topics(self._node)
+        else:
+            self._topic_completer.update_topics()
+
+    def _is_plottable(self, topic_name):
+        """(whether topic_name is a numeric non-array field, why not)"""
+        if ROS_VERSION == 2:
+            return is_plottable(self._node, topic_name)
+        is_numeric, is_array, message = is_slot_numeric(topic_name)
+        return is_numeric and not is_array, message
 
     @Slot('QDragEnterEvent*')
     def dragEnterEvent(self, event):
@@ -378,8 +421,8 @@ class Plot3DWidget(QWidget):
             topic_name = str(event.mimeData().text())
 
         # check for numeric field type
-        is_numeric, is_array, message = is_slot_numeric(topic_name)
-        if is_numeric and not is_array:
+        plottable, message = self._is_plottable(topic_name)
+        if plottable:
             event.acceptProposedAction()
         else:
             qWarning('Plot.dragEnterEvent(): rejecting: "%s"' % (message))
@@ -397,10 +440,10 @@ class Plot3DWidget(QWidget):
     def on_topic_edit_textChanged(self, topic_name):
         # on empty topic name, update topics
         if topic_name in ('', '/'):
-            self._topic_completer.update_topics()
+            self._update_topics()
 
-        is_numeric, is_array, message = is_slot_numeric(topic_name)
-        self.subscribe_topic_button.setEnabled(is_numeric and not is_array)
+        plottable, message = self._is_plottable(topic_name)
+        self.subscribe_topic_button.setEnabled(plottable)
         self.subscribe_topic_button.setToolTip(message)
 
     @Slot()
@@ -464,7 +507,12 @@ class Plot3DWidget(QWidget):
             qWarning('PlotWidget.add_topic(): topic already subscribed: %s' % topic_name)  # NOQA
             return
 
-        self._rosdata[topic_name] = ROSData(topic_name, self._start_time)
+        # rqt_plot's ROSData subscribes through the node on ROS 2
+        if ROS_VERSION == 2:
+            self._rosdata[topic_name] = ROSData(
+                self._node, topic_name, self._start_time)
+        else:
+            self._rosdata[topic_name] = ROSData(topic_name, self._start_time)
         if self._rosdata[topic_name].error is not None:
             qWarning(str(self._rosdata[topic_name].error))
             del self._rosdata[topic_name]
