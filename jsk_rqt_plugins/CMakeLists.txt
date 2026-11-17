@@ -1,3 +1,59 @@
+# $ENV{ROS_VERSION} is set by ros_environment, which is missing on
+# pre-ros_environment distros (e.g. indigo) and on ROS 2 builds that do not
+# depend on it (e.g. the buildfarm's binary jobs). Guess it then: ament sets
+# AMENT_PREFIX_PATH (bloom's debian/rules passes it to cmake, setup.sh and
+# colcon set the environment variable), catkin never does.
+if("$ENV{ROS_VERSION}" STREQUAL "")
+  if(DEFINED AMENT_PREFIX_PATH OR DEFINED ENV{AMENT_PREFIX_PATH})
+    set(ENV{ROS_VERSION} 2)
+  else()
+    set(ENV{ROS_VERSION} 1)
+  endif()
+  message(WARNING "ROS_VERSION is not set, assuming ROS_VERSION=$ENV{ROS_VERSION}")
+endif()
+
+if("$ENV{ROS_VERSION}" EQUAL 2)
+  cmake_minimum_required(VERSION 3.8)
+  project(jsk_rqt_plugins)
+
+  # The plugins of hist.py (HistogramPlot), plot_2d.py (Plot2D),
+  # image_view2_wrapper.py (ImageView2Plugin) and yes_no_button.py
+  # (YesNoButton) need jsk_recognition_msgs, image_view2 or jsk_gui_msgs,
+  # which are not released for ROS 2, so they and their bin/ entry points
+  # (rqt_histogram_plot, rqt_2d_plot, rqt_image_view2, rqt_yn_btn) and
+  # samples are ROS 1 only and not installed here.
+  find_package(ament_cmake REQUIRED)
+  find_package(ament_cmake_python REQUIRED)
+  find_package(jsk_ros1_ros2_compat REQUIRED)
+
+  ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR src/${PROJECT_NAME})
+
+  # The scripts keep `#!/usr/bin/env python` for ROS 1 (python2 on
+  # indigo..melodic); ROS 2 base images ship no bare `python`, so the
+  # installed ROS 2 copies get a python3 shebang.
+  jsk_ros1_ros2_compat_install_python(PROGRAMS
+    bin/rqt_3d_plot
+    bin/rqt_drc_mini_maxwell
+    bin/rqt_service_buttons
+    bin/rqt_status_light
+    bin/rqt_string_label
+    bin/rqt_tabbed_buttons
+    sample_scripts/sample_3d_plot.py
+    sample_scripts/sample_drc_mini_maxwell.py
+    sample_scripts/sample_service_buttons.py
+    sample_scripts/sample_service_radio_buttons.py
+  )
+
+  install(FILES plugin.xml
+    DESTINATION share/${PROJECT_NAME}
+  )
+  install(DIRECTORY resource
+    DESTINATION share/${PROJECT_NAME}
+  )
+
+  ament_package()
+
+else() # if("$ENV{ROS_VERSION}" EQUAL 2)
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_rqt_plugins)
 
@@ -54,3 +110,4 @@ if (CATKIN_ENABLE_TESTING)
     add_rostest(test/test_rqt_plugins.test)
   endif()
 endif()
+endif() # if("$ENV{ROS_VERSION}" EQUAL 2)
