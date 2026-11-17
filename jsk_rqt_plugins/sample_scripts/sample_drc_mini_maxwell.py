@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 
-import rospy
 from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
 from std_msgs.msg import Bool
-from std_msgs.msg import Time
+if ROS_VERSION == 2:
+    # std_msgs/Time does not exist on ROS 2, builtin_interfaces/Time is the
+    # time itself
+    from builtin_interfaces.msg import Time
+else:
+    import rospy
+    from std_msgs.msg import Time
 
 
 def main():
@@ -25,7 +31,13 @@ def main():
         ros_compat.sleep(node, 1.0)
         pub_is_disabled.publish(Bool(data=False))
         pub_is_blackout.publish(Bool(data=True))
-        pub_next_whiteout_time.publish(rospy.Time.now() + rospy.Duration(2.0))
+        if ROS_VERSION == 2:
+            pub_next_whiteout_time.publish(
+                (node.get_clock().now()
+                 + ros_compat.duration_from_sec(2.0)).to_msg())
+        else:
+            pub_next_whiteout_time.publish(
+                rospy.Time.now() + rospy.Duration(2.0))
         rate.sleep()
 
 

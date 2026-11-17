@@ -48,6 +48,7 @@
   <exec_depend>jsk_ros1_ros2_compat</exec_depend>
   <!-- implicit on ROS 1 (rqt_plot and friends pull them in), not on ROS 2 -->
   <exec_depend condition="$ROS_VERSION == 2">python_qt_binding</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">builtin_interfaces</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">rosidl_runtime_py</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">rqt_py_common</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">std_msgs</exec_depend>

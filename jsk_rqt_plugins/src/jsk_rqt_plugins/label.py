@@ -29,7 +29,6 @@ if ROS_VERSION == 1:
 from rqt_gui_py.plugin import Plugin
 import rqt_plot
 from std_msgs.msg import Bool
-from std_msgs.msg import Time
 from std_msgs.msg import String
 
 from .dialogs import LineEditDialog

@@ -28,7 +28,6 @@ if ROS_VERSION == 1:
     import rospy
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
-from std_msgs.msg import Time
 from std_msgs.msg import UInt8
 
 from .dialogs import ComboBoxDialog

@@ -26,7 +26,6 @@ import rospy
 from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
-from std_msgs.msg import Time
 from std_srvs.srv import Empty
 from std_srvs.srv import SetBool
 from std_srvs.srv import Trigger

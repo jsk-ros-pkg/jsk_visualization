@@ -19,8 +19,15 @@ from python_qt_binding.QtGui import QPainter
 from python_qt_binding.QtGui import QPen
 
 from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
 from rqt_gui_py.plugin import Plugin
-from std_msgs.msg import Bool, Time
+from std_msgs.msg import Bool
+if ROS_VERSION == 2:
+    # std_msgs/Time does not exist on ROS 2, builtin_interfaces/Time is the
+    # time itself
+    from builtin_interfaces.msg import Time
+else:
+    from std_msgs.msg import Time
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QAction
@@ -82,7 +89,8 @@ class DRCEnvironmentViewerWidget(QWidget):
 
     def nextWhiteoutTimeCallback(self, msg):
         with self.lock:
-            self.next_whiteout_time = ros_compat.stamp_to_sec(msg.data)
+            self.next_whiteout_time = ros_compat.stamp_to_sec(
+                msg if ROS_VERSION == 2 else msg.data)
 
     def redraw(self):
         self.update()
