@@ -38,6 +38,7 @@
 
 #ifndef Q_MOC_RUN
 #include "bounding_box_display_common.h"
+#if ROS_VERSION_MAJOR == 1  // all in bounding_box_display_common.h on ROS 2
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
@@ -47,6 +48,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/arrow.h>
+#endif
 #include <OGRE/OgreSceneNode.h>
 #endif
 
@@ -77,7 +79,11 @@ namespace jsk_rviz_plugins
     rviz::BoolProperty* show_coords_property_;
     rviz::FloatProperty* value_threshold_property_;
 
+#if ROS_VERSION_MAJOR != 1
+    jsk_recognition_msgs::BoundingBoxArray::ConstSharedPtr latest_msg_;
+#else
     jsk_recognition_msgs::BoundingBoxArray::ConstPtr latest_msg_;
+#endif
   protected Q_SLOTS:
     void updateColor();
     void updateAlpha();
@@ -90,8 +96,13 @@ namespace jsk_rviz_plugins
     void updateShowCoords();
     void updateValueThreshold();
   private:
+#if ROS_VERSION_MAJOR != 1
+    void processMessage(
+      jsk_recognition_msgs::BoundingBoxArray::ConstSharedPtr msg);
+#else
     void processMessage(
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg);
+#endif
   };
 
 }  // namespace jsk_rviz_plugins

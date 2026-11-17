@@ -1,0 +1,21 @@
+<!-- The plugins of jsk_rviz_plugins for jsk_recognition_msgs on ROS 2,
+     exported only when jsk_recognition_msgs is found, see CMakeLists.txt -->
+<library path="jsk_rviz_plugins">
+  <class name="jsk_rviz_plugin/BoundingBoxArray"
+         type="jsk_rviz_plugins::BoundingBoxArrayDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      visualize jsk_recognition_msgs/BoundingBoxArray
+    </description>
+    <message_type>jsk_recognition_msgs/msg/BoundingBoxArray</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/BoundingBox"
+         type="jsk_rviz_plugins::BoundingBoxDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      visualize jsk_recognition_msgs/BoundingBox
+    </description>
+    <message_type>jsk_recognition_msgs/msg/BoundingBox</message_type>
+  </class>
+</library>

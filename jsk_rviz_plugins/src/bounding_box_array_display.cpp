@@ -34,7 +34,7 @@
 
 #include "bounding_box_display_common.h"
 #include "bounding_box_array_display.h"
-#include <jsk_topic_tools/color_utils.h>
+#include "color_utils_compat.h"  // <jsk_topic_tools/color_utils.h> on ROS 1
 
 namespace jsk_rviz_plugins
 {
@@ -257,8 +257,13 @@ namespace jsk_rviz_plugins
     latest_msg_.reset();
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void BoundingBoxArrayDisplay::processMessage(
+    jsk_recognition_msgs::BoundingBoxArray::ConstSharedPtr msg)
+#else
   void BoundingBoxArrayDisplay::processMessage(
     const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+#endif
   {
     // Store latest message
     latest_msg_ = msg;
@@ -294,5 +299,9 @@ namespace jsk_rviz_plugins
 
 }  // namespace jsk_rviz_plugins
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::BoundingBoxArrayDisplay, rviz::Display)

@@ -36,9 +36,6 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   # ROS 2 and stay ROS 1 only until then:
   #   src/ambient_sound_display.{h,cpp}                     -> jsk_hark_msgs (not built on
   #                                                            ROS 1 either, see ambient_sound_display_groovy)
-  #   src/bounding_box_display.{h,cpp}                      -> jsk_recognition_msgs, jsk_topic_tools
-  #   src/bounding_box_array_display.{h,cpp}                -> jsk_recognition_msgs, jsk_topic_tools
-  #   src/bounding_box_display_common.h                     -> jsk_recognition_msgs, jsk_topic_tools
   #   src/torus_array_display.{h,cpp}                       -> jsk_recognition_msgs
   #   src/segment_array_display.{h,cpp}                     -> jsk_recognition_msgs
   #   src/human_skeleton_array_display.{h,cpp}              -> jsk_recognition_msgs
@@ -176,6 +173,27 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     src/yes_no_button_interface.cpp
   )
 
+  # jsk_recognition_msgs is not released for ROS 2 yet, so its displays are
+  # built only when it is found (e.g. built from source in the workspace, as
+  # the ROS 2 CI does) and exported with their own plugin description file.
+  # PolygonArray and SimpleOccupancyGridArray need jsk_recognition_utils as
+  # well (polygon triangulation, planes, PCL conversions), which is not ported
+  # to ROS 2, so they stay ROS 1 only.
+  find_package(jsk_recognition_msgs QUIET)
+  if(jsk_recognition_msgs_FOUND)
+    list(APPEND HEADER_FILES
+      src/bounding_box_array_display.h
+      src/bounding_box_display.h
+      src/bounding_box_display_common.h
+    )
+    list(APPEND SOURCE_FILES
+      src/bounding_box_array_display.cpp
+      src/bounding_box_display.cpp
+    )
+  else()
+    message(STATUS "BoundingBox and BoundingBoxArray displays skipped: jsk_recognition_msgs not found")
+  endif()
+
   set(CMAKE_AUTOMOC ON)
   # rosidl_generate_interfaces() owns the ${PROJECT_NAME} target, so the
   # library target is named differently and renamed back on output, to keep
@@ -218,6 +236,9 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     Qt5::Widgets
     opencv_videoio
   )
+  if(jsk_recognition_msgs_FOUND)
+    target_link_libraries(${PROJECT_NAME}_plugins ${jsk_recognition_msgs_TARGETS})
+  endif()
   install(TARGETS ${PROJECT_NAME}_plugins
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
@@ -225,6 +246,9 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   )
 
   pluginlib_export_plugin_description_file(rviz_common rviz_common_plugins.xml)
+  if(jsk_recognition_msgs_FOUND)
+    pluginlib_export_plugin_description_file(rviz_common rviz_common_plugins_jsk_recognition_msgs.xml)
+  endif()
 
   install(DIRECTORY config icons launch
     DESTINATION share/${PROJECT_NAME}
