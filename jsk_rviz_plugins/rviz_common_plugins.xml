@@ -244,4 +244,13 @@
     </description>
     <message_type>jsk_hark_msgs/msg/HarkPower</message_type>
   </class>
+
+  <class name="jsk_rviz_plugin/Footstep"
+         type="jsk_rviz_plugins::FootstepDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Displays for jsk_footstep_msgs/FootstepArray message
+    </description>
+    <message_type>jsk_footstep_msgs/msg/FootstepArray</message_type>
+  </class>
 </library>

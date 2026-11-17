@@ -24,7 +24,7 @@
   <build_depend condition="$ROS_VERSION == 1">dynamic_reconfigure</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend condition="$ROS_VERSION == 1">image_geometry</build_depend>
-  <build_depend condition="$ROS_VERSION == 1">jsk_footstep_msgs</build_depend>
+  <build_depend>jsk_footstep_msgs</build_depend>
   <build_depend condition="$ROS_VERSION == 1">jsk_gui_msgs</build_depend>
   <build_depend>jsk_hark_msgs</build_depend>
   <build_depend condition="$ROS_VERSION == 1">jsk_recognition_msgs</build_depend>
@@ -69,7 +69,7 @@
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">image_geometry</exec_depend>
   <exec_depend>image_publisher</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">jsk_footstep_msgs</exec_depend>
+  <exec_depend>jsk_footstep_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">jsk_gui_msgs</exec_depend>
   <exec_depend>jsk_hark_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">jsk_recognition_msgs</exec_depend>

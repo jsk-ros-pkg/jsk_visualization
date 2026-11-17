@@ -36,14 +36,30 @@
 #ifndef FOOTSTEP_DISPLAY_H
 #define FOOTSTEP_DISPLAY_H
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_footstep_msgs/msg/footstep_array.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_footstep_msgs, Footstep)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_footstep_msgs, FootstepArray)
+#else
 #include <jsk_footstep_msgs/FootstepArray.h>
+#endif
 #ifndef Q_MOC_RUN
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/shape.hpp>
+#include <rviz_rendering/objects/movable_text.hpp>
+#else
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/movable_text.h>
+#endif
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #endif
@@ -66,7 +82,11 @@ namespace jsk_rviz_plugins
     virtual double estimateTextSize(
       const jsk_footstep_msgs::Footstep& footstep);
     virtual double minNotZero(double a, double b);
+#if ROS_VERSION_MAJOR != 1
+    virtual void processMessage(jsk_footstep_msgs::FootstepArray::ConstSharedPtr msg);
+#else
     virtual void processMessage(const jsk_footstep_msgs::FootstepArray::ConstPtr& msg);
+#endif
     virtual bool validateFloats(const jsk_footstep_msgs::FootstepArray& msg);
     
     rviz::FloatProperty* alpha_property_;
@@ -75,7 +95,11 @@ namespace jsk_rviz_plugins
     rviz::FloatProperty* depth_property_;
     rviz::BoolProperty* show_name_property_;
     rviz::BoolProperty* use_group_coloring_property_;
+#if ROS_VERSION_MAJOR != 1
+    jsk_footstep_msgs::FootstepArray::ConstSharedPtr latest_footstep_;
+#else
     jsk_footstep_msgs::FootstepArray::ConstPtr latest_footstep_;
+#endif
 #if ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<rviz::Shape> ShapePtr;
 #else

@@ -105,6 +105,7 @@ namespace rviz_rendering
 class Arrow;
 class BillboardLine;
 class MovableText;
+class Shape;
 }  // namespace rviz_rendering
 
 namespace rviz_default_plugins
@@ -150,6 +151,7 @@ using rviz_common::properties::qtToOgre;
 using rviz_rendering::Arrow;
 using rviz_rendering::BillboardLine;
 using rviz_rendering::MovableText;
+using rviz_rendering::Shape;
 
 using rviz_default_plugins::displays::InteractiveMarkerDisplay;
 }  // namespace rviz

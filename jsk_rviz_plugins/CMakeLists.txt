@@ -36,7 +36,6 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   # ROS 2 and stay ROS 1 only until then:
   #   src/ambient_sound_display.{h,cpp}                     -> jsk_hark_msgs (not built on
   #                                                            ROS 1 either, see ambient_sound_display_groovy)
-  #   src/footstep_display.{h,cpp}                          -> jsk_footstep_msgs
   #   src/bounding_box_display.{h,cpp}                      -> jsk_recognition_msgs, jsk_topic_tools
   #   src/bounding_box_array_display.{h,cpp}                -> jsk_recognition_msgs, jsk_topic_tools
   #   src/bounding_box_display_common.h                     -> jsk_recognition_msgs, jsk_topic_tools
@@ -66,6 +65,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   find_package(geometry_msgs REQUIRED)
   find_package(image_transport REQUIRED)
   find_package(jsk_hark_msgs REQUIRED)
+  find_package(jsk_footstep_msgs REQUIRED)
   find_package(jsk_ros1_ros2_compat REQUIRED)
   find_package(pluginlib REQUIRED)
   find_package(rclcpp REQUIRED)
@@ -107,6 +107,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     src/diagnostics_display.h
     src/empty_service_call_interface.h
     src/facing_visualizer.h
+    src/footstep_display.h
     src/image_transport_hints_property.h
     src/linear_gauge_display.h
     src/normal_display.h
@@ -143,6 +144,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     src/diagnostics_display.cpp
     src/empty_service_call_interface.cpp
     src/facing_visualizer.cpp
+    src/footstep_display.cpp
     src/image_transport_hints_property.cpp
     src/linear_gauge_display.cpp
     src/normal_display.cpp
@@ -190,6 +192,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   )
   target_link_libraries(${PROJECT_NAME}_plugins
     ${cpp_typesupport_target}
+    ${jsk_footstep_msgs_TARGETS}
     ${jsk_hark_msgs_TARGETS}
     ${action_msgs_TARGETS}
     ${diagnostic_msgs_TARGETS}
