@@ -24,7 +24,7 @@ namespace jsk_interactive_marker {
 
     tf::TransformBroadcaster br;
     visualization_msgs::InteractiveMarker getInteractiveMarker();
-    virtual visualization_msgs::Marker getVisualizationMsgMarker(){};
+    virtual visualization_msgs::Marker getVisualizationMsgMarker(){return visualization_msgs::Marker();};
     void addMarker(visualization_msgs::InteractiveMarker &int_marker, bool always_visible = true, unsigned int interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D);
     void addControl(visualization_msgs::InteractiveMarker &int_marker);
 
@@ -66,7 +66,7 @@ namespace jsk_interactive_marker {
     int getType() { return type_; };
     void setType(int type) { type_ = type; return; };
 
-    virtual float getInteractiveMarkerScale(){};
+    virtual float getInteractiveMarkerScale(){return 1.0;};
   };
 };
 

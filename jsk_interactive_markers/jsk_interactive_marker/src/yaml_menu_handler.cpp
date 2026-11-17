@@ -45,6 +45,7 @@ bool YamlMenuHandler::initMenu(std::string file_name) {
     _publisher_map[topic_name] = _node_ptr->advertise<std_msgs::String>(topic_name, 1);
     _menu_handler.insert(text, boost::bind(&YamlMenuHandler::pubTopic, this, _1, topic_name));
   }
+  return true;
 }
 
 void YamlMenuHandler::pubTopic(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback, std::string topic_name) {
