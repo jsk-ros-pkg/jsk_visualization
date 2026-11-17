@@ -2,7 +2,7 @@
 # file into its workspace when USE_DEB is false, see
 # .github/workflows/config.yml; the ROS-O jobs import it with vcs).
 #
-# jsk_rqt_plugins depends on jsk_ros1_ros2_compat, which is only in
+# jsk_rqt_plugins and jsk_rviz_plugins depend on jsk_ros1_ros2_compat, which is only in
 # jsk_common >= 3.0; jsk_common 3.x and the jsk_common_msgs it needs are not
 # released for indigo..noetic and ROS-O yet, so they come from master until
 # they are.
