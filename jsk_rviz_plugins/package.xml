@@ -101,6 +101,12 @@
   <!--test_depend>jsk_pcl_ros_utils</test_depend--> <!-- normal.test requires jsk_pcl/NormalConcatenater -->
   <!-- test_depend>jsk_pcl_ros</test_depend--> <!-- normal.test requires jsk_pcl/NormalConcatenater (for kinetic) -->
   <test_depend condition="$ROS_VERSION == 1">face_detector</test_depend> <!-- face_detector.test requires face_detector -->
+  <!-- test/ros2: rviz2 with the samples, under Xvfb on CI -->
+  <test_depend condition="$ROS_VERSION == 2">launch_testing</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">launch_testing_ament_cmake</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">opengl</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">python3-pytest</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">xvfb</test_depend>
 
   <member_of_group condition="$ROS_VERSION == 2">rosidl_interface_packages</member_of_group>
 

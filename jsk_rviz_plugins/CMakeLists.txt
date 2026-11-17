@@ -230,6 +230,17 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     samples/piechart_sample.py
   )
 
+  if(BUILD_TESTING)
+    # rviz2 with the sample configs; the tests need an X display and skip
+    # themselves without one (CI runs them under Xvfb)
+    find_package(launch_testing_ament_cmake REQUIRED)
+    add_launch_test(test/ros2/test_overlay.py TIMEOUT 120)
+    add_launch_test(test/ros2/test_linear_gauge.py TIMEOUT 120)
+    add_launch_test(test/ros2/test_pictogram.py TIMEOUT 120)
+    add_launch_test(test/ros2/test_service_call_panel.py TIMEOUT 120)
+    add_launch_test(test/ros2/test_robot_command_interface.py TIMEOUT 120)
+  endif()
+
   ament_export_dependencies(rosidl_default_runtime)
   ament_package()
 
