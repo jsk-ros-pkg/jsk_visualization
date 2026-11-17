@@ -34,7 +34,7 @@
  *********************************************************************/
 
 #include "overlay_utils.h"
-#include <ros/ros.h>
+#include "rviz_compat.h"  // <ros/ros.h> on ROS 1
 
 namespace jsk_rviz_plugins
 {

@@ -14,8 +14,14 @@ ImageTransportHintsProperty::ImageTransportHintsProperty(const char* name,
 
 ImageTransportHintsProperty::~ImageTransportHintsProperty() {}
 
+#if ROS_VERSION_MAJOR != 1
+std::string ImageTransportHintsProperty::getTransport() {
+  return getStdString();
+}
+#else
 image_transport::TransportHints ImageTransportHintsProperty::getTransportHints() {
   return image_transport::TransportHints(getStdString());
 }
+#endif
 
 }

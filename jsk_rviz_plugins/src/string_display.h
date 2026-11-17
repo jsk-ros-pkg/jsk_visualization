@@ -40,6 +40,18 @@
 
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreMaterial.h>
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <std_msgs/msg/string.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(std_msgs, String)
+#else
 #include <rviz/display.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/color_property.h>
@@ -48,6 +60,7 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/ros_topic_property.h>
 #include <std_msgs/String.h>
+#endif
 #include "overlay_utils.h"
 #endif
 
@@ -84,7 +97,11 @@ class StringDisplay : public rviz::Display
     int left_;
     int top_;
 
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Subscription<std_msgs::String>::SharedPtr sub_;
+#else
     ros::Subscriber sub_;
+#endif
 
     virtual void onInitialize();
     virtual void subscribe();
@@ -126,7 +143,11 @@ class StringDisplay : public rviz::Display
     void updateFont();
     void updateLineWidth();
   private:
+#if ROS_VERSION_MAJOR != 1
+    void processMessage(const std_msgs::String::ConstSharedPtr& msg);
+#else
     void processMessage(const std_msgs::String::ConstPtr& msg);
+#endif
   };
 }  // namespace jsk_rviz_plugins
 
