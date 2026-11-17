@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-import rospy
+from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
 from jsk_rviz_plugins.msg import OverlayMenu
 
-rospy.init_node("test_menu")
-p = rospy.Publisher("test_menu", OverlayMenu, queue_size=1)
-r = rospy.Rate(5)
+node = ros_compat.init_node("test_menu")
+p = ros_compat.create_publisher(node, "test_menu", OverlayMenu, queue_size=1)
+r = ros_compat.Rate(node, 5)
 counter = 0
-while not rospy.is_shutdown():
+while not ros_compat.is_shutdown(node):
   menu = OverlayMenu()
   menu.title = "The Beatles"
   menu.menus = ["John Lennon", "Paul McCartney", "George Harrison",
@@ -26,3 +26,4 @@ while not rospy.is_shutdown():
   p.publish(menu)
   counter = counter + 1
   r.sleep()
+ros_compat.shutdown(node)

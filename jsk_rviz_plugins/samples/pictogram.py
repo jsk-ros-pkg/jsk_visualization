@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import rospy
+from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
 from jsk_rviz_plugins.msg import Pictogram
 from random import random
-rospy.init_node("pictogram_sample")
-p = rospy.Publisher("/pictogram", Pictogram)
+node = ros_compat.init_node("pictogram_sample")
+p = ros_compat.create_publisher(node, "/pictogram", Pictogram, queue_size=1)
 
-r = rospy.Rate(0.1)
+r = ros_compat.Rate(node, 0.1)
 
 pictograms = ["phone",
               "mobile",
@@ -1697,20 +1697,22 @@ pictograms = ["phone",
 "fa-unity"]
 
 counter = 0
-while not rospy.is_shutdown():
+while not ros_compat.is_shutdown(node):
     msg = Pictogram()
     msg.action = Pictogram.JUMP_ONCE
-    msg.header.frame_id = "/base_link"
-    msg.header.stamp = rospy.Time.now()
+    # tf2 of ROS 2 rejects a leading slash, which tf2 of ROS 1 strips
+    msg.header.frame_id = "base_link"
+    msg.header.stamp = ros_compat.stamp_now(node)
     msg.pose.position.z = 1.6
     msg.pose.orientation.w = 0.7
-    msg.pose.orientation.x = 0
+    # the float fields of ROS 2 (rclpy) messages do not take ints
+    msg.pose.orientation.x = 0.0
     msg.pose.orientation.y = -0.7
-    msg.pose.orientation.z = 0
+    msg.pose.orientation.z = 0.0
     msg.mode = Pictogram.PICTOGRAM_MODE
     msg.speed = 1.0
     # msg.ttl = 5.0
-    msg.size = 1
+    msg.size = 1.0
     msg.color.r = 25 / 255.0
     msg.color.g = 255 / 255.0
     msg.color.b = 240 / 255.0
@@ -1721,3 +1723,4 @@ while not rospy.is_shutdown():
     counter = counter + 1
     if len(pictograms) == counter:
         counter = 0
+ros_compat.shutdown(node)

@@ -4,14 +4,14 @@
 # Please run rviz by rosrun rviz rviz -d `rospack find jsk_rviz_plugins`/config/pictogram.rviz
 #
 
-import rospy
+from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
 import math
 from jsk_rviz_plugins.msg import Pictogram, PictogramArray
 from random import random, choice
-rospy.init_node("pictogram_all_sample")
-p = rospy.Publisher("/pictogram_array", PictogramArray)
+node = ros_compat.init_node("pictogram_all_sample")
+p = ros_compat.create_publisher(node, "/pictogram_array", PictogramArray, queue_size=1)
 
-r = rospy.Rate(1)
+r = ros_compat.Rate(node, 1)
 actions = [Pictogram.JUMP, Pictogram.JUMP_ONCE, Pictogram.ADD, 
            Pictogram.ROTATE_X, Pictogram.ROTATE_Y, Pictogram.ROTATE_Z]
 pictograms = ["phone",
@@ -1703,25 +1703,27 @@ pictograms = ["phone",
 "fa-unity"]
 
 counter = 0
-while not rospy.is_shutdown():
+while not ros_compat.is_shutdown(node):
     initial_x = -int(math.sqrt(len(pictograms)))/2
     arr = PictogramArray()
-    arr.header.frame_id = "/base_link"
-    arr.header.stamp = rospy.Time.now()
+    # tf2 of ROS 2 rejects a leading slash, which tf2 of ROS 1 strips
+    arr.header.frame_id = "base_link"
+    arr.header.stamp = ros_compat.stamp_now(node)
     prev_xyz = [initial_x, -10, 0]
     for character in pictograms:
         msg = Pictogram()
-        msg.header.frame_id = "/base_link"
+        msg.header.frame_id = "base_link"
         msg.action = choice(actions)
-        msg.header.stamp = rospy.Time.now()
-        msg.pose.position.x = prev_xyz[0] + 1
-        msg.pose.position.y = prev_xyz[1]
-        msg.pose.position.z = 0
+        msg.header.stamp = ros_compat.stamp_now(node)
+        # the float fields of ROS 2 (rclpy) messages do not take ints
+        msg.pose.position.x = float(prev_xyz[0] + 1)
+        msg.pose.position.y = float(prev_xyz[1])
+        msg.pose.position.z = 0.0
         msg.pose.orientation.w = 0.7
-        msg.pose.orientation.x = 0
+        msg.pose.orientation.x = 0.0
         msg.pose.orientation.y = -0.7
-        msg.pose.orientation.z = 0
-        msg.size = 1
+        msg.pose.orientation.z = 0.0
+        msg.size = 1.0
         msg.color.r = 25 / 255.0
         msg.color.g = 255 / 255.0
         msg.color.b = 240 / 255.0
@@ -1737,3 +1739,4 @@ while not rospy.is_shutdown():
     counter = counter + 1
     if len(pictograms) == counter:
         counter = 0
+ros_compat.shutdown(node)
