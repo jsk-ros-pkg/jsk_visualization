@@ -155,7 +155,10 @@ class StatusLightWidget(QWidget):
 
     def setupSubscriber(self, topic):
         if self.status_sub:
-            self.status_sub.unregister()
+            if ROS_VERSION == 2:
+                self._node.destroy_subscription(self.status_sub)
+            else:
+                self.status_sub.unregister()
         self.status_sub = ros_compat.create_subscription(self._node, topic, UInt8,
                                            self.statusCallback)
         self._active_topic = topic
