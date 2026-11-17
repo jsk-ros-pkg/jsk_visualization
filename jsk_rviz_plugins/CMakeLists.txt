@@ -219,6 +219,17 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     DESTINATION share/${PROJECT_NAME}
   )
 
+  # The samples of launch/*.launch.py. They keep `#!/usr/bin/env python` for
+  # ROS 1 (python2 on indigo..melodic); ROS 2 base images ship no bare
+  # `python`, so the installed ROS 2 copies get a python3 shebang.
+  jsk_ros1_ros2_compat_install_python(PROGRAMS
+    samples/overlay_menu_sample.py
+    samples/overlay_sample.py
+    samples/pictogram.py
+    samples/pictogram_all.py
+    samples/piechart_sample.py
+  )
+
   ament_export_dependencies(rosidl_default_runtime)
   ament_package()
 

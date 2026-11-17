@@ -84,8 +84,11 @@
   <exec_depend condition="$ROS_VERSION == 1">view_controller_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">rviz2</exec_depend>
-  <!-- samples/*.py: rospy_rclpy_compat -->
+  <!-- samples/*.py: rospy_rclpy_compat; launch/*.launch.py -->
   <exec_depend>jsk_ros1_ros2_compat</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">ament_index_python</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">launch</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">launch_ros</exec_depend>
 
   <test_depend condition="$ROS_VERSION == 1">rostest</test_depend>
   <test_depend condition="$ROS_VERSION == 1">pr2_description</test_depend> <!-- link_marker_publisher_sample.launch, contact_state_marker_sample.launch requires pr2_description -->
