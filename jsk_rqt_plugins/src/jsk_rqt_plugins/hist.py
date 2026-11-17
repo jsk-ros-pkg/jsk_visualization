@@ -28,12 +28,13 @@ from python_qt_binding.QtGui import QIcon
 import rospkg
 import rospy
 from rqt_gui_py.plugin import Plugin
-from rqt_plot.rosplot import ROSData as _ROSData
 from rqt_plot.rosplot import RosPlotException
 from rqt_py_common.topic_completer import TopicCompleter
 from sensor_msgs.msg import Image
 
 from jsk_recognition_msgs.msg import HistogramWithRange
+
+from .util import ROSData
 
 # qt5 in kinetic
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
@@ -74,25 +75,6 @@ else:
     except ImportError:
         from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT \
             as NavigationToolbar
-
-
-class ROSData(_ROSData):
-    def _get_data(self, msg):
-        val = msg
-        try:
-            if not self.field_evals:
-                return val
-            for f in self.field_evals:
-                val = f(val)
-            return val
-        except IndexError:
-            self.error = RosPlotException(
-                "{0} index error for: {1}".format(
-                    self.name, str(val).replace('\n', ', ')))
-        except TypeError:
-            self.error = RosPlotException(
-                "{0} value was not numeric: {1}".format(
-                    self.name, val))
 
 
 class HistogramPlot(Plugin):

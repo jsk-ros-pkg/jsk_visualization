@@ -39,6 +39,8 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Bool
 from std_msgs.msg import Time
 
+from .dialogs import ComboBoxDialog
+
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QAction
     from python_qt_binding.QtWidgets import QComboBox
@@ -62,27 +64,6 @@ else:
     from python_qt_binding.QtGui import QSizePolicy
     from python_qt_binding.QtGui import QVBoxLayout
     from python_qt_binding.QtGui import QWidget
-
-
-class ComboBoxDialog(QDialog):
-    def __init__(self, parent=None):
-        super(ComboBoxDialog, self).__init__()
-        self.number = 0
-        vbox = QVBoxLayout(self)
-        self.combo_box = QComboBox(self)
-        self.combo_box.activated.connect(self.onActivated)
-        vbox.addWidget(self.combo_box)
-        button = QPushButton()
-        button.setText("Done")
-        button.clicked.connect(self.buttonCallback)
-        vbox.addWidget(button)
-        self.setLayout(vbox)
-
-    def buttonCallback(self, event):
-        self.close()
-
-    def onActivated(self, number):
-        self.number = number
 
 
 class ImageView2Plugin(Plugin):

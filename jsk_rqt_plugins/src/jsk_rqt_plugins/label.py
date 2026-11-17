@@ -31,8 +31,9 @@ from std_msgs.msg import Bool
 from std_msgs.msg import Time
 from std_msgs.msg import String
 
+from .dialogs import LineEditDialog
 from .util import get_slot_type_field_names
-from .hist import ROSData
+from .util import ROSData
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QAction
@@ -61,37 +62,6 @@ else:
     from python_qt_binding.QtGui import QSizePolicy
     from python_qt_binding.QtGui import QVBoxLayout
     from python_qt_binding.QtGui import QWidget
-
-
-class LineEditDialog(QDialog):
-    def __init__(self, parent=None):
-        super(LineEditDialog, self).__init__()
-        self.value = None
-        self.button_pressed = False
-        vbox = QVBoxLayout(self)
-        # combo box
-        model = QtGui.QStandardItemModel(self)
-        for elm in rospy.get_param_names():
-            model.setItem(model.rowCount(), 0, QtGui.QStandardItem(elm))
-        self.combo_box = QComboBox(self)
-        self.line_edit = QLineEdit()
-        self.combo_box.setLineEdit(self.line_edit)
-        self.combo_box.setCompleter(QCompleter())
-        self.combo_box.setModel(model)
-        self.combo_box.completer().setModel(model)
-        self.combo_box.lineEdit().setText('')
-        vbox.addWidget(self.combo_box)
-        # button
-        button = QPushButton()
-        button.setText("Done")
-        button.clicked.connect(self.buttonCallback)
-        vbox.addWidget(button)
-        self.setLayout(vbox)
-
-    def buttonCallback(self, event):
-        self.value = self.line_edit.text()
-        self.button_pressed = True
-        self.close()
 
 
 class StringLabel(Plugin):
@@ -135,7 +105,7 @@ class StringLabelWidget(QWidget):
         self._update_topic_timer.start(1000)
         self._active_topic = None
         # to update label visualization
-        self._dialog = LineEditDialog()
+        self._dialog = LineEditDialog(candidates=rospy.get_param_names())
         self._rosdata = None
         self._start_time = ros_compat.now_sec(self._node)
         self._update_label_timer = QTimer(self)
