@@ -27,19 +27,18 @@
   <exec_depend>rqt_gui</exec_depend>
   <exec_depend>rqt_gui_py</exec_depend>
   <exec_depend>rqt_plot</exec_depend>
-  <!-- rqt_image_view, image_publisher, image_view2, jsk_gui_msgs, cv_bridge
-       and sklearn are used by the plugins which are ROS 1 only:
-       hist.py, plot_2d.py, image_view2_wrapper.py and yes_no_button.py
-       (HistogramPlot, Plot2D, ImageView2Plugin, YesNoButton) need
-       jsk_recognition_msgs, image_view2 or jsk_gui_msgs, which are not
-       released for ROS 2. -->
+  <!-- rqt_image_view, image_publisher, image_view2, cv_bridge and sklearn
+       are used by the plugins which are ROS 1 only:
+       hist.py, plot_2d.py and image_view2_wrapper.py (HistogramPlot,
+       Plot2D, ImageView2Plugin) need jsk_recognition_msgs or image_view2,
+       which are not released for ROS 2. -->
   <exec_depend condition="$ROS_VERSION == 1">rqt_image_view</exec_depend>
   <exec_depend>qt_gui_py_common</exec_depend>
   <exec_depend>resource_retriever</exec_depend>
   <!-- https://github.com/ros-perception/image_pipeline/pull/318 -->
   <exec_depend condition="$ROS_VERSION == 1" version_gte="1.12.23">image_publisher</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">image_view2</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1" version_gte="4.3.0" >jsk_gui_msgs</exec_depend>
+  <exec_depend version_gte="4.3.0" >jsk_gui_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">cv_bridge</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-sklearn</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1 and $ROS_PYTHON_VERSION == 3">python3-sklearn</exec_depend>

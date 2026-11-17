@@ -44,6 +44,7 @@ RQT_NODES = [
     'rqt_status_light',
     'rqt_string_label',
     'rqt_tabbed_buttons',
+    'rqt_yn_btn',
 ]
 
 DRC_TOPICS = [
@@ -85,6 +86,8 @@ def generate_test_description():
              name='rqt_status_light'),
         Node(package='jsk_rqt_plugins', executable='rqt_string_label',
              name='rqt_string_label'),
+        Node(package='jsk_rqt_plugins', executable='rqt_yn_btn',
+             name='rqt_yn_btn'),
         # Plot3D resolves the topic type when it subscribes and retries until
         # it succeeds; a small head start just avoids the first retry.
         TimerAction(period=5.0, actions=[
@@ -170,6 +173,17 @@ class TestRqtPlugins(unittest.TestCase):
                 self._wait_for_subscription(
                     'rqt_drc_mini_maxwell', topic, 30.0),
                 'rqt_drc_mini_maxwell does not subscribe {}'.format(topic))
+
+    def test_rqt_yn_btn(self):
+        self._wait_for_nodes(['rqt_yn_btn'])
+        t_start = time.time()
+        while time.time() - t_start < 30.0:
+            services = [
+                name for name, _ in self.node.get_service_names_and_types()]
+            if '/rqt_yn_btn' in services:
+                return
+            time.sleep(1.0)
+        self.fail('Could not find service (/rqt_yn_btn)')
 
     def test_rqt_3d_plot(self):
         self._wait_for_nodes(['rqt_3d_plot'])
