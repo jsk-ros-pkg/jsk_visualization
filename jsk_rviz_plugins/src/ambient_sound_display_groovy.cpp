@@ -1,6 +1,19 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/validate_floats.hpp>
+namespace rviz
+{
+using rviz_common::validateFloats;
+}
+#else
 #include <tf/transform_listener.h>
 
 #include <rviz/visualization_manager.h>
@@ -10,6 +23,7 @@
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/frame_manager.h>
 #include <rviz/validate_floats.h>
+#endif
 
 #include <boost/foreach.hpp>
 #include "ambient_sound_visual.h"
@@ -210,7 +224,11 @@ namespace jsk_rviz_plugins
     //}[>}}}<]
 
     // This is our callback to handle an incoming message.
+#if ROS_VERSION_MAJOR != 1
+    void AmbientSoundDisplay::processMessage( jsk_hark_msgs::HarkPower::ConstSharedPtr msg )/*{{{*/
+#else
     void AmbientSoundDisplay::processMessage( const jsk_hark_msgs::HarkPower::ConstPtr& msg )/*{{{*/
+#endif
     {
         if( !validateFloats( *msg ))
         {
@@ -275,6 +293,10 @@ namespace jsk_rviz_plugins
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::AmbientSoundDisplay, rviz::Display )
 

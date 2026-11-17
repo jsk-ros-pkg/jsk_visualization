@@ -1,7 +1,13 @@
 #ifndef __AMBIENT_SOUND_VISUAL__
 #define __AMBIENT_SOUND_VISUAL__
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_hark_msgs/msg/hark_power.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_hark_msgs, HarkPower)
+#else
 #include <jsk_hark_msgs/HarkPower.h>
+#endif
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreQuaternion.h>
 
@@ -13,11 +19,13 @@ class SceneNode;
 //class Quaternion;
 }
 
+#if ROS_VERSION_MAJOR == 1  // an alias of rviz_compat.h on ROS 2
 namespace rviz
 {
 class BillboardLine;
 //class Axes;
 }
+#endif
 
 namespace jsk_rviz_plugins
 {
@@ -40,7 +48,11 @@ public:
   virtual ~AmbientSoundVisual();
 
   // Configure the visual to show the data in the message.
+#if ROS_VERSION_MAJOR != 1
+  void setMessage( jsk_hark_msgs::HarkPower::ConstSharedPtr msg );
+#else
   void setMessage( const jsk_hark_msgs::HarkPower::ConstPtr& msg );
+#endif
 
   // Set the pose of the coordinate frame the message refers to.
   // These could be done inside setMessage(), but that would require

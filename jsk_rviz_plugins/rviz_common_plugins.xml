@@ -235,4 +235,13 @@
       tablet controller panel
     </description>
   </class>
+
+  <class name="jsk_rviz_plugin/AmbientSound"
+         type="jsk_rviz_plugins::AmbientSoundDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Displays from hark_msgs/HarkPower message
+    </description>
+    <message_type>jsk_hark_msgs/msg/HarkPower</message_type>
+  </class>
 </library>

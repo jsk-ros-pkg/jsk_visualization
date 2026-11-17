@@ -34,9 +34,8 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   #
   # The following plugins wait for their dependencies to be released for
   # ROS 2 and stay ROS 1 only until then:
-  #   src/ambient_sound_display.{h,cpp}                     -> jsk_hark_msgs
-  #   src/ambient_sound_display_groovy.{h,cpp}              -> jsk_hark_msgs
-  #   src/ambient_sound_visual.{h,cpp}                      -> jsk_hark_msgs
+  #   src/ambient_sound_display.{h,cpp}                     -> jsk_hark_msgs (not built on
+  #                                                            ROS 1 either, see ambient_sound_display_groovy)
   #   src/footstep_display.{h,cpp}                          -> jsk_footstep_msgs
   #   src/bounding_box_display.{h,cpp}                      -> jsk_recognition_msgs, jsk_topic_tools
   #   src/bounding_box_array_display.{h,cpp}                -> jsk_recognition_msgs, jsk_topic_tools
@@ -66,6 +65,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   find_package(diagnostic_msgs REQUIRED)
   find_package(geometry_msgs REQUIRED)
   find_package(image_transport REQUIRED)
+  find_package(jsk_hark_msgs REQUIRED)
   find_package(jsk_ros1_ros2_compat REQUIRED)
   find_package(pluginlib REQUIRED)
   find_package(rclcpp REQUIRED)
@@ -100,6 +100,8 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
 
   set(HEADER_FILES
+    src/ambient_sound_display_groovy.h
+    src/ambient_sound_visual.h
     src/cancel_action.h
     src/close_all_tool.h
     src/diagnostics_display.h
@@ -134,6 +136,8 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     src/video_capture_display.h
   )
   set(SOURCE_FILES
+    src/ambient_sound_display_groovy.cpp
+    src/ambient_sound_visual.cpp
     src/cancel_action.cpp
     src/close_all_tool.cpp
     src/diagnostics_display.cpp
@@ -186,6 +190,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   )
   target_link_libraries(${PROJECT_NAME}_plugins
     ${cpp_typesupport_target}
+    ${jsk_hark_msgs_TARGETS}
     ${action_msgs_TARGETS}
     ${diagnostic_msgs_TARGETS}
     ${geometry_msgs_TARGETS}

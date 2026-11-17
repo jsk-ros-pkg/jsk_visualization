@@ -2,8 +2,14 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/axes.hpp>
+#else
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/axes.h>
+#endif
 
 #include "ambient_sound_visual.h"
 
@@ -44,7 +50,11 @@ namespace jsk_rviz_plugins
         scene_manager_->destroySceneNode( frame_node_ );
     }/*}}}*/
 
+#if ROS_VERSION_MAJOR != 1
+    void AmbientSoundVisual::setMessage( jsk_hark_msgs::HarkPower::ConstSharedPtr msg )/*{{{*/
+#else
     void AmbientSoundVisual::setMessage( const jsk_hark_msgs::HarkPower::ConstPtr& msg )/*{{{*/
+#endif
     {
         int directions = msg->directions;
         std::vector<float> powers = msg->powers;
