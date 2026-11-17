@@ -167,8 +167,14 @@ class ServiceButtonGeneralWidget(QWidget):
                 button.setSizePolicy(
                     QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
                 if "image" in button_data:
-                    image_file = get_filename(
-                        button_data["image"])[len("file://"):]
+                    try:
+                        image_file = get_filename(
+                            button_data["image"])[len("file://"):]
+                    except Exception as e:
+                        # e.g. package:// of a package not installed: no icon
+                        ros_compat.logwarn(self._node, "Cannot find %s: %s" % (
+                            button_data["image"], e))
+                        image_file = ""
                     if os.path.exists(image_file):
                         icon = QtGui.QIcon(image_file)
                         button.setIcon(icon)
