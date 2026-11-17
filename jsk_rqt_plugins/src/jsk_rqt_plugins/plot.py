@@ -383,10 +383,22 @@ class Plot3DWidget(QWidget):
         # init and start update timer for plot
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.update_plot)
+        # ROS 2's rqt_plot.rosplot.ROSData needs the type of the topic when
+        # it subscribes, so a topic given on the command line can not be
+        # added before its publisher has been discovered; ROS 1 subscribed
+        # lazily. The initial topics are retried until they resolve.
+        self._initial_topic_timer = QTimer(self)
+        self._initial_topic_timer.timeout.connect(self._add_initial_topics)
         if self._initial_topics:
-            for topic_name in self._initial_topics:
-                self.add_topic(topic_name)
-            self._initial_topics = None
+            self._add_initial_topics()
+            if self._initial_topics:
+                self._initial_topic_timer.start(1000)
+
+    def _add_initial_topics(self):
+        self._initial_topics = [topic_name for topic_name in self._initial_topics
+                                if not self.add_topic(topic_name)]
+        if not self._initial_topics:
+            self._initial_topic_timer.stop()
 
     def _update_topics(self):
         # the topics are listed through the node on ROS 2
@@ -503,9 +515,10 @@ class Plot3DWidget(QWidget):
         self.remove_topic_button.setMenu(self._remove_topic_menu)
 
     def add_topic(self, topic_name):
+        """subscribe topic_name, returns whether it could be"""
         if topic_name in self._rosdata:
             qWarning('PlotWidget.add_topic(): topic already subscribed: %s' % topic_name)  # NOQA
-            return
+            return True
 
         # rqt_plot's ROSData subscribes through the node on ROS 2
         if ROS_VERSION == 2:
@@ -516,11 +529,13 @@ class Plot3DWidget(QWidget):
         if self._rosdata[topic_name].error is not None:
             qWarning(str(self._rosdata[topic_name].error))
             del self._rosdata[topic_name]
+            return False
         else:
             data_x, data_y = self._rosdata[topic_name].next()
             self.data_plot.add_curve(topic_name, topic_name, data_x, data_y)
 
             self._subscribed_topics_changed()
+            return True
 
     def remove_topic(self, topic_name):
         self._rosdata[topic_name].close()
