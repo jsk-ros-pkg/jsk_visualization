@@ -172,13 +172,19 @@ class StringLabelWidget(QWidget):
                 self._dialog.combo_box.setCurrentIndex(
                     self._string_topics.index(self._active_topic))
 
+    def _ros_data(self, topic):
+        # rqt_plot's ROSData subscribes through the node on ROS 2
+        if ROS_VERSION == 2:
+            return ROSData(self._node, topic, self._start_time)
+        return ROSData(topic, self._start_time)
+
     def setupSubscriber(self, topic):
         if not self._rosdata:
-            self._rosdata = ROSData(topic, self._start_time)
+            self._rosdata = self._ros_data(topic)
         else:
             if self._rosdata != topic:
                 self._rosdata.close()
-                self._rosdata = ROSData(topic, self._start_time)
+                self._rosdata = self._ros_data(topic)
             else:
                 ros_compat.logwarn(self._node, "%s is already subscribed" % topic)
         self._active_topic = topic
