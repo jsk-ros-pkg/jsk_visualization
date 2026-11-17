@@ -22,9 +22,10 @@ from python_qt_binding.QtGui import QPen
 import yaml
 
 from resource_retriever import get_filename
-import roslib
-import rospy
 from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+if ROS_VERSION == 1:
+    import rospy
 from rqt_gui_py.plugin import Plugin
 import rqt_plot
 from std_msgs.msg import Bool
@@ -105,7 +106,9 @@ class StringLabelWidget(QWidget):
         self._update_topic_timer.start(1000)
         self._active_topic = None
         # to update label visualization
-        self._dialog = LineEditDialog(candidates=rospy.get_param_names())
+        # (ROS 2 has no parameter server to list the parameters of)
+        self._dialog = LineEditDialog(
+            candidates=rospy.get_param_names() if ROS_VERSION == 1 else None)
         self._rosdata = None
         self._start_time = ros_compat.now_sec(self._node)
         self._update_label_timer = QTimer(self)
@@ -139,8 +142,19 @@ class StringLabelWidget(QWidget):
 
     def updateTopics(self):
         need_to_update = False
-        for (topic, topic_type) in rospy.get_published_topics():
-            msg = roslib.message.get_message_class(topic_type)
+        if ROS_VERSION == 2:
+            published_topics = [
+                (topic, topic_type) for topic, topic_types
+                in self._node.get_topic_names_and_types()
+                for topic_type in topic_types]
+        else:
+            published_topics = rospy.get_published_topics()
+        for (topic, topic_type) in published_topics:
+            try:
+                msg = ros_compat.resolve_message_class(topic_type)
+            except (ImportError, ValueError, AttributeError):
+                # a type whose package is not installed here (rclpy raises)
+                continue
             field_names = get_slot_type_field_names(msg, slot_type='string')
             for field in field_names:
                 string_topic = topic + field

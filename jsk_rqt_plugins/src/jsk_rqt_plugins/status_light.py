@@ -22,8 +22,10 @@ from python_qt_binding.QtGui import QPen
 import yaml
 
 from resource_retriever import get_filename
-import rospy
 from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+if ROS_VERSION == 1:
+    import rospy
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
 from std_msgs.msg import Time
@@ -127,8 +129,15 @@ class StatusLightWidget(QWidget):
 
     def updateTopics(self):
         need_to_update = False
-        for (topic, topic_type) in rospy.get_published_topics():
-            if topic_type == "std_msgs/UInt8":
+        if ROS_VERSION == 2:
+            published_topics = [
+                (topic, topic_type) for topic, topic_types
+                in self._node.get_topic_names_and_types()
+                for topic_type in topic_types]
+        else:
+            published_topics = rospy.get_published_topics()
+        for (topic, topic_type) in published_topics:
+            if topic_type in ("std_msgs/UInt8", "std_msgs/msg/UInt8"):
                 if not topic in self._status_topics:
                     self._status_topics.append(topic)
                     need_to_update = True
