@@ -1,3 +1,93 @@
+# $ENV{ROS_VERSION} is set by ros_environment, which is missing on
+# pre-ros_environment distros (e.g. indigo) and on ROS 2 builds that do not
+# depend on it (e.g. the buildfarm's binary jobs). Guess it then: ament sets
+# AMENT_PREFIX_PATH (bloom's debian/rules passes it to cmake, setup.sh and
+# colcon set the environment variable), catkin never does.
+if("$ENV{ROS_VERSION}" STREQUAL "")
+  if(DEFINED AMENT_PREFIX_PATH OR DEFINED ENV{AMENT_PREFIX_PATH})
+    set(ENV{ROS_VERSION} 2)
+  else()
+    set(ENV{ROS_VERSION} 1)
+  endif()
+  message(WARNING "ROS_VERSION is not set, assuming ROS_VERSION=$ENV{ROS_VERSION}")
+endif()
+
+if("$ENV{ROS_VERSION}" EQUAL 2)
+  cmake_minimum_required(VERSION 3.8)
+  project(jsk_interactive_marker)
+
+  # Only what does not need the packages missing on ROS 2 is built here.
+  # ROS 1 only, with the packages they need:
+  # - footstep_marker, polygon_marker, bounding_box_marker,
+  #   interactive_point_cloud, urdf_model_marker (jsk_recognition_msgs,
+  #   jsk_recognition_utils, jsk_footstep_msgs)
+  # - transformable_server_sample and the TransformableMarkerOperator rviz
+  #   panel (jsk_rviz_plugins messages, jsk_recognition_msgs, rviz)
+  # - interactive_marker_interface, urdf_control_marker (dynamic_tf_publisher,
+  #   urdf/kdl/tf_conversions of interactive_marker_utils.cpp; built with
+  #   jsk_recognition_utils on ROS 1)
+  # - pointcloud_cropper (pcl_ros)
+  # - srv/IndexRequest.srv (jsk_recognition_msgs/Int32Stamped)
+  # - euslisp/ (roseus)
+  find_package(ament_cmake REQUIRED)
+  find_package(rosidl_default_generators REQUIRED)
+  find_package(geometry_msgs REQUIRED)
+  find_package(sensor_msgs REQUIRED)
+  find_package(std_msgs REQUIRED)
+  find_package(visualization_msgs REQUIRED)
+  find_package(builtin_interfaces REQUIRED)
+
+  # The ROS 1 messages as they are, except for what rosidl does not accept:
+  # `duration` is builtin_interfaces/Duration, and field names are
+  # lower_snake_case (MoveObject's graspPose is grasp_pose).
+  set(_interfaces
+    msg/JointTrajectoryPointWithType.msg
+    msg/JointTrajectoryWithType.msg
+    msg/MarkerDimensions.msg
+    msg/MarkerMenu.msg
+    msg/MarkerPose.msg
+    msg/MoveModel.msg
+    msg/MoveObject.msg
+    msg/PoseStampedWithName.msg
+    msg/SnapFootPrintInput.msg
+    srv/GetJointState.srv
+    srv/GetMarkerDimensions.srv
+    srv/GetTransformableMarkerColor.srv
+    srv/GetTransformableMarkerExistence.srv
+    srv/GetTransformableMarkerFocus.srv
+    srv/GetTransformableMarkerPose.srv
+    srv/GetType.srv
+    srv/MarkerSetPose.srv
+    srv/RemoveParentMarker.srv
+    srv/SetHeuristic.srv
+    srv/SetMarkerDimensions.srv
+    srv/SetParentMarker.srv
+    srv/SetPose.srv
+    srv/SetTransformableMarkerColor.srv
+    srv/SetTransformableMarkerFocus.srv
+    srv/SetTransformableMarkerPose.srv
+    srv/SnapFootPrint.srv
+  )
+  set(_ros2_interfaces)
+  foreach(_interface ${_interfaces})
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/${_interface} _content)
+    string(REGEX REPLACE "(^|\n)duration " "\\1builtin_interfaces/Duration " _content "${_content}")
+    string(REGEX REPLACE "(^|\n)(geometry_msgs/Pose) graspPose" "\\1\\2 grasp_pose" _content "${_content}")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/ros2_interfaces/${_interface}.tmp "${_content}")
+    # copied only when changed, not to regenerate the messages every time
+    configure_file(${CMAKE_CURRENT_BINARY_DIR}/ros2_interfaces/${_interface}.tmp
+      ${CMAKE_CURRENT_BINARY_DIR}/ros2_interfaces/${_interface} COPYONLY)
+    list(APPEND _ros2_interfaces "${CMAKE_CURRENT_BINARY_DIR}/ros2_interfaces:${_interface}")
+  endforeach()
+  rosidl_generate_interfaces(${PROJECT_NAME}
+    ${_ros2_interfaces}
+    DEPENDENCIES builtin_interfaces geometry_msgs sensor_msgs std_msgs visualization_msgs
+  )
+  ament_export_dependencies(rosidl_default_runtime)
+
+  ament_package()
+
+else() # if("$ENV{ROS_VERSION}" EQUAL 2)
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_interactive_marker)
 
@@ -289,3 +379,4 @@ file(GLOB _rviz_default_files "${PROJECT_SOURCE_DIR}/launch/*.rviz.default")
 copy_rviz_files(_rviz_default_files)
 file(GLOB _rviz_default_files "${PROJECT_SOURCE_DIR}/config/*.rviz.default")
 copy_rviz_files(_rviz_default_files)
+endif() # if("$ENV{ROS_VERSION}" EQUAL 2)
