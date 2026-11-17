@@ -18,9 +18,8 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
 
   # Only what does not need the packages missing on ROS 2 is built here.
   # ROS 1 only, with the packages they need:
-  # - footstep_marker, polygon_marker, bounding_box_marker,
-  #   interactive_point_cloud, urdf_model_marker (jsk_recognition_msgs,
-  #   jsk_recognition_utils, jsk_footstep_msgs)
+  # - footstep_marker, polygon_marker, interactive_point_cloud,
+  #   urdf_model_marker (jsk_recognition_utils, besides jsk_recognition_msgs)
   # - the TransformableMarkerOperator rviz panel (jsk_recognition_msgs, rviz)
   # - ~use_parent_and_child of transformable_server_sample
   #   (ParentAndChildInteractiveMarkerServer)
@@ -28,8 +27,10 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   #   urdf/kdl/tf_conversions of interactive_marker_utils.cpp; built with
   #   jsk_recognition_utils on ROS 1)
   # - pointcloud_cropper (pcl_ros)
-  # - srv/IndexRequest.srv (jsk_recognition_msgs/Int32Stamped)
   # - euslisp/ (roseus)
+  # Built only when jsk_recognition_msgs is found, which is not released for
+  # ROS 2 (so not in the ROS 2 dependencies of package.xml) but can be built
+  # from source: srv/IndexRequest.srv and bounding_box_marker.
   # Not ported yet, though they need nothing missing on ROS 2: the DRC
   # (Atlas) tools triangle_foot, door_foot (its ~foot_list is a list of
   # dicts, which ROS 2 parameters can not hold) and point_cloud_config_marker.
@@ -40,6 +41,10 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   find_package(std_msgs REQUIRED)
   find_package(visualization_msgs REQUIRED)
   find_package(builtin_interfaces REQUIRED)
+  find_package(jsk_recognition_msgs QUIET)
+  if(NOT jsk_recognition_msgs_FOUND)
+    message(STATUS "jsk_recognition_msgs is not found, so srv/IndexRequest.srv and bounding_box_marker are not built")
+  endif()
 
   # The ROS 1 messages as they are, except for what rosidl does not accept:
   # `duration` is builtin_interfaces/Duration, and field names are
@@ -72,6 +77,11 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     srv/SetTransformableMarkerPose.srv
     srv/SnapFootPrint.srv
   )
+  set(_interface_dependencies builtin_interfaces geometry_msgs sensor_msgs std_msgs visualization_msgs)
+  if(jsk_recognition_msgs_FOUND)
+    list(APPEND _interfaces srv/IndexRequest.srv)
+    list(APPEND _interface_dependencies jsk_recognition_msgs)
+  endif()
   set(_ros2_interfaces)
   foreach(_interface ${_interfaces})
     file(READ ${CMAKE_CURRENT_SOURCE_DIR}/${_interface} _content)
@@ -85,7 +95,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   endforeach()
   rosidl_generate_interfaces(${PROJECT_NAME}
     ${_ros2_interfaces}
-    DEPENDENCIES builtin_interfaces geometry_msgs sensor_msgs std_msgs visualization_msgs
+    DEPENDENCIES ${_interface_dependencies}
   )
   ament_export_dependencies(rosidl_default_runtime)
 
@@ -143,6 +153,11 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     ${jsk_rviz_plugins_TARGETS}
     tf2_eigen::tf2_eigen)
   set(_nodes marker_6dof camera_info_publisher world2yaml transformable_server_sample)
+  if(jsk_recognition_msgs_FOUND)
+    add_executable(bounding_box_marker src/bounding_box_marker.cpp)
+    target_link_libraries(bounding_box_marker ${jsk_recognition_msgs_TARGETS})
+    list(APPEND _nodes bounding_box_marker)
+  endif()
   foreach(_node ${_nodes})
     target_link_libraries(${_node}
       ${PROJECT_NAME}_lib
@@ -177,6 +192,9 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   if(BUILD_TESTING)
     find_package(launch_testing_ament_cmake REQUIRED)
     add_launch_test(test/ros2/test_samples.py TIMEOUT 120)
+    if(jsk_recognition_msgs_FOUND)
+      add_launch_test(test/ros2/test_bounding_box_marker.py TIMEOUT 60)
+    endif()
   endif()
   ament_export_include_directories(include)
   ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)

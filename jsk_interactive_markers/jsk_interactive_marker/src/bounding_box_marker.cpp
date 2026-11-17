@@ -32,17 +32,43 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+#include "jsk_interactive_marker/ros1_ros2_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <interactive_markers/interactive_marker_server.hpp>
+#include <jsk_recognition_msgs/msg/int32_stamped.hpp>
+#include <jsk_recognition_msgs/msg/bounding_box_array.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread/mutex.hpp>
+#include <list>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, Int32Stamped)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, BoundingBox)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, BoundingBoxArray)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, InteractiveMarker)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, InteractiveMarkerControl)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, InteractiveMarkerFeedback)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, Marker)
+JSK_ROS1_ROS2_COMPAT_CONST_PTR_ALIAS(visualization_msgs, InteractiveMarkerFeedback)
+#include <jsk_ros1_ros2_compat/const_ptr.h>
+#else
 #include <interactive_markers/interactive_marker_server.h>
 #include <jsk_recognition_msgs/Int32Stamped.h>
 #include <jsk_interactive_marker/IndexRequest.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
+#endif
 
 
 std::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
 boost::mutex mutex;
+#if ROS_VERSION_MAJOR != 1
+jsk_interactive_marker::Publisher<jsk_recognition_msgs::msg::Int32Stamped> pub;
+jsk_interactive_marker::Publisher<jsk_recognition_msgs::msg::BoundingBox> box_pub;
+jsk_interactive_marker::Publisher<jsk_recognition_msgs::msg::BoundingBoxArray> box_arr_pub;
+#else
 ros::Publisher pub, box_pub, box_arr_pub;
+#endif
 jsk_recognition_msgs::BoundingBoxArray::ConstPtr box_msg;
 
 void publishClickedBox(jsk_recognition_msgs::Int32Stamped& msg)
@@ -66,18 +92,25 @@ void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr
     jsk_recognition_msgs::Int32Stamped index;
     index.header.stamp.sec = boost::lexical_cast<int>(splitted_string.front());
     splitted_string.pop_front();
+#if ROS_VERSION_MAJOR != 1
+    index.header.stamp.nanosec = boost::lexical_cast<int>(splitted_string.front());
+#else
     index.header.stamp.nsec = boost::lexical_cast<int>(splitted_string.front());
+#endif
     splitted_string.pop_front();
     index.data = boost::lexical_cast<int>(splitted_string.front());
     publishClickedBox(index);
   }
 }
 
+#if ROS_VERSION_MAJOR == 1
+// not advertised (nor ported to ROS 2)
 bool indexRequest(jsk_interactive_marker::IndexRequest::Request  &req,
                   jsk_interactive_marker::IndexRequest::Response &res)
 {
   publishClickedBox(req.index);
 }
+#endif
 
 void boxCallback(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
 {
@@ -100,7 +133,11 @@ void boxCallback(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
     {
       std::stringstream ss;
       // encode several informations into control name
+#if ROS_VERSION_MAJOR != 1
+      ss << box.header.stamp.sec << " " << box.header.stamp.nanosec << " " << i;
+#else
       ss << box.header.stamp.sec << " " << box.header.stamp.nsec << " " << i;
+#endif
       control.name = ss.str();
     }
     visualization_msgs::Marker marker;
@@ -123,6 +160,28 @@ void boxCallback(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
 
 int main(int argc, char** argv)
 {
+#if ROS_VERSION_MAJOR != 1
+  rclcpp::init(argc, argv);
+  rclcpp::Node::SharedPtr node = rclcpp::Node::make_shared("bounding_box_interactive_marker");
+  ROS1_ROS2_COMPAT::g_node = node;
+  server.reset(new interactive_markers::InteractiveMarkerServer("bounding_box_interactive_marker", node));
+  pub = node->create_publisher<jsk_recognition_msgs::msg::Int32Stamped>("~/selected_index", 1);
+  box_pub = node->create_publisher<jsk_recognition_msgs::msg::BoundingBox>("~/selected_box", 1);
+  box_arr_pub = node->create_publisher<jsk_recognition_msgs::msg::BoundingBoxArray>("~/selected_box_array", 1);
+  auto sub = node->create_subscription<jsk_recognition_msgs::msg::BoundingBoxArray>(
+    "~/bounding_box_array", 1, boxCallback);
+  rclcpp::spin(node);
+  server.reset();
+  // the global publishers hold the node, which is to be gone before shutdown
+  pub = {};
+  box_pub = {};
+  box_arr_pub = {};
+  sub.reset();
+  ROS1_ROS2_COMPAT::g_node.reset();
+  node.reset();
+  rclcpp::shutdown();
+  return 0;
+#else
   ros::init(argc, argv, "bounding_box_interactive_marker");
   ros::NodeHandle n, pnh("~");
   server.reset(new interactive_markers::InteractiveMarkerServer("bounding_box_interactive_marker", "", false));
@@ -133,4 +192,5 @@ int main(int argc, char** argv)
   ros::spin();
   server.reset();
   return 0;
+#endif
 }

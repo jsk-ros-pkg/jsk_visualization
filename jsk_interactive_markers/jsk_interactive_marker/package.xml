@@ -30,11 +30,14 @@
   <depend>jsk_rviz_plugins</depend>
 
   <!-- The nodes which need the following packages are ROS 1 only (see
-       CMakeLists.txt): jsk_recognition_msgs, jsk_recognition_utils,
-       jsk_footstep_msgs (footstep_marker), rviz (the
+       CMakeLists.txt): jsk_recognition_utils, jsk_footstep_msgs
+       (footstep_marker, which needs jsk_recognition_utils too), rviz (the
        TransformableMarkerOperator rviz panel), moveit_msgs, roseus (euslisp/), dynamic_tf_publisher,
        urdf and tf_conversions (urdf_model_marker, urdf_control_marker,
-       interactive_marker_interface), actionlib and message_filters. -->
+       interactive_marker_interface), actionlib and message_filters.
+       jsk_recognition_msgs is not released for ROS 2, so it is not a ROS 2
+       dependency here; the ROS 2 build uses it when it is found
+       (bounding_box_marker, srv/IndexRequest.srv). -->
   <depend condition="$ROS_VERSION == 1">roseus</depend>
   <depend condition="$ROS_VERSION == 1">dynamic_tf_publisher</depend>
   <depend condition="$ROS_VERSION == 1">dynamic_reconfigure</depend>
