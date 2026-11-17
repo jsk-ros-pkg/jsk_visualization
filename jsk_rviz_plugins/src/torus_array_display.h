@@ -37,6 +37,20 @@
 #define JSK_RVIZ_PLUGINS_TORUS_ARRAY_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_recognition_msgs/msg/torus_array.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, Torus)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, TorusArray)
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_rendering/objects/shape.hpp>
+#include <rviz_rendering/objects/mesh_shape.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#else
 #include <jsk_recognition_msgs/TorusArray.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
@@ -46,6 +60,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/mesh_shape.h>
 #include <rviz/ogre_helpers/arrow.h>
+#endif
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #endif
@@ -73,7 +88,11 @@ namespace jsk_rviz_plugins
   protected:
     virtual void onInitialize();
     virtual void reset();
+#if ROS_VERSION_MAJOR != 1
+    void allocateShapes(const jsk_recognition_msgs::TorusArray::ConstSharedPtr& msg);
+#else
     void allocateShapes(const jsk_recognition_msgs::TorusArray::ConstPtr& msg);
+#endif
     void allocateShapes(const size_t num);
     QColor getColor(size_t index);
     rviz::ColorProperty* color_property_;
@@ -108,7 +127,11 @@ namespace jsk_rviz_plugins
                                std::vector<Ogre::Vector3> &normals
                                );
   private:
+#if ROS_VERSION_MAJOR != 1
+    void processMessage(jsk_recognition_msgs::TorusArray::ConstSharedPtr msg);
+#else
     void processMessage(const jsk_recognition_msgs::TorusArray::ConstPtr& msg);
+#endif
   };
 
 }

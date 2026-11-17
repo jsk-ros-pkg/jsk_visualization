@@ -37,6 +37,22 @@
 #define JSK_RVIZ_PLUGINS_HUMAN_SKELETON_ARRAY_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_recognition_msgs/msg/human_skeleton_array.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, Segment)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, HumanSkeletonArray)
+#include <geometry_msgs/msg/pose.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, Pose)
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_rendering/objects/shape.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#else
 #include <jsk_recognition_msgs/HumanSkeletonArray.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
@@ -46,6 +62,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/arrow.h>
+#endif
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #endif
@@ -72,8 +89,13 @@ namespace jsk_rviz_plugins
     void allocateSpheres(int num);
     void allocateBillboardLines(int num);
     QColor getColor(size_t index);
+#if ROS_VERSION_MAJOR != 1
+    virtual void showEdges(
+      const jsk_recognition_msgs::HumanSkeletonArray::ConstSharedPtr& msg);
+#else
     virtual void showEdges(
       const jsk_recognition_msgs::HumanSkeletonArray::ConstPtr& msg);
+#endif
 
     rviz::EnumProperty* coloring_property_;
     rviz::ColorProperty* color_property_;
@@ -86,15 +108,24 @@ namespace jsk_rviz_plugins
     std::vector<BillboardLinePtr> edges_;
     std::vector<ShapePtr> shapes_;
 
+#if ROS_VERSION_MAJOR != 1
+    jsk_recognition_msgs::HumanSkeletonArray::ConstSharedPtr latest_msg_;
+#else
     jsk_recognition_msgs::HumanSkeletonArray::ConstPtr latest_msg_;
+#endif
   private Q_SLOTS:
     void updateColor();
     void updateAlpha();
     void updateColoring();
     void updateLineWidth();
   private:
+#if ROS_VERSION_MAJOR != 1
+    void processMessage(
+      jsk_recognition_msgs::HumanSkeletonArray::ConstSharedPtr msg);
+#else
     void processMessage(
       const jsk_recognition_msgs::HumanSkeletonArray::ConstPtr& msg);
+#endif
   };
 
 }

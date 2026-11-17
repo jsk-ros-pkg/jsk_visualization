@@ -104,6 +104,7 @@ namespace rviz_rendering
 {
 class Arrow;
 class BillboardLine;
+class MeshShape;
 class MovableText;
 class Shape;
 }  // namespace rviz_rendering
@@ -150,6 +151,7 @@ using rviz_common::properties::qtToOgre;
 
 using rviz_rendering::Arrow;
 using rviz_rendering::BillboardLine;
+using rviz_rendering::MeshShape;
 using rviz_rendering::MovableText;
 using rviz_rendering::Shape;
 

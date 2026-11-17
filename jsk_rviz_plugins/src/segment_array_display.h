@@ -37,6 +37,22 @@
 #define JSK_RVIZ_PLUGINS_SEGMENT_ARRAY_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_recognition_msgs/msg/segment_array.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, Segment)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, SegmentArray)
+#include <geometry_msgs/msg/pose.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, Pose)
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_rendering/objects/shape.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#else
 #include <jsk_recognition_msgs/SegmentArray.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
@@ -46,6 +62,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/arrow.h>
+#endif
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #endif
@@ -69,8 +86,13 @@ namespace jsk_rviz_plugins
     virtual void reset();
     void allocateBillboardLines(int num);
     QColor getColor(size_t index);
+#if ROS_VERSION_MAJOR != 1
+    virtual void showEdges(
+      const jsk_recognition_msgs::SegmentArray::ConstSharedPtr& msg);
+#else
     virtual void showEdges(
       const jsk_recognition_msgs::SegmentArray::ConstPtr& msg);
+#endif
 
     rviz::EnumProperty* coloring_property_;
     rviz::ColorProperty* color_property_;
@@ -82,15 +104,24 @@ namespace jsk_rviz_plugins
     double line_width_;
     std::vector<BillboardLinePtr> edges_;
 
+#if ROS_VERSION_MAJOR != 1
+    jsk_recognition_msgs::SegmentArray::ConstSharedPtr latest_msg_;
+#else
     jsk_recognition_msgs::SegmentArray::ConstPtr latest_msg_;
+#endif
   private Q_SLOTS:
     void updateColor();
     void updateAlpha();
     void updateColoring();
     void updateLineWidth();
   private:
+#if ROS_VERSION_MAJOR != 1
+    void processMessage(
+      jsk_recognition_msgs::SegmentArray::ConstSharedPtr msg);
+#else
     void processMessage(
       const jsk_recognition_msgs::SegmentArray::ConstPtr& msg);
+#endif
   };
 
 }

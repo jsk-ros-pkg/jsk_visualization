@@ -36,9 +36,6 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   # ROS 2 and stay ROS 1 only until then:
   #   src/ambient_sound_display.{h,cpp}                     -> jsk_hark_msgs (not built on
   #                                                            ROS 1 either, see ambient_sound_display_groovy)
-  #   src/torus_array_display.{h,cpp}                       -> jsk_recognition_msgs
-  #   src/segment_array_display.{h,cpp}                     -> jsk_recognition_msgs
-  #   src/human_skeleton_array_display.{h,cpp}              -> jsk_recognition_msgs
   #   src/polygon_array_display.{h,cpp}                     -> jsk_recognition_msgs, jsk_recognition_utils
   #   src/simple_occupancy_grid_array_display.{h,cpp}       -> jsk_recognition_msgs, jsk_recognition_utils
   #   src/rviz_util.h                                       -> only used by simple_occupancy_grid_array_display
@@ -185,13 +182,20 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
       src/bounding_box_array_display.h
       src/bounding_box_display.h
       src/bounding_box_display_common.h
+      src/human_skeleton_array_display.h
+      src/segment_array_display.h
+      src/torus_array_display.h
     )
     list(APPEND SOURCE_FILES
       src/bounding_box_array_display.cpp
       src/bounding_box_display.cpp
+      src/human_skeleton_array_display.cpp
+      src/segment_array_display.cpp
+      src/torus_array_display.cpp
     )
   else()
-    message(STATUS "BoundingBox and BoundingBoxArray displays skipped: jsk_recognition_msgs not found")
+    message(STATUS "BoundingBox, BoundingBoxArray, TorusArray, SegmentArray and HumanSkeletonArray "
+      "displays skipped: jsk_recognition_msgs not found")
   endif()
 
   set(CMAKE_AUTOMOC ON)

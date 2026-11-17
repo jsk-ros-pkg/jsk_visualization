@@ -33,7 +33,11 @@
  *********************************************************************/
 
 #include "torus_array_display.h"
-#include <jsk_topic_tools/color_utils.h>
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#endif
+#include "color_utils_compat.h"  // <jsk_topic_tools/color_utils.h> on ROS 1
 
 #define PI 3.14159265
 
@@ -156,7 +160,11 @@ namespace jsk_rviz_plugins
     }
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void TorusArrayDisplay::allocateShapes(const jsk_recognition_msgs::TorusArray::ConstSharedPtr& msg)
+#else
   void TorusArrayDisplay::allocateShapes(const jsk_recognition_msgs::TorusArray::ConstPtr& msg)
+#endif
   {
     size_t num = 0;
     for (size_t i = 0; i < msg->toruses.size(); i++) {
@@ -249,7 +257,11 @@ namespace jsk_rviz_plugins
   }
 
 
+#if ROS_VERSION_MAJOR != 1
+  void TorusArrayDisplay::processMessage(jsk_recognition_msgs::TorusArray::ConstSharedPtr msg)
+#else
   void TorusArrayDisplay::processMessage(const jsk_recognition_msgs::TorusArray::ConstPtr& msg)
+#endif
   {
     allocateShapes(msg);
     for (size_t i = 0; i < msg->toruses.size(); i++) {
@@ -318,5 +330,9 @@ namespace jsk_rviz_plugins
 }
 
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TorusArrayDisplay, rviz::Display )
