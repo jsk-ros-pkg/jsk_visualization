@@ -85,6 +85,58 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   )
   ament_export_dependencies(rosidl_default_runtime)
 
+  find_package(rclcpp REQUIRED)
+  find_package(interactive_markers REQUIRED)
+  find_package(tf2 REQUIRED)
+  find_package(tf2_ros REQUIRED)
+  find_package(tf2_geometry_msgs REQUIRED)
+  find_package(jsk_ros1_ros2_compat REQUIRED)
+  find_package(Boost REQUIRED COMPONENTS thread)
+  rosidl_get_typesupport_target(_cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
+
+  # ROS 1's library jsk_interactive_marker (im_helpers::), with the
+  # interactive_marker_helpers.cpp only; on ROS 2 the target name
+  # jsk_interactive_marker is the one of the messages
+  add_library(${PROJECT_NAME}_lib SHARED src/interactive_marker_helpers.cpp)
+  target_include_directories(${PROJECT_NAME}_lib PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    ${jsk_ros1_ros2_compat_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_lib PUBLIC
+    rclcpp::rclcpp
+    interactive_markers::interactive_markers
+    ${geometry_msgs_TARGETS}
+    ${std_msgs_TARGETS}
+    ${visualization_msgs_TARGETS}
+    tf2::tf2
+    tf2_geometry_msgs::tf2_geometry_msgs
+    Boost::boost)
+
+  # the nodes ported to ROS 2
+  set(_nodes)
+  foreach(_node ${_nodes})
+    target_link_libraries(${_node}
+      ${PROJECT_NAME}_lib
+      ${_cpp_typesupport_target}
+      ${sensor_msgs_TARGETS}
+      tf2_ros::tf2_ros
+      Boost::thread)
+  endforeach()
+
+  install(TARGETS ${PROJECT_NAME}_lib
+    EXPORT export_${PROJECT_NAME}
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin)
+  install(TARGETS ${_nodes}
+    DESTINATION lib/${PROJECT_NAME})
+  install(DIRECTORY include/${PROJECT_NAME}/
+    DESTINATION include/${PROJECT_NAME})
+  ament_export_include_directories(include)
+  ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+  ament_export_dependencies(rclcpp interactive_markers tf2 tf2_geometry_msgs
+    geometry_msgs std_msgs visualization_msgs jsk_ros1_ros2_compat Boost)
+
   ament_package()
 
 else() # if("$ENV{ROS_VERSION}" EQUAL 2)

@@ -32,7 +32,20 @@
 //#include <interactive_marker_helpers/interactive_marker_helpers.h>
 #include <jsk_interactive_marker/interactive_marker_helpers.h>
 
+#if ROS_VERSION_MAJOR != 1
+// tf2's LinearMath is ROS 1 tf's; the tf:: names used below
+#include <tf2/LinearMath/Transform.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+namespace tf
+{
+  using tf2::Transform;
+  using tf2::Vector3;
+  using tf2::Quaternion;
+  inline void quaternionTFToMsg(const Quaternion& q, geometry_msgs::msg::Quaternion& msg) { msg = tf2::toMsg(q); }
+}
+#else
 #include <tf/tf.h>
+#endif
 // #include <object_manipulator/tools/msg_helpers.h>
 
 namespace im_helpers {
@@ -698,7 +711,11 @@ visualization_msgs::InteractiveMarker makeGraspMarker( const char * name, const 
 {
   visualization_msgs::InteractiveMarker int_marker;
   int_marker.header =  stamped.header;
+#if ROS_VERSION_MAJOR != 1
+  int_marker.header.stamp = builtin_interfaces::msg::Time();
+#else
   int_marker.header.stamp = ros::Time(0);
+#endif
   int_marker.name = name;
   int_marker.scale = scale;
   int_marker.pose = stamped.pose;
