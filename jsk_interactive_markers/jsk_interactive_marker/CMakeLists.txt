@@ -158,6 +158,14 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     DESTINATION lib/${PROJECT_NAME})
   install(DIRECTORY include/${PROJECT_NAME}/
     DESTINATION include/${PROJECT_NAME})
+  # transformable_markers_client.py (jsk_recognition_msgs/utils),
+  # semantic_robot_state_generator.py (the global /robot_description),
+  # transformable_joy_configure.py and transformable_spacenav_configure.py
+  # are ROS 1 only
+  jsk_ros1_ros2_compat_install_python(PROGRAMS scripts/dummy_camera.py)
+  install(DIRECTORY config models
+    DESTINATION share/${PROJECT_NAME}
+    USE_SOURCE_PERMISSIONS)
   ament_export_include_directories(include)
   ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
   ament_export_dependencies(rclcpp interactive_markers tf2 tf2_geometry_msgs

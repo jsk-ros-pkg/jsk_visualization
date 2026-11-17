@@ -57,7 +57,8 @@
 
   <!-- ROS 2: rclcpp/tf2 instead of roscpp/tf, parameters instead of
        dynamic_reconfigure, and the ROS 1 / ROS 2 compatibility helpers -->
-  <depend condition="$ROS_VERSION == 2">jsk_ros1_ros2_compat</depend>
+  <build_depend condition="$ROS_VERSION == 2">jsk_ros1_ros2_compat</build_depend>
+  <build_export_depend condition="$ROS_VERSION == 2">jsk_ros1_ros2_compat</build_export_depend>
   <depend condition="$ROS_VERSION == 2">rclcpp</depend>
   <depend condition="$ROS_VERSION == 2">std_msgs</depend>
   <depend condition="$ROS_VERSION == 2">builtin_interfaces</depend>
@@ -68,6 +69,8 @@
   <depend condition="$ROS_VERSION == 2">std_srvs</depend>
   <depend condition="$ROS_VERSION == 2">tf2_eigen</depend>
   <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>
+  <!-- rospy_rclpy_compat of scripts/dummy_camera.py -->
+  <exec_depend>jsk_ros1_ros2_compat</exec_depend>
 
   <member_of_group condition="$ROS_VERSION == 2">rosidl_interface_packages</member_of_group>
 
