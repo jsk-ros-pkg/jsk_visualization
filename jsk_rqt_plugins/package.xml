@@ -56,6 +56,10 @@
   <exec_depend condition="$ROS_VERSION == 2">python3-matplotlib</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">python3-numpy</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">python3-yaml</exec_depend>
+  <!-- sample/*.launch.py -->
+  <exec_depend condition="$ROS_VERSION == 2">ament_index_python</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">launch</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">launch_ros</exec_depend>
 
   <test_depend condition="$ROS_VERSION == 1">roslaunch</test_depend>
   <test_depend condition="$ROS_VERSION == 1">rostest</test_depend>

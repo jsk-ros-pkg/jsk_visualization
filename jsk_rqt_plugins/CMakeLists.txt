@@ -50,6 +50,11 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   install(DIRECTORY resource
     DESTINATION share/${PROJECT_NAME}
   )
+  # the ROS 2 versions of the sample launch files
+  install(DIRECTORY sample
+    DESTINATION share/${PROJECT_NAME}
+    FILES_MATCHING PATTERN "*.launch.py"
+  )
 
   ament_package()
 
