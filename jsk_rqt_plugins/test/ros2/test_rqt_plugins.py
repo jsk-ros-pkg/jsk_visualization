@@ -40,6 +40,7 @@ TABBED_LAYOUT = {
 RQT_NODES = [
     'rqt_3d_plot',
     'rqt_drc_mini_maxwell',
+    'rqt_image_view2',
     'rqt_service_buttons',
     'rqt_status_light',
     'rqt_string_label',
@@ -88,6 +89,8 @@ def generate_test_description():
              name='rqt_string_label'),
         Node(package='jsk_rqt_plugins', executable='rqt_yn_btn',
              name='rqt_yn_btn'),
+        Node(package='jsk_rqt_plugins', executable='rqt_image_view2',
+             name='rqt_image_view2'),
         # Plot3D resolves the topic type when it subscribes and retries until
         # it succeeds; a small head start just avoids the first retry.
         TimerAction(period=5.0, actions=[

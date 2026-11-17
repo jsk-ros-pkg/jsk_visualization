@@ -16,11 +16,10 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   cmake_minimum_required(VERSION 3.8)
   project(jsk_rqt_plugins)
 
-  # The plugins of hist.py (HistogramPlot), plot_2d.py (Plot2D) and
-  # image_view2_wrapper.py (ImageView2Plugin) need jsk_recognition_msgs or
-  # image_view2, which are not released for ROS 2, so they and their bin/
-  # entry points (rqt_histogram_plot, rqt_2d_plot, rqt_image_view2) and
-  # samples are ROS 1 only and not installed here.
+  # The plugins of hist.py (HistogramPlot) and plot_2d.py (Plot2D) need
+  # jsk_recognition_msgs, which is not released for ROS 2, so they and their
+  # bin/ entry points (rqt_histogram_plot, rqt_2d_plot) and samples are
+  # ROS 1 only and not installed here.
   find_package(ament_cmake REQUIRED)
   find_package(ament_cmake_python REQUIRED)
   find_package(jsk_ros1_ros2_compat REQUIRED)
@@ -33,6 +32,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   jsk_ros1_ros2_compat_install_python(PROGRAMS
     bin/rqt_3d_plot
     bin/rqt_drc_mini_maxwell
+    bin/rqt_image_view2
     bin/rqt_service_buttons
     bin/rqt_status_light
     bin/rqt_string_label
