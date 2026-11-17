@@ -22,6 +22,7 @@ import yaml
 
 from resource_retriever import get_filename
 from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty
@@ -70,8 +71,8 @@ class ServiceTabbedButtonGeneralWidget(QWidget):
         self._node = node
         self._tab_settings = None
 
-        if ros_compat.has_param(self._node, "~tabbed_layout"):
-            tabbed_layout = ros_compat.get_param(self._node, "~tabbed_layout")
+        tabbed_layout = self._get_tabbed_layout()
+        if tabbed_layout is not None:
             self._tab_list = []
             if not 'tab_list' in tabbed_layout:
                 self.showError("Cannot find tab_list in %s"%(tabbed_layout))
@@ -121,6 +122,30 @@ class ServiceTabbedButtonGeneralWidget(QWidget):
         hbox.addWidget(qtab)
         self.setLayout(hbox)
         self.show()
+
+    def _get_tabbed_layout(self):
+        """~tabbed_layout, None if it is not set"""
+        if ROS_VERSION == 1:
+            return ros_compat.get_param(self._node, "~tabbed_layout", None)
+        # A ROS 2 parameter can not be a dictionary, so ~tabbed_layout is
+        # given as tabbed_layout.tab_list and tabbed_layout.<tab>.<key>
+        # (as a YAML parameter file writes the nested dictionary) and put
+        # back together here.
+        tab_list = ros_compat.get_param(
+            self._node, "~tabbed_layout.tab_list", None)
+        if not tab_list:
+            return None
+        tabbed_layout = {'tab_list': list(tab_list)}
+        for tb in tab_list:
+            param_settings = {}
+            for key in ('type', 'name', 'yaml_file', 'namespace'):
+                value = ros_compat.get_param(
+                    self._node, "~tabbed_layout.%s.%s" % (tb, key), None)
+                if value is not None:
+                    param_settings[key] = value
+            if param_settings:
+                tabbed_layout[tb] = param_settings
+        return tabbed_layout
 
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)

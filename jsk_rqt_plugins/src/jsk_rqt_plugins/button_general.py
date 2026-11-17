@@ -80,7 +80,8 @@ class ServiceButtonGeneralWidget(QWidget):
         self._dialog = QFileDialog()
         self._dialog.setFileMode(QFileDialog.ExistingFile)
 
-        if ros_compat.has_param(self._node, "~layout_yaml_file"):
+        # (not has_param(): a ROS 2 parameter is only there once declared)
+        if ros_compat.get_param(self._node, "~layout_yaml_file", None) is not None:
             self.loadLayoutYaml(None)
 
         self.show()
