@@ -71,6 +71,10 @@
   <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>
   <!-- rospy_rclpy_compat of scripts/dummy_camera.py -->
   <exec_depend>jsk_ros1_ros2_compat</exec_depend>
+  <!-- launch/*.launch.py -->
+  <exec_depend condition="$ROS_VERSION == 2">launch</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">launch_ros</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">rviz2</exec_depend>
 
   <member_of_group condition="$ROS_VERSION == 2">rosidl_interface_packages</member_of_group>
 
