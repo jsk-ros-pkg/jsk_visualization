@@ -22,8 +22,16 @@ from python_qt_binding.QtGui import QPen
 import yaml
 
 from resource_retriever import get_filename
-import rospy
 from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+if ROS_VERSION == 2:
+    import time
+
+    class ServiceException(Exception):
+        """rospy.ServiceException of the ROS 2 service calls below"""
+else:
+    import rospy
+    from rospy import ServiceException
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty
@@ -218,8 +226,45 @@ class ServiceButtonGeneralWidget(QWidget):
         """
         return lambda checked: self.buttonCallbackImpl(checked, service_name, service_type, button)
 
+    # how long a ROS 2 service call may take, in seconds
+    SERVICE_TIMEOUT = 5.0
+
+    def _service_proxy(self, service_name, service_type):
+        """
+        rospy.ServiceProxy(service_name, service_type) on ROS 1, or a function
+        calling the service with the same arguments through the node on ROS 2
+        """
+        if ROS_VERSION == 1:
+            return rospy.ServiceProxy(service_name, service_type)
+
+        def call(*args):
+            client = self._node.create_client(service_type, service_name)
+            try:
+                if not client.wait_for_service(
+                        timeout_sec=self.SERVICE_TIMEOUT):
+                    raise ServiceException(
+                        '%s is not available' % service_name)
+                request = service_type.Request()
+                for field, arg in zip(
+                        request.get_fields_and_field_types(), args):
+                    setattr(request, field, arg)
+                future = client.call_async(request)
+                # rqt spins the node in its own thread, which completes
+                # the future; spinning it here too is not possible.
+                deadline = time.time() + self.SERVICE_TIMEOUT
+                while not future.done() and time.time() < deadline:
+                    time.sleep(0.01)
+                if not future.done():
+                    client.remove_pending_request(future)
+                    raise ServiceException(
+                        'Timed out calling %s' % service_name)
+                return future.result()
+            finally:
+                self._node.destroy_client(client)
+        return call
+
     def buttonCallbackImpl(self, checked, service_name, service_type=Empty, button=None):
-        srv = rospy.ServiceProxy(service_name, service_type)
+        srv = self._service_proxy(service_name, service_type)
         try:
             if service_type == SetBool:
                 res = srv(checked)
@@ -233,7 +278,7 @@ class ServiceButtonGeneralWidget(QWidget):
                         .format(service_name))
                     if service_type == SetBool and not button is None:
                         button.setChecked(not checked)
-        except rospy.ServiceException as e:
+        except ServiceException as e:
             self.showError("Failed to call %s" % service_name)
             if service_type == SetBool and not button is None:
                 button.setChecked(not checked)
