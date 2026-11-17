@@ -10,6 +10,14 @@ from rqt_plot.rosplot import ROSData as _ROSData
 from rqt_plot.rosplot import RosPlotException
 
 
+def next_data(rosdata):
+    """rosdata.next(): the buffered data of rqt_plot's ROSData, whose
+    next() is renamed to next_data() in ROS 2 after jazzy"""
+    if hasattr(rosdata, 'next_data'):
+        return rosdata.next_data()
+    return rosdata.next()
+
+
 def _fields_and_types(msg):
     """(field name, field type) of msg: rospy's __slots__/_slot_types, or
     rclpy's get_fields_and_field_types() (e.g. 'sequence<string>' for an

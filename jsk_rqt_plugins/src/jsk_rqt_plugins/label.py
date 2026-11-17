@@ -33,6 +33,7 @@ from std_msgs.msg import String
 
 from .dialogs import LineEditDialog
 from .util import get_slot_type_field_names
+from .util import next_data
 from .util import ROSData
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
@@ -131,7 +132,7 @@ class StringLabelWidget(QWidget):
         if not self._rosdata:
             return
         try:
-            _, data_y = self._rosdata.next()
+            _, data_y = next_data(self._rosdata)
         except rqt_plot.rosplot.RosPlotException as e:
             self._rosdata = None
             return
