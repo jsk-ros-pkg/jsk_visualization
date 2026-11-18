@@ -45,13 +45,4 @@
     </description>
     <message_type>jsk_recognition_msgs/msg/HumanSkeletonArray</message_type>
   </class>
-
-  <class name="jsk_rviz_plugin/PolygonArray"
-         type="jsk_rviz_plugins::PolygonArrayDisplay"
-         base_class_type="rviz_common::Display">
-    <description>
-      visualize jsk_recognition_msgs/PolygonArray
-    </description>
-    <message_type>jsk_recognition_msgs/msg/PolygonArray</message_type>
-  </class>
 </library>

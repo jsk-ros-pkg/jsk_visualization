@@ -51,7 +51,7 @@ using rviz_common::validateFloats;
 #include <rviz/validate_floats.h>
 #endif
 #include "color_utils_compat.h"  // <jsk_topic_tools/color_utils.h> on ROS 1
-#include "geo_polygon_compat.h"  // <jsk_recognition_utils/geo/polygon.h> on ROS 1
+#include <jsk_recognition_utils/geo/polygon.h>
 
 namespace jsk_rviz_plugins
 {

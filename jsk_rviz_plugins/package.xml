@@ -50,6 +50,12 @@
        first. -->
   <build_depend condition="$ROS_VERSION == 2 and $JSK_RECOGNITION_MSGS_FROM_SOURCE == 1">jsk_recognition_msgs</build_depend>
   <exec_depend condition="$ROS_VERSION == 2 and $JSK_RECOGNITION_MSGS_FROM_SOURCE == 1">jsk_recognition_msgs</exec_depend>
+  <!-- jsk_recognition_utils is not released for ROS 2 yet either; the
+       PolygonArray display is built only when it is found (CMakeLists.txt).
+       A workspace building it from source sets
+       JSK_RECOGNITION_UTILS_FROM_SOURCE=1 in the same way. -->
+  <build_depend condition="$ROS_VERSION == 2 and $JSK_RECOGNITION_UTILS_FROM_SOURCE == 1">jsk_recognition_utils</build_depend>
+  <exec_depend condition="$ROS_VERSION == 2 and $JSK_RECOGNITION_UTILS_FROM_SOURCE == 1">jsk_recognition_utils</exec_depend>
   <!-- header only boost (mutex, circular_buffer, format) and Eigen, shared with the ROS 1 code -->
   <build_depend condition="$ROS_VERSION == 2">boost</build_depend>
   <build_depend condition="$ROS_VERSION == 2">eigen</build_depend>

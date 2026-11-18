@@ -174,18 +174,21 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   # jsk_recognition_msgs is not released for ROS 2 yet, so its displays are
   # built only when it is found (e.g. built from source in the workspace, as
   # the ROS 2 CI does) and exported with their own plugin description file.
-  # SimpleOccupancyGridArray needs jsk_recognition_utils as well (planes,
-  # PCL conversions), which is not ported to ROS 2, so it stays ROS 1 only.
-  # PolygonArray uses the polygon triangulation of jsk_recognition_utils,
-  # which src/geo_polygon_compat.h provides on ROS 2.
+  # PolygonArray uses the polygon triangulation of jsk_recognition_utils
+  # (jsk_recognition_utils/geo/polygon.h), so it is built only when
+  # jsk_recognition_utils is found as well, with its own plugin description
+  # file. SimpleOccupancyGridArray (planes, PCL conversions of
+  # jsk_recognition_utils) stays ROS 1 only.
   find_package(jsk_recognition_msgs QUIET)
+  if(jsk_recognition_msgs_FOUND)
+    find_package(jsk_recognition_utils QUIET)
+  endif()
   if(jsk_recognition_msgs_FOUND)
     list(APPEND HEADER_FILES
       src/bounding_box_array_display.h
       src/bounding_box_display.h
       src/bounding_box_display_common.h
       src/human_skeleton_array_display.h
-      src/polygon_array_display.h
       src/segment_array_display.h
       src/torus_array_display.h
     )
@@ -193,13 +196,18 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
       src/bounding_box_array_display.cpp
       src/bounding_box_display.cpp
       src/human_skeleton_array_display.cpp
-      src/polygon_array_display.cpp
       src/segment_array_display.cpp
       src/torus_array_display.cpp
     )
   else()
     message(STATUS "BoundingBox, BoundingBoxArray, TorusArray, SegmentArray, HumanSkeletonArray and PolygonArray "
       "displays skipped: jsk_recognition_msgs not found")
+  endif()
+  if(jsk_recognition_utils_FOUND)
+    list(APPEND HEADER_FILES src/polygon_array_display.h)
+    list(APPEND SOURCE_FILES src/polygon_array_display.cpp)
+  elseif(jsk_recognition_msgs_FOUND)
+    message(STATUS "PolygonArray display skipped: jsk_recognition_utils not found")
   endif()
 
   set(CMAKE_AUTOMOC ON)
@@ -247,6 +255,9 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   if(jsk_recognition_msgs_FOUND)
     target_link_libraries(${PROJECT_NAME}_plugins ${jsk_recognition_msgs_TARGETS})
   endif()
+  if(jsk_recognition_utils_FOUND)
+    target_link_libraries(${PROJECT_NAME}_plugins jsk_recognition_utils::jsk_recognition_utils)
+  endif()
   install(TARGETS ${PROJECT_NAME}_plugins
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
@@ -256,6 +267,9 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   pluginlib_export_plugin_description_file(rviz_common rviz_common_plugins.xml)
   if(jsk_recognition_msgs_FOUND)
     pluginlib_export_plugin_description_file(rviz_common rviz_common_plugins_jsk_recognition_msgs.xml)
+  endif()
+  if(jsk_recognition_utils_FOUND)
+    pluginlib_export_plugin_description_file(rviz_common rviz_common_plugins_jsk_recognition_utils.xml)
   endif()
 
   install(DIRECTORY config icons launch
@@ -279,8 +293,12 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   if(jsk_recognition_msgs_FOUND)
     jsk_ros1_ros2_compat_install_python(PROGRAMS
       samples/bounding_box_sample.py
-      samples/polygon_array_sample.py
       samples/segment_array_sample.py
+    )
+  endif()
+  if(jsk_recognition_utils_FOUND)
+    jsk_ros1_ros2_compat_install_python(PROGRAMS
+      samples/polygon_array_sample.py
     )
   endif()
 
@@ -296,8 +314,10 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     add_launch_test(test/ros2/test_robot_command_interface.py TIMEOUT 120)
     if(jsk_recognition_msgs_FOUND)
       add_launch_test(test/ros2/test_bounding_box.py TIMEOUT 120)
-      add_launch_test(test/ros2/test_polygon_array.py TIMEOUT 120)
       add_launch_test(test/ros2/test_segment_array.py TIMEOUT 120)
+    endif()
+    if(jsk_recognition_utils_FOUND)
+      add_launch_test(test/ros2/test_polygon_array.py TIMEOUT 120)
     endif()
   endif()
 

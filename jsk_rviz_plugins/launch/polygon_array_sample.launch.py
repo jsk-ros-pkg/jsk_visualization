@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# ROS 2 counterpart of polygon_array_sample.launch (jsk_recognition_msgs is needed,
-# see CMakeLists.txt)
+# ROS 2 counterpart of polygon_array_sample.launch (jsk_recognition_msgs and
+# jsk_recognition_utils are needed, see CMakeLists.txt)
 
 import os
 
