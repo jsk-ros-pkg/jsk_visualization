@@ -1,7 +1,15 @@
 #ifndef __AMBIENT_SOUND_DISPLAY__
 #define __AMBIENT_SOUND_DISPLAY__
 
+#include "rviz_compat.h"
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_hark_msgs/msg/hark_power.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_hark_msgs, HarkPower)
+#include <ambient_sound_visual.h>
+#include <boost/circular_buffer.hpp>
+#include <rviz_common/message_filter_display.hpp>
+#else
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 #include <jsk_hark_msgs/HarkPower.h>
@@ -9,14 +17,18 @@
 #include <boost/circular_buffer.hpp>
 #include <rviz/message_filter_display.h>
 #endif
+#endif
 
+#if ROS_VERSION_MAJOR == 1
 #include <ros/ros.h>
+#endif
 
 namespace Ogre
 {
 class SceneNode;
 }
 
+#if ROS_VERSION_MAJOR == 1  // aliases of rviz_compat.h on ROS 2
 namespace rviz
 {
     class ColorProperty;
@@ -24,6 +36,7 @@ namespace rviz
     class IntProperty;
     class ROSTopicStringProperty;
 }
+#endif
 
 // All the source in this plugin is in its own namespace.  This is not
 // required but is good practice.
@@ -95,7 +108,11 @@ private Q_SLOTS:
   // Function to handle an incoming ROS message.
 private:
   //void incomingMessage( const jsk_hark_msgs::HarkPower::ConstPtr& msg );
+#if ROS_VERSION_MAJOR != 1
+  void processMessage( jsk_hark_msgs::HarkPower::ConstSharedPtr msg );
+#else
   void processMessage( const jsk_hark_msgs::HarkPower::ConstPtr& msg );
+#endif
 
   // Internal helpers which do the work of subscribing and
   // unsubscribing from the ROS topic.
@@ -136,7 +153,9 @@ private:
 
   // Property objects for user-editable properties.
   rviz::ColorProperty *color_property_;
+#if ROS_VERSION_MAJOR == 1  // unused, and gone from rviz long ago
   rviz::ROSTopicStringProperty *topic_property_;
+#endif
   rviz::FloatProperty *alpha_property_;
   rviz::IntProperty *history_length_property_;
   rviz::FloatProperty *width_property_;

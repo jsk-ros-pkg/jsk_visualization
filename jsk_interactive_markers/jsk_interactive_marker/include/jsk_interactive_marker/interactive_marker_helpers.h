@@ -32,12 +32,30 @@
 #ifndef _MARKER_HELPERS_H_
 #define _MARKER_HELPERS_H_
 
+#include "jsk_interactive_marker/ros1_ros2_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <interactive_markers/tools.hpp>
+#include <visualization_msgs/msg/interactive_marker.hpp>
+#include <visualization_msgs/msg/interactive_marker_control.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/menu_entry.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <std_msgs/msg/color_rgba.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, InteractiveMarker)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, InteractiveMarkerControl)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, Marker)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, MenuEntry)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, Pose)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, PoseStamped)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(std_msgs, ColorRGBA)
+#else
 #include <interactive_markers/tools.h>
 #include <visualization_msgs/InteractiveMarker.h>
 #include <visualization_msgs/InteractiveMarkerControl.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MenuEntry.h>
 #include <geometry_msgs/PoseStamped.h>
+#endif
 
 // **** 10 ***** 20 ****** 30 ****** 40 ****** 50 ****** 60 ****** 70 ****** 80 ****** 90 ***** 100 ***** 110 ***** 120
 

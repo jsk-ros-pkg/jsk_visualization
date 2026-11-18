@@ -36,17 +36,32 @@
 #include <QApplication>
 #include <QMenu>
 #include <QTimer>
+#include <QKeyEvent>
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/tool_manager.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/display_group.hpp>
+#include <rviz_common/display.hpp>
+#else
 #include <ros/ros.h>
 #include <rviz/tool_manager.h>
 #include <rviz/display_context.h>
 #include <rviz/view_manager.h>
 #include <rviz/display_group.h>
 #include <rviz/display.h>
+#endif
 
 #include "overlay_picker_tool.h"
 #include "overlay_text_display.h"
 #include "plotter_2d_display.h"
 #include "pie_chart_display.h"
+#if ROS_VERSION_MAJOR != 1
+// the String and LinearGauge displays are picked as well on ROS 2
+#include "string_display.h"
+#include "linear_gauge_display.h"
+#endif
 #include "overlay_image_display.h"
 #include "overlay_diagnostic_display.h"
 #include "overlay_menu_display.h"
@@ -56,6 +71,9 @@ namespace jsk_rviz_plugins
   OverlayPickerTool::OverlayPickerTool()
     : is_moving_(false), shift_pressing_(false), rviz::Tool()
   {
+#if ROS_VERSION_MAJOR != 1
+    target_property_ = NULL;
+#endif
 
   }
 
@@ -107,6 +125,14 @@ namespace jsk_rviz_plugins
       else if (startMovement<PieChartDisplay>(property, event, "pie_chart_display")) {
         return true;
       }
+#if ROS_VERSION_MAJOR != 1
+      else if (startMovement<StringDisplay>(property, event, "string_display")) {
+        return true;
+      }
+      else if (startMovement<LinearGaugeDisplay>(property, event, "linear_gauge_display")) {
+        return true;
+      }
+#endif
       else if (startMovement<OverlayImageDisplay>(property, event, "overlay_image_display")) {
         return true;
       }
@@ -147,6 +173,14 @@ namespace jsk_rviz_plugins
       else if (target_property_type_ == "pie_chart_display") {
         movePosition<PieChartDisplay>(event);
       }
+#if ROS_VERSION_MAJOR != 1
+      else if (target_property_type_ == "string_display") {
+        movePosition<StringDisplay>(event);
+      }
+      else if (target_property_type_ == "linear_gauge_display") {
+        movePosition<LinearGaugeDisplay>(event);
+      }
+#endif
       else if (target_property_type_ == "overlay_image_display") {
         movePosition<OverlayImageDisplay>(event);
       }
@@ -174,6 +208,14 @@ namespace jsk_rviz_plugins
       else if (target_property_type_ == "pie_chart_display") {
         setPosition<PieChartDisplay>(event);
       }
+#if ROS_VERSION_MAJOR != 1
+      else if (target_property_type_ == "string_display") {
+        setPosition<StringDisplay>(event);
+      }
+      else if (target_property_type_ == "linear_gauge_display") {
+        setPosition<LinearGaugeDisplay>(event);
+      }
+#endif
       else if (target_property_type_ == "overlay_image_display") {
         setPosition<OverlayImageDisplay>(event);
       }
@@ -191,5 +233,9 @@ namespace jsk_rviz_plugins
   
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayPickerTool, rviz::Tool )

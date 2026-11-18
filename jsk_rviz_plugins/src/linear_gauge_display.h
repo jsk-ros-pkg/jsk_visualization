@@ -35,18 +35,37 @@
 #ifndef JSK_RVIZ_PLUGIN_LINEAR_GAUGE_H_
 #define JSK_RVIZ_PLUGIN_LINEAR_GAUGE_H_
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <std_msgs/msg/float32.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(std_msgs, Float32)
+#else
 #include "std_msgs/Float32.h"
+#endif
 #ifndef Q_MOC_RUN
+#if ROS_VERSION_MAJOR != 1
+#include <boost/thread/mutex.hpp>
+#include <rviz_common/display.hpp>
+#else
 #include <rviz/display.h>
+#endif
 #include "overlay_utils.h"
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreMaterial.h>
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#else
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/ros_topic_property.h>
+#endif
 #endif
 
 namespace jsk_rviz_plugins
@@ -75,7 +94,11 @@ namespace jsk_rviz_plugins
     virtual void onEnable();
     virtual void onDisable();
     virtual void onInitialize();
+#if ROS_VERSION_MAJOR != 1
+    virtual void processMessage(const std_msgs::Float32::ConstSharedPtr& msg);
+#else
     virtual void processMessage(const std_msgs::Float32::ConstPtr& msg);
+#endif
     virtual void drawPlot();
     ////////////////////////////////////////////////////////
     // properties
@@ -138,7 +161,11 @@ namespace jsk_rviz_plugins
     // ROS variables
     ////////////////////////////////////////////////////////
     boost::mutex mutex_;
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Subscription<std_msgs::Float32>::SharedPtr sub_;
+#else
     ros::Subscriber sub_;
+#endif
                         
   protected Q_SLOTS:
     void updateTopic();

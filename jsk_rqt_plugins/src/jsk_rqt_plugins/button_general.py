@@ -22,10 +22,17 @@ from python_qt_binding.QtGui import QPen
 import yaml
 
 from resource_retriever import get_filename
-import rospy
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
+if ROS_VERSION == 2:
+    import time
+
+    class ServiceException(Exception):
+        """rospy.ServiceException of the ROS 2 service calls below"""
+else:
+    import rospy
+    from rospy import ServiceException
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
-from std_msgs.msg import Time
 from std_srvs.srv import Empty
 from std_srvs.srv import SetBool
 from std_srvs.srv import Trigger
@@ -63,15 +70,17 @@ class ServiceButtonGeneralWidget(QWidget):
     """
     Qt widget to visualize multiple buttons
     """
-    def __init__(self, button_type="push"):
+    def __init__(self, button_type="push", node=None):
         super(ServiceButtonGeneralWidget, self).__init__()
+        self._node = node
         self.button_type = button_type
         self._layout_param = None
         self._translator = QTranslator()
         self._dialog = QFileDialog()
         self._dialog.setFileMode(QFileDialog.ExistingFile)
 
-        if rospy.has_param("~layout_yaml_file"):
+        # (not has_param(): a ROS 2 parameter is only there once declared)
+        if ros_compat.get_param(self._node, "~layout_yaml_file", None) is not None:
             self.loadLayoutYaml(None)
 
         self.show()
@@ -82,7 +91,7 @@ class ServiceButtonGeneralWidget(QWidget):
     def loadLayoutYaml(self, layout_param):
         # Initialize layout of the buttons from yaml file
         # The yaml file can be specified by rosparam
-        layout_yaml_file = rospy.get_param("~layout_yaml_file", layout_param)
+        layout_yaml_file = ros_compat.get_param(self._node, "~layout_yaml_file", layout_param)
         resolved_layout_yaml_file = get_filename(layout_yaml_file)
         if (resolved_layout_yaml_file is not None
                 and resolved_layout_yaml_file.startswith("file://")):
@@ -157,8 +166,14 @@ class ServiceButtonGeneralWidget(QWidget):
                 button.setSizePolicy(
                     QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
                 if "image" in button_data:
-                    image_file = get_filename(
-                        button_data["image"])[len("file://"):]
+                    try:
+                        image_file = get_filename(
+                            button_data["image"])[len("file://"):]
+                    except Exception as e:
+                        # e.g. package:// of a package not installed: no icon
+                        ros_compat.logwarn(self._node, "Cannot find %s: %s" % (
+                            button_data["image"], e))
+                        image_file = ""
                     if os.path.exists(image_file):
                         icon = QtGui.QIcon(image_file)
                         button.setIcon(icon)
@@ -217,8 +232,45 @@ class ServiceButtonGeneralWidget(QWidget):
         """
         return lambda checked: self.buttonCallbackImpl(checked, service_name, service_type, button)
 
+    # how long a ROS 2 service call may take, in seconds
+    SERVICE_TIMEOUT = 5.0
+
+    def _service_proxy(self, service_name, service_type):
+        """
+        rospy.ServiceProxy(service_name, service_type) on ROS 1, or a function
+        calling the service with the same arguments through the node on ROS 2
+        """
+        if ROS_VERSION == 1:
+            return rospy.ServiceProxy(service_name, service_type)
+
+        def call(*args):
+            client = self._node.create_client(service_type, service_name)
+            try:
+                if not client.wait_for_service(
+                        timeout_sec=self.SERVICE_TIMEOUT):
+                    raise ServiceException(
+                        '%s is not available' % service_name)
+                request = service_type.Request()
+                for field, arg in zip(
+                        request.get_fields_and_field_types(), args):
+                    setattr(request, field, arg)
+                future = client.call_async(request)
+                # rqt spins the node in its own thread, which completes
+                # the future; spinning it here too is not possible.
+                deadline = time.time() + self.SERVICE_TIMEOUT
+                while not future.done() and time.time() < deadline:
+                    time.sleep(0.01)
+                if not future.done():
+                    client.remove_pending_request(future)
+                    raise ServiceException(
+                        'Timed out calling %s' % service_name)
+                return future.result()
+            finally:
+                self._node.destroy_client(client)
+        return call
+
     def buttonCallbackImpl(self, checked, service_name, service_type=Empty, button=None):
-        srv = rospy.ServiceProxy(service_name, service_type)
+        srv = self._service_proxy(service_name, service_type)
         try:
             if service_type == SetBool:
                 res = srv(checked)
@@ -232,7 +284,7 @@ class ServiceButtonGeneralWidget(QWidget):
                         .format(service_name))
                     if service_type == SetBool and not button is None:
                         button.setChecked(not checked)
-        except rospy.ServiceException as e:
+        except ServiceException as e:
             self.showError("Failed to call %s" % service_name)
             if service_type == SetBool and not button is None:
                 button.setChecked(not checked)
@@ -240,17 +292,17 @@ class ServiceButtonGeneralWidget(QWidget):
     def save_settings(self, plugin_settings, instance_settings):
         if self._layout_param:
             instance_settings.set_value("layout_param", self._layout_param)
-            rospy.loginfo("save setting is called. %s" % self._layout_param)
+            ros_compat.loginfo(self._node, "save setting is called. %s" % self._layout_param)
 
     def restore_settings(self, plugin_settings, instance_settings):
         if instance_settings.value("layout_param"):
             self._layout_param = instance_settings.value("layout_param")
-            rospy.loginfo("restore setting is called. %s" % self._layout_param)
+            ros_compat.loginfo(self._node, "restore setting is called. %s" % self._layout_param)
             updated = self.loadLayoutYaml(self._layout_param)
             if updated:
-                rospy.loginfo("succeeded to restore. %s" % self._layout_param)
+                ros_compat.loginfo(self._node, "succeeded to restore. %s" % self._layout_param)
             else:
-                rospy.logerr("failed to restore. %s" % self._layout_param)
+                ros_compat.logerr(self._node, "failed to restore. %s" % self._layout_param)
 
     def trigger_configuration(self):
         self._layout_param = self._dialog.getOpenFileName(
@@ -259,12 +311,12 @@ class ServiceButtonGeneralWidget(QWidget):
 
         if self._layout_param:
             updated = self.loadLayoutYaml(self._layout_param)
-            rospy.loginfo(
+            ros_compat.loginfo(self._node,
                 "trigger configuration is called. %s" % self._layout_param)
             if updated:
-                rospy.loginfo(
+                ros_compat.loginfo(self._node,
                     "succeeded to configure. %s" % self._layout_param)
             else:
-                rospy.logerr(
+                ros_compat.logerr(self._node,
                     "failed to configure. %s" % self._layout_param)
                 self.trigger_configuration()

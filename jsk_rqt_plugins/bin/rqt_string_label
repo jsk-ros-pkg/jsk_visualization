@@ -10,6 +10,9 @@ sys.excepthook = traceback.print_exception
 
 from rqt_gui.main import Main
 
+from jsk_rqt_plugins.compat import init_rqt_ros
+init_rqt_ros()
+
 plugin = 'StringLabel'
 main = Main(filename=plugin)
 sys.exit(main.main(standalone=plugin))

@@ -1,3 +1,209 @@
+# $ENV{ROS_VERSION} is set by ros_environment, which is missing on
+# pre-ros_environment distros (e.g. indigo) and on ROS 2 builds that do not
+# depend on it (e.g. the buildfarm's binary jobs). Guess it then: ament sets
+# AMENT_PREFIX_PATH (bloom's debian/rules passes it to cmake, setup.sh and
+# colcon set the environment variable), catkin never does.
+if("$ENV{ROS_VERSION}" STREQUAL "")
+  if(DEFINED AMENT_PREFIX_PATH OR DEFINED ENV{AMENT_PREFIX_PATH})
+    set(ENV{ROS_VERSION} 2)
+  else()
+    set(ENV{ROS_VERSION} 1)
+  endif()
+  message(WARNING "ROS_VERSION is not set, assuming ROS_VERSION=$ENV{ROS_VERSION}")
+endif()
+
+if("$ENV{ROS_VERSION}" EQUAL 2)
+  cmake_minimum_required(VERSION 3.8)
+  project(jsk_interactive_marker)
+
+  # Only what does not need the packages missing on ROS 2 is built here.
+  # ROS 1 only, with the packages they need:
+  # - footstep_marker, polygon_marker, interactive_point_cloud,
+  #   urdf_model_marker (jsk_recognition_utils, besides jsk_recognition_msgs)
+  # - the TransformableMarkerOperator rviz panel (jsk_recognition_msgs, rviz)
+  # - ~use_parent_and_child of transformable_server_sample
+  #   (ParentAndChildInteractiveMarkerServer)
+  # - interactive_marker_interface, urdf_control_marker (dynamic_tf_publisher,
+  #   urdf/kdl/tf_conversions of interactive_marker_utils.cpp; built with
+  #   jsk_recognition_utils on ROS 1)
+  # - pointcloud_cropper (pcl_ros)
+  # - euslisp/ (roseus)
+  # Built only when jsk_recognition_msgs is found, which is not released for
+  # ROS 2 (so not in the ROS 2 dependencies of package.xml) but can be built
+  # from source: srv/IndexRequest.srv and bounding_box_marker.
+  # Not ported yet, though they need nothing missing on ROS 2: the DRC
+  # (Atlas) tools triangle_foot, door_foot (its ~foot_list is a list of
+  # dicts, which ROS 2 parameters can not hold) and point_cloud_config_marker.
+  find_package(ament_cmake REQUIRED)
+  find_package(rosidl_default_generators REQUIRED)
+  find_package(geometry_msgs REQUIRED)
+  find_package(sensor_msgs REQUIRED)
+  find_package(std_msgs REQUIRED)
+  find_package(visualization_msgs REQUIRED)
+  find_package(builtin_interfaces REQUIRED)
+  find_package(jsk_recognition_msgs QUIET)
+  if(NOT jsk_recognition_msgs_FOUND)
+    message(STATUS "jsk_recognition_msgs is not found, so srv/IndexRequest.srv and bounding_box_marker are not built")
+  endif()
+
+  # The ROS 1 messages as they are, except for what rosidl does not accept:
+  # `duration` is builtin_interfaces/Duration, and field names are
+  # lower_snake_case (MoveObject's graspPose is grasp_pose).
+  set(_interfaces
+    msg/JointTrajectoryPointWithType.msg
+    msg/JointTrajectoryWithType.msg
+    msg/MarkerDimensions.msg
+    msg/MarkerMenu.msg
+    msg/MarkerPose.msg
+    msg/MoveModel.msg
+    msg/MoveObject.msg
+    msg/PoseStampedWithName.msg
+    msg/SnapFootPrintInput.msg
+    srv/GetJointState.srv
+    srv/GetMarkerDimensions.srv
+    srv/GetTransformableMarkerColor.srv
+    srv/GetTransformableMarkerExistence.srv
+    srv/GetTransformableMarkerFocus.srv
+    srv/GetTransformableMarkerPose.srv
+    srv/GetType.srv
+    srv/MarkerSetPose.srv
+    srv/RemoveParentMarker.srv
+    srv/SetHeuristic.srv
+    srv/SetMarkerDimensions.srv
+    srv/SetParentMarker.srv
+    srv/SetPose.srv
+    srv/SetTransformableMarkerColor.srv
+    srv/SetTransformableMarkerFocus.srv
+    srv/SetTransformableMarkerPose.srv
+    srv/SnapFootPrint.srv
+  )
+  set(_interface_dependencies builtin_interfaces geometry_msgs sensor_msgs std_msgs visualization_msgs)
+  if(jsk_recognition_msgs_FOUND)
+    list(APPEND _interfaces srv/IndexRequest.srv)
+    list(APPEND _interface_dependencies jsk_recognition_msgs)
+  endif()
+  set(_ros2_interfaces)
+  foreach(_interface ${_interfaces})
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/${_interface} _content)
+    string(REGEX REPLACE "(^|\n)duration " "\\1builtin_interfaces/Duration " _content "${_content}")
+    string(REGEX REPLACE "(^|\n)(geometry_msgs/Pose) graspPose" "\\1\\2 grasp_pose" _content "${_content}")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/ros2_interfaces/${_interface}.tmp "${_content}")
+    # copied only when changed, not to regenerate the messages every time
+    configure_file(${CMAKE_CURRENT_BINARY_DIR}/ros2_interfaces/${_interface}.tmp
+      ${CMAKE_CURRENT_BINARY_DIR}/ros2_interfaces/${_interface} COPYONLY)
+    list(APPEND _ros2_interfaces "${CMAKE_CURRENT_BINARY_DIR}/ros2_interfaces:${_interface}")
+  endforeach()
+  rosidl_generate_interfaces(${PROJECT_NAME}
+    ${_ros2_interfaces}
+    DEPENDENCIES ${_interface_dependencies}
+  )
+  ament_export_dependencies(rosidl_default_runtime)
+
+  find_package(rclcpp REQUIRED)
+  find_package(interactive_markers REQUIRED)
+  find_package(tf2 REQUIRED)
+  find_package(tf2_ros REQUIRED)
+  find_package(tf2_geometry_msgs REQUIRED)
+  find_package(jsk_ros1_ros2_compat REQUIRED)
+  find_package(Boost REQUIRED COMPONENTS thread)
+  find_package(yaml-cpp REQUIRED)
+  find_package(std_srvs REQUIRED)
+  find_package(tf2_eigen REQUIRED)
+  find_package(jsk_rviz_plugins REQUIRED)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(TinyXML REQUIRED tinyxml)
+  rosidl_get_typesupport_target(_cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
+
+  # ROS 1's library jsk_interactive_marker (im_helpers::), with the
+  # interactive_marker_helpers.cpp only; on ROS 2 the target name
+  # jsk_interactive_marker is the one of the messages
+  add_library(${PROJECT_NAME}_lib SHARED src/interactive_marker_helpers.cpp)
+  target_include_directories(${PROJECT_NAME}_lib PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    ${jsk_ros1_ros2_compat_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_lib PUBLIC
+    rclcpp::rclcpp
+    interactive_markers::interactive_markers
+    ${geometry_msgs_TARGETS}
+    ${std_msgs_TARGETS}
+    ${visualization_msgs_TARGETS}
+    tf2::tf2
+    tf2_geometry_msgs::tf2_geometry_msgs
+    Boost::boost)
+
+  # the nodes ported to ROS 2
+  add_executable(marker_6dof src/marker_6dof.cpp)
+  add_executable(camera_info_publisher src/camera_info_publisher.cpp)
+  target_link_libraries(camera_info_publisher yaml-cpp)
+  # world2yaml is not a ROS node, only tf's (tf2's) LinearMath
+  add_executable(world2yaml src/world2yaml.cpp)
+  target_include_directories(world2yaml PRIVATE ${TinyXML_INCLUDE_DIRS})
+  target_link_libraries(world2yaml ${TinyXML_LIBRARIES})
+  # ~use_parent_and_child (ParentAndChildInteractiveMarkerServer) is ROS 1 only
+  add_executable(transformable_server_sample
+    src/transformable_object.cpp
+    src/yaml_menu_handler.cpp
+    src/transformable_interactive_server.cpp
+    src/transformable_server_sample.cpp
+  )
+  target_link_libraries(transformable_server_sample
+    yaml-cpp
+    ${std_srvs_TARGETS}
+    ${jsk_rviz_plugins_TARGETS}
+    tf2_eigen::tf2_eigen)
+  set(_nodes marker_6dof camera_info_publisher world2yaml transformable_server_sample)
+  if(jsk_recognition_msgs_FOUND)
+    add_executable(bounding_box_marker src/bounding_box_marker.cpp)
+    target_link_libraries(bounding_box_marker ${jsk_recognition_msgs_TARGETS})
+    list(APPEND _nodes bounding_box_marker)
+  endif()
+  foreach(_node ${_nodes})
+    target_link_libraries(${_node}
+      ${PROJECT_NAME}_lib
+      ${_cpp_typesupport_target}
+      ${sensor_msgs_TARGETS}
+      tf2_ros::tf2_ros
+      Boost::thread)
+  endforeach()
+
+  install(TARGETS ${PROJECT_NAME}_lib
+    EXPORT export_${PROJECT_NAME}
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin)
+  install(TARGETS ${_nodes}
+    DESTINATION lib/${PROJECT_NAME})
+  install(DIRECTORY include/${PROJECT_NAME}/
+    DESTINATION include/${PROJECT_NAME})
+  # transformable_markers_client.py (jsk_recognition_msgs/utils),
+  # semantic_robot_state_generator.py (the global /robot_description),
+  # transformable_joy_configure.py and transformable_spacenav_configure.py
+  # are ROS 1 only
+  jsk_ros1_ros2_compat_install_python(PROGRAMS scripts/dummy_camera.py)
+  install(DIRECTORY config models
+    DESTINATION share/${PROJECT_NAME}
+    USE_SOURCE_PERMISSIONS)
+  install(DIRECTORY launch
+    DESTINATION share/${PROJECT_NAME}
+    FILES_MATCHING PATTERN "*.launch.py")
+
+  # The ROS 2 tests are in test/ros2/; ROS 1 has none.
+  if(BUILD_TESTING)
+    find_package(launch_testing_ament_cmake REQUIRED)
+    add_launch_test(test/ros2/test_samples.py TIMEOUT 120)
+    if(jsk_recognition_msgs_FOUND)
+      add_launch_test(test/ros2/test_bounding_box_marker.py TIMEOUT 60)
+    endif()
+  endif()
+  ament_export_include_directories(include)
+  ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+  ament_export_dependencies(rclcpp interactive_markers tf2 tf2_geometry_msgs
+    geometry_msgs std_msgs visualization_msgs jsk_ros1_ros2_compat Boost)
+
+  ament_package()
+
+else() # if("$ENV{ROS_VERSION}" EQUAL 2)
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_interactive_marker)
 
@@ -289,3 +495,4 @@ file(GLOB _rviz_default_files "${PROJECT_SOURCE_DIR}/launch/*.rviz.default")
 copy_rviz_files(_rviz_default_files)
 file(GLOB _rviz_default_files "${PROJECT_SOURCE_DIR}/config/*.rviz.default")
 copy_rviz_files(_rviz_default_files)
+endif() # if("$ENV{ROS_VERSION}" EQUAL 2)

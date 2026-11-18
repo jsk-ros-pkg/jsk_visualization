@@ -22,16 +22,18 @@ from python_qt_binding.QtGui import QPen
 import yaml
 
 from resource_retriever import get_filename
-import roslib
-import rospy
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
+if ROS_VERSION == 1:
+    import rospy
 from rqt_gui_py.plugin import Plugin
 import rqt_plot
 from std_msgs.msg import Bool
-from std_msgs.msg import Time
 from std_msgs.msg import String
 
+from .dialogs import LineEditDialog
 from .util import get_slot_type_field_names
-from .hist import ROSData
+from .util import next_data
+from .util import ROSData
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QAction
@@ -62,37 +64,6 @@ else:
     from python_qt_binding.QtGui import QWidget
 
 
-class LineEditDialog(QDialog):
-    def __init__(self, parent=None):
-        super(LineEditDialog, self).__init__()
-        self.value = None
-        self.button_pressed = False
-        vbox = QVBoxLayout(self)
-        # combo box
-        model = QtGui.QStandardItemModel(self)
-        for elm in rospy.get_param_names():
-            model.setItem(model.rowCount(), 0, QtGui.QStandardItem(elm))
-        self.combo_box = QComboBox(self)
-        self.line_edit = QLineEdit()
-        self.combo_box.setLineEdit(self.line_edit)
-        self.combo_box.setCompleter(QCompleter())
-        self.combo_box.setModel(model)
-        self.combo_box.completer().setModel(model)
-        self.combo_box.lineEdit().setText('')
-        vbox.addWidget(self.combo_box)
-        # button
-        button = QPushButton()
-        button.setText("Done")
-        button.clicked.connect(self.buttonCallback)
-        vbox.addWidget(button)
-        self.setLayout(vbox)
-
-    def buttonCallback(self, event):
-        self.value = self.line_edit.text()
-        self.button_pressed = True
-        self.close()
-
-
 class StringLabel(Plugin):
     """
     rqt plugin to provide simple label
@@ -100,7 +71,7 @@ class StringLabel(Plugin):
     def __init__(self, context):
         super(StringLabel, self).__init__(context)
         self.setObjectName("StringLabel")
-        self._widget = StringLabelWidget()
+        self._widget = StringLabelWidget(getattr(context, 'node', None))
         context.add_widget(self._widget)
 
     def save_settings(self, plugin_settings, instance_settings):
@@ -112,10 +83,14 @@ class StringLabel(Plugin):
     def trigger_configuration(self):
         self._widget.trigger_configuration()
 
+    def shutdown_plugin(self):
+        self._widget.shutdown()
+
 
 class StringLabelWidget(QWidget):
-    def __init__(self):
+    def __init__(self, node=None):
         super(StringLabelWidget, self).__init__()
+        self._node = node
         self.lock = Lock()
         vbox = QVBoxLayout(self)
         self.label = QLabel()
@@ -133,12 +108,20 @@ class StringLabelWidget(QWidget):
         self._update_topic_timer.start(1000)
         self._active_topic = None
         # to update label visualization
-        self._dialog = LineEditDialog()
+        # (ROS 2 has no parameter server to list the parameters of)
+        self._dialog = LineEditDialog(
+            candidates=rospy.get_param_names() if ROS_VERSION == 1 else None)
         self._rosdata = None
-        self._start_time = rospy.get_time()
+        self._start_time = ros_compat.now_sec(self._node)
         self._update_label_timer = QTimer(self)
         self._update_label_timer.timeout.connect(self.updateLabel)
         self._update_label_timer.start(40)
+
+    def shutdown(self):
+        # The Qt timers outlive the rclpy context otherwise, and querying
+        # the graph from a destroyed context raises RCLError (ROS 2).
+        self._update_topic_timer.stop()
+        self._update_label_timer.stop()
 
     def trigger_configuration(self):
         self._dialog.exec_()
@@ -148,7 +131,7 @@ class StringLabelWidget(QWidget):
         if not self._rosdata:
             return
         try:
-            _, data_y = self._rosdata.next()
+            _, data_y = next_data(self._rosdata)
         except rqt_plot.rosplot.RosPlotException as e:
             self._rosdata = None
             return
@@ -163,12 +146,23 @@ class StringLabelWidget(QWidget):
         try:
             self.label.setText(self.string)
         except TypeError as e:
-            rospy.logwarn(e)
+            ros_compat.logwarn(self._node, str(e))
 
     def updateTopics(self):
         need_to_update = False
-        for (topic, topic_type) in rospy.get_published_topics():
-            msg = roslib.message.get_message_class(topic_type)
+        if ROS_VERSION == 2:
+            published_topics = [
+                (topic, topic_type) for topic, topic_types
+                in self._node.get_topic_names_and_types()
+                for topic_type in topic_types]
+        else:
+            published_topics = rospy.get_published_topics()
+        for (topic, topic_type) in published_topics:
+            try:
+                msg = ros_compat.resolve_message_class(topic_type)
+            except (ImportError, ValueError, AttributeError):
+                # a type whose package is not installed here (rclpy raises)
+                continue
             field_names = get_slot_type_field_names(msg, slot_type='string')
             for field in field_names:
                 string_topic = topic + field
@@ -187,15 +181,21 @@ class StringLabelWidget(QWidget):
                 self._dialog.combo_box.setCurrentIndex(
                     self._string_topics.index(self._active_topic))
 
+    def _ros_data(self, topic):
+        # rqt_plot's ROSData subscribes through the node on ROS 2
+        if ROS_VERSION == 2:
+            return ROSData(self._node, topic, self._start_time)
+        return ROSData(topic, self._start_time)
+
     def setupSubscriber(self, topic):
         if not self._rosdata:
-            self._rosdata = ROSData(topic, self._start_time)
+            self._rosdata = self._ros_data(topic)
         else:
             if self._rosdata != topic:
                 self._rosdata.close()
-                self._rosdata = ROSData(topic, self._start_time)
+                self._rosdata = self._ros_data(topic)
             else:
-                rospy.logwarn("%s is already subscribed", topic)
+                ros_compat.logwarn(self._node, "%s is already subscribed" % topic)
         self._active_topic = topic
 
     def onActivated(self, number):

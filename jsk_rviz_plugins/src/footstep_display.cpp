@@ -34,8 +34,18 @@
  *********************************************************************/
 
 #include "footstep_display.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/validate_floats.hpp>
+namespace rviz
+{
+using rviz_common::validateFloats;
+}
+#else
 #include <rviz/validate_floats.h>
-#include <jsk_topic_tools/color_utils.h>
+#endif
+#include "color_utils_compat.h"  // <jsk_topic_tools/color_utils.h> on ROS 1
 
 namespace jsk_rviz_plugins
 {
@@ -267,7 +277,11 @@ namespace jsk_rviz_plugins
   }
   
   
+#if ROS_VERSION_MAJOR != 1
+  void FootstepDisplay::processMessage(jsk_footstep_msgs::FootstepArray::ConstSharedPtr msg)
+#else
   void FootstepDisplay::processMessage(const jsk_footstep_msgs::FootstepArray::ConstPtr& msg)
+#endif
   {
     if (!validateFloats(*msg)) {
       setStatus(rviz::StatusProperty::Error, "Topic", "message contained invalid floating point values (nans or infs)");
@@ -368,5 +382,9 @@ namespace jsk_rviz_plugins
 
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::FootstepDisplay, rviz::Display )

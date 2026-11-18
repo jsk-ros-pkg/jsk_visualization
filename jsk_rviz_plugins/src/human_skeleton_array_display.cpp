@@ -33,7 +33,11 @@
  *********************************************************************/
 
 #include "human_skeleton_array_display.h"
-#include <jsk_topic_tools/color_utils.h>
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#endif
+#include "color_utils_compat.h"  // <jsk_topic_tools/color_utils.h> on ROS 1
 namespace jsk_rviz_plugins
 {
   HumanSkeletonArrayDisplay::HumanSkeletonArrayDisplay()
@@ -167,8 +171,13 @@ namespace jsk_rviz_plugins
       }
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void HumanSkeletonArrayDisplay::showEdges(
+    const jsk_recognition_msgs::HumanSkeletonArray::ConstSharedPtr& msg)
+#else
   void HumanSkeletonArrayDisplay::showEdges(
     const jsk_recognition_msgs::HumanSkeletonArray::ConstPtr& msg)
+#endif
   {
     int line_num = 0;
     for (size_t i = 0; i < msg->skeletons.size(); i++) {
@@ -238,8 +247,13 @@ namespace jsk_rviz_plugins
     }
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void HumanSkeletonArrayDisplay::processMessage(
+    jsk_recognition_msgs::HumanSkeletonArray::ConstSharedPtr msg)
+#else
   void HumanSkeletonArrayDisplay::processMessage(
     const jsk_recognition_msgs::HumanSkeletonArray::ConstPtr& msg)
+#endif
   {
     // Store latest message
     latest_msg_ = msg;
@@ -248,6 +262,10 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS(
   jsk_rviz_plugins::HumanSkeletonArrayDisplay, rviz::Display)

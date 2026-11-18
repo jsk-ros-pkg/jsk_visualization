@@ -1,0 +1,48 @@
+<!-- The plugins of jsk_rviz_plugins for jsk_recognition_msgs on ROS 2,
+     exported only when jsk_recognition_msgs is found, see CMakeLists.txt -->
+<library path="jsk_rviz_plugins">
+  <class name="jsk_rviz_plugin/BoundingBoxArray"
+         type="jsk_rviz_plugins::BoundingBoxArrayDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      visualize jsk_recognition_msgs/BoundingBoxArray
+    </description>
+    <message_type>jsk_recognition_msgs/msg/BoundingBoxArray</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/BoundingBox"
+         type="jsk_rviz_plugins::BoundingBoxDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      visualize jsk_recognition_msgs/BoundingBox
+    </description>
+    <message_type>jsk_recognition_msgs/msg/BoundingBox</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/TorusArray"
+         type="jsk_rviz_plugins::TorusArrayDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      visualize jsk_recognition_msgs/TorusArray
+    </description>
+    <message_type>jsk_recognition_msgs/msg/TorusArray</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/SegmentArray"
+         type="jsk_rviz_plugins::SegmentArrayDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      visualize jsk_recognition_msgs/SegmentArray
+    </description>
+    <message_type>jsk_recognition_msgs/msg/SegmentArray</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/HumanSkeletonArray"
+         type="jsk_rviz_plugins::HumanSkeletonArrayDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      visualize jsk_recognition_msgs/HumanSkeletonArray
+    </description>
+    <message_type>jsk_recognition_msgs/msg/HumanSkeletonArray</message_type>
+  </class>
+</library>

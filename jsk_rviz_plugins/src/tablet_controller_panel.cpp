@@ -37,9 +37,16 @@
 #include "tablet_controller_panel.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#endif
 namespace jsk_rviz_plugins
 {
+#if ROS_VERSION_MAJOR != 1
+  TabletCmdVelArea::TabletCmdVelArea(QWidget* parent, TwistPublisher pub_cmd_vel):
+#else
   TabletCmdVelArea::TabletCmdVelArea(QWidget* parent, ros::Publisher& pub_cmd_vel):
+#endif
     QWidget(parent), mouse_x_(-1), mouse_y_(-1), pub_cmd_vel_(pub_cmd_vel)
   {
     setBackgroundRole(QPalette::Base);
@@ -144,7 +151,11 @@ namespace jsk_rviz_plugins
     twist.linear.x = x;
     twist.linear.y = y;
     twist.angular.z = theta;
+#if ROS_VERSION_MAJOR != 1
+    pub_cmd_vel_->publish(twist);
+#else
     pub_cmd_vel_.publish(twist);
+#endif
   }
 
   QString TabletControllerPanel::defaultButtonStyleSheet()
@@ -169,6 +180,29 @@ namespace jsk_rviz_plugins
   
   TabletControllerPanel::TabletControllerPanel(QWidget* parent): rviz::Panel(parent)
   {
+#if ROS_VERSION_MAJOR != 1
+    layout_ = new QVBoxLayout();
+    setLayout(layout_);
+    setBackgroundRole(QPalette::Base);
+    setAutoFillBackground(true);
+  }
+
+  // The cmd_vel area publishes through the publisher of the panel, and the
+  // node of rviz2 is only available from onInitialize(), so the ROS 2
+  // constructor ends above and onInitialize() builds the rest of the panel.
+  void TabletControllerPanel::onInitialize()
+  {
+    node_ = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
+    pub_start_demo_ = node_->create_publisher<jsk_rviz_plugins::StringStamped>(
+      "/Tablet/StartDemo", 1);
+    pub_spot_ = node_->create_publisher<jsk_rviz_plugins::StringStamped>(
+      "/Tablet/MoveToSpot", 1);
+    sub_spots_ = node_->create_subscription<visualization_msgs::MarkerArray>(
+      "/spots_marker_array", 1,
+      std::bind(&TabletControllerPanel::spotCallback, this, std::placeholders::_1));
+    pub_cmd_vel_ = node_->create_publisher<geometry_msgs::Twist>(
+      "/navigation/unsafe_vel", 1);
+#else
     ros::NodeHandle nh;
     pub_start_demo_ = nh.advertise<jsk_rviz_plugins::StringStamped>(
       "/Tablet/StartDemo", 1);
@@ -179,6 +213,7 @@ namespace jsk_rviz_plugins
     pub_cmd_vel_ = nh.advertise<geometry_msgs::Twist>(
       "/navigation/unsafe_vel", 1);
     layout_ = new QVBoxLayout();
+#endif
     layout_->addStretch();
     task_button_ = new QPushButton("Task", this);
     task_button_->setMinimumHeight(100);
@@ -197,9 +232,11 @@ namespace jsk_rviz_plugins
     layout_->addWidget(cmd_vel_area_);
     
     
+#if ROS_VERSION_MAJOR == 1
     setLayout(layout_);
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
+#endif
   }
 
   TabletControllerPanel::~TabletControllerPanel()
@@ -220,10 +257,17 @@ namespace jsk_rviz_plugins
   ////////////////////////////////////////////////////////
   // callbacks
   ////////////////////////////////////////////////////////
+#if ROS_VERSION_MAJOR != 1
+  void TabletControllerPanel::spotCallback(
+    visualization_msgs::MarkerArray::ConstSharedPtr marker)
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+#else
   void TabletControllerPanel::spotCallback(
     const visualization_msgs::MarkerArray::ConstPtr& marker)
   {
     boost::mutex::scoped_lock lock(mutex_);
+#endif
     spots_.clear();
     for (size_t i = 0; i < marker->markers.size(); i++) {
       std::string text = marker->markers[i].text;
@@ -298,8 +342,13 @@ namespace jsk_rviz_plugins
         task_dialog_->reject();
         jsk_rviz_plugins::StringStamped command;
         command.data = task;
+#if ROS_VERSION_MAJOR != 1
+        command.header.stamp = node_->now();
+        pub_start_demo_->publish(command);
+#else
         command.header.stamp = ros::Time::now();
         pub_start_demo_.publish(command);
+#endif
         return;
       }
     }
@@ -307,7 +356,11 @@ namespace jsk_rviz_plugins
   
   void TabletControllerPanel::spotButtonClicked()
   {
+#if ROS_VERSION_MAJOR != 1
+    std::lock_guard<std::mutex> lock(mutex_);
+#else
     boost::mutex::scoped_lock lock(mutex_);
+#endif
     spot_dialog_ = new QDialog();
     spot_dialog_->setBackgroundRole(QPalette::Base);
     spot_dialog_->setAutoFillBackground(true);
@@ -356,13 +409,22 @@ namespace jsk_rviz_plugins
       std::string spot = item->text().toStdString();
       jsk_rviz_plugins::StringStamped spot_command;
       spot_command.data = spot;
+#if ROS_VERSION_MAJOR != 1
+      spot_command.header.stamp = node_->now();
+      pub_spot_->publish(spot_command);
+#else
       spot_command.header.stamp = ros::Time::now();
       pub_spot_.publish(spot_command);
+#endif
     }
     spot_dialog_->reject();
   }
 
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::TabletControllerPanel, rviz::Panel);

@@ -1,6 +1,41 @@
 #ifndef __TRANSFORMABLE_OBJECT_H__
 #define __TRANSFORMABLE_OBJECT_H__
 
+#include "jsk_interactive_marker/ros1_ros2_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/interactive_marker.hpp>
+#include <visualization_msgs/msg/interactive_marker_control.hpp>
+#include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/color_rgba.hpp>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <jsk_rviz_plugins/srv/request_marker_operate.hpp>
+#include <vector>
+#include <algorithm>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, Marker)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, InteractiveMarker)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, InteractiveMarkerControl)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(std_msgs, Float32)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(std_msgs, ColorRGBA)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, Point)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, Pose)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_rviz_plugins, TransformableMarkerOperate)
+namespace jsk_interactive_marker
+{
+  // cfg/InteractiveSetting.cfg (dynamic_reconfigure on ROS 1), the
+  // parameters of the same names on ROS 2 (TransformableInteractiveServer)
+  struct InteractiveSettingConfig
+  {
+    bool display_interactive_manipulator;
+    bool display_interactive_manipulator_only_selected;
+    bool display_description_only_selected;
+    int interactive_manipulator_orientation;
+    int interaction_mode;
+  };
+}
+#else
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/InteractiveMarker.h>
@@ -14,6 +49,7 @@
 #include <vector>
 #include <algorithm>
 #include <jsk_interactive_marker/InteractiveSettingConfig.h>
+#endif
 
 namespace jsk_interactive_marker {
   class TransformableObject{
@@ -22,9 +58,13 @@ namespace jsk_interactive_marker {
 
     std::vector<visualization_msgs::InteractiveMarkerControl> makeRotateTransFixControl(unsigned int orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED);
 
+#if ROS_VERSION_MAJOR != 1
+    std::shared_ptr<tf2_ros::TransformBroadcaster> br;
+#else
     tf::TransformBroadcaster br;
+#endif
     visualization_msgs::InteractiveMarker getInteractiveMarker();
-    virtual visualization_msgs::Marker getVisualizationMsgMarker(){};
+    virtual visualization_msgs::Marker getVisualizationMsgMarker(){return visualization_msgs::Marker();};
     void addMarker(visualization_msgs::InteractiveMarker &int_marker, bool always_visible = true, unsigned int interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_3D);
     void addControl(visualization_msgs::InteractiveMarker &int_marker);
 
@@ -66,7 +106,7 @@ namespace jsk_interactive_marker {
     int getType() { return type_; };
     void setType(int type) { type_ = type; return; };
 
-    virtual float getInteractiveMarkerScale(){};
+    virtual float getInteractiveMarkerScale(){return 1.0;};
   };
 };
 

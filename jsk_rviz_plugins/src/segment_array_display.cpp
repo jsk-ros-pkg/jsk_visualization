@@ -33,7 +33,11 @@
  *********************************************************************/
 
 #include "segment_array_display.h"
-#include <jsk_topic_tools/color_utils.h>
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#endif
+#include "color_utils_compat.h"  // <jsk_topic_tools/color_utils.h> on ROS 1
 namespace jsk_rviz_plugins
 {
   SegmentArrayDisplay::SegmentArrayDisplay()
@@ -154,8 +158,13 @@ namespace jsk_rviz_plugins
       }
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void SegmentArrayDisplay::showEdges(
+    const jsk_recognition_msgs::SegmentArray::ConstSharedPtr& msg)
+#else
   void SegmentArrayDisplay::showEdges(
     const jsk_recognition_msgs::SegmentArray::ConstPtr& msg)
+#endif
   {
     allocateBillboardLines(msg->segments.size());
     for (size_t i = 0; i < msg->segments.size(); i++) {
@@ -196,8 +205,13 @@ namespace jsk_rviz_plugins
     }
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void SegmentArrayDisplay::processMessage(
+    jsk_recognition_msgs::SegmentArray::ConstSharedPtr msg)
+#else
   void SegmentArrayDisplay::processMessage(
     const jsk_recognition_msgs::SegmentArray::ConstPtr& msg)
+#endif
   {
     // Store latest message
     latest_msg_ = msg;
@@ -206,6 +220,10 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS(
   jsk_rviz_plugins::SegmentArrayDisplay, rviz::Display)

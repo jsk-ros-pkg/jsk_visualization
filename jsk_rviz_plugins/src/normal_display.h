@@ -1,6 +1,8 @@
 // -*- mode: C++ -*-
 #ifndef NORMAL_DISPLAY_H
 #define NORMAL_DISPLAY_H
+// outside of Q_MOC_RUN: moc reads ROS_VERSION_MAJOR for processMessage() below
+#include "rviz_compat.h"
 #ifndef Q_MOC_RUN
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -8,6 +10,20 @@
 
 #include <boost/circular_buffer.hpp>
 
+#if ROS_VERSION_MAJOR != 1
+#include <sensor_msgs/msg/point_cloud2.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(sensor_msgs, PointCloud2)
+
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_common/validate_floats.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_default_plugins/displays/pointcloud/point_cloud_helpers.hpp>
+#else
 #include <sensor_msgs/PointCloud2.h>
 
 #include <rviz/message_filter_display.h>
@@ -20,6 +36,7 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
+#endif
 #include "normal_visual.h"
 #endif
 
@@ -65,7 +82,11 @@ protected:
 
   // Function to handle an incoming ROS message.
 private Q_SLOTS:
+#if ROS_VERSION_MAJOR != 1
+  void processMessage( sensor_msgs::PointCloud2::ConstSharedPtr msg );
+#else
   void processMessage( const sensor_msgs::PointCloud2::ConstPtr& msg );
+#endif
   void updateStyle();
   void updateSkipRate();
   void updateRainbow();

@@ -92,8 +92,13 @@ namespace jsk_rviz_plugins
     }
   }
   
+#if ROS_VERSION_MAJOR != 1
+  void PictogramArrayDisplay::processMessage(
+    jsk_rviz_plugins::PictogramArray::ConstSharedPtr msg)
+#else
   void PictogramArrayDisplay::processMessage(
     const jsk_rviz_plugins::PictogramArray::ConstPtr& msg)
+#endif
   {
     boost::mutex::scoped_lock lock(mutex_);
     allocatePictograms(msg->pictograms.size());
@@ -138,5 +143,9 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::PictogramArrayDisplay, rviz::Display);

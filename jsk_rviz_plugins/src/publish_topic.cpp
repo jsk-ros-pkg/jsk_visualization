@@ -8,7 +8,14 @@
 #include <QLabel>
 #include <QTimer>
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <std_msgs/msg/empty.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(std_msgs, Empty)
+#else
 #include <std_msgs/Empty.h>
+#endif
 
 #include "publish_topic.h"
 
@@ -37,6 +44,13 @@ namespace jsk_rviz_plugins
 
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void PublishTopic::onInitialize()
+  {
+    node_ = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
+  }
+#endif
+
   void PublishTopic::updateTopic()
   {
     setTopic( output_topic_editor_->text() );
@@ -52,11 +66,19 @@ namespace jsk_rviz_plugins
 	// If the topic is the empty string, don't publish anything.
 	if( output_topic_ == "" )
 	  {
+#if ROS_VERSION_MAJOR != 1
+	    velocity_publisher_.reset();
+#else
 	    velocity_publisher_.shutdown();
+#endif
 	  }
 	else
 	  {
+#if ROS_VERSION_MAJOR != 1
+	    velocity_publisher_ = node_->create_publisher<std_msgs::Empty>( output_topic_.toStdString(), 1 );
+#else
 	    velocity_publisher_ = nh_.advertise<std_msgs::Empty>( output_topic_.toStdString(), 1 );
+#endif
 	  }
 
 	Q_EMIT configChanged();
@@ -65,7 +87,14 @@ namespace jsk_rviz_plugins
   
   void PublishTopic::sendTopic(){
     std_msgs::Empty msg;
+#if ROS_VERSION_MAJOR != 1
+    // a ros::Publisher without a topic ignores publish(); so does this
+    if (velocity_publisher_) {
+      velocity_publisher_->publish(msg);
+    }
+#else
     velocity_publisher_.publish(msg);
+#endif
   }
 
 
@@ -89,6 +118,10 @@ namespace jsk_rviz_plugins
 
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::PublishTopic, rviz::Panel )
 

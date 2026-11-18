@@ -2,8 +2,13 @@
 #define OBJECT_FIT_OPERATOR_H
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/panel.hpp>
+#else
 #include <ros/ros.h>
 #include <rviz/panel.h>
+#endif
 #include <QtGlobal>
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  include <QtWidgets>
@@ -12,7 +17,12 @@
 #endif
 #include <QToolButton>
 #include <QCheckBox>
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_rviz_plugins/msg/object_fit_command.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_rviz_plugins, ObjectFitCommand)
+#else
 #include <jsk_rviz_plugins/ObjectFitCommand.h>
+#endif
 #endif
 
 class QLineEdit;
@@ -25,6 +35,10 @@ namespace jsk_rviz_plugins
       Q_OBJECT
       public:
       ObjectFitOperatorAction( QWidget* parent = 0 );
+#if ROS_VERSION_MAJOR != 1
+      // the node of rviz2 is only available here, not in the constructor
+      virtual void onInitialize();
+#endif
 
       virtual void load( const rviz::Config& config );
       virtual void save( rviz::Config config ) const;
@@ -47,8 +61,13 @@ namespace jsk_rviz_plugins
       QVBoxLayout* layout;
       bool reverse_;
 
+#if ROS_VERSION_MAJOR != 1
+      rclcpp::Node::SharedPtr node_;
+      rclcpp::Publisher<jsk_rviz_plugins::ObjectFitCommand>::SharedPtr pub_;
+#else
       ros::NodeHandle nh_;
       ros::Publisher pub_;
+#endif
     };
 }
 

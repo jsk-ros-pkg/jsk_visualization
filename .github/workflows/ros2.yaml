@@ -1,0 +1,47 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # All packages build on ROS 2 but jsk_interactive and
+      # jsk_interactive_test (euslisp), which have AMENT_IGNORE, so colcon and
+      # rosdep (catkin_pkg's find_packages) skip them.
+      # jsk_recognition_msgs is not released for ROS 2 yet; the plugins of
+      # jsk_rviz_plugins/jsk_rqt_plugins for its messages are built only when it
+      # is found, so only its package is checked out (sparse, shallow) into the
+      # workspace, where industrial_ci builds it with the target packages.
+      # TODO: switch to jsk-ros-pkg/jsk_recognition master after
+      # jsk-ros-pkg/jsk_recognition#2903 is merged, and drop this step once
+      # jsk_recognition_msgs is released for ROS 2.
+      - name: Check out jsk_recognition_msgs of jsk_recognition
+        run: |
+          git init -q ros2_deps/jsk_recognition
+          cd ros2_deps/jsk_recognition
+          git remote add origin https://github.com/k-okada/jsk_recognition.git
+          git sparse-checkout set jsk_recognition_msgs
+          git fetch -q --depth 1 origin recognition-msgs-ros2
+          git checkout -q FETCH_HEAD
+      - uses: ros-industrial/industrial_ci@master
+        env:
+          ROS_DISTRO: jazzy
+          # package.xml of jsk_rviz_plugins/jsk_rqt_plugins depends on the
+          # unreleased jsk_recognition_msgs only with this set, for rosdep to take
+          # it from the workspace and colcon to build it first.
+          DOCKER_RUN_OPTS: -e JSK_RECOGNITION_MSGS_FROM_SOURCE=1
+          # rosdep's `pip:` installer refuses to install globally on
+          # Python >= 3.11 (PEP 668) unless explicitly told to.
+          PIP_BREAK_SYSTEM_PACKAGES: '1'
+          # The rqt and rviz tests need an X display and skip themselves without one.
+          # The _EMBED variant is required: the plain BEFORE_RUN_TARGET_TEST hook is
+          # run in a sub shell by industrial_ci, so the exported DISPLAY would be lost.
+          # Xvfb is backgrounded, hence the wait for its socket before the tests start.
+          BEFORE_RUN_TARGET_TEST_EMBED: >-
+            Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp &
+            for _ in $(seq 50); do [ -e /tmp/.X11-unix/X99 ] && break; sleep 0.2; done;
+            export DISPLAY=:99

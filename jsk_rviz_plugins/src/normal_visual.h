@@ -6,10 +6,16 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_rendering/objects/arrow.hpp>
+#include <memory>
+#else
 #include <rviz/ogre_helpers/arrow.h>
 #include <geometry_msgs/Vector3.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <ros/ros.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

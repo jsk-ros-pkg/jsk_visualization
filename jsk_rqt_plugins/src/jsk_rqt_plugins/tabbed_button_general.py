@@ -21,10 +21,9 @@ from python_qt_binding.QtGui import QPen
 import yaml
 
 from resource_retriever import get_filename
-import rospy
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
-from std_msgs.msg import Time
 from std_srvs.srv import Empty
 from std_srvs.srv import SetBool
 from std_srvs.srv import Trigger
@@ -66,12 +65,13 @@ from jsk_rqt_plugins.button_general import ServiceButtonGeneralWidget
 
 
 class ServiceTabbedButtonGeneralWidget(QWidget):
-    def __init__(self):
+    def __init__(self, node=None):
         super(ServiceTabbedButtonGeneralWidget, self).__init__()
+        self._node = node
         self._tab_settings = None
 
-        if rospy.has_param("~tabbed_layout"):
-            tabbed_layout = rospy.get_param("~tabbed_layout")
+        tabbed_layout = self._get_tabbed_layout()
+        if tabbed_layout is not None:
             self._tab_list = []
             if not 'tab_list' in tabbed_layout:
                 self.showError("Cannot find tab_list in %s"%(tabbed_layout))
@@ -113,7 +113,7 @@ class ServiceTabbedButtonGeneralWidget(QWidget):
 
         qtab = QTabWidget()
         for tb in self._tab_list:
-            wg = ServiceButtonGeneralWidget_in_tab(tb)
+            wg = ServiceButtonGeneralWidget_in_tab(tb, node=self._node)
             qtab.addTab(wg, tb['name'] )
 
         #self.setWindowTitle('Tab Layout')
@@ -121,6 +121,30 @@ class ServiceTabbedButtonGeneralWidget(QWidget):
         hbox.addWidget(qtab)
         self.setLayout(hbox)
         self.show()
+
+    def _get_tabbed_layout(self):
+        """~tabbed_layout, None if it is not set"""
+        if ROS_VERSION == 1:
+            return ros_compat.get_param(self._node, "~tabbed_layout", None)
+        # A ROS 2 parameter can not be a dictionary, so ~tabbed_layout is
+        # given as tabbed_layout.tab_list and tabbed_layout.<tab>.<key>
+        # (as a YAML parameter file writes the nested dictionary) and put
+        # back together here.
+        tab_list = ros_compat.get_param(
+            self._node, "~tabbed_layout.tab_list", None)
+        if not tab_list:
+            return None
+        tabbed_layout = {'tab_list': list(tab_list)}
+        for tb in tab_list:
+            param_settings = {}
+            for key in ('type', 'name', 'yaml_file', 'namespace'):
+                value = ros_compat.get_param(
+                    self._node, "~tabbed_layout.%s.%s" % (tb, key), None)
+                if value is not None:
+                    param_settings[key] = value
+            if param_settings:
+                tabbed_layout[tb] = param_settings
+        return tabbed_layout
 
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)
@@ -139,8 +163,8 @@ class ServiceButtonGeneralWidget_in_tab(ServiceButtonGeneralWidget):
     """
     Qt widget to visualize multiple buttons
     """
-    def __init__(self, settings):
-        super(ServiceButtonGeneralWidget_in_tab, self).__init__()
+    def __init__(self, settings, node=None):
+        super(ServiceButtonGeneralWidget_in_tab, self).__init__(node=node)
         yaml_file = settings['yaml_file']
         namespace = None
         if 'type' in settings:

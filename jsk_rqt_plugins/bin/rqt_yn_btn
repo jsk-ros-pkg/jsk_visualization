@@ -17,6 +17,9 @@ except:
     from jsk_rqt_plugins.yes_no_button import YesNoButton
 
 
+from jsk_rqt_plugins.compat import init_rqt_ros
+init_rqt_ros()
+
 plugin = 'YesNoButton'
 main = Main(filename=plugin)
 sys.exit(main.main(standalone=plugin))

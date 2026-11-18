@@ -37,6 +37,19 @@
 #define JSK_RVIZ_PLUGINS_TF_TRAJECTORY_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/status_property.hpp>
+#include <rviz_common/properties/tf_frame_property.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <geometry_msgs/msg/point_stamped.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, PointStamped)
+#else
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/tf_frame_property.h>
@@ -44,6 +57,7 @@
 #include <rviz/properties/status_property.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <geometry_msgs/PointStamped.h>
+#endif
 #endif
 
 namespace jsk_rviz_plugins

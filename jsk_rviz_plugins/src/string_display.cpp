@@ -39,16 +39,28 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+#if ROS_VERSION_MAJOR == 1
 #include <jsk_topic_tools/log_utils.h>
+#endif
 #include <OGRE/OgreHardwarePixelBuffer.h>
 #include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreTexture.h>
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 #include <QFontDatabase>
 #include <QPainter>
 #include <QStaticText>
 #include <QTextDocument>
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_rendering/render_system.hpp>
+#else
 #include <rviz/uniform_string_stream.h>
+#endif
 
 namespace jsk_rviz_plugins
 {
@@ -63,7 +75,11 @@ namespace jsk_rviz_plugins
   {
     update_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "",
+#if ROS_VERSION_MAJOR != 1
+      rosidl_generator_traits::name<std_msgs::String>(),
+#else
       ros::message_traits::datatype<std_msgs::String>(),
+#endif
       "std_msgs::String topic to subscribe to.",
       this, SLOT(updateTopic()));
     overtake_position_properties_property_ = new rviz::BoolProperty(
@@ -180,7 +196,11 @@ namespace jsk_rviz_plugins
 
   void StringDisplay::unsubscribe()
   {
+#if ROS_VERSION_MAJOR != 1
+    sub_.reset();
+#else
     sub_.shutdown();
+#endif
   }
 
   void StringDisplay::subscribe()
@@ -188,7 +208,14 @@ namespace jsk_rviz_plugins
     std::string topic_name = update_topic_property_->getTopicStd();
     if (topic_name.length() > 0 && topic_name != "/")
     {
+#if ROS_VERSION_MAJOR != 1
+      sub_ = context_->getRosNodeAbstraction().lock()->get_raw_node()->
+        create_subscription<std_msgs::String>(
+          topic_name, 1,
+          std::bind(&StringDisplay::processMessage, this, std::placeholders::_1));
+#else
       sub_ = ros::NodeHandle().subscribe(topic_name, 1, &StringDisplay::processMessage, this);
+#endif
     }
   }
 
@@ -201,6 +228,10 @@ namespace jsk_rviz_plugins
   // only the first time
   void StringDisplay::onInitialize()
   {
+#if ROS_VERSION_MAJOR != 1
+    rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
+    update_topic_property_->initialize(context_->getRosNodeAbstraction());
+#endif
     onEnable();
     updateTopic();
     updateOvertakePositionProperties();
@@ -283,7 +314,11 @@ namespace jsk_rviz_plugins
   }
 
   void StringDisplay::processMessage
+#if ROS_VERSION_MAJOR != 1
+  (const std_msgs::String::ConstSharedPtr& msg)
+#else
   (const std_msgs::String::ConstPtr& msg)
+#endif
   {
     if (!isEnabled())
     {

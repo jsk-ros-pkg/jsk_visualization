@@ -1,8 +1,160 @@
 #include <jsk_interactive_marker/transformable_interactive_server.h>
+#if ROS_VERSION_MAJOR == 1
 #include <jsk_topic_tools/log_utils.h>
+#endif
 
 using namespace jsk_interactive_marker;
 
+#if ROS_VERSION_MAJOR != 1
+TransformableInteractiveServer::TransformableInteractiveServer():node_(ROS1_ROS2_COMPAT::g_node), n_(new jsk_interactive_marker::ParamHandle(ROS1_ROS2_COMPAT::g_node)){
+  n_->param("interactive_manipulator_orientation", interactive_manipulator_orientation_ , 0);
+  n_->param("torus_udiv", torus_udiv_, 20);
+  n_->param("torus_vdiv", torus_vdiv_, 20);
+  n_->param("strict_tf", strict_tf_, false);
+  tf_buffer_.reset(new tf2_ros::Buffer(node_->get_clock()));
+  tf_listener_.reset(new tf2_ros::TransformListener(*tf_buffer_));
+  subscribers_.push_back(node_->create_subscription<geometry_msgs::msg::PoseStamped>(
+    "~/set_pose", 1, [this](const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg) { setPose(msg, false); }));
+  subscribers_.push_back(node_->create_subscription<geometry_msgs::msg::PoseStamped>(
+    "~/set_control_pose", 1, [this](const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg) { setPose(msg, true); }));
+  subscribers_.push_back(node_->create_subscription<std_msgs::msg::ColorRGBA>(
+    "~/set_color", 1, [this](const std_msgs::msg::ColorRGBA::ConstSharedPtr msg) { setColor(*msg); }));
+  subscribers_.push_back(node_->create_subscription<std_msgs::msg::Float32>(
+    "~/set_radius", 1, [this](const std_msgs::msg::Float32::ConstSharedPtr msg) { setRadius(*msg); }));
+  subscribers_.push_back(node_->create_subscription<std_msgs::msg::Float32>(
+    "~/set_small_radius", 1, [this](const std_msgs::msg::Float32::ConstSharedPtr msg) { setSmallRadius(*msg); }));
+  subscribers_.push_back(node_->create_subscription<std_msgs::msg::Float32>(
+    "~/set_x", 1, [this](const std_msgs::msg::Float32::ConstSharedPtr msg) { setX(*msg); }));
+  subscribers_.push_back(node_->create_subscription<std_msgs::msg::Float32>(
+    "~/set_y", 1, [this](const std_msgs::msg::Float32::ConstSharedPtr msg) { setY(*msg); }));
+  subscribers_.push_back(node_->create_subscription<std_msgs::msg::Float32>(
+    "~/set_z", 1, [this](const std_msgs::msg::Float32::ConstSharedPtr msg) { setZ(*msg); }));
+  subscribers_.push_back(node_->create_subscription<geometry_msgs::msg::Pose>(
+    "~/add_pose", 1, [this](const geometry_msgs::msg::Pose::ConstSharedPtr msg) { addPose(*msg); }));
+  subscribers_.push_back(node_->create_subscription<geometry_msgs::msg::Pose>(
+    "~/add_pose_relative", 1, [this](const geometry_msgs::msg::Pose::ConstSharedPtr msg) { addPoseRelative(*msg); }));
+  subscribers_.push_back(node_->create_subscription<geometry_msgs::msg::Pose>(
+    "~/set_control_relative_pose", 1, [this](const geometry_msgs::msg::Pose::ConstSharedPtr msg) { setControlRelativePose(*msg); }));
+
+  focus_name_text_pub_ = node_->create_publisher<jsk_rviz_plugins::msg::OverlayText>("~/focus_marker_name_text", 1);
+  focus_pose_text_pub_ = node_->create_publisher<jsk_rviz_plugins::msg::OverlayText>("~/focus_marker_pose_text", 1);
+  focus_object_marker_name_pub_ = node_->create_publisher<std_msgs::msg::String>("~/focus_object_marker_name", 1);
+  pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("~/pose", 1);
+  pose_with_name_pub_ = node_->create_publisher<jsk_interactive_marker::msg::PoseStampedWithName>("~/pose_with_name", 1);
+
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::GetTransformableMarkerPose>(
+    node_, "~/get_pose", boost::bind(&TransformableInteractiveServer::getPoseService, this, _1, _2, false)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::GetTransformableMarkerPose>(
+    node_, "~/get_control_pose", boost::bind(&TransformableInteractiveServer::getPoseService, this, _1, _2, true)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::SetTransformableMarkerPose>(
+    node_, "~/set_pose", boost::bind(&TransformableInteractiveServer::setPoseService, this, _1, _2, false)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::SetTransformableMarkerPose>(
+    node_, "~/set_control_pose", boost::bind(&TransformableInteractiveServer::setPoseService, this, _1, _2, true)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::GetTransformableMarkerColor>(
+    node_, "~/get_color", boost::bind(&TransformableInteractiveServer::getColorService, this, _1, _2)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::SetTransformableMarkerColor>(
+    node_, "~/set_color", boost::bind(&TransformableInteractiveServer::setColorService, this, _1, _2)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::GetTransformableMarkerFocus>(
+    node_, "~/get_focus", boost::bind(&TransformableInteractiveServer::getFocusService, this, _1, _2)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::SetTransformableMarkerFocus>(
+    node_, "~/set_focus", boost::bind(&TransformableInteractiveServer::setFocusService, this, _1, _2)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::GetType>(
+    node_, "~/get_type", boost::bind(&TransformableInteractiveServer::getTypeService, this, _1, _2)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::GetTransformableMarkerExistence>(
+    node_, "~/get_existence", boost::bind(&TransformableInteractiveServer::getExistenceService, this, _1, _2)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::SetMarkerDimensions>(
+    node_, "~/set_dimensions", boost::bind(&TransformableInteractiveServer::setDimensionsService, this, _1, _2)));
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_interactive_marker::srv::GetMarkerDimensions>(
+    node_, "~/get_dimensions", boost::bind(&TransformableInteractiveServer::getDimensionsService, this, _1, _2)));
+  services_.push_back(jsk_interactive_marker::advertiseService<std_srvs::srv::Empty>(
+    node_, "~/hide", boost::bind(&TransformableInteractiveServer::hideService, this, _1, _2)));
+  services_.push_back(jsk_interactive_marker::advertiseService<std_srvs::srv::Empty>(
+    node_, "~/show", boost::bind(&TransformableInteractiveServer::showService, this, _1, _2)));
+  marker_dimensions_pub_ = node_->create_publisher<jsk_interactive_marker::msg::MarkerDimensions>("~/marker_dimensions", 1);
+  services_.push_back(jsk_interactive_marker::advertiseService<jsk_rviz_plugins::srv::RequestMarkerOperate>(
+    node_, "~/request_marker_operate", boost::bind(&TransformableInteractiveServer::requestMarkerOperateService, this, _1, _2)));
+
+  // cfg/InteractiveSetting.cfg (dynamic_reconfigure) is the parameters of
+  // the same names, which call configCallback() when set
+  {
+    InteractiveSettingConfig config;
+    n_->param("display_interactive_manipulator", config.display_interactive_manipulator, true);
+    n_->param("display_interactive_manipulator_only_selected", config.display_interactive_manipulator_only_selected, false);
+    n_->param("display_description_only_selected", config.display_description_only_selected, false);
+    config.interactive_manipulator_orientation = interactive_manipulator_orientation_;
+    n_->param("interaction_mode", config.interaction_mode, 7);
+    configCallback(config, 0);
+    config_srv_ = node_->add_on_set_parameters_callback(
+      [this](const std::vector<rclcpp::Parameter>& parameters) {
+        rcl_interfaces::msg::SetParametersResult result;
+        result.successful = true;
+        InteractiveSettingConfig config = config_;
+        bool changed = false;
+        for (const rclcpp::Parameter& parameter : parameters) {
+          const std::string& name = parameter.get_name();
+          bool is_bool = parameter.get_type() == rclcpp::ParameterType::PARAMETER_BOOL;
+          bool is_int = parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER;
+          if (name == "display_interactive_manipulator" && is_bool) {
+            config.display_interactive_manipulator = parameter.as_bool();
+          }
+          else if (name == "display_interactive_manipulator_only_selected" && is_bool) {
+            config.display_interactive_manipulator_only_selected = parameter.as_bool();
+          }
+          else if (name == "display_description_only_selected" && is_bool) {
+            config.display_description_only_selected = parameter.as_bool();
+          }
+          else if (name == "interactive_manipulator_orientation" && is_int &&
+                   parameter.as_int() >= 0 && parameter.as_int() <= 2) {
+            config.interactive_manipulator_orientation = parameter.as_int();
+          }
+          else if (name == "interaction_mode" && is_int &&
+                   parameter.as_int() >= 0 && parameter.as_int() <= 9) {
+            config.interaction_mode = parameter.as_int();
+          }
+          else if (name == "display_interactive_manipulator" ||
+                   name == "display_interactive_manipulator_only_selected" ||
+                   name == "display_description_only_selected" ||
+                   name == "interactive_manipulator_orientation" ||
+                   name == "interaction_mode") {
+            result.successful = false;
+            result.reason = "invalid value of " + name;
+            return result;
+          }
+          else {
+            continue;
+          }
+          changed = true;
+        }
+        if (changed) {
+          configCallback(config, 0);
+        }
+        return result;
+      });
+  }
+
+  tf_timer = jsk_interactive_marker::createTimer(node_, 0.05, boost::bind(&TransformableInteractiveServer::tfTimerCallback, this, _1));
+
+  // initialize yaml-menu-handler
+  std::string yaml_filename;
+  n_->param("yaml_filename", yaml_filename, std::string(""));
+  yaml_menu_handler_ptr_ = std::make_shared <YamlMenuHandler> (node_, yaml_filename);
+  yaml_menu_handler_ptr_->_menu_handler.insert(
+    "enable manipulator",
+    boost::bind(&TransformableInteractiveServer::enableInteractiveManipulatorDisplay, this, _1, /*enable=*/true));
+  yaml_menu_handler_ptr_->_menu_handler.insert(
+    "disable manipulator",
+    boost::bind(&TransformableInteractiveServer::enableInteractiveManipulatorDisplay, this, _1, /*enable=*/false));
+
+  bool use_parent_and_child;
+  n_->param("use_parent_and_child", use_parent_and_child, false);
+  if (use_parent_and_child)
+  {
+    ROS_WARN("~use_parent_and_child (ParentAndChildInteractiveMarkerServer) is ROS 1 only, initialize simple marker");
+  }
+  ROS_INFO("initialize simple marker");
+  server_ = new interactive_markers::InteractiveMarkerServer("simple_marker", node_);
+}
+#else
 TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::NodeHandle("~")){
   n_->param("interactive_manipulator_orientation", interactive_manipulator_orientation_ , 0);
   n_->param("torus_udiv", torus_udiv_, 20);
@@ -80,6 +232,7 @@ TransformableInteractiveServer::TransformableInteractiveServer():n_(new ros::Nod
     server_ = new interactive_markers::InteractiveMarkerServer("simple_marker");
   }
 }
+#endif
 
 TransformableInteractiveServer::~TransformableInteractiveServer()
 {
@@ -221,7 +374,11 @@ bool TransformableInteractiveServer::getPoseService(jsk_interactive_marker::GetT
     if (transformable_objects_map_.find(req.target_name) == transformable_objects_map_.end()) { return true; }
     tobject = transformable_objects_map_[req.target_name];
   }
+#if ROS_VERSION_MAJOR != 1
+  transformed_pose_stamped.header.stamp = node_->now();
+#else
   transformed_pose_stamped.header.stamp = ros::Time::now();
+#endif
   transformed_pose_stamped.header.frame_id = tobject->frame_id_;
   transformed_pose_stamped.pose = tobject->getPose(for_interactive_control);
   res.pose_stamped = transformed_pose_stamped;
@@ -508,7 +665,11 @@ void TransformableInteractiveServer::setControlRelativePose(geometry_msgs::Pose 
   tobject->setPose(pose);
   std_msgs::Header header;
   header.frame_id = tobject->getFrameId();
+#if ROS_VERSION_MAJOR != 1
+  header.stamp = node_->now();
+#else
   header.stamp = ros::Time::now();
+#endif
   server_->setPose(focus_object_marker_name_, tobject->pose_, header);
   yaml_menu_handler_ptr_->applyMenu(server_, focus_object_marker_name_);
   server_->applyChanges();
@@ -682,6 +843,19 @@ bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableOb
   try {
     geometry_msgs::PoseStamped transformed_pose_stamped;
     jsk_interactive_marker::PoseStampedWithName transformed_pose_stamped_with_name;
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Time stamp;
+    if (strict_tf_) {
+      stamp = pose_stamped.header.stamp;
+    }
+    else {
+      stamp = rclcpp::Time(0, 0, node_->get_clock()->get_clock_type());
+      pose_stamped.header.stamp = stamp;
+    }
+    if (!strict_tf_ || tf_buffer_->canTransform(tobject->getFrameId(),
+                                                pose_stamped.header.frame_id, stamp, rclcpp::Duration::from_seconds(1.0))) {
+      transformed_pose_stamped = tf_buffer_->transform(pose_stamped, tobject->getFrameId());
+#else
     ros::Time stamp;
     if (strict_tf_) {
       stamp = pose_stamped.header.stamp;
@@ -693,6 +867,7 @@ bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableOb
     if (!strict_tf_ || tf_listener_->waitForTransform(tobject->getFrameId(),
                                                       pose_stamped.header.frame_id, stamp, ros::Duration(1.0))) {
       tf_listener_->transformPose(tobject->getFrameId(), pose_stamped, transformed_pose_stamped);
+#endif
       tobject->setPose(transformed_pose_stamped.pose, for_interactive_control);
       transformed_pose_stamped.pose=tobject->getPose(true);
       pose_pub_.publish(transformed_pose_stamped);
@@ -721,5 +896,9 @@ bool TransformableInteractiveServer::setPoseWithTfTransformation(TransformableOb
 }
 
 void TransformableInteractiveServer::run(){
+#if ROS_VERSION_MAJOR != 1
+  rclcpp::spin(node_);
+#else
   ros::spin();
+#endif
 }

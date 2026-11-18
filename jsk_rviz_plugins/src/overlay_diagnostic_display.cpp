@@ -41,13 +41,27 @@
 #include <OGRE/OgreHardwarePixelBuffer.h>
 #include <OGRE/OgreTechnique.h>
 
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_rendering/render_system.hpp>
+#else
 #include <rviz/uniform_string_stream.h>
 #include <rviz/display_context.h>
 #include <rviz/view_manager.h>
 #include <rviz/render_panel.h>
+#endif
 
 namespace jsk_rviz_plugins
 {
+#if ROS_VERSION_MAJOR != 1
+  // ros::WallTime: elapsed wall time in seconds since the given time point
+  static double elapsedSec(const std::chrono::steady_clock::time_point& since)
+  {
+    return std::chrono::duration<double>(
+      std::chrono::steady_clock::now() - since).count();
+  }
+#endif
   const double overlay_diagnostic_animation_duration = 5.0;
   const double overlay_diagnostic_animation_transition_duration = 0.2;
   OverlayDiagnosticDisplay::OverlayDiagnosticDisplay()
@@ -55,7 +69,11 @@ namespace jsk_rviz_plugins
   {
     ros_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "/diagnostics_agg",
+#if ROS_VERSION_MAJOR != 1
+      rosidl_generator_traits::name<diagnostic_msgs::DiagnosticArray>(),
+#else
       ros::message_traits::datatype<diagnostic_msgs::DiagnosticArray>(),
+#endif
       "diagnostic_msgs::DiagnosticArray topic to subscribe to.",
       this, SLOT( updateRosTopic() ));
     diagnostics_namespace_property_ = new rviz::EditableEnumProperty(
@@ -95,6 +113,10 @@ namespace jsk_rviz_plugins
 
   OverlayDiagnosticDisplay::~OverlayDiagnosticDisplay()
   {
+#if ROS_VERSION_MAJOR != 1
+    // stop the subscription before its callback's properties go away
+    unsubscribe();
+#endif
     if (overlay_) {
       overlay_->hide();
     }
@@ -110,7 +132,11 @@ namespace jsk_rviz_plugins
   }
 
   void OverlayDiagnosticDisplay::processMessage(
+#if ROS_VERSION_MAJOR != 1
+    const diagnostic_msgs::DiagnosticArray::ConstSharedPtr& msg)
+#else
     const diagnostic_msgs::DiagnosticArray::ConstPtr& msg)
+#endif
   {
     //std::make_shared<diagnostic_msgs::DiagnosticStatus>
     // update namespaces_ if needed
@@ -154,7 +180,11 @@ namespace jsk_rviz_plugins
         latest_status_
           = boost::make_shared<diagnostic_msgs::DiagnosticStatus>(status);
 #endif
+#if ROS_VERSION_MAJOR != 1
+        latest_message_time_ = std::chrono::steady_clock::now();
+#else
         latest_message_time_ = ros::WallTime::now();
+#endif
         break;
       }
     }
@@ -171,7 +201,11 @@ namespace jsk_rviz_plugins
       ss << "OverlayDiagnosticDisplayObject" << count++;
       overlay_.reset(new OverlayObject(ss.str()));
       overlay_->show();
+#if ROS_VERSION_MAJOR != 1
+      animation_start_time_ = std::chrono::steady_clock::now();
+#else
       animation_start_time_ = ros::WallTime::now();
+#endif
     }
     t_ += wall_dt;
 
@@ -179,7 +213,11 @@ namespace jsk_rviz_plugins
     if (!is_animating_) {
       if (previous_state_ != getLatestState()) {
         is_animating_ = true;
+#if ROS_VERSION_MAJOR != 1
+        animation_start_time_ = std::chrono::steady_clock::now();
+#else
         animation_start_time_ = ros::WallTime::now();
+#endif
       }
     }
     else {
@@ -199,12 +237,20 @@ namespace jsk_rviz_plugins
 
   bool OverlayDiagnosticDisplay::isAnimating()
   {
+#if ROS_VERSION_MAJOR != 1
+    return (elapsedSec(animation_start_time_) < overlay_diagnostic_animation_transition_duration);
+#else
     return ((ros::WallTime::now() - animation_start_time_).toSec() < overlay_diagnostic_animation_transition_duration);
+#endif
   }
   
   double OverlayDiagnosticDisplay::animationRate()
   {
+#if ROS_VERSION_MAJOR != 1
+    return (elapsedSec(animation_start_time_) / overlay_diagnostic_animation_transition_duration);
+#else
     return ((ros::WallTime::now() - animation_start_time_).toSec() / overlay_diagnostic_animation_transition_duration);
+#endif
   }
   
   void OverlayDiagnosticDisplay::onEnable()
@@ -229,6 +275,10 @@ namespace jsk_rviz_plugins
   {
     
     ROS_DEBUG("onInitialize");
+#if ROS_VERSION_MAJOR != 1
+    rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
+    ros_topic_property_->initialize(context_->getRosNodeAbstraction());
+#endif
     updateType();
     updateDiagnosticsNamespace();
     updateSize();
@@ -241,24 +291,42 @@ namespace jsk_rviz_plugins
   
   void OverlayDiagnosticDisplay::unsubscribe()
   {
+#if ROS_VERSION_MAJOR != 1
+    sub_.reset();
+#else
     sub_.shutdown();
+#endif
   }
   
   void OverlayDiagnosticDisplay::subscribe()
   {
+#if ROS_VERSION_MAJOR != 1
+    std::string topic_name = ros_topic_property_->getTopicStd();
+    if (topic_name.length() > 0 && topic_name != "/") {
+      sub_ = context_->getRosNodeAbstraction().lock()->get_raw_node()->
+        create_subscription<diagnostic_msgs::DiagnosticArray>(
+          topic_name, 1,
+          std::bind(&OverlayDiagnosticDisplay::processMessage, this, std::placeholders::_1));
+    }
+#else
     ros::NodeHandle n;
     sub_ = n.subscribe(ros_topic_property_->getTopicStd(),
                        1,
                        &OverlayDiagnosticDisplay::processMessage,
                        this);
+#endif
   }
 
   bool OverlayDiagnosticDisplay::isStalled()
   {
     if (latest_status_) {
+#if ROS_VERSION_MAJOR != 1
+      if (elapsedSec(latest_message_time_) < stall_duration_) {
+#else
       ros::WallDuration message_duration
         = ros::WallTime::now() - latest_message_time_;
       if (message_duration.toSec() < stall_duration_) {
+#endif
         return false;
       }
       else {
@@ -708,5 +776,9 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayDiagnosticDisplay, rviz::Display)

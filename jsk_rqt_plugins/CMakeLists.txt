@@ -1,3 +1,89 @@
+# $ENV{ROS_VERSION} is set by ros_environment, which is missing on
+# pre-ros_environment distros (e.g. indigo) and on ROS 2 builds that do not
+# depend on it (e.g. the buildfarm's binary jobs). Guess it then: ament sets
+# AMENT_PREFIX_PATH (bloom's debian/rules passes it to cmake, setup.sh and
+# colcon set the environment variable), catkin never does.
+if("$ENV{ROS_VERSION}" STREQUAL "")
+  if(DEFINED AMENT_PREFIX_PATH OR DEFINED ENV{AMENT_PREFIX_PATH})
+    set(ENV{ROS_VERSION} 2)
+  else()
+    set(ENV{ROS_VERSION} 1)
+  endif()
+  message(WARNING "ROS_VERSION is not set, assuming ROS_VERSION=$ENV{ROS_VERSION}")
+endif()
+
+if("$ENV{ROS_VERSION}" EQUAL 2)
+  cmake_minimum_required(VERSION 3.8)
+  project(jsk_rqt_plugins)
+
+  find_package(ament_cmake REQUIRED)
+  find_package(ament_cmake_python REQUIRED)
+  find_package(jsk_ros1_ros2_compat REQUIRED)
+
+  ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR src/${PROJECT_NAME})
+
+  # The scripts keep `#!/usr/bin/env python` for ROS 1 (python2 on
+  # indigo..melodic); ROS 2 base images ship no bare `python`, so the
+  # installed ROS 2 copies get a python3 shebang.
+  jsk_ros1_ros2_compat_install_python(PROGRAMS
+    bin/rqt_3d_plot
+    bin/rqt_drc_mini_maxwell
+    bin/rqt_image_view2
+    bin/rqt_service_buttons
+    bin/rqt_status_light
+    bin/rqt_string_label
+    bin/rqt_tabbed_buttons
+    bin/rqt_yn_btn
+    sample_scripts/sample_3d_plot.py
+    sample_scripts/sample_drc_mini_maxwell.py
+    sample_scripts/sample_service_buttons.py
+    sample_scripts/sample_service_radio_buttons.py
+  )
+
+  # The plugins of hist.py (HistogramPlot) and plot_2d.py (Plot2D) need
+  # jsk_recognition_msgs, which is not released for ROS 2 yet, so their bin/
+  # entry points (rqt_histogram_plot, rqt_2d_plot) and the publishers of
+  # their samples are installed only when it is found (e.g. built from source
+  # in the workspace, as the ROS 2 CI does).
+  find_package(jsk_recognition_msgs QUIET)
+  if(jsk_recognition_msgs_FOUND)
+    jsk_ros1_ros2_compat_install_python(PROGRAMS
+      bin/rqt_2d_plot
+      bin/rqt_histogram_plot
+      sample_scripts/sample_2d_plot.py
+      sample_scripts/sample_hist_pub.py
+    )
+  else()
+    message(STATUS "rqt_histogram_plot and rqt_2d_plot skipped: jsk_recognition_msgs not found")
+  endif()
+
+  install(FILES plugin.xml
+    DESTINATION share/${PROJECT_NAME}
+  )
+  install(DIRECTORY resource
+    DESTINATION share/${PROJECT_NAME}
+  )
+  # the ROS 2 versions of the sample launch files
+  install(DIRECTORY sample
+    DESTINATION share/${PROJECT_NAME}
+    FILES_MATCHING PATTERN "*.launch.py"
+  )
+
+  # The ROS 2 tests are in test/ros2/, where ROS 1's
+  # catkin_add_nosetests(test) does not look.
+  if(BUILD_TESTING)
+    find_package(ament_cmake_pytest REQUIRED)
+    find_package(launch_testing_ament_cmake REQUIRED)
+    ament_add_pytest_test(test_util test/ros2/test_util.py)
+    add_launch_test(test/ros2/test_rqt_plugins.py TIMEOUT 180)
+    if(jsk_recognition_msgs_FOUND)
+      add_launch_test(test/ros2/test_rqt_plot_jsk_recognition_msgs.py TIMEOUT 180)
+    endif()
+  endif()
+
+  ament_package()
+
+else() # if("$ENV{ROS_VERSION}" EQUAL 2)
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_rqt_plugins)
 
@@ -54,3 +140,4 @@ if (CATKIN_ENABLE_TESTING)
     add_rostest(test/test_rqt_plugins.test)
   endif()
 endif()
+endif() # if("$ENV{ROS_VERSION}" EQUAL 2)

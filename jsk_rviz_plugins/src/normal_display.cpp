@@ -1,6 +1,10 @@
 // -*- mode: C++ -*-
 #include "normal_display.h"
 
+#if ROS_VERSION_MAJOR != 1
+using rviz_common::validateFloats;
+using rviz_default_plugins::findChannelIndex;
+#endif
 using namespace rviz;
 
 namespace jsk_rviz_plugins
@@ -140,7 +144,11 @@ namespace jsk_rviz_plugins
   }
 
 
+#if ROS_VERSION_MAJOR != 1
+  void NormalDisplay::processMessage( sensor_msgs::PointCloud2::ConstSharedPtr msg )
+#else
   void NormalDisplay::processMessage( const sensor_msgs::PointCloud2::ConstPtr& msg )
+#endif
   {
     //check x,y,z
     int32_t xi = findChannelIndex(msg, "x");
@@ -300,5 +308,9 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::NormalDisplay,rviz::Display )

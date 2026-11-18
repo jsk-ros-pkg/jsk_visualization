@@ -35,8 +35,14 @@
 
 #include "plotter_2d_display.h"
 #include <OGRE/OgreHardwarePixelBuffer.h>
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_rendering/render_system.hpp>
+#else
 #include <rviz/uniform_string_stream.h>
 #include <rviz/display_context.h>
+#endif
 #include <QPainter>
 
 namespace jsk_rviz_plugins
@@ -46,7 +52,11 @@ namespace jsk_rviz_plugins
   {
     update_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "",
+#if ROS_VERSION_MAJOR != 1
+      rosidl_generator_traits::name<std_msgs::Float32>(),
+#else
       ros::message_traits::datatype<std_msgs::Float32>(),
+#endif
       "std_msgs::Float32 topic to subscribe to.",
       this, SLOT(updateTopic()));
     show_value_property_ = new rviz::BoolProperty(
@@ -55,7 +65,11 @@ namespace jsk_rviz_plugins
       this, SLOT(updateShowValue()));
     buffer_length_property_ = new rviz::IntProperty(
       "Buffer length", 100,
+#if ROS_VERSION_MAJOR != 1
+      rosidl_generator_traits::name<std_msgs::Float32>(),
+#else
       ros::message_traits::datatype<std_msgs::Float32>(),
+#endif
       this, SLOT(updateBufferSize()));
     width_property_ = new rviz::IntProperty("width", 128,
                                             "width of the plotter window",
@@ -189,6 +203,10 @@ namespace jsk_rviz_plugins
 
   void Plotter2DDisplay::onInitialize()
   {
+#if ROS_VERSION_MAJOR != 1
+    rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
+    update_topic_property_->initialize(context_->getRosNodeAbstraction());
+#endif
     static int count = 0;
     rviz::UniformStringStream ss;
     ss << "Plotter2DDisplayObject" << count++;
@@ -320,7 +338,11 @@ namespace jsk_rviz_plugins
     }
   }
   
+#if ROS_VERSION_MAJOR != 1
+  void Plotter2DDisplay::processMessage(const std_msgs::Float32::ConstSharedPtr& msg)
+#else
   void Plotter2DDisplay::processMessage(const std_msgs::Float32::ConstPtr& msg)
+#endif
   {
     boost::mutex::scoped_lock lock(mutex_);
 
@@ -384,14 +406,25 @@ namespace jsk_rviz_plugins
     initializeBuffer();
     std::string topic_name = update_topic_property_->getTopicStd();
     if (topic_name.length() > 0 && topic_name != "/") {
+#if ROS_VERSION_MAJOR != 1
+      sub_ = context_->getRosNodeAbstraction().lock()->get_raw_node()->
+        create_subscription<std_msgs::Float32>(
+          topic_name, 1,
+          std::bind(&Plotter2DDisplay::processMessage, this, std::placeholders::_1));
+#else
       ros::NodeHandle n;
       sub_ = n.subscribe(topic_name, 1, &Plotter2DDisplay::processMessage, this);
+#endif
     }
   }
 
   void Plotter2DDisplay::unsubscribe()
   {
+#if ROS_VERSION_MAJOR != 1
+    sub_.reset();
+#else
     sub_.shutdown();
+#endif
   }
 
   void Plotter2DDisplay::onEnable()
@@ -405,6 +438,10 @@ namespace jsk_rviz_plugins
   void Plotter2DDisplay::onDisable()
   {
     unsubscribe();
+#if ROS_VERSION_MAJOR != 1
+    // overlay_ is created by onInitialize(); do not rely on its order to onDisable()
+    if (overlay_)
+#endif
     overlay_->hide();
   }
 
@@ -582,5 +619,9 @@ namespace jsk_rviz_plugins
   
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::Plotter2DDisplay, rviz::Display )

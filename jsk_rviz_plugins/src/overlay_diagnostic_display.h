@@ -36,7 +36,14 @@
 #define JSK_RVIZ_PLUGIN_OVERLAY_DIAGNOSTIC_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <chrono>
+#include <boost/thread/mutex.hpp>
+#include <rviz_common/display.hpp>
+#else
 #include <rviz/display.h>
+#endif
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreMaterial.h>
@@ -44,6 +51,18 @@
 #include <QPainter>
 #include <QPainterPath>
 
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/editable_enum_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(diagnostic_msgs, DiagnosticArray)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(diagnostic_msgs, DiagnosticStatus)
+#else
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/editable_enum_property.h>
 #include <rviz/properties/enum_property.h>
@@ -52,6 +71,7 @@
 #include <rviz/properties/color_property.h>
 
 #include <diagnostic_msgs/DiagnosticArray.h>
+#endif
 
 #include "overlay_utils.h"
 #endif
@@ -76,7 +96,11 @@ namespace jsk_rviz_plugins
   protected:
     virtual bool isStalled();
     virtual void processMessage(
+#if ROS_VERSION_MAJOR != 1
+      const diagnostic_msgs::DiagnosticArray::ConstSharedPtr& msg);
+#else
       const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
+#endif
     virtual void update(float wall_dt, float ros_dt);
     virtual void onEnable();
     virtual void onDisable();
@@ -122,8 +146,13 @@ namespace jsk_rviz_plugins
     boost::shared_ptr<diagnostic_msgs::DiagnosticStatus> latest_status_;
 #endif
     State previous_state_;
+#if ROS_VERSION_MAJOR != 1
+    std::chrono::steady_clock::time_point latest_message_time_;
+    std::chrono::steady_clock::time_point animation_start_time_;
+#else
     ros::WallTime latest_message_time_;
     ros::WallTime animation_start_time_;
+#endif
     int size_;
     std::string diagnostics_namespace_;
     int type_;
@@ -142,7 +171,11 @@ namespace jsk_rviz_plugins
     rviz::IntProperty* size_property_;
     rviz::FloatProperty* stall_duration_property_;
     
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Subscription<diagnostic_msgs::DiagnosticArray>::SharedPtr sub_;
+#else
     ros::Subscriber sub_;
+#endif
   protected Q_SLOTS:
     virtual void updateType();
     virtual void updateRosTopic();

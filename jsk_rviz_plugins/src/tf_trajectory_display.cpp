@@ -126,9 +126,15 @@ namespace jsk_rviz_plugins
       return;
     }
     fixed_frame_ = fixed_frame_id;
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Time now = context_->getFrameManager()->getTime();
+    std_msgs::msg::Header header;
+    header.stamp = rclcpp::Time(0, 0, now.get_clock_type());
+#else
     ros::Time now = context_->getFrameManager()->getTime();
     std_msgs::Header header;
     header.stamp = ros::Time(0.0);
+#endif
     header.frame_id = frame_;
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
@@ -149,8 +155,13 @@ namespace jsk_rviz_plugins
     // check old data, is it too slow??
     for (std::vector<geometry_msgs::PointStamped>::iterator it = trajectory_.begin();
          it != trajectory_.end();) {
+#if ROS_VERSION_MAJOR != 1
+      rclcpp::Duration duration = now - rclcpp::Time(it->header.stamp, now.get_clock_type());
+      if (duration.seconds() > duration_) {
+#else
       ros::Duration duration = now - it->header.stamp;
       if (duration.toSec() > duration_) {
+#endif
         it = trajectory_.erase(it);
       }
       else {
@@ -173,5 +184,9 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TFTrajectoryDisplay, rviz::Display )

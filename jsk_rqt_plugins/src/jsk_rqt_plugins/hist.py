@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import array
 try:
     from collections.abc import Sequence  # Python >= 3.3
 except ImportError:
@@ -25,15 +26,21 @@ from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtCore import QTimer
 from python_qt_binding.QtCore import Slot
 from python_qt_binding.QtGui import QIcon
-import rospkg
-import rospy
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
+if ROS_VERSION == 2:
+    from ament_index_python.packages import get_package_share_directory
+else:
+    import rospkg
+    import rospy
 from rqt_gui_py.plugin import Plugin
-from rqt_plot.rosplot import ROSData as _ROSData
 from rqt_plot.rosplot import RosPlotException
 from rqt_py_common.topic_completer import TopicCompleter
 from sensor_msgs.msg import Image
 
 from jsk_recognition_msgs.msg import HistogramWithRange
+
+from .util import next_data
+from .util import ROSData
 
 # qt5 in kinetic
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
@@ -76,32 +83,17 @@ else:
             as NavigationToolbar
 
 
-class ROSData(_ROSData):
-    def _get_data(self, msg):
-        val = msg
-        try:
-            if not self.field_evals:
-                return val
-            for f in self.field_evals:
-                val = f(val)
-            return val
-        except IndexError:
-            self.error = RosPlotException(
-                "{0} index error for: {1}".format(
-                    self.name, str(val).replace('\n', ', ')))
-        except TypeError:
-            self.error = RosPlotException(
-                "{0} value was not numeric: {1}".format(
-                    self.name, val))
-
-
 class HistogramPlot(Plugin):
     def __init__(self, context):
         super(HistogramPlot, self).__init__(context)
         self.setObjectName('HistogramPlot')
         self._args = self._parse_args(context.argv())
-        self._widget = HistogramPlotWidget(self._args.topics)
+        self._widget = HistogramPlotWidget(
+            self._args.topics, getattr(context, 'node', None))
         context.add_widget(self._widget)
+
+    def shutdown_plugin(self):
+        self._widget.shutdown()
 
     def _parse_args(self, argv):
         parser = argparse.ArgumentParser(
@@ -120,11 +112,16 @@ class HistogramPlot(Plugin):
 class HistogramPlotWidget(QWidget):
     _redraw_interval = 40
 
-    def __init__(self, topics):
+    def __init__(self, topics, node=None):
         super(HistogramPlotWidget, self).__init__()
+        self._node = node
         self.setObjectName('HistogramPlotWidget')
-        rp = rospkg.RosPack()
-        ui_file = os.path.join(rp.get_path('jsk_rqt_plugins'),
+        if ROS_VERSION == 2:
+            package_path = get_package_share_directory('jsk_rqt_plugins')
+        else:
+            rp = rospkg.RosPack()
+            package_path = rp.get_path('jsk_rqt_plugins')
+        ui_file = os.path.join(package_path,
                                'resource', 'plot_histogram.ui')
         loadUi(ui_file, self)
         self.cv_bridge = CvBridge()
@@ -134,14 +131,19 @@ class HistogramPlotWidget(QWidget):
         self.data_plot = MatHistogramPlot(self)
         self.data_plot_layout.addWidget(self.data_plot)
         self._topic_completer = TopicCompleter(self.topic_edit)
-        self._topic_completer.update_topics()
+        # the topics are listed through the node on ROS 2
+        if ROS_VERSION == 2:
+            self._topic_completer.update_topics(self._node)
+        else:
+            self._topic_completer.update_topics()
         self.topic_edit.setCompleter(self._topic_completer)
         self.data_plot.dropEvent = self.dropEvent
         self.data_plot.dragEnterEvent = self.dragEnterEvent
-        self._start_time = rospy.get_time()
+        self._start_time = ros_compat.now_sec(self._node)
         self._rosdata = None
         if len(topics) != 0:
             self.subscribe_topic(topics)
+        self._is_shutdown = False
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.update_plot)
         self._update_plot_timer.start(self._redraw_interval)
@@ -166,17 +168,41 @@ class HistogramPlotWidget(QWidget):
 
     def subscribe_topic(self, topic_name):
         self.topic_with_field_name = topic_name
-        self.pub_image = rospy.Publisher(
-            topic_name + "/histogram_image", Image, queue_size=1)
+        self.pub_image = ros_compat.create_publisher(
+            self._node, topic_name + "/histogram_image", Image, queue_size=1)
         if not self._rosdata:
-            self._rosdata = ROSData(topic_name, self._start_time)
+            self._rosdata = self._ros_data(topic_name)
         else:
             if self._rosdata != topic_name:
                 self._rosdata.close()
                 self.data_plot.clear()
-                self._rosdata = ROSData(topic_name, self._start_time)
+                self._rosdata = self._ros_data(topic_name)
             else:
-                rospy.logwarn("%s is already subscribed", topic_name)
+                ros_compat.logwarn(
+                    self._node, "%s is already subscribed" % topic_name)
+
+    def _ros_data(self, topic_name):
+        # rqt_plot's ROSData subscribes through the node on ROS 2
+        if ROS_VERSION == 2:
+            return ROSData(self._node, topic_name, self._start_time)
+        return ROSData(topic_name, self._start_time)
+
+    def _resubscribe_unresolved(self):
+        """
+        ROS 2's rqt_plot ROSData needs the type of the topic when it
+        subscribes, so a topic whose publisher is not discovered yet (e.g.
+        given on the command line) is subscribed again until it resolves;
+        ROS 1 subscribed lazily.
+        """
+        if ROS_VERSION == 2 and not hasattr(self._rosdata, 'sub'):
+            self._rosdata = self._ros_data(self._rosdata.name)
+            return hasattr(self._rosdata, 'sub')
+        return True
+
+    def shutdown(self):
+        # The Qt timer outlives the rclpy context otherwise (ROS 2)
+        self._update_plot_timer.stop()
+        self._is_shutdown = True
 
     def enable_timer(self, enabled=True):
         if enabled:
@@ -195,9 +221,16 @@ class HistogramPlotWidget(QWidget):
     def update_plot(self):
         if not self._rosdata:
             return
-        data_x, data_y = self._rosdata.next()
+        if not self._resubscribe_unresolved():
+            return
+        data_x, data_y = next_data(self._rosdata)
 
         if len(data_y) == 0:
+            return
+        canvas = self.data_plot._canvas
+        if canvas.width() <= 0 or canvas.height() <= 0:
+            # Qt has not sized the canvas yet, and savefig() of a figure of
+            # zero size raises (PIL: "tile cannot extend outside image")
             return
         axes = self.data_plot._canvas.axes
         axes.cla()
@@ -206,18 +239,21 @@ class HistogramPlotWidget(QWidget):
             pos = [y.min_value for y in data_y[-1].bins]
             widths = [y.max_value - y.min_value for y in data_y[-1].bins]
             axes.set_xlim(xmin=pos[0], xmax=pos[-1] + widths[-1])
-        elif isinstance(data_y[-1], Sequence):
+        # rclpy gives the arrays of numbers as numpy arrays or array.array
+        elif isinstance(data_y[-1], (Sequence, np.ndarray, array.array)):
             xs = data_y[-1]
             pos = np.arange(len(xs))
             widths = [1] * len(xs)
             axes.set_xlim(xmin=0, xmax=len(xs))
         else:
-            rospy.logerr(
+            ros_compat.logerr(
+                self._node,
                 "Topic/Field name '%s' has unsupported '%s' type."
                 "List of float values and "
                 "jsk_recognition_msgs/HistogramWithRange are supported."
                 % (self.topic_with_field_name,
-                   self._rosdata.sub.data_class))
+                   type(data_y[-1]) if ROS_VERSION == 2
+                   else self._rosdata.sub.data_class))
             return
         # axes.xticks(range(5))
         for p, x, w in zip(pos, xs, widths):
@@ -233,7 +269,16 @@ class HistogramPlotWidget(QWidget):
         else:
             iscolor = cv2.IMREAD_COLOR
         img = cv2.imdecode(img_array, iscolor)
-        self.pub_image.publish(self.cv_bridge.cv2_to_imgmsg(img, "bgr8"))
+        # rqt's SIGINT handler may run while the plot is drawn above, and
+        # shut the plugin down and destroy the node (and pub_image) before
+        # update_plot() goes on (InvalidHandle on ROS 2)
+        if self._is_shutdown:
+            return
+        try:
+            self.pub_image.publish(self.cv_bridge.cv2_to_imgmsg(img, "bgr8"))
+        except Exception:
+            if not self._is_shutdown:
+                raise
 
 
 class MatHistogramPlot(QWidget):

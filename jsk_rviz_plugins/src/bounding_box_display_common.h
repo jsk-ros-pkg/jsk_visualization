@@ -37,6 +37,40 @@
 
 #ifndef Q_MOC_RUN
 #include "bounding_box_display_common.h"
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_recognition_msgs/msg/bounding_box_array.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, BoundingBox)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, BoundingBoxArray)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, Vector3)
+#include "color_utils_compat.h"
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/status_property.hpp>
+#include <rviz_rendering/objects/shape.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <cfloat>
+// ROS_WARN_THROTTLE() of ROS 1, on the logger of rviz_compat.h
+#ifndef ROS_WARN_THROTTLE
+namespace jsk_rviz_plugins
+{
+  inline rclcpp::Clock& throttleClock()
+  {
+    static rclcpp::Clock clock(RCL_STEADY_TIME);
+    return clock;
+  }
+}
+#define ROS_WARN_THROTTLE(period, ...) \
+  RCLCPP_WARN_THROTTLE(rclcpp::get_logger("jsk_rviz_plugins"), \
+                       jsk_rviz_plugins::throttleClock(), (period) * 1000, __VA_ARGS__)
+#endif
+#else
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <jsk_topic_tools/color_utils.h>
 #include <rviz/properties/color_property.h>
@@ -47,6 +81,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/arrow.h>
+#endif
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #endif
@@ -54,13 +89,27 @@
 namespace jsk_rviz_plugins
 {
 
+#if ROS_VERSION_MAJOR != 1
+  // rviz_rendering::BillboardLine has finishLine() for newLine() of rviz
+  class BoundingBoxEdgeLine: public rviz_rendering::BillboardLine
+  {
+  public:
+    using rviz_rendering::BillboardLine::BillboardLine;
+    void newLine() { finishLine(); }
+  };
+#endif
+
   template <class MessageType>
   class BoundingBoxDisplayCommon: public rviz::MessageFilterDisplay<MessageType>
   {
 public:
     BoundingBoxDisplayCommon() {};
     ~BoundingBoxDisplayCommon() {};
-#if ROS_VERSION_MINIMUM(1,12,0)
+#if ROS_VERSION_MAJOR != 1
+    typedef std::shared_ptr<rviz::Shape> ShapePtr;
+    typedef std::shared_ptr<BoundingBoxEdgeLine> BillboardLinePtr;
+    typedef std::shared_ptr<rviz::Arrow> ArrowPtr;
+#elif ROS_VERSION_MINIMUM(1,12,0)
     typedef std::shared_ptr<rviz::Shape> ShapePtr;
     typedef std::shared_ptr<rviz::BillboardLine> BillboardLinePtr;
     typedef std::shared_ptr<rviz::Arrow> ArrowPtr;
@@ -169,8 +218,13 @@ protected:
     {
       if (num > edges_.size()) {
         for (size_t i = edges_.size(); i < num; i++) {
+#if ROS_VERSION_MAJOR != 1
+          BillboardLinePtr line(new BoundingBoxEdgeLine(
+                                  this->context_->getSceneManager(), this->scene_node_));
+#else
           BillboardLinePtr line(new rviz::BillboardLine(
                                   this->context_->getSceneManager(), this->scene_node_));
+#endif
           edges_.push_back(line);
         }
       }
@@ -207,8 +261,13 @@ protected:
       }
     }
 
+#if ROS_VERSION_MAJOR != 1
+    void showBoxes(
+      jsk_recognition_msgs::BoundingBoxArray::ConstSharedPtr msg)
+#else
     void showBoxes(
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+#endif
     {
       edges_.clear();
       float min_value = DBL_MAX;
@@ -274,8 +333,13 @@ protected:
       }
     }
 
+#if ROS_VERSION_MAJOR != 1
+    void showEdges(
+      jsk_recognition_msgs::BoundingBoxArray::ConstSharedPtr msg)
+#else
     void showEdges(
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+#endif
     {
       shapes_.clear();
       float min_value = DBL_MAX;
@@ -376,8 +440,13 @@ protected:
       }
     }
 
+#if ROS_VERSION_MAJOR != 1
+    void showCoords(
+      jsk_recognition_msgs::BoundingBoxArray::ConstSharedPtr msg)
+#else
     void showCoords(
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msg)
+#endif
     {
       std::vector<jsk_recognition_msgs::BoundingBox> boxes;
       for (size_t i = 0; i < msg->boxes.size(); i++) {

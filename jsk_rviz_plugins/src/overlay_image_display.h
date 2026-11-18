@@ -36,13 +36,30 @@
 #define JSK_RVIZ_PLUGIN_OVERLAY_IMAGE_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <boost/thread/mutex.hpp>
+#include <rviz_common/display.hpp>
+#else
 #include <rviz/display.h>
+#endif
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreMaterial.h>
 
 #include <QPainter>
 
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/editable_enum_property.hpp>
+
+#include <image_transport/image_transport.hpp>
+#include <sensor_msgs/msg/image.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(sensor_msgs, Image)
+#else
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
@@ -51,6 +68,7 @@
 
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
+#endif
 
 #include "overlay_utils.h"
 #include "image_transport_hints_property.h"
@@ -86,13 +104,19 @@ namespace jsk_rviz_plugins
     rviz::BoolProperty* overwrite_alpha_property_;
     int width_, height_, left_, top_;
     double alpha_;
-#if ROS_VERSION_MINIMUM(1,12,0)
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Node::SharedPtr node_;
+#elif ROS_VERSION_MINIMUM(1,12,0)
     std::shared_ptr<image_transport::ImageTransport> it_;
 #else
     boost::shared_ptr<image_transport::ImageTransport> it_;
 #endif
     image_transport::Subscriber sub_;
+#if ROS_VERSION_MAJOR != 1
+    sensor_msgs::Image::ConstSharedPtr msg_;
+#else
     sensor_msgs::Image::ConstPtr msg_;
+#endif
     bool is_msg_available_;
     bool require_update_;
     bool keep_aspect_ratio_;
@@ -106,7 +130,11 @@ namespace jsk_rviz_plugins
     virtual void subscribe();
     virtual void unsubscribe();
     virtual void setImageSize();
+#if ROS_VERSION_MAJOR != 1
+    virtual void processMessage(const sensor_msgs::Image::ConstSharedPtr& msg);
+#else
     virtual void processMessage(const sensor_msgs::Image::ConstPtr& msg);
+#endif
   protected Q_SLOTS:
     void updateTopic();
     void updateWidth();

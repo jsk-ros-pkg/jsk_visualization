@@ -39,7 +39,12 @@
 
 #ifndef Q_MOC_RUN
 #include "pictogram_display.h"
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_rviz_plugins/msg/pictogram_array.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_rviz_plugins, PictogramArray)
+#else
 #include <jsk_rviz_plugins/PictogramArray.h>
+#endif
 #endif
 namespace jsk_rviz_plugins
 {
@@ -61,7 +66,11 @@ namespace jsk_rviz_plugins
     virtual void onInitialize();
     virtual void reset();
     virtual void onEnable();
+#if ROS_VERSION_MAJOR != 1
+    void processMessage(jsk_rviz_plugins::PictogramArray::ConstSharedPtr msg);
+#else
     void processMessage(const jsk_rviz_plugins::PictogramArray::ConstPtr& msg);
+#endif
     void update(float wall_dt, float ros_dt);
     void allocatePictograms(size_t num);
     

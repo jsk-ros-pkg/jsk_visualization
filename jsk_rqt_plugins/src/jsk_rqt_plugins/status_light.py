@@ -22,13 +22,14 @@ from python_qt_binding.QtGui import QPen
 import yaml
 
 from resource_retriever import get_filename
-import rospy
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
+if ROS_VERSION == 1:
+    import rospy
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
-from std_msgs.msg import Time
 from std_msgs.msg import UInt8
 
-from .image_view2_wrapper import ComboBoxDialog
+from .dialogs import ComboBoxDialog
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QAction
@@ -60,7 +61,7 @@ class StatusLight(Plugin):
     def __init__(self, context):
         super(StatusLight, self).__init__(context)
         self.setObjectName("StatusLight")
-        self._widget = StatusLightWidget()
+        self._widget = StatusLightWidget(getattr(context, 'node', None))
         context.add_widget(self._widget)
 
     def save_settings(self, plugin_settings, instance_settings):
@@ -72,6 +73,9 @@ class StatusLight(Plugin):
     def trigger_configuration(self):
         self._widget.trigger_configuration()
 
+    def shutdown_plugin(self):
+        self._widget.shutdown()
+
 
 class StatusLightWidget(QWidget):
     _UNKNOWN_COLOR = QColor("#dddddd")
@@ -79,8 +83,9 @@ class StatusLightWidget(QWidget):
     _WARN_COLOR = QColor("#FFCA00")
     _ERROR_COLOR = QColor("#F44336")
 
-    def __init__(self):
+    def __init__(self, node=None):
         super(StatusLightWidget, self).__init__()
+        self._node = node
         self.lock = Lock()
         self.status_sub = None
         self.status = 0
@@ -93,6 +98,12 @@ class StatusLightWidget(QWidget):
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
         self._update_plot_timer.start(int(1000 / 15))
+
+    def shutdown(self):
+        # The Qt timers outlive the rclpy context otherwise, and querying
+        # the graph from a destroyed context raises RCLError (ROS 2).
+        self._update_topic_timer.stop()
+        self._update_plot_timer.stop()
 
     def redraw(self):
         self.update()
@@ -125,8 +136,15 @@ class StatusLightWidget(QWidget):
 
     def updateTopics(self):
         need_to_update = False
-        for (topic, topic_type) in rospy.get_published_topics():
-            if topic_type == "std_msgs/UInt8":
+        if ROS_VERSION == 2:
+            published_topics = [
+                (topic, topic_type) for topic, topic_types
+                in self._node.get_topic_names_and_types()
+                for topic_type in topic_types]
+        else:
+            published_topics = rospy.get_published_topics()
+        for (topic, topic_type) in published_topics:
+            if topic_type in ("std_msgs/UInt8", "std_msgs/msg/UInt8"):
                 if not topic in self._status_topics:
                     self._status_topics.append(topic)
                     need_to_update = True
@@ -144,8 +162,11 @@ class StatusLightWidget(QWidget):
 
     def setupSubscriber(self, topic):
         if self.status_sub:
-            self.status_sub.unregister()
-        self.status_sub = rospy.Subscriber(topic, UInt8,
+            if ROS_VERSION == 2:
+                self._node.destroy_subscription(self.status_sub)
+            else:
+                self.status_sub.unregister()
+        self.status_sub = ros_compat.create_subscription(self._node, topic, UInt8,
                                            self.statusCallback)
         self._active_topic = topic
 

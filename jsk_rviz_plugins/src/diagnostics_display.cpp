@@ -34,8 +34,10 @@
  *********************************************************************/
 
 #include "diagnostics_display.h"
+#if ROS_VERSION_MAJOR == 1
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
+#endif
 
 namespace jsk_rviz_plugins
 {
@@ -46,7 +48,11 @@ namespace jsk_rviz_plugins
     ros_topic_property_
       = new rviz::RosTopicProperty(
         "Topic", "/diagnostics_agg",
+#if ROS_VERSION_MAJOR != 1
+        rosidl_generator_traits::name<diagnostic_msgs::DiagnosticArray>(),
+#else
         ros::message_traits::datatype<diagnostic_msgs::DiagnosticArray>(),
+#endif
         "diagnostic_msgs::DiagnosticArray topic to subscribe to.",
         this, SLOT( updateRosTopic() ));
     frame_id_property_ = new rviz::TfFrameProperty(
@@ -108,7 +114,11 @@ namespace jsk_rviz_plugins
     Ogre::Vector3 position;
     std::string frame_id = frame_id_property_->getFrame().toStdString();
     if( !context_->getFrameManager()->getTransform( frame_id,
+#if ROS_VERSION_MAJOR != 1
+                                                    rclcpp::Time(0, 0, RCL_ROS_TIME),
+#else
                                                     ros::Time(0.0),
+#endif
                                                     position, orientation ))
     {
       ROS_WARN( "Error transforming from frame '%s' to frame '%s'",
@@ -148,6 +158,9 @@ namespace jsk_rviz_plugins
   void DiagnosticsDisplay::onInitialize()
   {
     static int counter = 0;
+#if ROS_VERSION_MAJOR != 1
+    ros_topic_property_->initialize(context_->getRosNodeAbstraction());
+#endif
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
     orbit_node_ = scene_node_->createChildSceneNode(); // ??
     line_ = new rviz::BillboardLine(context_->getSceneManager(), scene_node_);
@@ -166,8 +179,13 @@ namespace jsk_rviz_plugins
     updateFontSize();
   }
   
+#if ROS_VERSION_MAJOR != 1
+  void DiagnosticsDisplay::processMessage
+  (diagnostic_msgs::DiagnosticArray::ConstSharedPtr msg)
+#else
   void DiagnosticsDisplay::processMessage
   (const diagnostic_msgs::DiagnosticArray::ConstPtr& msg)
+#endif
   {
     if (!isEnabled()) {
       return;
@@ -294,16 +312,30 @@ namespace jsk_rviz_plugins
   
   void DiagnosticsDisplay::unsubscribe()
   {
+#if ROS_VERSION_MAJOR != 1
+    sub_.reset();
+#else
     sub_.shutdown();
+#endif
   }
   
   void DiagnosticsDisplay::subscribe()
   {
+#if ROS_VERSION_MAJOR != 1
+    std::string topic_name = ros_topic_property_->getTopicStd();
+    if (topic_name.length() > 0 && topic_name != "/") {
+      auto raw_node = context_->getRosNodeAbstraction().lock()->get_raw_node();
+      sub_ = raw_node->create_subscription<diagnostic_msgs::DiagnosticArray>(
+        topic_name, 1,
+        std::bind(&DiagnosticsDisplay::processMessage, this, std::placeholders::_1));
+    }
+#else
     ros::NodeHandle n;
     sub_ = n.subscribe(ros_topic_property_->getTopicStd(),
                        1,
                        &DiagnosticsDisplay::processMessage,
                        this);
+#endif
   }
   
   void DiagnosticsDisplay::updateRosTopic()
@@ -355,5 +387,9 @@ namespace jsk_rviz_plugins
   
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::DiagnosticsDisplay, rviz::Display )

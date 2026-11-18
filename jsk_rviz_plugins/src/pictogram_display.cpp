@@ -35,7 +35,11 @@
 #include "pictogram_display.h"
 #include <QPainter>
 #include <QFontDatabase>
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/properties/parse_color.hpp>
+#else
 #include <ros/package.h>
+#endif
 
 ////////////////////////////////////////////////////////
 // read Entypo fonts
@@ -402,7 +406,11 @@ namespace jsk_rviz_plugins
     }
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void PictogramDisplay::processMessage(jsk_rviz_plugins::Pictogram::ConstSharedPtr msg)
+#else
   void PictogramDisplay::processMessage(const jsk_rviz_plugins::Pictogram::ConstPtr& msg)
+#endif
   {
     boost::mutex::scoped_lock lock(mutex_);
 
@@ -442,5 +450,9 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS (jsk_rviz_plugins::PictogramDisplay, rviz::Display);

@@ -36,9 +36,21 @@
 #define BOOST_PARAMETER_MAX_ARITY 7
 
 #include "polygon_array_display.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/properties/parse_color.hpp>
+#include <rviz_common/properties/status_property.hpp>
+#include <rviz_common/validate_floats.hpp>
+namespace rviz
+{
+using rviz_common::validateFloats;
+}
+#else
 #include "rviz/properties/parse_color.h"
 #include <rviz/validate_floats.h>
-#include <jsk_topic_tools/color_utils.h>
+#endif
+#include "color_utils_compat.h"  // <jsk_topic_tools/color_utils.h> on ROS 1
 #include <jsk_recognition_utils/geo/polygon.h>
 
 namespace jsk_rviz_plugins
@@ -156,8 +168,13 @@ namespace jsk_rviz_plugins
     }
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void PolygonArrayDisplay::updateSceneNodes(
+    jsk_recognition_msgs::PolygonArray::ConstSharedPtr msg)
+#else
   void PolygonArrayDisplay::updateSceneNodes(
     const jsk_recognition_msgs::PolygonArray::ConstPtr& msg)
+#endif
   {
     int scale_factor = 2;
     if (only_border_) {
@@ -412,8 +429,13 @@ namespace jsk_rviz_plugins
     arrow->setColor(getColor(i));
   }
   
+#if ROS_VERSION_MAJOR != 1
+  void PolygonArrayDisplay::processMessage(
+    jsk_recognition_msgs::PolygonArray::ConstSharedPtr msg)
+#else
   void PolygonArrayDisplay::processMessage(
     const jsk_recognition_msgs::PolygonArray::ConstPtr& msg)
+#endif
   {
     if (!validateFloats(*msg)) {
       setStatus(rviz::StatusProperty::Error,
@@ -532,5 +554,9 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::PolygonArrayDisplay, rviz::Display)

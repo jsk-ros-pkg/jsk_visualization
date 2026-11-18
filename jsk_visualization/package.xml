@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="3">
   <name>jsk_visualization</name>
   <version>2.1.10</version>
   <description>
@@ -10,20 +10,29 @@
   <author email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</author>
   <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
   <author email="youhei@jsk.imi.i.u-tokyo.ac.jp">Youhei Kakiuchi</author>
+  <author email="obinata@jsk.imi.i.u-tokyo.ac.jp">Yoshiki Obinata</author>
 
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/jsk_visualization</url>
   <url type="repository">https://github.com/jsk-ros-pkg/jsk_visualization</url>
   <url type="bugtracker">https://github.com/jsk-ros-pkg/jsk_visualization/issues</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ros_environment</buildtool_depend>
 
-  <run_depend>jsk_rqt_plugins</run_depend>
-  <run_depend>jsk_rviz_plugins</run_depend>
-  <run_depend>jsk_interactive</run_depend>
-  <run_depend>jsk_interactive_marker</run_depend>
-  <run_depend>jsk_interactive_test</run_depend>
+  <!-- build on ROS 1 and ROS 2 -->
+  <exec_depend>jsk_rqt_plugins</exec_depend>
+  <exec_depend>jsk_interactive_marker</exec_depend>
+  <exec_depend>jsk_rviz_plugins</exec_depend>
+
+  <!-- not ported to ROS 2 -->
+  <exec_depend condition="$ROS_VERSION == 1">jsk_interactive</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">jsk_interactive_test</exec_depend>
+
   <export>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
     <metapackage/>
   </export>
 </package>

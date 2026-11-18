@@ -37,6 +37,26 @@
 #define JSK_RVIZ_PLUGIN_DIAGNOSTICS_DISPLAY_H_
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <set>
+#include <rviz_common/display.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/string_property.hpp>
+#include <rviz_common/properties/editable_enum_property.hpp>
+#include <rviz_common/properties/tf_frame_property.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/movable_text.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(diagnostic_msgs, DiagnosticArray)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(diagnostic_msgs, DiagnosticStatus)
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
+#else
 #include <rviz/display.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/string_property.h>
@@ -51,6 +71,7 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <rviz/ogre_helpers/movable_text.h>
+#endif
 #endif
 
 namespace jsk_rviz_plugins
@@ -69,8 +90,13 @@ namespace jsk_rviz_plugins
     virtual void unsubscribe();
     virtual void updateLine();
     virtual void update(float wall_dt, float ros_dt);
+#if ROS_VERSION_MAJOR != 1
+    virtual void processMessage
+    (diagnostic_msgs::DiagnosticArray::ConstSharedPtr msg);
+#else
     virtual void processMessage
     (const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
+#endif
     
     rviz::RosTopicProperty* ros_topic_property_;
     rviz::EditableEnumProperty* diagnostics_namespace_property_;
@@ -79,7 +105,11 @@ namespace jsk_rviz_plugins
     rviz::FloatProperty* line_width_property_;
     rviz::FloatProperty* font_size_property_;
     rviz::EnumProperty* axis_property_;
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Subscription<diagnostic_msgs::DiagnosticArray>::SharedPtr sub_;
+#else
     ros::Subscriber sub_;
+#endif
     
     double radius_;
     double line_width_;

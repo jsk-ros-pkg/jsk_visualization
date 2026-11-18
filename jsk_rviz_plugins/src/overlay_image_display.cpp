@@ -41,9 +41,19 @@
 #include <OGRE/OgreHardwarePixelBuffer.h>
 #include <OGRE/OgreTechnique.h>
 
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_rendering/render_system.hpp>
+#include <cv_bridge/cv_bridge.hpp>
+#include <image_transport/version.h>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+#else
 #include <rviz/uniform_string_stream.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
+#endif
 
 namespace jsk_rviz_plugins
 {
@@ -55,7 +65,11 @@ namespace jsk_rviz_plugins
     // setup properties
     update_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "",
+#if ROS_VERSION_MAJOR != 1
+      rosidl_generator_traits::name<sensor_msgs::Image>(),
+#else
       ros::message_traits::datatype<sensor_msgs::Image>(),
+#endif
       "sensor_msgs::Image topic to subscribe to.",
       this, SLOT( updateTopic() ));
     transport_hint_property_ = new ImageTransportHintsProperty("transport hint",
@@ -87,6 +101,10 @@ namespace jsk_rviz_plugins
 
   OverlayImageDisplay::~OverlayImageDisplay()
   {
+#if ROS_VERSION_MAJOR != 1
+    // stop the subscription before its callback's properties go away
+    onDisable();
+#endif
     delete update_topic_property_;
     delete transport_hint_property_;
     delete keep_aspect_ratio_property_;
@@ -100,11 +118,17 @@ namespace jsk_rviz_plugins
 
   void OverlayImageDisplay::onInitialize()
   {
+#if ROS_VERSION_MAJOR != 1
+    rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
+    node_ = context_->getRosNodeAbstraction().lock()->get_raw_node();
+    update_topic_property_->initialize(context_->getRosNodeAbstraction());
+#else
     ros::NodeHandle nh;
 #if ROS_VERSION_MINIMUM(1,12,0)
     it_ = std::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
 #else
     it_ = boost::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
+#endif
 #endif
 
     updateWidth();
@@ -144,16 +168,39 @@ namespace jsk_rviz_plugins
       std::string topic_name = update_topic_property_->getTopicStd();
 
       if (topic_name.length() > 0 && topic_name != "/") {
+#if ROS_VERSION_MAJOR != 1
+#if IMAGE_TRANSPORT_VERSION_GTE(7, 0, 0)
+        // image_transport 7 takes rclcpp node interfaces instead of a node pointer,
+        // and its custom_qos is a required rclcpp::QoS. The interfaces are built
+        // from a node reference, so the node is dereferenced here.
+        // QoS(10) reproduces the rmw_qos_profile_default of the older signature.
+        sub_ = image_transport::create_subscription(
+          *node_, topic_name,
+          std::bind(&OverlayImageDisplay::processMessage, this, std::placeholders::_1),
+          transport_hint_property_->getTransport(), rclcpp::QoS(10));
+#else
+        sub_ = image_transport::create_subscription(
+          node_.get(), topic_name,
+          std::bind(&OverlayImageDisplay::processMessage, this, std::placeholders::_1),
+          transport_hint_property_->getTransport());
+#endif
+#else
         const image_transport::TransportHints transport_hint =
           transport_hint_property_->getTransportHints();
         sub_ = it_->subscribe(topic_name, 1, &OverlayImageDisplay::processMessage, this,
                               transport_hint);
+#endif
       }
     }
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void OverlayImageDisplay::processMessage(
+    const sensor_msgs::Image::ConstSharedPtr& msg)
+#else
   void OverlayImageDisplay::processMessage(
     const sensor_msgs::Image::ConstPtr& msg)
+#endif
   {
     msg_ = msg;
     is_msg_available_ = true;
@@ -340,5 +387,9 @@ namespace jsk_rviz_plugins
 
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayImageDisplay, rviz::Display )

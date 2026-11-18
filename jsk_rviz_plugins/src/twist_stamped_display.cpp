@@ -87,8 +87,13 @@ namespace jsk_rviz_plugins
     MFDClass::reset();
   }
   
+#if ROS_VERSION_MAJOR != 1
+  void TwistStampedDisplay::processMessage(
+    geometry_msgs::TwistStamped::ConstSharedPtr msg)
+#else
   void TwistStampedDisplay::processMessage(
     const geometry_msgs::TwistStamped::ConstPtr& msg)
+#endif
   {
     // move scene_node_ to the frame pose
     Ogre::Vector3 position;
@@ -207,5 +212,9 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::TwistStampedDisplay, rviz::Display )

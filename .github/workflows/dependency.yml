@@ -9,7 +9,9 @@ jobs:
 
     steps:
       - name: Install latest git to download .git directory in actions/checkout@v2 ( use sudo for ros-ubuntu )
-        run: apt-get update && apt-get install -y software-properties-common && apt-get update && add-apt-repository -y ppa:git-core/ppa && apt-get update && apt-get install -y git
+        # git of Ubuntu 20.04 (2.25) is new enough for actions/checkout (2.18); the git-core PPA is not needed,
+        # and adding it failed now and then with "retrieving gpg key timed out"
+        run: apt-get update && apt-get install -y git
       - name: Chcekout
         uses: actions/checkout@v2
       - name: Setup catkin

@@ -38,8 +38,14 @@
 #define JSK_RVIZ_PLUGINS_TABLET_CONTROLLER_PANEL_H_
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <mutex>
+#include <rviz_common/panel.hpp>
+#else
 #include <ros/ros.h>
 #include <rviz/panel.h>
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #  include <QtWidgets>
 #else
@@ -58,10 +64,19 @@
 #include <QRadioButton>
 #include <QPaintEvent>
 #include <QMouseEvent>
+#if ROS_VERSION_MAJOR != 1
+#include <geometry_msgs/msg/twist.hpp>
+#include <jsk_rviz_plugins/msg/string_stamped.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, Twist)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_rviz_plugins, StringStamped)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(visualization_msgs, MarkerArray)
+#else
 #include <geometry_msgs/Twist.h>
 #include <jsk_rviz_plugins/StringStamped.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <boost/thread.hpp>
+#endif
 #endif
 
 namespace jsk_rviz_plugins
@@ -70,7 +85,12 @@ namespace jsk_rviz_plugins
   {
     Q_OBJECT
   public:
+#if ROS_VERSION_MAJOR != 1
+    typedef rclcpp::Publisher<geometry_msgs::Twist>::SharedPtr TwistPublisher;
+    TabletCmdVelArea(QWidget* parent, TwistPublisher pub_cmd_vel);
+#else
     TabletCmdVelArea(QWidget* parent, ros::Publisher& pub_cmd_vel);
+#endif
     virtual QSize minimumSizeHint() const;
     virtual QSize sizeHint() const;
   protected:
@@ -82,7 +102,11 @@ namespace jsk_rviz_plugins
     virtual void publishCmdVel(double x, double y, double theta);
     int mouse_x_;
     int mouse_y_;
+#if ROS_VERSION_MAJOR != 1
+    TwistPublisher pub_cmd_vel_;
+#else
     ros::Publisher pub_cmd_vel_;
+#endif
   };
   
   class TabletControllerPanel: public rviz::Panel
@@ -91,6 +115,10 @@ namespace jsk_rviz_plugins
   public:
     TabletControllerPanel(QWidget* parent = 0);
     virtual ~TabletControllerPanel();
+#if ROS_VERSION_MAJOR != 1
+    // the node of rviz2 is only available here, not in the constructor
+    virtual void onInitialize();
+#endif
     virtual void load(const rviz::Config& config);
     virtual void save(rviz::Config config) const;
 
@@ -98,8 +126,13 @@ namespace jsk_rviz_plugins
     ////////////////////////////////////////////////////////
     // methods
     ////////////////////////////////////////////////////////
+#if ROS_VERSION_MAJOR != 1
+    virtual void spotCallback(
+      visualization_msgs::MarkerArray::ConstSharedPtr marker);
+#else
     virtual void spotCallback(
       const visualization_msgs::MarkerArray::ConstPtr& marker);
+#endif
     virtual QString defaultButtonStyleSheet();
     virtual QString executeButtonStyleSheet();
     virtual QString radioButtonStyleSheet();
@@ -130,11 +163,20 @@ namespace jsk_rviz_plugins
     ////////////////////////////////////////////////////////
     // ROS variables
     ////////////////////////////////////////////////////////
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Node::SharedPtr node_;
+    rclcpp::Publisher<geometry_msgs::Twist>::SharedPtr pub_cmd_vel_;
+    rclcpp::Publisher<jsk_rviz_plugins::StringStamped>::SharedPtr pub_spot_;
+    rclcpp::Publisher<jsk_rviz_plugins::StringStamped>::SharedPtr pub_start_demo_;
+    rclcpp::Subscription<visualization_msgs::MarkerArray>::SharedPtr sub_spots_;
+    std::mutex mutex_;
+#else
     ros::Publisher pub_cmd_vel_;
     ros::Publisher pub_spot_;
     ros::Publisher pub_start_demo_;
     ros::Subscriber sub_spots_;
     boost::mutex mutex_;
+#endif
     
     
   protected Q_SLOTS:

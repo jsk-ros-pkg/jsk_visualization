@@ -89,6 +89,8 @@ Gallery
 {GALLERY}
 
 
+{ROS1_ROS2_GALLERY}
+
 Deb build status
 ----------------
 
@@ -103,6 +105,8 @@ def main():
             TIMESTAMP=datetime.datetime.now().isoformat(),
             DEB_STATUS_TABLE=get_deb_status_table(),
             GALLERY=get_gallery(),
+            # the screenshots of ROS 1 and ROS 2 in .readme/gallery/, written by hand
+            ROS1_ROS2_GALLERY=open(osp.join(here, '.readme/gallery_ros1_ros2.md')).read(),
         )
     )
 

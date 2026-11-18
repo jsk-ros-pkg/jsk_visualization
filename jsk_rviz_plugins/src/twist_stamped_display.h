@@ -38,6 +38,18 @@
 #define JSK_RVIZ_PLUGINS_TWIST_STAMPED_H_
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <OGRE/OgreSceneNode.h>
+
+#include <geometry_msgs/msg/twist_stamped.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, TwistStamped)
+#else
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
@@ -51,6 +63,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/billboard_line.h>
+#endif
 #endif
 
 
@@ -73,8 +86,13 @@ namespace jsk_rviz_plugins
 
     virtual void onInitialize();
     virtual void reset();
+#if ROS_VERSION_MAJOR != 1
+    virtual void processMessage(
+      geometry_msgs::TwistStamped::ConstSharedPtr msg);
+#else
     virtual void processMessage(
       const geometry_msgs::TwistStamped::ConstPtr& msg);
+#endif
     virtual void updateRotationVelocity(
       BillboardLinePtr circle,
       ArrowPtr arrow,

@@ -10,6 +10,17 @@
 #include <QColor>
 #include <QFont>
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/interaction/selection_manager.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/property.hpp>
+#include <rviz_common/properties/property_tree_model.hpp>
+#include <rviz_common/properties/vector_property.hpp>
+
+#include "select_point_cloud_publish_action.h"
+#else
 #include "rviz/properties/property_tree_widget.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/visualization_manager.h"
@@ -26,6 +37,7 @@
 
 #include "select_point_cloud_publish_action.h"
 #include "ros/time.h"
+#endif
 
 using namespace rviz;
 
@@ -35,7 +47,9 @@ namespace jsk_rviz_plugins
   SelectPointCloudPublishAction::SelectPointCloudPublishAction( QWidget* parent )
     : rviz::Panel( parent )
   {
+#if ROS_VERSION_MAJOR == 1
     select_pointcloud_publisher_ = nh_.advertise<sensor_msgs::PointCloud2>("selected_pointcloud", 1);
+#endif
     layout = new QVBoxLayout;
 
     //Button to send cancel topic
@@ -47,14 +61,31 @@ namespace jsk_rviz_plugins
     connect( publish_pointcloud_button_, SIGNAL( clicked() ), this, SLOT( publishPointCloud ()));
   }
 
+#if ROS_VERSION_MAJOR != 1
+  void SelectPointCloudPublishAction::onInitialize()
+  {
+    node_ = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
+    select_pointcloud_publisher_ =
+      node_->create_publisher<sensor_msgs::PointCloud2>("selected_pointcloud", 1);
+  }
+#endif
+
   void SelectPointCloudPublishAction::publishPointCloud(){
+#if ROS_VERSION_MAJOR != 1
+    PropertyTreeModel* model_ = getDisplayContext()->getSelectionManager()->getPropertyModel();
+#else
     PropertyTreeModel* model_ =vis_manager_->getSelectionManager()->getPropertyModel();
+#endif
     int num_children = model_->rowCount();
     if( num_children > 0 )
       {
         ROS_INFO("num > %d!", num_children);
         sensor_msgs::PointCloud2 pc2;
+#if ROS_VERSION_MAJOR != 1
+        pc2.header.stamp = node_->now();
+#else
         pc2.header.stamp = ros::Time::now();
+#endif
         pc2.header.frame_id = "camera_depth_optical_frame";
         pc2.height = 1;
         pc2.width  = num_children;
@@ -98,7 +129,11 @@ namespace jsk_rviz_plugins
         pc2.point_step = 16;
         pc2.row_step = pc2.point_step * pc2.width;
         pc2.is_dense = false;
+#if ROS_VERSION_MAJOR != 1
+        select_pointcloud_publisher_->publish(pc2);
+#else
         select_pointcloud_publisher_.publish(pc2);
+#endif
       }
   }
 
@@ -115,5 +150,9 @@ namespace jsk_rviz_plugins
 
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS(jsk_rviz_plugins::SelectPointCloudPublishAction, rviz::Panel )

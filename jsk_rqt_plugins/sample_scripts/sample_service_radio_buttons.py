@@ -1,29 +1,28 @@
 #!/usr/bin/env python
 
-import rospy
+from jsk_rqt_plugins.compat import ros_compat
 
 from std_srvs.srv import Empty
-from std_srvs.srv import EmptyResponse
 
 
 class SampleServiceRadioButtons(object):
     def __init__(self):
         self.services = [
-            rospy.Service('dummy/buttonA', Empty, self._empty_cb),
-            rospy.Service('dummy/buttonB', Empty, self._empty_cb),
-            rospy.Service('dummy/buttonC', Empty, self._empty_cb),
-            rospy.Service('dummy/buttonD', Empty, self._empty_cb),
-            rospy.Service('dummy/buttonE', Empty, self._empty_cb),
-            rospy.Service('dummy/buttonF', Empty, self._empty_cb),
+            ros_compat.create_service(node, 'dummy/buttonA', Empty, self._empty_cb),
+            ros_compat.create_service(node, 'dummy/buttonB', Empty, self._empty_cb),
+            ros_compat.create_service(node, 'dummy/buttonC', Empty, self._empty_cb),
+            ros_compat.create_service(node, 'dummy/buttonD', Empty, self._empty_cb),
+            ros_compat.create_service(node, 'dummy/buttonE', Empty, self._empty_cb),
+            ros_compat.create_service(node, 'dummy/buttonF', Empty, self._empty_cb),
         ]
-        self._name = rospy.get_name()
+        self._name = ros_compat.get_name(node)
 
-    def _empty_cb(self, req):
-        rospy.loginfo('{} | Empty service called'.format(self._name))
-        return EmptyResponse()
+    def _empty_cb(self, req, res):
+        ros_compat.loginfo(node, '{} | Empty service called'.format(self._name))
+        return res
 
 
 if __name__ == '__main__':
-    rospy.init_node('sample_service_radio_buttons')
+    node = ros_compat.init_node('sample_service_radio_buttons')
     sample = SampleServiceRadioButtons()
-    rospy.spin()
+    ros_compat.spin(node)

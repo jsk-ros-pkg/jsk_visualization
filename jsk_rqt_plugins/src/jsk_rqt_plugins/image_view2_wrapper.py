@@ -32,12 +32,15 @@ import yaml
 from cv_bridge import CvBridge
 from cv_bridge import CvBridgeError
 from image_view2.msg import MouseEvent
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
 from resource_retriever import get_filename
-import rospy
+if ROS_VERSION == 1:
+    import rospy
 from rqt_gui_py.plugin import Plugin
 from sensor_msgs.msg import Image
 from std_msgs.msg import Bool
-from std_msgs.msg import Time
+
+from .dialogs import ComboBoxDialog
 
 if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
     from python_qt_binding.QtWidgets import QAction
@@ -64,27 +67,6 @@ else:
     from python_qt_binding.QtGui import QWidget
 
 
-class ComboBoxDialog(QDialog):
-    def __init__(self, parent=None):
-        super(ComboBoxDialog, self).__init__()
-        self.number = 0
-        vbox = QVBoxLayout(self)
-        self.combo_box = QComboBox(self)
-        self.combo_box.activated.connect(self.onActivated)
-        vbox.addWidget(self.combo_box)
-        button = QPushButton()
-        button.setText("Done")
-        button.clicked.connect(self.buttonCallback)
-        vbox.addWidget(button)
-        self.setLayout(vbox)
-
-    def buttonCallback(self, event):
-        self.close()
-
-    def onActivated(self, number):
-        self.number = number
-
-
 class ImageView2Plugin(Plugin):
     """
     rqt wrapper for image_view2
@@ -92,7 +74,7 @@ class ImageView2Plugin(Plugin):
     def __init__(self, context):
         super(ImageView2Plugin, self).__init__(context)
         self.setObjectName("ImageView2Plugin")
-        self._widget = ImageView2Widget()
+        self._widget = ImageView2Widget(getattr(context, 'node', None))
         context.add_widget(self._widget)
 
     def save_settings(self, plugin_settings, instance_settings):
@@ -124,8 +106,9 @@ class ImageView2Widget(QWidget):
     pixmap = None
     repaint_trigger = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, node=None):
         super(ImageView2Widget, self).__init__()
+        self._node = node
         self.left_button_clicked = False
 
         self.repaint_trigger.connect(self.redraw)
@@ -160,13 +143,18 @@ class ImageView2Widget(QWidget):
 
     def setupSubscriber(self, topic):
         if self.image_sub:
-            self.image_sub.unregister()
-        rospy.loginfo("Subscribing %s" % (topic + "/marked"))
-        self.image_sub = rospy.Subscriber(topic + "/marked",
+            if ROS_VERSION == 2:
+                self._node.destroy_subscription(self.image_sub)
+            else:
+                self.image_sub.unregister()
+        if ROS_VERSION == 2 and self.event_pub:
+            self._node.destroy_publisher(self.event_pub)
+        ros_compat.loginfo(self._node, "Subscribing %s" % (topic + "/marked"))
+        self.image_sub = ros_compat.create_subscription(self._node, topic + "/marked",
                                           Image, 
                                           self.imageCallback)
-        self.event_pub = rospy.Publisher(
-            topic + "/event", MouseEvent, queue_size=1)
+        self.event_pub = ros_compat.create_publisher(
+            self._node, topic + "/event", MouseEvent, queue_size=1)
         self._active_topic = topic
 
     def onActivated(self, number):
@@ -175,7 +163,7 @@ class ImageView2Widget(QWidget):
     def imageCallback(self, msg):
         with self.lock:
             if msg.width == 0 or msg.height == 0:
-                rospy.logdebug("Looks input images is invalid")
+                ros_compat.logdebug(self._node, "Looks input images is invalid")
                 return
             cv_image = self.bridge.imgmsg_to_cv2(msg, msg.encoding)
             if msg.encoding == "bgr8":
@@ -188,8 +176,15 @@ class ImageView2Widget(QWidget):
 
     def updateTopics(self):
         need_to_update = False
-        for (topic, topic_type) in rospy.get_published_topics():
-            if topic_type == "sensor_msgs/Image":
+        if ROS_VERSION == 2:
+            published_topics = [
+                (topic, topic_type) for topic, topic_types
+                in self._node.get_topic_names_and_types()
+                for topic_type in topic_types]
+        else:
+            published_topics = rospy.get_published_topics()
+        for (topic, topic_type) in published_topics:
+            if topic_type in ("sensor_msgs/Image", "sensor_msgs/msg/Image"):
                 with self.lock:
                     if not topic in self._image_topics:
                         self._image_topics.append(topic)
@@ -236,7 +231,7 @@ class ImageView2Widget(QWidget):
 
     def mouseMoveEvent(self, e):
         msg = MouseEvent()
-        msg.header.stamp = rospy.Time.now()
+        msg.header.stamp = ros_compat.stamp_now(self._node)
         msg.type = MouseEvent.MOUSE_MOVE
         msg.width = self.label.pixmap().width()
         msg.height = self.label.pixmap().height()
@@ -248,7 +243,7 @@ class ImageView2Widget(QWidget):
 
     def mousePressEvent(self, e):
         msg = MouseEvent()
-        msg.header.stamp = rospy.Time.now()
+        msg.header.stamp = ros_compat.stamp_now(self._node)
         if e.button() == Qt.LeftButton:
             msg.type = MouseEvent.MOUSE_LEFT_DOWN
             self.left_button_clicked = True
@@ -266,7 +261,7 @@ class ImageView2Widget(QWidget):
         if e.button() == Qt.LeftButton:
             self.left_button_clicked = False
             msg = MouseEvent()
-            msg.header.stamp = rospy.Time.now()
+            msg.header.stamp = ros_compat.stamp_now(self._node)
             msg.width = self.label.pixmap().width()
             msg.height = self.label.pixmap().height()
             msg.type = MouseEvent.MOUSE_LEFT_UP

@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""Check that rviz does not crash with the pictogram sample."""
+
+import os
+import sys
+import unittest
+
+from launch import LaunchDescription
+import launch_testing
+import launch_testing.actions
+import launch_testing.markers
+import pytest
+
+# launch_test.py loads this file by path, so make the helper importable
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from rviz_config_check import assert_rviz_exit_codes  # noqa: E402
+from rviz_config_check import DISPLAY_REQUIRED_MESSAGE  # noqa: E402
+from rviz_config_check import has_display  # noqa: E402
+from rviz_config_check import include_sample_launch  # noqa: E402
+from rviz_config_check import RvizConfigCheck  # noqa: E402
+
+
+@pytest.mark.launch_test
+@launch_testing.markers.keep_alive
+def generate_test_description():
+    if not has_display():
+        # Nothing to launch without a display; the test cases below are skipped.
+        return LaunchDescription([launch_testing.actions.ReadyToTest()])
+    return LaunchDescription([
+        include_sample_launch('pictogram_sample.launch.py'),
+        launch_testing.actions.ReadyToTest(),
+    ])
+
+
+@unittest.skipUnless(has_display(), DISPLAY_REQUIRED_MESSAGE)
+class TestPictogram(RvizConfigCheck, unittest.TestCase):
+
+    test_duration = 5.0
+    topics = [
+        '/pictogram',
+        '/pictogram_array',
+    ]
+
+
+@launch_testing.post_shutdown_test()
+@unittest.skipUnless(has_display(), DISPLAY_REQUIRED_MESSAGE)
+class TestPictogramAfterShutdown(unittest.TestCase):
+
+    def test_rviz_did_not_crash(self, proc_info):
+        assert_rviz_exit_codes(proc_info)

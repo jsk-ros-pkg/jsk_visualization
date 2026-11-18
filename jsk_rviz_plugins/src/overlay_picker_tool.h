@@ -36,11 +36,20 @@
 #ifndef JSK_RVIZ_PLUGIN_OVERLAY_PICKER_TOOL_H_
 #define JSK_RVIZ_PLUGIN_OVERLAY_PICKER_TOOL_H_
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/tool.hpp>
+#include <rviz_common/properties/property.hpp>
+#include <rviz_common/properties/property_tree_model.hpp>
+#include <rviz_common/viewport_mouse_event.hpp>
+#include <rviz_common/render_panel.hpp>
+#else
 #include <rviz/tool.h>
 #include <rviz/properties/property.h>
 #include <rviz/properties/property_tree_model.h>
 #include <rviz/viewport_mouse_event.h>
 #include <rviz/render_panel.h>
+#endif
 
 namespace jsk_rviz_plugins
 {

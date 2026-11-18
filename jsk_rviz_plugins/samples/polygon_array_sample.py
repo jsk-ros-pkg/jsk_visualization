@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 
-import rospy
+try:
+    from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+    from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+except ImportError:
+    # jsk_common < 3.0 has no jsk_ros1_ros2_compat (ROS 1 only)
+    from jsk_rviz_plugins.rospy_compat import ros_compat, ROS_VERSION
 from jsk_recognition_msgs.msg import PolygonArray
+from sample_utils import exit_on_shutdown
 from geometry_msgs.msg import Polygon, PolygonStamped, Point32
 from std_msgs.msg import Header
 from math import sin, cos, pi
@@ -50,19 +56,25 @@ def StarPolygon(header):
     return p
     
 if __name__ == "__main__":
-    rospy.init_node("polygon_array_sample")
-    pub = rospy.Publisher("~output", PolygonArray)
-    r = rospy.Rate(10)
-    while not rospy.is_shutdown():
-        msg = PolygonArray()
-        header = Header()
-        header.frame_id = "world"
-        header.stamp = rospy.Time.now()
-        msg.header = header
-        msg.polygons = [SquarePolygon(header),
-                        RectanglePolygon(header),
-                        CirclePolygon(header),
-                        StarPolygon(header)]
-        msg.labels = [0, 1, 2, 3]
-        msg.likelihood = [np.random.ranf(), np.random.ranf(), np.random.ranf(), np.random.ranf()]
-        pub.publish(msg)
+    node = ros_compat.init_node("polygon_array_sample")
+    pub = ros_compat.create_publisher(node, "~output", PolygonArray, queue_size=1)
+    r = ros_compat.Rate(node, 10)
+    with exit_on_shutdown():
+        while not ros_compat.is_shutdown(node):
+            msg = PolygonArray()
+            header = Header()
+            header.frame_id = "world"
+            header.stamp = ros_compat.stamp_now(node)
+            msg.header = header
+            msg.polygons = [SquarePolygon(header),
+                            RectanglePolygon(header),
+                            CirclePolygon(header),
+                            StarPolygon(header)]
+            msg.labels = [0, 1, 2, 3]
+            msg.likelihood = [np.random.ranf(), np.random.ranf(), np.random.ranf(), np.random.ranf()]
+            pub.publish(msg)
+            if ROS_VERSION == 2:
+                # r of ROS 1 is not slept and the polygons are published as
+                # fast as possible there, which is kept as it is
+                r.sleep()
+    ros_compat.shutdown(node)

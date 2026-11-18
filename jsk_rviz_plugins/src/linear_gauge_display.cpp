@@ -34,8 +34,14 @@
  *********************************************************************/
 
 #include "linear_gauge_display.h"
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_rendering/render_system.hpp>
+#else
 #include <rviz/uniform_string_stream.h>
 #include <rviz/display_context.h>
+#endif
 #include <QPainter>
 
 namespace jsk_rviz_plugins
@@ -46,7 +52,11 @@ namespace jsk_rviz_plugins
   {
     update_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "",
+#if ROS_VERSION_MAJOR != 1
+      rosidl_generator_traits::name<std_msgs::Float32>(),
+#else
       ros::message_traits::datatype<std_msgs::Float32>(),
+#endif
       "std_msgs::Float32 topic to subscribe to.",
       this, SLOT(updateTopic()));
     show_value_property_ = new rviz::BoolProperty(
@@ -170,6 +180,10 @@ namespace jsk_rviz_plugins
 
   void LinearGaugeDisplay::onInitialize()
   {
+#if ROS_VERSION_MAJOR != 1
+    rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
+    update_topic_property_->initialize(context_->getRosNodeAbstraction());
+#endif
     static int count = 0;
     rviz::UniformStringStream ss;
     ss << "LinearGaugeDisplayObject" << count++;
@@ -302,7 +316,11 @@ namespace jsk_rviz_plugins
     }
   }
   
+#if ROS_VERSION_MAJOR != 1
+  void LinearGaugeDisplay::processMessage(const std_msgs::Float32::ConstSharedPtr& msg)
+#else
   void LinearGaugeDisplay::processMessage(const std_msgs::Float32::ConstPtr& msg)
+#endif
   {
     boost::mutex::scoped_lock lock(mutex_);
 
@@ -339,14 +357,25 @@ namespace jsk_rviz_plugins
   {
     std::string topic_name = update_topic_property_->getTopicStd();
     if (topic_name.length() > 0 && topic_name != "/") {
+#if ROS_VERSION_MAJOR != 1
+      sub_ = context_->getRosNodeAbstraction().lock()->get_raw_node()->
+        create_subscription<std_msgs::Float32>(
+          topic_name, 1,
+          std::bind(&LinearGaugeDisplay::processMessage, this, std::placeholders::_1));
+#else
       ros::NodeHandle n;
       sub_ = n.subscribe(topic_name, 1, &LinearGaugeDisplay::processMessage, this);
+#endif
     }
   }
 
   void LinearGaugeDisplay::unsubscribe()
   {
+#if ROS_VERSION_MAJOR != 1
+    sub_.reset();
+#else
     sub_.shutdown();
+#endif
   }
 
   void LinearGaugeDisplay::onEnable()
@@ -360,6 +389,10 @@ namespace jsk_rviz_plugins
   void LinearGaugeDisplay::onDisable()
   {
     unsubscribe();
+#if ROS_VERSION_MAJOR != 1
+    // overlay_ is created by onInitialize(); do not rely on its order to onDisable()
+    if (overlay_)
+#endif
     overlay_->hide();
   }
 
@@ -520,5 +553,9 @@ namespace jsk_rviz_plugins
   
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::LinearGaugeDisplay, rviz::Display )

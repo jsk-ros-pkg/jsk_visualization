@@ -1,0 +1,33 @@
+# Parameters for jsk_rviz_plugin/RobotCommandInterfaceAction.
+# ROS 2 parameters cannot hold an array of structs, so the buttons are described as
+# a list of ids in `robot_command_buttons` plus one `robot_command.<id>` group per id.
+# The node name has to match the rviz node ("rviz" is the default of rviz2).
+rviz:
+  ros__parameters:
+    robot_command_buttons: ["reset_pose", "reset_manip_pose", "init_pose", "start_abc", "stop_abc"]
+    robot_command:
+      reset_pose:
+        name: Reset Pose
+        icon: package://jsk_rviz_plugins/icons/reset-pose.jpg
+        type: euscommand
+        command: "(send *ri* :angle-vector (send *robot* :reset-pose) 5000)"
+      reset_manip_pose:
+        name: Reset Manip Pose
+        icon: package://jsk_rviz_plugins/icons/reset-manip-pose.jpg
+        type: euscommand
+        command: "(send *ri* :angle-vector (send *robot* :reset-manip-pose) 5000)"
+      init_pose:
+        name: Init Pose
+        icon: package://jsk_rviz_plugins/icons/init-pose.jpg
+        type: euscommand
+        command: "(send *ri* :angle-vector (send *robot* :init-pose) 5000)"
+      start_abc:
+        name: Start ABC
+        icon: package://jsk_rviz_plugins/icons/start-abc.png
+        type: euscommand
+        command: "(send *ri* :start-auto-balancer)"
+      stop_abc:
+        name: Stop ABC
+        icon: package://jsk_rviz_plugins/icons/stop-abc.png
+        type: emptysrv
+        srv: /stop_auto_balancer

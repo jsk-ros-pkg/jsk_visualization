@@ -33,6 +33,37 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+#include "jsk_interactive_marker/ros1_ros2_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <interactive_markers/interactive_marker_server.hpp>
+#include <interactive_markers/menu_handler.hpp>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include "jsk_interactive_marker/interactive_marker_helpers.h"
+#include <yaml-cpp/yaml.h>
+#include <boost/thread/mutex.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(sensor_msgs, CameraInfo)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(sensor_msgs, Image)
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(sensor_msgs, PointCloud2)
+JSK_ROS1_ROS2_COMPAT_CONST_PTR_ALIAS(visualization_msgs, InteractiveMarkerFeedback)
+#include <jsk_ros1_ros2_compat/const_ptr.h>
+namespace jsk_interactive_marker
+{
+  // cfg/CameraInfoPublisher.cfg (dynamic_reconfigure on ROS 1), the
+  // parameters ~width, ~height and ~f on ROS 2
+  struct CameraInfoPublisherConfig
+  {
+    double width;
+    double height;
+    double f;
+  };
+}
+#else
 #include <ros/ros.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/Image.h>
@@ -44,6 +75,7 @@
 #include <dynamic_reconfigure/server.h>
 #include "jsk_interactive_marker/CameraInfoPublisherConfig.h"
 #include <yaml-cpp/yaml.h>
+#endif
 
 namespace jsk_interactive_marker
 {
@@ -58,7 +90,11 @@ namespace jsk_interactive_marker
     ////////////////////////////////////////////////////////
     // methods
     ////////////////////////////////////////////////////////
+#if ROS_VERSION_MAJOR != 1
+    virtual void publishCameraInfo(const rclcpp::Time& stamp);
+#else
     virtual void publishCameraInfo(const ros::Time& stamp);
+#endif
     virtual void processFeedback(
       const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
     virtual void initializeInteractiveMarker();
@@ -73,6 +109,19 @@ namespace jsk_interactive_marker
     ////////////////////////////////////////////////////////
     // ROS variables
     ////////////////////////////////////////////////////////
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Node::SharedPtr node_;
+    rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr pub_camera_info_;
+    rclcpp::SubscriptionBase::SharedPtr sub_sync_;
+    rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr srv_;
+    Config config_;
+    boost::mutex mutex_;
+    std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+#else
     ros::Publisher pub_camera_info_;
     ros::Subscriber sub_sync_;
     ros::Timer timer_;
@@ -80,6 +129,7 @@ namespace jsk_interactive_marker
     boost::mutex mutex_;
     std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
     std::shared_ptr<tf::TransformListener> tf_listener_;
+#endif
     ////////////////////////////////////////////////////////
     // variables
     ////////////////////////////////////////////////////////

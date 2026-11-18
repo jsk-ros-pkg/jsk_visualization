@@ -41,10 +41,18 @@
 #include <OGRE/OgreHardwarePixelBuffer.h>
 #include <OGRE/OgreTechnique.h>
 
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_rendering/render_system.hpp>
+#else
 #include <rviz/uniform_string_stream.h>
 #include <rviz/display_context.h>
 #include <rviz/view_manager.h>
 #include <rviz/render_panel.h>
+#endif
 
 namespace jsk_rviz_plugins
 {
@@ -57,7 +65,11 @@ namespace jsk_rviz_plugins
   {
     update_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "",
+#if ROS_VERSION_MAJOR != 1
+      rosidl_generator_traits::name<jsk_rviz_plugins::OverlayMenu>(),
+#else
       ros::message_traits::datatype<jsk_rviz_plugins::OverlayMenu>(),
+#endif
       "jsk_rviz_plugins::OverlayMenu topic to subscribe to.",
       this, SLOT( updateTopic() ));
     left_property_ = new rviz::IntProperty("left", 128,
@@ -120,6 +132,10 @@ namespace jsk_rviz_plugins
 
   void OverlayMenuDisplay::onInitialize()
   {
+#if ROS_VERSION_MAJOR != 1
+    rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
+    update_topic_property_->initialize(context_->getRosNodeAbstraction());
+#endif
     updateKeepCentered();
     updateLeft();
     updateTop();
@@ -151,21 +167,36 @@ namespace jsk_rviz_plugins
 
   void OverlayMenuDisplay::unsubscribe()
   {
+#if ROS_VERSION_MAJOR != 1
+    sub_.reset();
+#else
     sub_.shutdown();
+#endif
   }
 
   void OverlayMenuDisplay::subscribe()
   {
     std::string topic_name = update_topic_property_->getTopicStd();
     if (topic_name.length() > 0 && topic_name != "/") {
+#if ROS_VERSION_MAJOR != 1
+      sub_ = context_->getRosNodeAbstraction().lock()->get_raw_node()->
+        create_subscription<jsk_rviz_plugins::OverlayMenu>(
+          topic_name, 1,
+          std::bind(&OverlayMenuDisplay::processMessage, this, std::placeholders::_1));
+#else
       sub_ = ros::NodeHandle().subscribe(topic_name, 1,
                                          &OverlayMenuDisplay::processMessage,
                                          this);
+#endif
     }
   }
 
   void OverlayMenuDisplay::processMessage
+#if ROS_VERSION_MAJOR != 1
+  (const jsk_rviz_plugins::OverlayMenu::ConstSharedPtr& msg)
+#else
   (const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg)
+#endif
   {
     next_menu_ = msg;
     if (!overtake_bg_color_properties_)
@@ -233,7 +264,11 @@ namespace jsk_rviz_plugins
   }
   
   int OverlayMenuDisplay::drawAreaWidth(
+#if ROS_VERSION_MAJOR != 1
+    const jsk_rviz_plugins::OverlayMenu::ConstSharedPtr& msg)
+#else
     const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg)
+#endif
   {
     QFontMetrics fm = fontMetrics();
     int max_width = 0;
@@ -252,7 +287,11 @@ namespace jsk_rviz_plugins
   }
 
   int OverlayMenuDisplay::drawAreaHeight(
+#if ROS_VERSION_MAJOR != 1
+    const jsk_rviz_plugins::OverlayMenu::ConstSharedPtr& msg)
+#else
     const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg)
+#endif
   {
     QFontMetrics fm = fontMetrics();
     return fm.height() * (msg->menus.size() + 1)
@@ -346,7 +385,11 @@ namespace jsk_rviz_plugins
   }
 
   std::string OverlayMenuDisplay::getMenuString(
+#if ROS_VERSION_MAJOR != 1
+    const jsk_rviz_plugins::OverlayMenu::ConstSharedPtr& msg,
+#else
     const jsk_rviz_plugins::OverlayMenu::ConstPtr& msg,
+#endif
     size_t index)
   {
     if (index >= msg->menus.size()) {
@@ -601,5 +644,9 @@ namespace jsk_rviz_plugins
   }
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayMenuDisplay, rviz::Display )
