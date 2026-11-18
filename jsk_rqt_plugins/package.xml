@@ -42,6 +42,7 @@
   <!-- hist.py and plot_2d.py (HistogramPlot, Plot2D) need
        jsk_recognition_msgs; on ROS 2 they are installed only when it is found
        (CMakeLists.txt) -->
+  <build_depend condition="$ROS_VERSION == 2">jsk_recognition_msgs</build_depend>
   <exec_depend condition="$ROS_VERSION == 2">jsk_recognition_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">python3-sklearn</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">message_runtime</exec_depend>
