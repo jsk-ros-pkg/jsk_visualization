@@ -1,7 +1,20 @@
 #!/usr/bin/env python
 
-from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
-from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+try:
+    from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+    from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+except ImportError:
+    # jsk_common < 3.0 has no jsk_ros1_ros2_compat, so this is ROS1 only:
+    # forward ros_compat.xxx(node, ...) to rospy.xxx(...)
+    import rospy
+    ROS_VERSION = 1
+
+    class ros_compat(object):
+        init_node = staticmethod(lambda name: rospy.init_node(name))
+        spin = staticmethod(lambda node: rospy.spin())
+        get_param = staticmethod(lambda node, name, default=None: rospy.get_param(name, default))
+        create_publisher = staticmethod(lambda node, topic, msg_type, queue_size=1: rospy.Publisher(topic, msg_type, queue_size=queue_size))
+        create_timer = staticmethod(lambda node, period, callback: rospy.Timer(rospy.Duration(period), callback))
 from sensor_msgs.msg import Image, CameraInfo
 
 
