@@ -58,7 +58,10 @@
   <build_depend condition="$ROS_VERSION == 1" version_gte="1.2.0">jsk_recognition_msgs</build_depend>
   <build_export_depend condition="$ROS_VERSION == 1" version_gte="1.0.0">jsk_recognition_msgs</build_export_depend>
   <exec_depend condition="$ROS_VERSION == 1" version_gte="1.0.0">jsk_recognition_msgs</exec_depend>
-  <depend condition="$ROS_VERSION == 1">jsk_recognition_utils</depend>
+  <!-- not a generic depend, which old catkin_pkg finds redundant with the ROS 2 build/exec_depend above -->
+  <build_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</build_depend>
+  <build_export_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</build_export_depend>
+  <exec_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</exec_depend>
   <depend condition="$ROS_VERSION == 1">jsk_topic_tools</depend>
   <depend condition="$ROS_VERSION == 1">rviz</depend>
 
