@@ -2,6 +2,400 @@
 Changelog for package jsk_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#908 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/908>`_ from k-okada/readme-gallery
+  README: a gallery that links to how to run each sample
+* package.xml: one line for the depends which are the same on ROS 1 and ROS 2
+  The depends on jsk_recognition_msgs/utils, python3-scipy and
+  python3-sklearn were written twice, with $ROS_VERSION == 1 and == 2;
+  jsk_rqt_plugins listed rqt_gui, rqt_gui_py and rqt_plot twice. The
+  evaluated dependencies of melodic, noetic, ROS One and jazzy are the
+  same, except the version_gte of jsk_recognition_msgs, which now applies
+  on ROS 2 too (1.2.19 there).
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* README: alt text of the gallery images
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* depend on jsk_recognition_msgs/utils on ROS 2 without \*_FROM_SOURCE
+  They are going to be released for ROS 2 soon, so the release of
+  jsk_visualization depends on them as on ROS 1 (the ROS 2 binaries fail
+  on the buildfarm until they are released). The ROS 2 CI checks out
+  jsk_recognition_utils as well as jsk_recognition_msgs from source, and
+  no longer sets JSK_RECOGNITION_MSGS_FROM_SOURCE.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* Improve README clarity on sample configurations
+  Clarify the description of sample launches and their behavior regarding rviz and data publishing.
+  Co-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>
+* add README.md of jsk_rviz_plugins, jsk_rqt_plugins and jsk_interactive_marker
+  Each README has a short intro, an index of the samples and one section per
+  sample, named after it: the plugins it shows, links to their pages in doc/,
+  the ROS 1 and ROS 2 captures of .readme/gallery/ side by side, and how to run
+  it on ROS 1 (roslaunch / rosrun) and on ROS 2 (ros2 launch / ros2 run), with
+  the topic publish and service call commands of the rqt scripts.
+  On ROS 2, rqt_image_view2 cannot select an image yet (its topic list is
+  filled once, before ROS 2 discovery finds any topic), which the README says.
+  The existing usage of jsk_interactive_marker/README.md is kept below the
+  samples.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* Merge pull request `#905 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/905>`_ from k-okada/rqt-plugins-ros1-ros2
+  ROS 1 / ROS 2 for the whole repository from one source tree (jsk_ros1_ros2_compat)
+* [jsk_rviz_plugins] PolygonArray: use jsk_recognition_utils on ROS 2 as well
+  jsk_recognition_utils builds on ROS 2 now (jsk-ros-pkg/jsk_recognition,
+  recognition-utils-ros2), so PolygonArrayDisplay includes
+  <jsk_recognition_utils/geo/polygon.h> on ROS 2 as on ROS 1, and the copy of
+  its Polygon and ear clipping, src/geo_polygon_compat.h, is removed.
+  - CMakeLists.txt (ROS 2 part only): find_package(jsk_recognition_utils
+  QUIET) when jsk_recognition_msgs is found; PolygonArray, its sample and
+  test are built/installed only when it is found, otherwise skipped with a
+  STATUS message. The ROS 1 part is unchanged.
+  - PolygonArray moves from rviz_common_plugins_jsk_recognition_msgs.xml to
+  rviz_common_plugins_jsk_recognition_utils.xml, exported only then.
+  - package.xml: jsk_recognition_utils is a ROS 2 dependency only with
+  JSK_RECOGNITION_UTILS_FROM_SOURCE=1, as jsk_recognition_msgs is with
+  JSK_RECOGNITION_MSGS_FROM_SOURCE=1, since it is not released for ROS 2.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rqt_plugins, jsk_rviz_plugins] samples: exit cleanly on SIGINT on ROS 2
+  On ROS 2, SIGINT (e.g. from ros2 launch) shuts the rclpy context down from
+  rclpy's signal handler and raises KeyboardInterrupt in the main thread, so
+  the main loops of the sample publishers ended with a KeyboardInterrupt
+  traceback (out of the Rate's sleep), or with "RCLError: Failed to publish:
+  publisher's context is invalid" and exit code 1 when a publish() came after
+  the context went down (sample_drc_mini_maxwell.py, every time).
+  exit_on_shutdown(), a context manager around the main loops, takes both as
+  the normal end on ROS 2 (any other exception while the context is still up
+  is raised as before) and does nothing on ROS 1, where rospy handles SIGINT
+  as before. It is in jsk_rqt_plugins.compat for sample_scripts/, and in
+  samples/sample_utils.py for the samples of jsk_rviz_plugins, which import it
+  from their own directory (jsk_rviz_plugins has no python module on ROS 2:
+  the name is that of its message package); it is installed next to the
+  samples on ROS 2, and by the samples/\*.py glob on ROS 1. In the ROS 1
+  devel space the samples run through catkin's relays, and the relay of
+  sample_utils.py runs it in a dict of its own, so sample_utils.py puts the
+  helper into its module object itself.
+  The loops of the samples run on ROS 2 use it: sample_2d_plot.py,
+  sample_3d_plot.py, sample_drc_mini_maxwell.py, sample_hist_pub.py,
+  bounding_box_sample.py, overlay_menu_sample.py, overlay_sample.py,
+  pictogram.py, pictogram_all.py, polygon_array_sample.py and
+  segment_array_sample.py. piechart_sample.py and the service samples spin
+  through ros_compat.spin(), which already handles it.
+  Ctrl-C of a terminal reaches the samples twice under ros2 launch (from
+  the terminal and from launch), so the second SIGINT is ignored once the
+  loop has ended, not to break the shutdown after it.
+  overlay_sample.launch.py of ROS 2 no longer respawns the samples: on
+  Ctrl-C launch restarted the samples that had just exited and did not end.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] EmptyServiceCallInterface: show an empty panel without ~rviz_service_call/buttons
+  ROS 1: XmlRpcValue::size() of the missing ~rviz_service_call/buttons (an
+  invalid value) throws XmlRpcException, which aborted rviz whenever the panel
+  was loaded without the parameter (e.g. from a saved config); so did a value
+  of another type than a list of {icon, service_name, text} structs. The
+  parameter is checked first now, and a missing or malformed one is warned
+  about and leaves the panel empty.
+  ROS 2: a parameter of another type (e.g. an integer for
+  rviz_service_call.buttons) made declare_parameter()/get_value() throw, and
+  rviz2 dropped the whole display config; a missing icon package threw as
+  well. They are caught, warned about and leave the panel empty; a missing
+  parameter is warned about.
+  The panel is the same as before when the parameters are set.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] polygon_array_sample: run on ROS 2
+  polygon_array_sample.py: rospy -> jsk_ros1_ros2_compat (rospy fallback of
+  jsk_rviz_plugins.rospy_compat on ROS 1). Its rate of 10 Hz is slept on ROS 2
+  only: on ROS 1 the rate is never slept and the polygons are published as
+  fast as possible, which is left as it is.
+  polygon_array_sample.launch.py with config/ros2/polygon_array_sample.rviz
+  (the display and view of the ROS 1 config) is its ROS 2 counterpart,
+  installed and tested (test/ros2/test_polygon_array.py) when
+  jsk_recognition_msgs is found, as the other jsk_recognition_msgs samples.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] PolygonArray: build on ROS 2 when jsk_recognition_msgs is found
+  PolygonArrayDisplay uses jsk_recognition_utils::Polygon (geo/polygon.h) for
+  fromROSMsg(), getVertices(), getNormal() and decomposeToTriangles(); the
+  latter triangulates with the ear clipping of jsk_recognition_utils'
+  pcl::EarClippingPatched. jsk_recognition_utils is not ported to ROS 2, so
+  src/geo_polygon_compat.h provides that part of jsk_recognition_utils::Polygon
+  on ROS 2 (header only, on Eigen, the ear clipping written out as in
+  ear_clipping_patched.cpp) and includes jsk_recognition_utils/geo/polygon.h on
+  ROS 1, as color_utils_compat.h does for jsk_topic_tools/color_utils.h; the
+  ROS 1 build is unchanged.
+  The triangles and normals are the same: for the 4 polygons of
+  polygon_array_sample.py and 200 random (also non planar) ones, in both
+  orientations, jsk_recognition_utils of ROS One and geo_polygon_compat.h of
+  the ROS 2 build give the same output.
+  The display joins the optional jsk_recognition_msgs block of the ROS 2 build
+  and rviz_common_plugins_jsk_recognition_msgs.xml: rviz_common/rviz_rendering
+  headers, ConstSharedPtr on ROS 2. SimpleOccupancyGridArray stays ROS 1 only
+  (planes, PCL conversions of jsk_recognition_utils).
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] boundingbox_sample, segment_array_sample: run on ROS 2
+  bounding_box_sample.py and segment_array_sample.py: rospy ->
+  jsk_ros1_ros2_compat, with the rospy fallback of jsk_rviz_plugins.rospy_compat
+  (which gets get_param()) on ROS 1 as the other samples. Floats for the float
+  fields and keyword arguments for the messages (rclpy), and
+  quaternion_about_axis() of tf.transformations (ROS 1 only) for the z axis
+  written out in bounding_box_sample.py.
+  boundingbox_sample.launch.py and segment_array_sample.launch.py with
+  config/ros2/\*.rviz (the displays and views of the ROS 1 configs) are their
+  ROS 2 counterparts. As the displays, the samples are installed and their
+  tests (test/ros2/test_bounding_box.py, test_segment_array.py) added only
+  when jsk_recognition_msgs is found. python3-numpy and python3-scipy
+  (segment_array_sample.py) are ROS 2 exec_depends as well.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] overlay_sample, piechart_sample: show OverlayText and PieChart on ROS 2
+  config/ros2/overlay_sample.rviz shows the OverlayText (/text_sample) and the
+  PieChart (/value_sample) of overlay_sample.py, with the properties of the
+  ROS 1 config (the OverlayText at the top left, where ROS 1 shows
+  rosconsole_overlay_text.py, a ROS 1 only script), and the Plotter2D at its
+  ROS 1 position. piechart_sample.launch.py and config/ros2/piechart_sample.rviz
+  are the ROS 2 counterparts of piechart_sample.launch, tested by
+  test/ros2/test_piechart.py as the other samples.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] OverlayText, PieChart: build the overlay displays on ROS 2
+  overlay_text_display and pie_chart_display were left to
+  rviz_2d_overlay_plugins on ROS 2, which is a copy of them released by
+  others. They are built from the same sources now, as the other overlay
+  displays: rviz_common/rviz_rendering headers on ROS 2, the OverlayText
+  message of jsk_rviz_plugins/msg (already generated on ROS 2) and
+  std_msgs/msg/Float32, a subscription on the node of rviz,
+  prepareOverlays() and the RosTopicProperty initialized in onInitialize().
+  The ROS 2 includes of overlay_text_display.cpp come after the Qt headers,
+  as X11/Xlib.h of rviz_rendering/render_system.hpp defines None.
+  They are added to rviz_common_plugins.xml, and OverlayPicker picks them on
+  ROS 2 as well (its ROS 1 code is back to that of master).
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* depend on jsk_ros1_ros2_compat only on ROS 2 and ROS One
+  jsk_ros1_ros2_compat is in jsk_common >= 3.0, which is released for ROS 2
+  and ROS One only; on indigo, kinetic, melodic and noetic rosdep could not
+  resolve the exec_depend, and the packages now fall back to rospy without it.
+  So the exec_depend of jsk_rqt_plugins, jsk_rviz_plugins and
+  jsk_interactive_marker is conditioned on
+  "$ROS_VERSION == 2 or $ROS_DISTRO == one" (checked with catkin_pkg 1.1.1
+  and 0.4.16 of Ubuntu 20.04: it is evaluated true on jazzy and one, false on
+  indigo and noetic). Their build dependencies on it were ROS 2 only already.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] samples: fall back to rospy without jsk_ros1_ros2_compat on ROS 1
+  jsk_ros1_ros2_compat is in jsk_common >= 3.0, which is released for ROS 2
+  and ROS One only, not for indigo, kinetic, melodic and noetic, where the
+  samples have to work as before without it.
+  The samples using it (overlay_sample.py, overlay_menu_sample.py,
+  pictogram.py, pictogram_all.py, piechart_sample.py) import ros_compat (and
+  ROS_VERSION) from jsk_ros1_ros2_compat's rospy_rclpy_compat, or, if it can
+  not be imported (ROS 1 only), from python/jsk_rviz_plugins/rospy_compat.py:
+  the functions they use forwarded to rospy, as rospy_rclpy_compat does on
+  ROS 1. It is in the python module of ROS 1 (catkin_python_setup()), not
+  next to the samples: catkin installs samples/\*.py with
+  catkin_install_python(), whose devel space relays would hide the names of a
+  module imported from there.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] build_depend and exec_depend of jsk_recognition_msgs on ROS 2, not depend
+  check_dependency failed: catkin_pkg reported the generic dependency of ROS 2 on
+  jsk_recognition_msgs as redundant with its build_depend and exec_depend of ROS 1, as it checks
+  them without evaluating the conditions, as for jsk_interactive_marker (dbeb34b).
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] TorusArray, SegmentArray, HumanSkeletonArray: build on ROS 2 when jsk_recognition_msgs is found
+  The displays of TorusArray, SegmentArray and HumanSkeletonArray join the
+  optional jsk_recognition_msgs block of the ROS 2 build and
+  rviz_common_plugins_jsk_recognition_msgs.xml: rviz_common/rviz_rendering
+  headers (rviz::MeshShape is added to the aliases of rviz_compat.h), the
+  messages of jsk_recognition_msgs/msg, ConstSharedPtr on ROS 2,
+  colorCategory20() of color_utils_compat.h.
+  PolygonArray and SimpleOccupancyGridArray stay ROS 1 only: besides
+  jsk_recognition_msgs they need jsk_recognition_utils (polygon triangulation,
+  planes, PCL conversions), which is not ported to ROS 2.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] BoundingBox, BoundingBoxArray: build on ROS 2 when jsk_recognition_msgs is found
+  jsk_recognition_msgs is not released for ROS 2 yet (its ROS 2 port is
+  `jsk-ros-pkg/jsk_recognition#2903 <https://github.com/jsk-ros-pkg/jsk_recognition/issues/2903>`_), so on ROS 2 the displays of its messages
+  are optional: CMakeLists.txt builds them only when
+  find_package(jsk_recognition_msgs QUIET) finds it, and exports their own
+  plugin description file, rviz_common_plugins_jsk_recognition_msgs.xml, then;
+  otherwise it says they are skipped. ROS 1 builds them as before.
+  package.xml must not make rosdep resolve the unreleased key, so the ROS 2
+  dependency is conditional on JSK_RECOGNITION_MSGS_FROM_SOURCE=1, which a
+  workspace building jsk_recognition_msgs from source (as the ROS 2 CI will)
+  sets for rosdep to take it from the workspace and colcon to build it first.
+  The sources (bounding_box_display_common.h, bounding_box_display,
+  bounding_box_array_display):
+  - rviz_common/rviz_rendering headers, the messages of jsk_recognition_msgs/msg
+  through JSK_ROS1_ROS2_COMPAT_MSG_ALIAS, ConstSharedPtr on ROS 2;
+  - colorCategory20()/heatColor() of color_utils_compat.h;
+  - ROS_WARN_THROTTLE on the logger of jsk_rviz_plugins on ROS 2;
+  - rviz_rendering::BillboardLine calls newLine() finishLine(), so on ROS 2 the
+  edges are a BillboardLine subclass providing newLine().
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] YesNoButton: build the panel on ROS 2
+  jsk_gui_msgs is released for ROS 2 (jsk_common_msgs 5.0.2), so the YesNoButton
+  panel is built on ROS 2 too. Its /rviz/yes_no_button service is created on the
+  rviz node. rviz_common spins that node in the GUI thread, where the ROS 1 way
+  of waiting for a button in the service callback (processEvents() until
+  clicked) would re-enter the executor, so on ROS 2 the response is deferred:
+  the request enables the buttons, and Yes/No send the response
+  (rclcpp::Service::send_response()). A new request while one is pending answers
+  the pending one with "no".
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] Footstep: build the display on ROS 2
+  jsk_footstep_msgs is released for ROS 2 (jsk_common_msgs 5.0.2), so the
+  Footstep display is built on ROS 2 too: rviz_common/rviz_rendering headers
+  (rviz::Shape is added to the aliases of rviz_compat.h), the messages of
+  jsk_footstep_msgs/msg, processMessage() with ConstSharedPtr.
+  jsk_topic_tools/color_utils.h is ROS 1 only in jsk_topic_tools 3.x, so
+  src/color_utils_compat.h provides jsk_topic_tools::colorCategory20() and
+  heatColor() on ROS 2 (the same colors), and includes
+  jsk_topic_tools/color_utils.h on ROS 1; the display uses colorCategory20() for
+  "Use Group Coloring".
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] AmbientSound: build the display on ROS 2
+  jsk_hark_msgs is released for ROS 2 (jsk_common_msgs 5.0.2), so the
+  AmbientSound display (ambient_sound_display_groovy, ambient_sound_visual) is
+  built on ROS 2 too: rviz_common/rviz_rendering headers, the HarkPower message
+  of jsk_hark_msgs/msg, processMessage()/setMessage() with ConstSharedPtr. The
+  forward declarations of the rviz:: properties and the unused
+  ROSTopicStringProperty member stay ROS 1 only (aliases of rviz_compat.h on
+  ROS 2). ambient_sound_display.{h,cpp} are built on neither.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] add the ROS 2 tests
+  test/ros2/test\_{overlay,linear_gauge,pictogram,service_call_panel,
+  robot_command_interface}.py run the ROS 2 sample launch files with
+  launch_testing and check that rviz2 stays alive, subscribes the topics of the
+  config and exits cleanly, from the ros2 branch (`#903 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/903>`_) (there they replaced the
+  rostests, here they sit next to them in test/ros2/ with their
+  rviz_config_check.py). They need an X display and skip themselves without one.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] add the ROS 2 launch files of the samples
+  launch/{overlay,linear_gauge,pictogram}_sample.launch.py,
+  robot_command_interface_sample.launch.py and service_call_panel.launch.py, the
+  ROS 2 counterparts of the .launch files, with the rviz2 configs and the ROS 2
+  parameter files of the panels in config/ros2/ (rviz2 configs and
+  ros__parameters files can not be shared with ROS 1), from the ros2 branch
+  (`#903 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/903>`_). The ROS 2 build installs the samples they run with a python3 shebang.
+  - overlay_sample.launch.py remaps image_raw of image_publisher, which is
+  ~image_raw on ROS 1, to /image_publisher/image_raw the config shows.
+  - pictogram_sample.launch.py runs pictogram.py as well, for the Pictogram
+  display of its config.
+  - ROS 2 parameters can not hold an array of structs, so
+  config/ros2/command_samples.yaml and default_robot_command.yaml describe the
+  buttons as a list of ids plus one parameter group per id.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] samples: rospy -> jsk_ros1_ros2_compat
+  overlay_sample.py, overlay_menu_sample.py, piechart_sample.py, pictogram.py and
+  pictogram_all.py, the publishers of the samples which run on ROS 2 as well,
+  use jsk_ros1_ros2_compat.rospy_rclpy_compat instead of rospy:
+  - rclpy messages take neither positional arguments nor ints for float fields,
+  and publish() no message fields, so ColorRGBA(r=, g=, b=, a=), Float32(data=)
+  and float values are spelled out; the values are the same on ROS 1.
+  - frame_id "base_link" instead of "/base_link": tf2 of ROS 2 rejects the
+  leading slash, which ROS 1 strips.
+  - the publishers of pictogram(_all).py get queue_size=1 (they had none).
+  - overlay_sample.py also publishes /sample_string and /diagnostics_agg on ROS 2
+  for the String and OverlayDiagnostic displays of its ROS 2 rviz config, as on
+  the ros2 branch (`#903 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/903>`_): OverlayText is in rviz_2d_overlay_plugins there, and
+  `ros2 topic pub`, the counterpart of the `rostopic pub` of
+  overlay_sample.launch, exits with an error on SIGINT.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] Normal, TFTrajectory, QuietInteractiveMarker, RvizScenePublisher, VideoCapture: build the displays on ROS 2
+  - Normal: processMessage() is a slot, so rviz_compat.h is included outside
+  Q_MOC_RUN for moc to see the ROS 2 signature; findChannelIndex/validateFloats
+  come from rviz_default_plugins/rviz_common.
+  - TFTrajectory: rclcpp::Time/Duration.
+  - QuietInteractiveMarker: rviz_default_plugins' InteractiveMarkerDisplay.
+  - RvizScenePublisher, VideoCapture: the render window is grabbed through its
+  winId(); image_transport publisher on the rviz node; std::filesystem instead
+  of boost::filesystem on ROS 2.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] TwistStamped, FacingVisualizer, TargetVisualizer, Pictogram(Array), Diagnostics: build the displays on ROS 2
+  rviz_common::MessageFilterDisplay calls processMessage() with ConstSharedPtr on
+  ROS 2; the Ogre objects come from rviz_rendering. FacingVisualizer takes the
+  camera from the current view controller. Diagnostics subscribes with rclcpp on
+  the rviz node.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] OverlayImage, OverlayMenu, OverlayDiagnostic, Plotter2D, LinearGauge, String: build the overlay displays on ROS 2
+  The overlays are prepared with prepareOverlays() of rviz_rendering in
+  onInitialize(), and the displays subscribe with rclcpp on the rviz node (the
+  topic property is initialized with it, its message type is the rosidl name);
+  processMessage() takes ConstSharedPtr on ROS 2. OverlayImage subscribes through
+  image_transport::create_subscription with the transport of
+  ImageTransportHintsProperty. overlay_utils only needs rviz_compat.h for its
+  logging.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] ObjectFitOperator, RobotCommandInterface, SelectPointCloudPublish, TabletController: build the panels on ROS 2
+  As the other panels, the rviz node is taken in onInitialize() on ROS 2, where
+  the part of the constructor needing it continues.
+  - ObjectFitOperator: the icon parameters are declared on the rviz node with
+  their defaults from the package share directory.
+  - RobotCommandInterface: robot_command_buttons is a list of ids with
+  robot_command.<id>.{name,icon,type,command,srv}, as on the ros2 branch (`#903 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/903>`_);
+  the services are waited for (1 s) and called on the rviz node.
+  - SelectPointCloudPublish: the selection manager comes from the display
+  context; rclcpp publisher.
+  - TabletController: rclcpp publishers/subscription, std::mutex.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] PublishTopic, EmptyServiceCallInterface, CancelAction, RecordAction: build the panels on ROS 2
+  The panels get the rviz node in onInitialize() on ROS 2 (rviz_common has no
+  node before that), and create their publishers / service clients there.
+  - PublishTopic: rclcpp publisher; nothing is published while no topic is set.
+  - EmptyServiceCallInterface: the buttons are built in onInitialize(); ROS 2
+  parameters can not hold an array of structs, so rviz_service_call.buttons is
+  a list of ids with rviz_service_call.<id>.{icon,service_name,text}, as on the
+  ros2 branch (`#903 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/903>`_); the services are called asynchronously, as the executor of
+  rviz already spins its node.
+  - CancelAction: the actions are found by their _action/cancel_goal services and
+  cancelled through action_msgs/srv/CancelGoal.
+  - RecordAction: rclcpp publisher of /record_command.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] CloseAll, OpenAll, OverlayPicker, ScreenshotListener: build the tools on ROS 2
+  The headers and the pluginlib header differ (rviz_common, class_list_macros.hpp);
+  the rest is shared through the rviz:: aliases of rviz_compat.h.
+  - ScreenshotListener: the screenshot service is created on the rviz node and
+  the render window is grabbed through QScreen::grabWindow() of its winId().
+  - OverlayPicker: OverlayText and PieChart are not built on ROS 2, so String and
+  LinearGauge are pickable instead, as on the ros2 branch (`#903 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/903>`_); the target
+  property starts as NULL on ROS 2.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_rviz_plugins] build on ROS 1 (catkin) and ROS 2 (ament) from one package.xml/CMakeLists.txt
+  package.xml: the dependencies only ROS 1 has (catkin, rviz, dynamic_reconfigure,
+  message_generation, jsk\_\*_msgs, people_msgs, view_controller_msgs, ...) and the
+  test dependencies of the rostests get condition="$ROS_VERSION == 1"; the ament
+  build tools, rviz_common, rviz_rendering, rviz_default_plugins and the other
+  dependencies of the ROS 2 build get condition="$ROS_VERSION == 2"; build_type
+  follows ROS_VERSION.
+  CMakeLists.txt: the ROS 1 part is unchanged; the ROS 2 (ament) build is
+  prepended in `if("$ENV{ROS_VERSION}" EQUAL 2) ... else()`, and the file ends with
+  `endif()`. It generates the messages with rosidl, builds the plugins of
+  rviz_common_plugins.xml from the same src/ as ROS 1 and exports
+  rviz_common_plugins.xml (the ROS 2 plugin description, from the ros2 branch,
+  `#903 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/903>`_) to pluginlib; plugin_description.xml stays the ROS 1 one. Which plugins
+  are not built on ROS 2 and why is listed there, as decided on the ros2 branch:
+  OverlayText/PieChart (rviz_2d_overlay_plugins), CameraInfo/PoseArray
+  (rviz_default_plugins), those waiting for jsk_hark_msgs, jsk_footstep_msgs,
+  jsk_recognition_msgs, people_msgs, view_controller_msgs or jsk_gui_msgs, and
+  OverlayCamera (rviz_rendering hides the Ogre render target).
+  msg/srv: `std_msgs/Header` and a package-relative TransformableMarkerOperate,
+  which rosidl requires and catkin accepts as well.
+  src/rviz_compat.h: the sources tell ROS 1 and ROS 2 apart with
+  `#if ROS_VERSION_MAJOR != 1` as jsk_common does
+  (jsk_ros1_ros2_compat/ros_version.h, which the ROS 1 build of this package does
+  not depend on, so the detection is spelled out). On ROS 2 it reopens the rviz::
+  names used here as aliases of their rviz_common / rviz_common::properties /
+  rviz_rendering / rviz_default_plugins counterparts, as
+  JSK_ROS1_ROS2_COMPAT_MSG_ALIAS() does for the messages, so that the pure renames
+  need no #if, and provides ROS_DEBUG..ROS_FATAL(_STREAM), ROS_VERSION_MINIMUM and
+  ros::WallTime/WallDuration for the shared code.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* Merge pull request `#899 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/899>`_ from jsk-ros-pkg/obese-devel
+  Remove gdown key
+* gdown is not used anymore
+* Contributors: Kei Okada, Yoshiki Obinata
+
 2.1.10 (2024-12-11)
 -------------------
 

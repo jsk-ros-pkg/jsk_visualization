@@ -2,6 +2,29 @@
 Changelog for package jsk_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#905 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/905>`_ from k-okada/rqt-plugins-ros1-ros2
+  ROS 1 / ROS 2 for the whole repository from one source tree (jsk_ros1_ros2_compat)
+* [jsk_visualization] build the metapackage on ROS 1 (catkin) and ROS 2 (ament)
+  As on the ros2 branch (`#903 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/903>`_, "add jsk_visualization meta package"):
+  package.xml format 3, ament_cmake on ROS 2 and the author line; here
+  from one package.xml/CMakeLists.txt for both, as jsk_common does:
+  - package.xml: catkin on ROS 1, ament_cmake (and ros_environment) on
+  ROS 2; jsk_rqt_plugins, jsk_rviz_plugins and jsk_interactive_marker
+  build on both, so they are exec_depends of both; jsk_interactive and
+  jsk_interactive_test are not ported to ROS 2 (euslisp), so they are
+  ROS 1 only. build_type follows ROS_VERSION.
+  - CMakeLists.txt: the ROS 1 lines (catkin_metapackage()) are unchanged,
+  the ament build is prepended in `if("$ENV{ROS_VERSION}" EQUAL 2) ...
+  else()` and the file ends with `endif()`. catkin keeps building it as a
+  metapackage; catkin_pkg only warns that a metapackage should have no
+  buildtool_depend but catkin, since it does not evaluate the conditions
+  of the ROS 2 ones there.
+  Co-authored-by: Yoshiki Obinata <mqcmd196@hotmail.co.jp>
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* Contributors: Kei Okada
+
 2.1.10 (2024-12-11)
 -------------------
 

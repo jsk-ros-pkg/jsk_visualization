@@ -2,6 +2,250 @@
 Changelog for package jsk_interactive_marker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#908 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/908>`_ from k-okada/readme-gallery
+  README: a gallery that links to how to run each sample
+* package.xml: one line for the depends which are the same on ROS 1 and ROS 2
+  The depends on jsk_recognition_msgs/utils, python3-scipy and
+  python3-sklearn were written twice, with $ROS_VERSION == 1 and == 2;
+  jsk_rqt_plugins listed rqt_gui, rqt_gui_py and rqt_plot twice. The
+  evaluated dependencies of melodic, noetic, ROS One and jazzy are the
+  same, except the version_gte of jsk_recognition_msgs, which now applies
+  on ROS 2 too (1.2.19 there).
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] build/exec_depend on jsk_recognition_utils, not a generic depend
+  check_dependency (catkin_pkg of focal) failed: the generic ROS 1 depend on
+  jsk_recognition_utils is redundant with the ROS 2 build_depend and
+  exec_depend, whatever their conditions.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] depend on jsk_recognition_utils on ROS 2 as well
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* README: alt text of the gallery images
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* depend on jsk_recognition_msgs/utils on ROS 2 without \*_FROM_SOURCE
+  They are going to be released for ROS 2 soon, so the release of
+  jsk_visualization depends on them as on ROS 1 (the ROS 2 binaries fail
+  on the buildfarm until they are released). The ROS 2 CI checks out
+  jsk_recognition_utils as well as jsk_recognition_msgs from source, and
+  no longer sets JSK_RECOGNITION_MSGS_FROM_SOURCE.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* add README.md of jsk_rviz_plugins, jsk_rqt_plugins and jsk_interactive_marker
+  Each README has a short intro, an index of the samples and one section per
+  sample, named after it: the plugins it shows, links to their pages in doc/,
+  the ROS 1 and ROS 2 captures of .readme/gallery/ side by side, and how to run
+  it on ROS 1 (roslaunch / rosrun) and on ROS 2 (ros2 launch / ros2 run), with
+  the topic publish and service call commands of the rqt scripts.
+  On ROS 2, rqt_image_view2 cannot select an image yet (its topic list is
+  filled once, before ROS 2 discovery finds any topic), which the README says.
+  The existing usage of jsk_interactive_marker/README.md is kept below the
+  samples.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* Merge pull request `#905 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/905>`_ from k-okada/rqt-plugins-ros1-ros2
+  ROS 1 / ROS 2 for the whole repository from one source tree (jsk_ros1_ros2_compat)
+* depend on jsk_ros1_ros2_compat only on ROS 2 and ROS One
+  jsk_ros1_ros2_compat is in jsk_common >= 3.0, which is released for ROS 2
+  and ROS One only; on indigo, kinetic, melodic and noetic rosdep could not
+  resolve the exec_depend, and the packages now fall back to rospy without it.
+  So the exec_depend of jsk_rqt_plugins, jsk_rviz_plugins and
+  jsk_interactive_marker is conditioned on
+  "$ROS_VERSION == 2 or $ROS_DISTRO == one" (checked with catkin_pkg 1.1.1
+  and 0.4.16 of Ubuntu 20.04: it is evaluated true on jazzy and one, false on
+  indigo and noetic). Their build dependencies on it were ROS 2 only already.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] dummy_camera.py: fall back to rospy without jsk_ros1_ros2_compat on ROS 1
+  jsk_ros1_ros2_compat is in jsk_common >= 3.0, which is released for ROS 2
+  and ROS One only, not for indigo, kinetic, melodic and noetic, where
+  dummy_camera.py has to work as before without it.
+  Without jsk_ros1_ros2_compat (ROS 1 only), the five functions of
+  rospy_rclpy_compat it uses are forwarded to rospy, as rospy_rclpy_compat
+  does on ROS 1; inline, as it is the only script of this package using it.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] build_depend and exec_depend of jsk_recognition_msgs on ROS 2, not depend
+  check_dependency failed: catkin_pkg reported the generic dependency of ROS 2 on
+  jsk_recognition_msgs (0850d44) as redundant with its build_depend, build_export_depend and
+  exec_depend of ROS 1, as it checks them without evaluating the conditions. On ROS 2 it is a
+  build_depend and an exec_depend, as the generic one would be except for the export.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] depend on jsk_recognition_msgs on ROS 2 with JSK_RECOGNITION_MSGS_FROM_SOURCE=1
+  As jsk_rviz_plugins: without the dependency, colcon may build jsk_interactive_marker before
+  jsk_recognition_msgs of the sparse checkout of the ROS 2 CI, and bounding_box_marker and
+  srv/IndexRequest.srv are skipped. The dependency is only with JSK_RECOGNITION_MSGS_FROM_SOURCE=1,
+  which the CI sets, so rosdep of a normal workspace does not need the unreleased package.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] bounding_box_marker, IndexRequest.srv: build on ROS 2 when jsk_recognition_msgs is found
+  jsk_recognition_msgs is not released for ROS 2, but builds there from
+  source (`jsk-ros-pkg/jsk_recognition#2903 <https://github.com/jsk-ros-pkg/jsk_recognition/issues/2903>`_). With the same policy as for
+  jsk_rviz_plugins, the ROS 2 build finds it QUIET and, when
+  found, generates srv/IndexRequest.srv and builds bounding_box_marker (and
+  its test); otherwise it says what it skips. It is not a ROS 2 dependency
+  in package.xml, so rosdep does not look for it; colcon does not order it
+  before this package either, so build it in an underlay.
+  bounding_box_marker, in #if blocks on ROS 2: the same ~ topics and
+  bounding_box_interactive_marker server on the node; stamp.nsec is nanosec
+  there. indexRequest(), which is not advertised (and does not return), stays
+  ROS 1 only.
+  polygon_marker, footstep_marker, interactive_point_cloud and
+  urdf_model_marker need jsk_recognition_utils as well, so they stay ROS 1
+  only; footstep_marker is the only user of jsk_footstep_msgs (released for
+  ROS 2), so nothing else could be ported for it.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] CMakeLists.txt: list the nodes not ported to ROS 2 yet
+  triangle_foot, door_foot and point_cloud_config_marker, the DRC (Atlas)
+  tools with their /map and /pelvis frames, need nothing that ROS 2 lacks
+  but are not ported yet; door_foot's ~foot_list is a list of dicts, which
+  ROS 2 parameters can not hold.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] add the ROS 2 tests
+  test/ros2/test_samples.py (launch_testing) runs the ROS 2 samples
+  without rviz2 and checks that
+  - each marker_6dof of marker_6dof_sample serves its marker in map and
+  echoes ~move_marker on ~pose;
+  - transformable_server_sample inserts a box for request_marker_operate,
+  serves it on simple_marker, publishes ~pose_with_name for ~set_pose and
+  returns the pose for ~get_pose;
+  - camera_info_publisher publishes the default and the yaml camera info;
+  - dummy_camera.py publishes its camera info;
+  - all of them exit cleanly.
+  ROS 1 has no tests of this package.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] add the ROS 2 launch files of the samples
+  launch/marker_6dof_sample.launch.py, transformable_server_sample.launch.py,
+  sample_camera_info_publisher.launch.py and dummy_camera.launch.py, the
+  ROS 2 counterparts of the .launch files of the nodes ported to ROS 2, with
+  the rviz2 configs in config/ros2/ (rviz2 configs can not be shared with
+  ROS 1), as jsk_rviz_plugins does. `gui:=false` runs them without rviz2.
+  - transformable_server_sample.launch.py has no KORG nanoKONTROL and
+  spacenav nodes (korg_nanokontrol and the configure scripts are ROS 1
+  only); torus_udiv/torus_vdiv of the .launch are global parameters which
+  the node does not read, so they are not given to it either.
+  - dummy_camera.launch.py: tf2_ros's static_transform_publisher with the
+  same x y z yaw pitch roll; launch_ros has no $(anon), so the default
+  name is dummy_camera.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] dummy_camera.py: rospy -> jsk_ros1_ros2_compat
+  dummy_camera.py runs on ROS 1 and ROS 2 through
+  jsk_ros1_ros2_compat.rospy_rclpy_compat, imported directly as
+  jsk_rqt_plugins does; jsk_ros1_ros2_compat becomes an exec_depend of both
+  (on ROS 1 the CI builds jsk_common from source, .travis.rosinstall, until
+  jsk_common 3.x is released for ROS 1). The publishing loop is a timer of
+  the same 10 Hz; the stamps stay zero (rospy.Time(0)); CameraInfo's D, K,
+  R, P are d, k, r, p on ROS 2.
+  The ROS 2 build installs it with a python3 shebang, and config/ and
+  models/ (the yaml files of camera_info_publisher and
+  transformable_server_sample, the mesh of marker_6dof).
+  transformable_markers_client.py (jsk_recognition_msgs/utils),
+  semantic_robot_state_generator.py (the global /robot_description) and the
+  joy/spacenav configure scripts stay ROS 1 only.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] transformable_server_sample: run on ROS 2
+  jsk_rviz_plugins builds on ROS 2 now, so its messages (OverlayText,
+  TransformableMarkerOperate, RequestMarkerOperate) are there, and
+  jsk_rviz_plugins becomes a dependency of both.
+  In #if blocks on ROS 2:
+  - TransformableInteractiveServer: the same ~ topics and services on the
+  node simple_marker (or its remapped name), created in a ROS 2
+  constructor; the services through jsk_interactive_marker::
+  advertiseService(), which calls the ROS 1 (Request&, Response&)
+  callbacks unchanged. `n\_->param()` is a ParamHandle, the publishers are
+  jsk_interactive_marker::Publisher, so `pub.publish(msg)` stays as is.
+  cfg/InteractiveSetting.cfg (dynamic_reconfigure) is the parameters of
+  the same names and ranges, which call configCallback() when set.
+  tf2_ros's buffer for the transformation of the poses (with ~strict_tf).
+  The interactive marker server is simple_marker as on ROS 1.
+  - TransformableObject: tf2_ros's broadcaster, tf2_eigen for
+  eigen_conversions; InteractiveSettingConfig is a struct of the same
+  fields on ROS 2.
+  - YamlMenuHandler: on the node; the menu topics are relative to the
+  private namespace as with ROS 1's NodeHandle("~").
+  ~use_parent_and_child (ParentAndChildInteractiveMarkerServer, which
+  derives from the ROS 1 server and calls other servers' services from its
+  callbacks) stays ROS 1 only; on ROS 2 it warns and uses the simple server.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] return from YamlMenuHandler::initMenu() and the TransformableObject defaults
+  YamlMenuHandler::initMenu() fell off its end, and so did the default
+  TransformableObject::getVisualizationMsgMarker() and
+  getInteractiveMarkerScale(), which is undefined behavior: built for ROS 2
+  (gcc 13), transformable_server_sample died with SIGILL right after
+  reading ~yaml_filename. initMenu() returns true when it read the menu,
+  the defaults an empty marker and the scale 1.0.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] world2yaml: build on ROS 2
+  world2yaml is not a ROS node; of tf it uses Matrix3x3/Quaternion only,
+  which are tf2's LinearMath on ROS 2 (the tf:: names are aliased there).
+  It does not include ros1_ros2_compat.h, which is for the nodes, but the
+  same <ros/ros.h> detection. tinyxml becomes a dependency of both; the
+  ROS 2 build finds it with pkg-config (no cmake_modules there).
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] camera_info_publisher: run on ROS 2
+  In #if blocks on ROS 2:
+  - ~camera_info, ~input and the interactive marker server on the node's
+  name as on ROS 1; the timer of ~static_rate through createTimer();
+  tf2_ros for the transform of the marker's feedback and the broadcast of
+  ~parent_frame_id -> ~frame_id.
+  - cfg/CameraInfoPublisher.cfg (dynamic_reconfigure) is the parameters
+  ~width, ~height and ~f with the same defaults and range; setting them
+  calls configCallback() as dynamic_reconfigure does. Integers are taken
+  (dynamically typed) as dynamic_reconfigure takes them.
+  - the fields of sensor_msgs/CameraInfo are d, k, r, p on ROS 2.
+  - ROS_FATAL in ros1_ros2_compat.h, which jsk_ros1_ros2_compat lacks.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] marker_6dof: run on ROS 2
+  ros1_ros2_compat.h gets, on ROS 2 only, the ROS 1 APIs that the nodes
+  use most, so that their ROS 1 lines stay as they are:
+  - jsk_interactive_marker::ParamHandle: pnh.param()/getParam()/hasParam()
+  of a private ros::NodeHandle on the node's parameters, dynamically typed
+  as rospy's (an integer is read as a double as on ROS 1);
+  - jsk_interactive_marker::createTimer() with a ros::TimerEvent
+  (current_real) for the ROS 1 timer callbacks.
+  marker_6dof, in #if blocks: the node is ROS1_ROS2_COMPAT::g_node set by
+  main(); ~pose/~move_marker are ~/pose and ~/move_marker; the interactive
+  marker server is on the node's name (the same /<node>/update,
+  /<node>/feedback); tf2_ros's broadcaster/buffer for ~publish_tf;
+  jsk_topic_tools::readVectorParameter for ~initial_orientation is the
+  parameter's double array. tf2 of ROS 2 refuses frame ids with a leading
+  slash, so the one of ~frame_id (default /map) is dropped there.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] im_helpers (interactive_marker_helpers.cpp): build on ROS 2
+  - include/jsk_interactive_marker/ros1_ros2_compat.h: the ROS 1 / ROS 2
+  detection of jsk_ros1_ros2_compat/ros_version.h (`#if
+  ROS_VERSION_MAJOR != 1` is ROS 2), and on ROS 2 only
+  jsk_ros1_ros2_compat/compat.h and boost::bind's _1. It does not include
+  jsk_ros1_ros2_compat on ROS 1, where jsk_common >= 3.0 is not released,
+  so the ROS 1 dependencies stay as they are.
+  - interactive_marker_helpers.h: the ROS 2 message headers, with the ROS 1
+  spelling of the message types (JSK_ROS1_ROS2_COMPAT_MSG_ALIAS), so the
+  declarations are the same on both.
+  - interactive_marker_helpers.cpp: tf2's LinearMath for tf::Transform,
+  Vector3, Quaternion and tf::quaternionTFToMsg on ROS 2; the zero stamp
+  of makeGraspMarker() is builtin_interfaces' Time there.
+  The ROS 2 build has it as jsk_interactive_marker_lib, since the target
+  jsk_interactive_marker is the messages' one on ROS 2 (rosidl).
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* [jsk_interactive_marker] build on ROS 1 (catkin) and ROS 2 (ament) from one package.xml/CMakeLists.txt
+  package.xml: format 3. The format 1 build_depend + run_depend pairs are
+  depend, the dependencies only ROS 1 has (catkin, mk, rosbuild,
+  message_generation/runtime, roscpp, tf, dynamic_reconfigure, ...) and
+  those of the nodes that stay ROS 1 only get condition="$ROS_VERSION == 1";
+  ament, rosidl, rclcpp, tf2 and jsk_ros1_ros2_compat get
+  condition="$ROS_VERSION == 2"; build_type follows ROS_VERSION.
+  CMakeLists.txt: the ROS 1 part is unchanged; the ROS 2 (ament) build is
+  prepended in `if("$ENV{ROS_VERSION}" EQUAL 2) ... else()`, and the file
+  ends with `endif()`. The ROS_VERSION guess for builds without
+  ros_environment is the one of jsk_common's packages.
+  This commit generates the messages and services on ROS 2; the nodes are
+  added to the ROS 2 build with their ports in the following commits.
+  rosidl does not accept two things of the ROS 1 definitions, so the ROS 2
+  build generates them from copies in the build directory with
+  `duration` -> `builtin_interfaces/Duration` (JointTrajectoryPointWithType)
+  and `graspPose` -> `grasp_pose` (MoveObject). srv/IndexRequest.srv uses
+  jsk_recognition_msgs, which is not released for ROS 2, so it is ROS 1
+  only, as are the nodes that need jsk_recognition_msgs/utils,
+  jsk_footstep_msgs, jsk_rviz_plugins, rviz, pcl_ros, dynamic_tf_publisher
+  or urdf/kdl (listed in CMakeLists.txt).
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* Contributors: Kei Okada
+
 2.1.10 (2024-12-11)
 -------------------
 * jsk_interactive_marker: use catkin_install_python in CMakeLists.txt (`#897 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/897>`_)
