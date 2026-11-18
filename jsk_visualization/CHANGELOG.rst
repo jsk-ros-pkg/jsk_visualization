@@ -2,8 +2,8 @@
 Changelog for package jsk_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.1 (2026-11-19)
+------------------
 * [jsk_visualization] a package which depends on the others, not a metapackage
   bloom refuses to release the metapackage on ROS 2 because its
   CMakeLists.txt is not the one of REP 127 (it branches on $ROS_VERSION),
