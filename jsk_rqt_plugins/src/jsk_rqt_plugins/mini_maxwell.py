@@ -18,8 +18,7 @@ from python_qt_binding.QtGui import QIcon
 from python_qt_binding.QtGui import QPainter
 from python_qt_binding.QtGui import QPen
 
-from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
-from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
 from rqt_gui_py.plugin import Plugin
 from std_msgs.msg import Bool
 if ROS_VERSION == 2:

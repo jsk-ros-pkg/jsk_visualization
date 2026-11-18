@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
-from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
 from std_msgs.msg import Bool
 if ROS_VERSION == 2:
     # std_msgs/Time does not exist on ROS 2, builtin_interfaces/Time is the

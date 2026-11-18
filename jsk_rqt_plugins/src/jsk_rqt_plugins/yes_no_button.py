@@ -3,8 +3,7 @@
 from distutils.version import LooseVersion
 import os
 
-from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
-from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
 if ROS_VERSION == 1:
     import rospkg
     import rospy

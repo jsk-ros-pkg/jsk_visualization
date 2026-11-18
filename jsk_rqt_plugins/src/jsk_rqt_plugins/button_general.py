@@ -22,8 +22,7 @@ from python_qt_binding.QtGui import QPen
 import yaml
 
 from resource_retriever import get_filename
-from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
-from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
 if ROS_VERSION == 2:
     import time
 

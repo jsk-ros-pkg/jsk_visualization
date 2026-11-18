@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+from jsk_rqt_plugins.compat import ROS_VERSION
 if ROS_VERSION == 2:
     from rosidl_runtime_py.utilities import get_message as get_message_class
 else:

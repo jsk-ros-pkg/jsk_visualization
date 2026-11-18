@@ -21,8 +21,7 @@ from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtCore import QTimer
 from python_qt_binding.QtCore import Slot
 from python_qt_binding.QtGui import QIcon
-from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
-from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
 if ROS_VERSION == 2:
     from ament_index_python.packages import get_package_share_directory
 else:

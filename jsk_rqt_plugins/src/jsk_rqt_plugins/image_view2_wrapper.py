@@ -32,8 +32,7 @@ import yaml
 from cv_bridge import CvBridge
 from cv_bridge import CvBridgeError
 from image_view2.msg import MouseEvent
-from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
-from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
 from resource_retriever import get_filename
 if ROS_VERSION == 1:
     import rospy

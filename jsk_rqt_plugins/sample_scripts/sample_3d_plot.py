@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 
-from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+from jsk_rqt_plugins.compat import ros_compat
 from std_msgs.msg import Float32
 
 
