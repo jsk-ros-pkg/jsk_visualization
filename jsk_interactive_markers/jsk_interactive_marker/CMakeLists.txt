@@ -28,9 +28,8 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   #   jsk_recognition_utils on ROS 1)
   # - pointcloud_cropper (pcl_ros)
   # - euslisp/ (roseus)
-  # Built only when jsk_recognition_msgs is found, which is not released for
-  # ROS 2 (so not in the ROS 2 dependencies of package.xml) but can be built
-  # from source: srv/IndexRequest.srv and bounding_box_marker.
+  # Built only when jsk_recognition_msgs is found: srv/IndexRequest.srv and
+  # bounding_box_marker.
   # Not ported yet, though they need nothing missing on ROS 2: the DRC
   # (Atlas) tools triangle_foot, door_foot (its ~foot_list is a list of
   # dicts, which ROS 2 parameters can not hold) and point_cloud_config_marker.
