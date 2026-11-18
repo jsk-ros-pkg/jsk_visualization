@@ -2,6 +2,16 @@
 Changelog for package jsk_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_visualization] a package which depends on the others, not a metapackage
+  bloom refuses to release the metapackage on ROS 2 because its
+  CMakeLists.txt is not the one of REP 127 (it branches on $ROS_VERSION),
+  so, as jsk_common does, export no <metapackage/> and call catkin_package()
+  on ROS 1.
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* Contributors: Kei Okada
+
 3.0.0 (2026-11-19)
 ------------------
 * Merge pull request `#905 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/905>`_ from k-okada/rqt-plugins-ros1-ros2
