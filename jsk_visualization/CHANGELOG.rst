@@ -2,8 +2,8 @@
 Changelog for package jsk_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2026-11-19)
+------------------
 * Merge pull request `#905 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/905>`_ from k-okada/rqt-plugins-ros1-ros2
   ROS 1 / ROS 2 for the whole repository from one source tree (jsk_ros1_ros2_compat)
 * [jsk_visualization] build the metapackage on ROS 1 (catkin) and ROS 2 (ament)
