@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from jsk_rqt_plugins.compat import ros_compat, ROS_VERSION
+from jsk_rqt_plugins.compat import exit_on_shutdown
 from std_msgs.msg import Bool
 if ROS_VERSION == 2:
     # std_msgs/Time does not exist on ROS 2, builtin_interfaces/Time is the
@@ -42,4 +43,5 @@ def main():
 
 if __name__ == '__main__':
     node = ros_compat.init_node('sample_drc_mini_maxwell')
-    main()
+    with exit_on_shutdown():
+        main()

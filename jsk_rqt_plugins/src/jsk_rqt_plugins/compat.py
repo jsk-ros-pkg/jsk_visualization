@@ -4,6 +4,8 @@ package: jsk_ros1_ros2_compat's rospy_rclpy_compat (ROS1/ROS2), or, as
 jsk_common < 3.0 has no jsk_ros1_ros2_compat, the same functions forwarded
 to rospy (ROS1 only)."""
 
+import contextlib
+
 try:
     from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat  # NOQA
     from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION  # NOQA
@@ -56,3 +58,28 @@ def init_rqt_ros():
         from rclpy.signals import SignalHandlerOptions
         if not rclpy.ok():
             rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
+
+
+@contextlib.contextmanager
+def exit_on_shutdown():
+    """For the main loops of the sample scripts: on ROS 2, SIGINT shuts the
+    rclpy context down from its signal handler and raises KeyboardInterrupt
+    in the main thread, so the loop ends with KeyboardInterrupt, or with an
+    RCLError of a publish() after the context went down. Both are a normal
+    exit then. Nothing changes on ROS 1 (rospy)."""
+    if ROS_VERSION != 2:
+        yield
+        return
+    import rclpy
+    import signal
+    try:
+        yield
+    except KeyboardInterrupt:
+        pass
+    except Exception:
+        if rclpy.ok():
+            raise
+    # Ctrl-C of a terminal reaches the samples twice under ros2 launch
+    # (from the terminal and from launch): ignore the second one, which
+    # would break the shutdown after the loop
+    signal.signal(signal.SIGINT, signal.SIG_IGN)

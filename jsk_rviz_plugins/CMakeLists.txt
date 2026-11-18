@@ -272,6 +272,10 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     samples/pictogram_all.py
     samples/piechart_sample.py
   )
+  # imported by the samples from their own directory
+  install(FILES samples/sample_utils.py
+    DESTINATION lib/${PROJECT_NAME}
+  )
   if(jsk_recognition_msgs_FOUND)
     jsk_ros1_ros2_compat_install_python(PROGRAMS
       samples/bounding_box_sample.py

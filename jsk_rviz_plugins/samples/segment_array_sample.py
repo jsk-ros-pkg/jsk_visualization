@@ -11,6 +11,7 @@ except ImportError:
 from jsk_recognition_msgs.msg import Segment
 from jsk_recognition_msgs.msg import SegmentArray
 from geometry_msgs.msg import Point
+from sample_utils import exit_on_shutdown
 
 
 def main():
@@ -42,4 +43,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    with exit_on_shutdown():
+        main()

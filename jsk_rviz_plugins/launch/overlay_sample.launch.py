@@ -25,7 +25,6 @@ def generate_launch_description():
             package='jsk_rviz_plugins',
             executable='overlay_sample.py',
             name='overlay_sample',
-            respawn=True,
         ),
         Node(
             package='image_publisher',
@@ -40,7 +39,6 @@ def generate_launch_description():
             package='jsk_rviz_plugins',
             executable='overlay_menu_sample.py',
             name='overlay_menu_sample',
-            respawn=True,
         ),
         Node(
             condition=IfCondition(LaunchConfiguration('gui')),

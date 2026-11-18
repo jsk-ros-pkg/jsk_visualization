@@ -5,6 +5,7 @@ import time
 import numpy as np
 
 from jsk_rqt_plugins.compat import ros_compat
+from jsk_rqt_plugins.compat import exit_on_shutdown
 from std_msgs.msg import Float32
 
 
@@ -24,4 +25,5 @@ def main():
 
 if __name__ == '__main__':
     node = ros_compat.init_node('sample_3d_plot')
-    main()
+    with exit_on_shutdown():
+        main()
