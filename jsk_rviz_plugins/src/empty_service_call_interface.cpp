@@ -73,6 +73,10 @@ namespace jsk_rviz_plugins
       }
       return node_->get_parameter(name).get_value<T>();
     };
+    // a parameter of another type than expected (declare_parameter() and
+    // get_value() throw) or a missing icon package leaves the panel empty
+    // instead of taking rviz down
+    try {
     std::string icon_package_name = param("icon_include_package", std::string("jsk_rviz_plugins"));
     ROS_INFO("Find Icons In %s package.", icon_package_name.c_str());
 
@@ -81,6 +85,9 @@ namespace jsk_rviz_plugins
       icon_path_prefix = ament_index_cpp::get_package_share_directory(icon_package_name) + std::string("/icons/");
 
     std::vector<std::string> button_ids = param("rviz_service_call.buttons", std::vector<std::string>());
+    if (button_ids.empty()) {
+      ROS_WARN("rviz_service_call.buttons is not set, no buttons are shown");
+    }
     for (const std::string& id : button_ids)
       {
         const std::string base = "rviz_service_call." + id + ".";
@@ -90,6 +97,10 @@ namespace jsk_rviz_plugins
         new_button.text = param(base + "text", std::string());
         service_call_button_infos_.push_back(new_button);
       }
+    } catch (const std::exception& e) {
+      ROS_WARN("Malformed rviz_service_call parameters, no buttons are shown: %s", e.what());
+      service_call_button_infos_.clear();
+    }
 #else
     ros::NodeHandle nh("~");
 
@@ -104,6 +115,24 @@ namespace jsk_rviz_plugins
 
     XmlRpc::XmlRpcValue buttons_list;
     nh.getParam("rviz_service_call/buttons", buttons_list);
+    // XmlRpcValue throws on size() of a missing (invalid) value and on
+    // operator[] or the casts of a value of another type, which aborted rviz
+    if (buttons_list.getType() != XmlRpc::XmlRpcValue::TypeArray) {
+      ROS_WARN("~rviz_service_call/buttons is not set or is not a list, no buttons are shown");
+      return;
+    }
+    for (int32_t i = 0; i < buttons_list.size(); ++i) {
+      XmlRpc::XmlRpcValue& button = buttons_list[i];
+      const char* keys[] = {"icon", "service_name", "text"};
+      for (size_t k = 0; k < 3; k++) {
+        if (button.getType() != XmlRpc::XmlRpcValue::TypeStruct ||
+            !button.hasMember(keys[k]) ||
+            button[keys[k]].getType() != XmlRpc::XmlRpcValue::TypeString) {
+          ROS_WARN("~rviz_service_call/buttons[%d] has no string %s, no buttons are shown", i, keys[k]);
+          return;
+        }
+      }
+    }
     for (int32_t i = 0; i < buttons_list.size(); ++i)
       {
         ServiceCallButtonInfo new_button;
