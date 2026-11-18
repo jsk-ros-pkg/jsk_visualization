@@ -26,8 +26,6 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   #
   # The following plugins are provided by upstream packages on ROS 2 and
   # therefore not built here:
-  #   overlay_text_display, pie_chart_display
-  #     -> rviz_2d_overlay_plugins (https://github.com/teamspatzenhirn/rviz_2d_overlay_plugins)
   #   camera_info_display -> rviz_default_plugins/CameraInfo (https://github.com/ros2/rviz)
   #   pose_array_display  -> rviz_default_plugins/PoseArray, which already provides the
   #                          Arrow/Axes shapes this plugin added on ROS 1
@@ -112,9 +110,11 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     src/overlay_image_display.h
     src/overlay_menu_display.h
     src/overlay_picker_tool.h
+    src/overlay_text_display.h
     src/overlay_utils.h
     src/pictogram_array_display.h
     src/pictogram_display.h
+    src/pie_chart_display.h
     src/plotter_2d_display.h
     src/publish_topic.h
     src/quiet_interactive_marker_display.h
@@ -150,9 +150,11 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     src/overlay_image_display.cpp
     src/overlay_menu_display.cpp
     src/overlay_picker_tool.cpp
+    src/overlay_text_display.cpp
     src/overlay_utils.cpp
     src/pictogram_array_display.cpp
     src/pictogram_display.cpp
+    src/pie_chart_display.cpp
     src/plotter_2d_display.cpp
     src/publish_topic.cpp
     src/quiet_interactive_marker_display.cpp

@@ -35,12 +35,31 @@
 #ifndef JSK_RVIZ_PLUGIN_OVERLAY_TEXT_DISPLAY_H_
 #define JSK_RVIZ_PLUGIN_OVERLAY_TEXT_DISPLAY_H_
 
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_rviz_plugins/msg/overlay_text.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_rviz_plugins, OverlayText)
+#else
 #include "jsk_rviz_plugins/OverlayText.h"
+#endif
 #ifndef Q_MOC_RUN
+#if ROS_VERSION_MAJOR != 1
+#include <rviz_common/display.hpp>
+#else
 #include <rviz/display.h>
+#endif
 #include "overlay_utils.h"
 #include <OGRE/OgreColourValue.h>
 #include <OGRE/OgreMaterial.h>
+#if ROS_VERSION_MAJOR != 1
+#include <std_msgs/msg/color_rgba.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#else
 #include <std_msgs/ColorRGBA.h>
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/bool_property.h>
@@ -48,6 +67,7 @@
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/enum_property.h>
 #include <rviz/properties/color_property.h>
+#endif
 #endif
 
 namespace jsk_rviz_plugins
@@ -86,7 +106,11 @@ namespace jsk_rviz_plugins
     int left_;
     int top_;
     
+#if ROS_VERSION_MAJOR != 1
+    rclcpp::Subscription<jsk_rviz_plugins::OverlayText>::SharedPtr sub_;
+#else
     ros::Subscriber sub_;
+#endif
     
     virtual void onInitialize();
     virtual void subscribe();
@@ -132,7 +156,11 @@ namespace jsk_rviz_plugins
     void updateFont();
     void updateLineWidth();
   private:
+#if ROS_VERSION_MAJOR != 1
+    void processMessage(const jsk_rviz_plugins::OverlayText::ConstSharedPtr& msg);
+#else
     void processMessage(const jsk_rviz_plugins::OverlayText::ConstPtr& msg);
+#endif
   };
 }
 

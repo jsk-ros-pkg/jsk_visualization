@@ -35,7 +35,9 @@
 
 #include "overlay_text_display.h"
 #include <OGRE/OgreMaterialManager.h>
+#if ROS_VERSION_MAJOR == 1
 #include <rviz/uniform_string_stream.h>
+#endif
 #include <OGRE/OgreTexture.h>
 #include <OGRE/OgreHardwarePixelBuffer.h>
 #include <QFontDatabase>
@@ -44,8 +46,17 @@
 #include <QTextDocument>
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+#if ROS_VERSION_MAJOR == 1
 #include <jsk_topic_tools/log_utils.h>
+#endif
 #include <regex>
+#if ROS_VERSION_MAJOR != 1
+// after the Qt headers: rviz_rendering/render_system.hpp includes X11/Xlib.h,
+// whose `None` macro breaks QtCore/qurl.h
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_rendering/render_system.hpp>
+#endif
 
 namespace jsk_rviz_plugins
 {
@@ -60,7 +71,11 @@ namespace jsk_rviz_plugins
   {
     update_topic_property_ = new rviz::RosTopicProperty(
       "Topic", "",
+#if ROS_VERSION_MAJOR != 1
+      rosidl_generator_traits::name<jsk_rviz_plugins::OverlayText>(),
+#else
       ros::message_traits::datatype<jsk_rviz_plugins::OverlayText>(),
+#endif
       "jsk_rviz_plugins::OverlayText topic to subscribe to.",
       this, SLOT( updateTopic() ));
     overtake_position_properties_property_ = new rviz::BoolProperty(
@@ -184,14 +199,25 @@ namespace jsk_rviz_plugins
   
   void OverlayTextDisplay::unsubscribe()
   {
+#if ROS_VERSION_MAJOR != 1
+    sub_.reset();
+#else
     sub_.shutdown();
+#endif
   }
 
   void OverlayTextDisplay::subscribe()
   {
     std::string topic_name = update_topic_property_->getTopicStd();
     if (topic_name.length() > 0 && topic_name != "/") {
+#if ROS_VERSION_MAJOR != 1
+      sub_ = context_->getRosNodeAbstraction().lock()->get_raw_node()->
+        create_subscription<jsk_rviz_plugins::OverlayText>(
+          topic_name, 1,
+          std::bind(&OverlayTextDisplay::processMessage, this, std::placeholders::_1));
+#else
       sub_ = ros::NodeHandle().subscribe(topic_name, 1, &OverlayTextDisplay::processMessage, this);
+#endif
     }
   }
   
@@ -204,6 +230,10 @@ namespace jsk_rviz_plugins
   // only the first time
   void OverlayTextDisplay::onInitialize()
   {
+#if ROS_VERSION_MAJOR != 1
+    rviz_rendering::RenderSystem::get()->prepareOverlays(scene_manager_);
+    update_topic_property_->initialize(context_->getRosNodeAbstraction());
+#endif
     onEnable();
     updateTopic();
     updateOvertakePositionProperties();
@@ -305,7 +335,11 @@ namespace jsk_rviz_plugins
   }
   
   void OverlayTextDisplay::processMessage
+#if ROS_VERSION_MAJOR != 1
+  (const jsk_rviz_plugins::OverlayText::ConstSharedPtr& msg)
+#else
   (const jsk_rviz_plugins::OverlayText::ConstPtr& msg)
+#endif
   {
     if (!isEnabled()) {
       return;
@@ -567,5 +601,9 @@ namespace jsk_rviz_plugins
   
 }
 
+#if ROS_VERSION_MAJOR != 1
+#include <pluginlib/class_list_macros.hpp>
+#else
 #include <pluginlib/class_list_macros.h>
+#endif
 PLUGINLIB_EXPORT_CLASS( jsk_rviz_plugins::OverlayTextDisplay, rviz::Display )

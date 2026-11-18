@@ -58,6 +58,24 @@
     <message_type>std_msgs/msg/Float32</message_type>
   </class>
 
+  <class name="jsk_rviz_plugin/PieChart"
+         type="jsk_rviz_plugins::PieChartDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      2D pie chart for std_msgs::Float32 messages
+    </description>
+    <message_type>std_msgs/msg/Float32</message_type>
+  </class>
+
+  <class name="jsk_rviz_plugin/OverlayText"
+         type="jsk_rviz_plugins::OverlayTextDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Displays text as overlay
+    </description>
+    <message_type>jsk_rviz_plugins/msg/OverlayText</message_type>
+  </class>
+
   <class name="jsk_rviz_plugin/LinearGauge"
          type="jsk_rviz_plugins::LinearGaugeDisplay"
          base_class_type="rviz_common::Display">
