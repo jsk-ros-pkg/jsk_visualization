@@ -48,7 +48,8 @@
        source sets JSK_RECOGNITION_MSGS_FROM_SOURCE=1 (as the ROS 2 CI
        does) for rosdep to take it from the workspace and colcon to build it
        first. -->
-  <depend condition="$ROS_VERSION == 2 and $JSK_RECOGNITION_MSGS_FROM_SOURCE == 1">jsk_recognition_msgs</depend>
+  <build_depend condition="$ROS_VERSION == 2 and $JSK_RECOGNITION_MSGS_FROM_SOURCE == 1">jsk_recognition_msgs</build_depend>
+  <exec_depend condition="$ROS_VERSION == 2 and $JSK_RECOGNITION_MSGS_FROM_SOURCE == 1">jsk_recognition_msgs</exec_depend>
   <!-- header only boost (mutex, circular_buffer, format) and Eigen, shared with the ROS 1 code -->
   <build_depend condition="$ROS_VERSION == 2">boost</build_depend>
   <build_depend condition="$ROS_VERSION == 2">eigen</build_depend>
