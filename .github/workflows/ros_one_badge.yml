@@ -1,0 +1,41 @@
+# The version of jsk_visualization of ROS One (https://ros.packages.techfak.net) for the badge of README.md: the endpoint of
+# shields.io (ros_one.json) on the branch badges, updated every day, as ROS One is rebuilt by
+# ubi-agni/ros-builder-action rather than by a push to master.
+name: ros-one-badge
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ros-one-badge
+  cancel-in-progress: true
+
+jobs:
+  badge:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write the endpoint of the badge
+        run: python3 .github/tools/ros_one_badge.py /tmp/ros_one.json
+      - name: Publish it on the branch badges
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin badges || true
+          if git rev-parse --verify origin/badges > /dev/null 2>&1; then
+            git checkout -B badges origin/badges
+          else
+            git checkout --orphan badges
+            git rm -rf --quiet .
+          fi
+          cp /tmp/ros_one.json ros_one.json
+          git add ros_one.json
+          git diff --cached --quiet || git commit -m "ros_one.json: $(cat ros_one.json)"
+          git push origin badges
