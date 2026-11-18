@@ -3,7 +3,6 @@ import math
 import os
 import sys
 from threading import Lock, Thread
-import time
 
 import cv2
 import numpy as np
@@ -138,8 +137,15 @@ class ImageView2Widget(QWidget):
         self.show()
 
     def trigger_configuration(self):
+        # list the image topics again: the list made at startup is empty on
+        # ROS 2 (discovery has not found any topic yet) and stale on ROS 1
+        self.updateTopics()
         self._dialog.exec_()
-        self.setupSubscriber(self._image_topics[self._dialog.number])
+        number = self._dialog.combo_box.currentIndex()
+        if not 0 <= number < len(self._image_topics):
+            ros_compat.logwarn(self._node, "No image topic is found")
+            return
+        self.setupSubscriber(self._image_topics[number])
 
     def setupSubscriber(self, topic):
         if self.image_sub:
@@ -195,10 +201,9 @@ class ImageView2Widget(QWidget):
                 self._dialog.combo_box.clear()
                 for topic in self._image_topics:
                     self._dialog.combo_box.addItem(topic)
-                if self._active_topic:
+                if self._active_topic in self._image_topics:
                     self._dialog.combo_box.setCurrentIndex(
                         self._image_topics.index(self._active_topic))
-        time.sleep(1)
 
     @pyqtSlot()
     def redraw(self):
