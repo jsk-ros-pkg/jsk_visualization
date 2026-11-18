@@ -6,8 +6,12 @@ except:
   from jsk_rviz_plugins.msg import *
 
 from std_msgs.msg import ColorRGBA, Float32
-from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
-from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+try:
+  from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+  from jsk_ros1_ros2_compat.rospy_rclpy_compat import ROS_VERSION
+except ImportError:
+  # jsk_common < 3.0 has no jsk_ros1_ros2_compat (ROS 1 only)
+  from jsk_rviz_plugins.rospy_compat import ros_compat, ROS_VERSION
 import math
 node = ros_compat.init_node("overlay_sample")
 

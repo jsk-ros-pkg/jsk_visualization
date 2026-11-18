@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+try:
+    from jsk_ros1_ros2_compat import rospy_rclpy_compat as ros_compat
+except ImportError:
+    # jsk_common < 3.0 has no jsk_ros1_ros2_compat (ROS 1 only)
+    from jsk_rviz_plugins.rospy_compat import ros_compat
 from jsk_rviz_plugins.msg import Pictogram
 from random import random
 node = ros_compat.init_node("pictogram_sample")
