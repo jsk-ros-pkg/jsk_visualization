@@ -34,7 +34,6 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   # ROS 2 and stay ROS 1 only until then:
   #   src/ambient_sound_display.{h,cpp}                     -> jsk_hark_msgs (not built on
   #                                                            ROS 1 either, see ambient_sound_display_groovy)
-  #   src/polygon_array_display.{h,cpp}                     -> jsk_recognition_msgs, jsk_recognition_utils
   #   src/simple_occupancy_grid_array_display.{h,cpp}       -> jsk_recognition_msgs, jsk_recognition_utils
   #   src/rviz_util.h                                       -> only used by simple_occupancy_grid_array_display
   #   src/people_position_measurement_array_display.{h,cpp} -> people_msgs
@@ -175,9 +174,10 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   # jsk_recognition_msgs is not released for ROS 2 yet, so its displays are
   # built only when it is found (e.g. built from source in the workspace, as
   # the ROS 2 CI does) and exported with their own plugin description file.
-  # PolygonArray and SimpleOccupancyGridArray need jsk_recognition_utils as
-  # well (polygon triangulation, planes, PCL conversions), which is not ported
-  # to ROS 2, so they stay ROS 1 only.
+  # SimpleOccupancyGridArray needs jsk_recognition_utils as well (planes,
+  # PCL conversions), which is not ported to ROS 2, so it stays ROS 1 only.
+  # PolygonArray uses the polygon triangulation of jsk_recognition_utils,
+  # which src/geo_polygon_compat.h provides on ROS 2.
   find_package(jsk_recognition_msgs QUIET)
   if(jsk_recognition_msgs_FOUND)
     list(APPEND HEADER_FILES
@@ -185,6 +185,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
       src/bounding_box_display.h
       src/bounding_box_display_common.h
       src/human_skeleton_array_display.h
+      src/polygon_array_display.h
       src/segment_array_display.h
       src/torus_array_display.h
     )
@@ -192,11 +193,12 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
       src/bounding_box_array_display.cpp
       src/bounding_box_display.cpp
       src/human_skeleton_array_display.cpp
+      src/polygon_array_display.cpp
       src/segment_array_display.cpp
       src/torus_array_display.cpp
     )
   else()
-    message(STATUS "BoundingBox, BoundingBoxArray, TorusArray, SegmentArray and HumanSkeletonArray "
+    message(STATUS "BoundingBox, BoundingBoxArray, TorusArray, SegmentArray, HumanSkeletonArray and PolygonArray "
       "displays skipped: jsk_recognition_msgs not found")
   endif()
 

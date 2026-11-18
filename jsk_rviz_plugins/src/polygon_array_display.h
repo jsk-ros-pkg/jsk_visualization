@@ -37,6 +37,28 @@
 #define POLYGON_ARRAY_DISPLAY_H
 
 #ifndef Q_MOC_RUN
+#include "rviz_compat.h"
+#if ROS_VERSION_MAJOR != 1
+#include <jsk_recognition_msgs/msg/polygon_array.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(jsk_recognition_msgs, PolygonArray)
+#include <geometry_msgs/msg/polygon_stamped.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(geometry_msgs, PolygonStamped)
+#include <std_msgs/msg/header.hpp>
+JSK_ROS1_ROS2_COMPAT_MSG_ALIAS(std_msgs, Header)
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/shape.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreTechnique.h>
+#else
 #include <jsk_recognition_msgs/PolygonArray.h>
 #include <rviz/message_filter_display.h>
 #include <rviz/properties/float_property.h>
@@ -54,8 +76,9 @@
 #include <rviz/ogre_helpers/billboard_line.h>
 #include <rviz/ogre_helpers/arrow.h>
 #endif
+#endif
 
-#include <ros/ros.h>
+#include "rviz_compat.h"  // <ros/ros.h> on ROS 1
 
 namespace jsk_rviz_plugins
 {
@@ -75,8 +98,13 @@ namespace jsk_rviz_plugins
   protected:
     virtual void onInitialize();
     virtual void reset();
+#if ROS_VERSION_MAJOR != 1
+    virtual void updateSceneNodes(
+      jsk_recognition_msgs::PolygonArray::ConstSharedPtr msg);
+#else
     virtual void updateSceneNodes(
       const jsk_recognition_msgs::PolygonArray::ConstPtr& msg);
+#endif
     virtual void allocateMaterials(int num);
     virtual void updateLines(int num);
     virtual Ogre::ColourValue getColor(size_t index);
@@ -87,8 +115,13 @@ namespace jsk_rviz_plugins
     virtual void processNormal(
       const size_t i, const geometry_msgs::PolygonStamped& polygon);
     virtual void processPolygonMaterial(const size_t i);
+#if ROS_VERSION_MAJOR != 1
+    virtual void processMessage(
+      jsk_recognition_msgs::PolygonArray::ConstSharedPtr msg);
+#else
     virtual void processMessage(
       const jsk_recognition_msgs::PolygonArray::ConstPtr& msg);
+#endif
     virtual bool getTransform(
       const std_msgs::Header &header,
       Ogre::Vector3& position, Ogre::Quaternion& orientation);
@@ -105,7 +138,11 @@ namespace jsk_rviz_plugins
     std::string coloring_method_;
     bool show_normal_;
     double normal_length_;
+#if ROS_VERSION_MAJOR != 1
+    jsk_recognition_msgs::PolygonArray::ConstSharedPtr latest_msg_;
+#else
     jsk_recognition_msgs::PolygonArray::ConstPtr latest_msg_;
+#endif
     std::vector<Ogre::ManualObject*> manual_objects_;
     std::vector<Ogre::SceneNode*> scene_nodes_;
     std::vector<Ogre::SceneNode*> arrow_nodes_;
