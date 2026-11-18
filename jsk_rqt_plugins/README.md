@@ -119,29 +119,21 @@ How to run:
 ```bash
 # ROS 1
 roslaunch jsk_rqt_plugins sample_image_view2.launch
-```
-
-The launch file starts image_publisher, image_view2 (without its own window)
-and rqt_image_view2. Click the gear icon (configuration) of the plugin, select
-`/pub_sample_image/image_raw` and push `Done`; the plugin shows the image
-drawn by image_view2 (`<image>/marked`), and dragging on it sends mouse events
-(`<image>/event`) to image_view2, which draws the rectangle.
-
-ROS 2: there is no sample launch file in jsk_rqt_plugins yet, and
-rqt_image_view2 cannot select an image on ROS 2 yet. image_view2 itself runs
-with the sample of image_view2 (jsk_common), and `rqt_image_view2` starts:
-
-```bash
-# ROS 2
+# ROS 2 (in two terminals; the sample of image_view2 in jsk_common)
 ros2 launch image_view2 sample_image_view2.launch.xml gui:=false
 ros2 run jsk_rqt_plugins rqt_image_view2
 ```
 
-but the topic list of the configuration dialog stays empty: the plugin looks
-up the image topics only once, right after it starts, when ROS 2 discovery
-has not found any topic yet (`Done` then raises an `IndexError`). The ROS 2
-capture above was taken by subscribing the widget to the image topic from a
-script.
+On ROS 1 the launch file starts image_publisher, image_view2 (without its own
+window) and rqt_image_view2. On ROS 2 the image_view2 sample publishes the
+image and its markers, and image_view2 draws them (`gui:=false`: without its
+own window).
+
+Click the gear icon (configuration) of the plugin, select the image topic
+(`/pub_sample_image/image_raw` on ROS 1, `/camera/image` on ROS 2) and push
+`Done`. The plugin shows the image drawn by image_view2 (`<image>/marked`),
+and dragging on it sends mouse events (`<image>/event`) to image_view2, which
+draws the rectangle.
 
 ### sample_3dplot
 
