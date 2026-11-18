@@ -177,6 +177,9 @@ class Plot2DWidget(QWidget):
         ui_file = os.path.join(
             package_path, 'resource', 'plot_histogram.ui')
         loadUi(ui_file, self)
+        # plot_histogram.ui is shared with HistogramPlot and titles the window
+        # HistogramPlot
+        self.setWindowTitle('Plot2D')
         self.cv_bridge = CvBridge()
         self.subscribe_topic_button.setIcon(QIcon.fromTheme('add'))
         self.pause_button.setIcon(QIcon.fromTheme('media-playback-pause'))

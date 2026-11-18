@@ -117,7 +117,7 @@
         <icon type="theme">folder</icon>
         <statustip>Plugins related to visualization.</statustip>
       </group>
-      <label>HistogramPlot</label>
+      <label>Plot2D</label>
       <icon type="theme">utilities-system-monitor</icon>
       <statustip>A plugin visualizing 2d data</statustip>
     </qtgui>
