@@ -275,6 +275,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
   if(jsk_recognition_msgs_FOUND)
     jsk_ros1_ros2_compat_install_python(PROGRAMS
       samples/bounding_box_sample.py
+      samples/polygon_array_sample.py
       samples/segment_array_sample.py
     )
   endif()
@@ -291,6 +292,7 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     add_launch_test(test/ros2/test_robot_command_interface.py TIMEOUT 120)
     if(jsk_recognition_msgs_FOUND)
       add_launch_test(test/ros2/test_bounding_box.py TIMEOUT 120)
+      add_launch_test(test/ros2/test_polygon_array.py TIMEOUT 120)
       add_launch_test(test/ros2/test_segment_array.py TIMEOUT 120)
     endif()
   endif()
