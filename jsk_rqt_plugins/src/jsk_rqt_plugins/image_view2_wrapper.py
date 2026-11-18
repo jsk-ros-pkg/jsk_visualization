@@ -3,7 +3,6 @@ import math
 import os
 import sys
 from threading import Lock, Thread
-import time
 
 import cv2
 import numpy as np
@@ -138,8 +137,15 @@ class ImageView2Widget(QWidget):
         self.show()
 
     def trigger_configuration(self):
+        # list the image topics again: the list made at startup is empty on
+        # ROS 2 (discovery has not found any topic yet) and stale on ROS 1
+        self.updateTopics()
         self._dialog.exec_()
-        self.setupSubscriber(self._image_topics[self._dialog.number])
+        number = self._dialog.combo_box.currentIndex()
+        if not 0 <= number < len(self._image_topics):
+            ros_compat.logwarn(self._node, "No image topic is found")
+            return
+        self.setupSubscriber(self._image_topics[number])
 
     def setupSubscriber(self, topic):
         if self.image_sub:
@@ -175,7 +181,6 @@ class ImageView2Widget(QWidget):
             self.repaint_trigger.emit()
 
     def updateTopics(self):
-        need_to_update = False
         if ROS_VERSION == 2:
             published_topics = [
                 (topic, topic_type) for topic, topic_types
@@ -183,22 +188,19 @@ class ImageView2Widget(QWidget):
                 for topic_type in topic_types]
         else:
             published_topics = rospy.get_published_topics()
-        for (topic, topic_type) in published_topics:
-            if topic_type in ("sensor_msgs/Image", "sensor_msgs/msg/Image"):
-                with self.lock:
-                    if not topic in self._image_topics:
-                        self._image_topics.append(topic)
-                        need_to_update = True
-        if need_to_update:
-            with self.lock:
-                self._image_topics = sorted(self._image_topics)
+        # the topics published now, so that the ones which are gone are dropped
+        image_topics = sorted(set(
+            topic for (topic, topic_type) in published_topics
+            if topic_type in ("sensor_msgs/Image", "sensor_msgs/msg/Image")))
+        with self.lock:
+            if image_topics != self._image_topics:
+                self._image_topics = image_topics
                 self._dialog.combo_box.clear()
                 for topic in self._image_topics:
                     self._dialog.combo_box.addItem(topic)
-                if self._active_topic:
+                if self._active_topic in self._image_topics:
                     self._dialog.combo_box.setCurrentIndex(
                         self._image_topics.index(self._active_topic))
-        time.sleep(1)
 
     @pyqtSlot()
     def redraw(self):

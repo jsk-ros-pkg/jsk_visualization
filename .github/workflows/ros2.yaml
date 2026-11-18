@@ -12,28 +12,23 @@ jobs:
       # All packages build on ROS 2 but jsk_interactive and
       # jsk_interactive_test (euslisp), which have AMENT_IGNORE, so colcon and
       # rosdep (catkin_pkg's find_packages) skip them.
-      # jsk_recognition_msgs is not released for ROS 2 yet; the plugins of
-      # jsk_rviz_plugins/jsk_rqt_plugins for its messages are built only when it
-      # is found, so only its package is checked out (sparse, shallow) into the
-      # workspace, where industrial_ci builds it with the target packages.
+      # jsk_recognition_msgs and jsk_recognition_utils are not released for ROS 2
+      # yet, so only these packages are checked out (sparse, shallow) into the
+      # workspace, where industrial_ci builds them with the target packages.
       # TODO: switch to jsk-ros-pkg/jsk_recognition master after
-      # jsk-ros-pkg/jsk_recognition#2903 is merged, and drop this step once
-      # jsk_recognition_msgs is released for ROS 2.
-      - name: Check out jsk_recognition_msgs of jsk_recognition
+      # jsk-ros-pkg/jsk_recognition#2903 and #2906 are merged, and drop this step
+      # once they are released for ROS 2.
+      - name: Check out jsk_recognition_msgs and jsk_recognition_utils of jsk_recognition
         run: |
           git init -q ros2_deps/jsk_recognition
           cd ros2_deps/jsk_recognition
           git remote add origin https://github.com/k-okada/jsk_recognition.git
-          git sparse-checkout set jsk_recognition_msgs
-          git fetch -q --depth 1 origin recognition-msgs-ros2
+          git sparse-checkout set jsk_recognition_msgs jsk_recognition_utils
+          git fetch -q --depth 1 origin recognition-utils-ros2
           git checkout -q FETCH_HEAD
       - uses: ros-industrial/industrial_ci@master
         env:
           ROS_DISTRO: jazzy
-          # package.xml of jsk_rviz_plugins/jsk_rqt_plugins depends on the
-          # unreleased jsk_recognition_msgs only with this set, for rosdep to take
-          # it from the workspace and colcon to build it first.
-          DOCKER_RUN_OPTS: -e JSK_RECOGNITION_MSGS_FROM_SOURCE=1
           # rosdep's `pip:` installer refuses to install globally on
           # Python >= 3.11 (PEP 668) unless explicitly told to.
           PIP_BREAK_SYSTEM_PACKAGES: '1'
