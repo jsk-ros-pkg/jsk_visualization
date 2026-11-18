@@ -40,13 +40,10 @@
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-sklearn</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1 and $ROS_PYTHON_VERSION == 3">python3-sklearn</exec_depend>
   <!-- hist.py and plot_2d.py (HistogramPlot, Plot2D) need
-       jsk_recognition_msgs, which is not released for ROS 2 yet, so on ROS 2
-       they are installed only when it is found (CMakeLists.txt) and it must
-       not be a dependency rosdep has to resolve. A workspace building it from
-       source sets JSK_RECOGNITION_MSGS_FROM_SOURCE=1 (as the ROS 2 CI does)
-       for rosdep to take it from the workspace and colcon to build it first. -->
-  <exec_depend condition="$ROS_VERSION == 2 and $JSK_RECOGNITION_MSGS_FROM_SOURCE == 1">jsk_recognition_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 2 and $JSK_RECOGNITION_MSGS_FROM_SOURCE == 1">python3-sklearn</exec_depend>
+       jsk_recognition_msgs; on ROS 2 they are installed only when it is found
+       (CMakeLists.txt) -->
+  <exec_depend condition="$ROS_VERSION == 2">jsk_recognition_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">python3-sklearn</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">message_runtime</exec_depend>
   <!-- rospy_rclpy_compat.py, the ROS 1 / ROS 2 compatibility helpers, of
        src/jsk_rqt_plugins/compat.py, which falls back to rospy without it:
