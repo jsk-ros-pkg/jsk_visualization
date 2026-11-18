@@ -76,8 +76,10 @@
   <depend condition="$ROS_VERSION == 2">std_srvs</depend>
   <depend condition="$ROS_VERSION == 2">tf2_eigen</depend>
   <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>
-  <!-- rospy_rclpy_compat of scripts/dummy_camera.py -->
-  <exec_depend>jsk_ros1_ros2_compat</exec_depend>
+  <!-- rospy_rclpy_compat of scripts/dummy_camera.py, which falls back to
+       rospy without it: jsk_ros1_ros2_compat (jsk_common >= 3.0) is released
+       for ROS 2 and ROS One only, not for indigo..noetic -->
+  <exec_depend condition="$ROS_VERSION == 2 or $ROS_DISTRO == one">jsk_ros1_ros2_compat</exec_depend>
   <!-- launch/*.launch.py -->
   <exec_depend condition="$ROS_VERSION == 2">launch</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">launch_ros</exec_depend>
