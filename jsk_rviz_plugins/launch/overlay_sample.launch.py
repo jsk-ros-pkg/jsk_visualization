@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-# ROS 2 counterpart of overlay_sample.launch. OverlayText and PieChart are
-# provided by rviz_2d_overlay_plugins on ROS 2, so config/ros2/overlay_sample.rviz
-# shows the String, Plotter2D, OverlayImage, OverlayMenu and OverlayDiagnostic
-# displays of jsk_rviz_plugins; overlay_sample.py also publishes their
-# /sample_string and /diagnostics_agg on ROS 2.
+# ROS 2 counterpart of overlay_sample.launch. config/ros2/overlay_sample.rviz
+# shows the OverlayText, String, Plotter2D, PieChart, OverlayImage, OverlayMenu
+# and OverlayDiagnostic displays of jsk_rviz_plugins (rosconsole_overlay_text.py
+# is ROS 1 only); overlay_sample.py also publishes /sample_string and
+# /diagnostics_agg on ROS 2.
 
 import os
 

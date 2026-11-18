@@ -30,6 +30,27 @@ Visualization Manager:
     - Align Bottom: false
       Background Alpha: 0.800000011920929
       Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 25; 255; 240
+      Invert Shadow: false
+      Name: sample text
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
+      Overtake Position Properties: true
+      Topic: /text_sample
+      Value: true
+      font: DejaVu Sans Mono
+      height: 400
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 350
+    - Align Bottom: false
+      Background Alpha: 0.800000011920929
+      Background Color: 0; 0; 0
       Class: jsk_rviz_plugin/String
       Enabled: true
       Foreground Alpha: 0.800000011920929
@@ -53,6 +74,43 @@ Visualization Manager:
       Show Value: true
       Topic: /value_sample
       Value: true
+      auto color change: false
+      auto scale: true
+      background color: 0; 0; 0
+      backround alpha: 0
+      border: true
+      foreground alpha: 0.699999988079071
+      foreground color: 25; 255; 240
+      height: 128
+      left: 495
+      linewidth: 2
+      max color: 255; 0; 0
+      max value: 1
+      min value: -1
+      show caption: true
+      text size: 12
+      top: 111
+      update interval: 0.03999999910593033
+      width: 128
+    - Class: jsk_rviz_plugin/PieChart
+      Enabled: true
+      Name: pie chart
+      Topic: /value_sample
+      Value: true
+      auto color change: false
+      background color: 0; 0; 0
+      backround alpha: 0
+      foreground alpha: 0.699999988079071
+      foreground alpha 2: 0.4000000059604645
+      foreground color: 25; 255; 240
+      left: 700
+      max color: 255; 0; 0
+      max value: 1
+      min value: -1
+      show caption: true
+      size: 128
+      text size: 14
+      top: 80
     - Class: jsk_rviz_plugin/OverlayImage
       Enabled: true
       Name: rviz startup image

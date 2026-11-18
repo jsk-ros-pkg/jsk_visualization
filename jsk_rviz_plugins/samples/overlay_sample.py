@@ -18,10 +18,9 @@ node = ros_compat.init_node("overlay_sample")
 text_pub = ros_compat.create_publisher(node, "text_sample", OverlayText, queue_size=1)
 value_pub = ros_compat.create_publisher(node, "value_sample", Float32, queue_size=1)
 if ROS_VERSION == 2:
-  # OverlayText is in rviz_2d_overlay_plugins on ROS 2, so the ROS 2
-  # config/ros2/overlay_sample.rviz shows an OverlayDiagnostic instead,
-  # whose diagnostics are published here, and the String display, whose
-  # /sample_string overlay_sample.launch publishes with `rostopic pub`
+  # The ROS 2 config/ros2/overlay_sample.rviz shows an OverlayDiagnostic
+  # as well, whose diagnostics are published here, and the String display,
+  # whose /sample_string overlay_sample.launch publishes with `rostopic pub`
   # (`ros2 topic pub` exits with an error on SIGINT).
   from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
   from std_msgs.msg import String

@@ -44,6 +44,7 @@ class TestOverlay(RvizConfigCheck, unittest.TestCase):
         '/image_publisher/image_raw',
         '/sample_string',
         '/test_menu',
+        '/text_sample',
         '/value_sample',
     ]
 
