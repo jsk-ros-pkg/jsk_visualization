@@ -2,18 +2,20 @@
 
 from jsk_recognition_msgs.msg import PlotData
 import numpy as np
-import rospy
+from jsk_rqt_plugins.compat import ros_compat
 import math
 from random import random
 
 if __name__ == "__main__":
-    rospy.init_node("sample_2d_plot")
-    pub = rospy.Publisher("~output", PlotData, queue_size=1)
-    r = rospy.Rate(10)
+    node = ros_compat.init_node("sample_2d_plot")
+    pub = ros_compat.create_publisher(node, "~output", PlotData, queue_size=1)
+    r = ros_compat.Rate(node, 10)
     offset = 0
-    while not rospy.is_shutdown():
+    while not ros_compat.is_shutdown(node):
         msg = PlotData()
-        msg.xs = np.arange(0, 5, 0.1)
+        # a list of floats: the float32[] of ROS 2 (rclpy) messages does not
+        # take a numpy array
+        msg.xs = [float(x) for x in np.arange(0, 5, 0.1)]
         msg.ys = [math.sin(x + offset) for x in msg.xs]
         msg.label = "sample data"
         if random() < 0.5:

@@ -42,14 +42,16 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
 
   # The plugins of hist.py (HistogramPlot) and plot_2d.py (Plot2D) need
   # jsk_recognition_msgs, which is not released for ROS 2 yet, so their bin/
-  # entry points (rqt_histogram_plot, rqt_2d_plot) are installed only when
-  # it is found (e.g. built from source in the workspace, as the ROS 2 CI
-  # does); their samples are ROS 1 only.
+  # entry points (rqt_histogram_plot, rqt_2d_plot) and the publishers of
+  # their samples are installed only when it is found (e.g. built from source
+  # in the workspace, as the ROS 2 CI does).
   find_package(jsk_recognition_msgs QUIET)
   if(jsk_recognition_msgs_FOUND)
     jsk_ros1_ros2_compat_install_python(PROGRAMS
       bin/rqt_2d_plot
       bin/rqt_histogram_plot
+      sample_scripts/sample_2d_plot.py
+      sample_scripts/sample_hist_pub.py
     )
   else()
     message(STATUS "rqt_histogram_plot and rqt_2d_plot skipped: jsk_recognition_msgs not found")
@@ -74,6 +76,9 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     find_package(launch_testing_ament_cmake REQUIRED)
     ament_add_pytest_test(test_util test/ros2/test_util.py)
     add_launch_test(test/ros2/test_rqt_plugins.py TIMEOUT 180)
+    if(jsk_recognition_msgs_FOUND)
+      add_launch_test(test/ros2/test_rqt_plot_jsk_recognition_msgs.py TIMEOUT 180)
+    endif()
   endif()
 
   ament_package()
