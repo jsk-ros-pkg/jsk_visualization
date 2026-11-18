@@ -126,12 +126,13 @@ jobs:
           CATKIN_PARALLEL_JOBS : "-p8"
           ROS_PARALLEL_TEST_JOBS : "-j8"
           CATKIN_PARALLEL_TEST_JOBS : "-p8"
-          # jsk_ros1_ros2_compat of jsk_common 3.x is checked out (only it) unless it is released for the
-          # distribution. rosdep skips the packages this repository (jsk_interactive, jsk_interactive_test) marks
-          # with AMENT_IGNORE (not ported to ROS 2), and so does catkin with a recent catkin_pkg, so the markers are
+          # jsk_ros1_ros2_compat (jsk_common 3.x) is not released for indigo..noetic, so the packages depend on it
+          # only on ROS 2 and ROS One, and fall back to rospy without it: it is not checked out here, to test that.
+          # rosdep skips the packages this repository (jsk_interactive, jsk_interactive_test) marks with
+          # AMENT_IGNORE (not ported to ROS 2), and so does catkin with a recent catkin_pkg, so the markers are
           # removed first, as jsk_common's CI does. BEFORE_SCRIPT runs in the src directory of the workspace, before
           # rosdep.
-          BEFORE_SCRIPT : "find . -name AMENT_IGNORE -delete; bash $CI_SOURCE_PATH/.github/tools/checkout_unreleased.sh; ${{ matrix.BEFORE_SCRIPT }}"
+          BEFORE_SCRIPT : "find . -name AMENT_IGNORE -delete; ${{ matrix.BEFORE_SCRIPT }}"
           ROS_DISTRO : ${{ matrix.ROS_DISTRO }}
           USE_DEB :  ${{ matrix.USE_DEB }}
           NOT_TEST_INSTALL : ${{ matrix.NOT_TEST_INSTALL }}

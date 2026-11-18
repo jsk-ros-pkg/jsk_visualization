@@ -1,5 +1,5 @@
 #!/bin/bash
-# checkout_unreleased.sh: for the ROS 1 CI, check out jsk_ros1_ros2_compat of jsk_common into ./jsk_common if
+# checkout_unreleased.sh: for the ROS-O CI, check out jsk_ros1_ros2_compat of jsk_common into ./jsk_common if
 # ros-$ROS_DISTRO-jsk-ros1-ros2-compat is not released for the distribution. jsk_ros1_ros2_compat is only in
 # jsk_common 3.x; only its directory is checked out (a sparse checkout, which git 1.9 of Ubuntu 14.04 also does),
 # as the other packages of jsk_common are released.
