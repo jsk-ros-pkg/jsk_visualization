@@ -46,7 +46,7 @@ Docs: [OverlayText](../doc/jsk_rviz_plugins/plugins/overlay_text.md),
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rviz_overlay_ros1.gif" width="400"> | <img src="../.readme/gallery/rviz_overlay_ros2.gif" width="400"> |
+| <img src="../.readme/gallery/rviz_overlay_ros1.gif" width="400" alt="rviz overlay on ROS 1"> | <img src="../.readme/gallery/rviz_overlay_ros2.gif" width="400" alt="rviz overlay on ROS 2"> |
 
 How to run:
 
@@ -67,7 +67,7 @@ Docs: [Pictogram](../doc/jsk_rviz_plugins/plugins/pictogram.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rviz_pictogram_ros1.png" width="400"> | <img src="../.readme/gallery/rviz_pictogram_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rviz_pictogram_ros1.png" width="400" alt="rviz pictogram on ROS 1"> | <img src="../.readme/gallery/rviz_pictogram_ros2.png" width="400" alt="rviz pictogram on ROS 2"> |
 
 How to run:
 
@@ -86,7 +86,7 @@ Docs: [LinearGauge](../doc/jsk_rviz_plugins/plugins/linear_gauge.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rviz_linear_gauge_ros1.png" width="400"> | <img src="../.readme/gallery/rviz_linear_gauge_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rviz_linear_gauge_ros1.png" width="400" alt="rviz linear gauge on ROS 1"> | <img src="../.readme/gallery/rviz_linear_gauge_ros2.png" width="400" alt="rviz linear gauge on ROS 2"> |
 
 How to run:
 
@@ -105,7 +105,7 @@ Docs: [PieChart](../doc/jsk_rviz_plugins/plugins/pie_chart.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rviz_piechart_ros1.png" width="400"> | <img src="../.readme/gallery/rviz_piechart_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rviz_piechart_ros1.png" width="400" alt="rviz piechart on ROS 1"> | <img src="../.readme/gallery/rviz_piechart_ros2.png" width="400" alt="rviz piechart on ROS 2"> |
 
 How to run:
 
@@ -124,7 +124,7 @@ Docs: [RobotCommandInterfaceAction](../doc/jsk_rviz_plugins/panels/robot_command
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rviz_robot_command_interface_ros1.png" width="400"> | <img src="../.readme/gallery/rviz_robot_command_interface_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rviz_robot_command_interface_ros1.png" width="400" alt="rviz robot command interface on ROS 1"> | <img src="../.readme/gallery/rviz_robot_command_interface_ros2.png" width="400" alt="rviz robot command interface on ROS 2"> |
 
 How to run:
 
@@ -146,7 +146,7 @@ Docs: EmptyServiceCallInterfaceAction has no doc page yet.
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rviz_service_call_panel_ros1.png" width="400"> | <img src="../.readme/gallery/rviz_service_call_panel_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rviz_service_call_panel_ros1.png" width="400" alt="rviz service call panel on ROS 1"> | <img src="../.readme/gallery/rviz_service_call_panel_ros2.png" width="400" alt="rviz service call panel on ROS 2"> |
 
 How to run:
 
@@ -169,7 +169,7 @@ Docs: [BoundingBoxArray](../doc/jsk_rviz_plugins/plugins/bounding_box_array.rst)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rviz_bounding_box_array_ros1.png" width="400"> | <img src="../.readme/gallery/rviz_bounding_box_array_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rviz_bounding_box_array_ros1.png" width="400" alt="rviz bounding box array on ROS 1"> | <img src="../.readme/gallery/rviz_bounding_box_array_ros2.png" width="400" alt="rviz bounding box array on ROS 2"> |
 
 How to run:
 
@@ -188,7 +188,7 @@ Docs: [PolygonArray](../doc/jsk_rviz_plugins/plugins/polygon_array.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rviz_polygon_array_ros1.png" width="400"> | <img src="../.readme/gallery/rviz_polygon_array_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rviz_polygon_array_ros1.png" width="400" alt="rviz polygon array on ROS 1"> | <img src="../.readme/gallery/rviz_polygon_array_ros2.png" width="400" alt="rviz polygon array on ROS 2"> |
 
 How to run:
 
@@ -207,7 +207,7 @@ Docs: [SegmentArray](../doc/jsk_rviz_plugins/plugins/SegmentArray.rst)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rviz_segment_array_ros1.png" width="400"> | <img src="../.readme/gallery/rviz_segment_array_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rviz_segment_array_ros1.png" width="400" alt="rviz segment array on ROS 1"> | <img src="../.readme/gallery/rviz_segment_array_ros2.png" width="400" alt="rviz segment array on ROS 2"> |
 
 How to run:
 

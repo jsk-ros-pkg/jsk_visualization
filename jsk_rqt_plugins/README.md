@@ -39,7 +39,7 @@ Docs: [rqt_string_label](../doc/jsk_rqt_plugins/plugins/rqt_string_label.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_string_label_ros1.png" width="400"> | <img src="../.readme/gallery/rqt_string_label_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rqt_string_label_ros1.png" width="400" alt="rqt string label on ROS 1"> | <img src="../.readme/gallery/rqt_string_label_ros2.png" width="400" alt="rqt string label on ROS 2"> |
 
 How to run (in two terminals):
 
@@ -63,7 +63,7 @@ Docs: [rqt_status_light](../doc/jsk_rqt_plugins/plugins/rqt_status_light.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_status_light_ros1.png" width="400"> | <img src="../.readme/gallery/rqt_status_light_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rqt_status_light_ros1.png" width="400" alt="rqt status light on ROS 1"> | <img src="../.readme/gallery/rqt_status_light_ros2.png" width="400" alt="rqt status light on ROS 2"> |
 
 How to run (in two terminals):
 
@@ -87,7 +87,7 @@ Docs: [rqt_yn_btn](../doc/jsk_rqt_plugins/plugins/rqt_yn_btn.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_yn_btn_ros1.png" width="400"> | <img src="../.readme/gallery/rqt_yn_btn_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rqt_yn_btn_ros1.png" width="400" alt="rqt yn btn on ROS 1"> | <img src="../.readme/gallery/rqt_yn_btn_ros2.png" width="400" alt="rqt yn btn on ROS 2"> |
 
 How to run (in two terminals):
 
@@ -112,7 +112,7 @@ Docs: [rqt_image_view2](../doc/jsk_rqt_plugins/plugins/rqt_image_view2.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_image_view2_ros1.gif" width="400"> | <img src="../.readme/gallery/rqt_image_view2_ros2.gif" width="400"> |
+| <img src="../.readme/gallery/rqt_image_view2_ros1.gif" width="400" alt="rqt image view2 on ROS 1"> | <img src="../.readme/gallery/rqt_image_view2_ros2.gif" width="400" alt="rqt image view2 on ROS 2"> |
 
 How to run:
 
@@ -143,7 +143,7 @@ Docs: [rqt_3d_plot](../doc/jsk_rqt_plugins/plugins/rqt_3d_plot.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_3d_plot_ros1.png" width="400"> | <img src="../.readme/gallery/rqt_3d_plot_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rqt_3d_plot_ros1.png" width="400" alt="rqt 3d plot on ROS 1"> | <img src="../.readme/gallery/rqt_3d_plot_ros2.png" width="400" alt="rqt 3d plot on ROS 2"> |
 
 How to run:
 
@@ -162,7 +162,7 @@ Docs: [rqt_service_buttons](../doc/jsk_rqt_plugins/plugins/rqt_service_buttons.m
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_service_buttons_ros1.png" width="400"> | <img src="../.readme/gallery/rqt_service_buttons_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rqt_service_buttons_ros1.png" width="400" alt="rqt service buttons on ROS 1"> | <img src="../.readme/gallery/rqt_service_buttons_ros2.png" width="400" alt="rqt service buttons on ROS 2"> |
 
 How to run:
 
@@ -183,7 +183,7 @@ Docs: [rqt_service_radio_buttons](../doc/jsk_rqt_plugins/plugins/rqt_service_rad
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_service_radio_buttons_ros1.png" width="400"> | <img src="../.readme/gallery/rqt_service_radio_buttons_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rqt_service_radio_buttons_ros1.png" width="400" alt="rqt service radio buttons on ROS 1"> | <img src="../.readme/gallery/rqt_service_radio_buttons_ros2.png" width="400" alt="rqt service radio buttons on ROS 2"> |
 
 How to run:
 
@@ -206,7 +206,7 @@ Docs: ServiceTabbedButtons has no doc page yet; its tabs are a
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_tabbed_buttons_ros1.png" width="400"> | <img src="../.readme/gallery/rqt_tabbed_buttons_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rqt_tabbed_buttons_ros1.png" width="400" alt="rqt tabbed buttons on ROS 1"> | <img src="../.readme/gallery/rqt_tabbed_buttons_ros2.png" width="400" alt="rqt tabbed buttons on ROS 2"> |
 
 How to run:
 
@@ -225,7 +225,7 @@ Docs: [rqt_drc_mini_maxwell](../doc/jsk_rqt_plugins/plugins/rqt_drc_mini_maxwell
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_drc_mini_maxwell_ros1.png" width="400"> | <img src="../.readme/gallery/rqt_drc_mini_maxwell_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rqt_drc_mini_maxwell_ros1.png" width="400" alt="rqt drc mini maxwell on ROS 1"> | <img src="../.readme/gallery/rqt_drc_mini_maxwell_ros2.png" width="400" alt="rqt drc mini maxwell on ROS 2"> |
 
 How to run:
 
@@ -244,7 +244,7 @@ Docs: [rqt_histogram_plot](../doc/jsk_rqt_plugins/plugins/rqt_histogram_plot.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_histogram_plot_ros1.png" width="400"> | <img src="../.readme/gallery/rqt_histogram_plot_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rqt_histogram_plot_ros1.png" width="400" alt="rqt histogram plot on ROS 1"> | <img src="../.readme/gallery/rqt_histogram_plot_ros2.png" width="400" alt="rqt histogram plot on ROS 2"> |
 
 How to run:
 
@@ -263,7 +263,7 @@ Docs: [rqt_2d_plot](../doc/jsk_rqt_plugins/plugins/rqt_2d_plot.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../.readme/gallery/rqt_2d_plot_ros1.png" width="400"> | <img src="../.readme/gallery/rqt_2d_plot_ros2.png" width="400"> |
+| <img src="../.readme/gallery/rqt_2d_plot_ros1.png" width="400" alt="rqt 2d plot on ROS 1"> | <img src="../.readme/gallery/rqt_2d_plot_ros2.png" width="400" alt="rqt 2d plot on ROS 2"> |
 
 How to run:
 

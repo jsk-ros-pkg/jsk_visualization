@@ -101,9 +101,9 @@ def get_gallery():
                     raise IOError('%s not found' % img)
                 content.append(
                     '<td align="center" valign="top" width="25%%">'
-                    '<a href="%s"><img src="%s" width="%d"></a><br>'
+                    '<a href="%s"><img src="%s" width="%d" alt="%s on ROS 2: %s"></a><br>'
                     '<a href="%s"><code>%s</code><br><sub>%s</sub></a>'
-                    '</td>' % (href, img, THUMBNAIL_WIDTH,
+                    '</td>' % (href, img, THUMBNAIL_WIDTH, sample, plugins,
                                href, sample, plugins))
             content.append('</tr>')
         content.append('</table>')

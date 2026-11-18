@@ -26,7 +26,7 @@ Docs: [marker_6dof](../../doc/jsk_interactive_marker/nodes/marker_6dof.md)
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../../.readme/gallery/im_marker_6dof_ros1.gif" width="400"> | <img src="../../.readme/gallery/im_marker_6dof_ros2.gif" width="400"> |
+| <img src="../../.readme/gallery/im_marker_6dof_ros1.gif" width="400" alt="im marker 6dof on ROS 1"> | <img src="../../.readme/gallery/im_marker_6dof_ros2.gif" width="400" alt="im marker 6dof on ROS 2"> |
 
 How to run:
 
@@ -45,7 +45,7 @@ Docs: [transformable_server_sample](../../doc/jsk_interactive_marker/nodes/trans
 
 | ROS 1 | ROS 2 |
 |:--:|:--:|
-| <img src="../../.readme/gallery/im_transformable_server_ros1.gif" width="400"> | <img src="../../.readme/gallery/im_transformable_server_ros2.gif" width="400"> |
+| <img src="../../.readme/gallery/im_transformable_server_ros1.gif" width="400" alt="im transformable server on ROS 1"> | <img src="../../.readme/gallery/im_transformable_server_ros2.gif" width="400" alt="im transformable server on ROS 2"> |
 
 How to run:
 
