@@ -181,7 +181,6 @@ class ImageView2Widget(QWidget):
             self.repaint_trigger.emit()
 
     def updateTopics(self):
-        need_to_update = False
         if ROS_VERSION == 2:
             published_topics = [
                 (topic, topic_type) for topic, topic_types
@@ -189,15 +188,13 @@ class ImageView2Widget(QWidget):
                 for topic_type in topic_types]
         else:
             published_topics = rospy.get_published_topics()
-        for (topic, topic_type) in published_topics:
-            if topic_type in ("sensor_msgs/Image", "sensor_msgs/msg/Image"):
-                with self.lock:
-                    if not topic in self._image_topics:
-                        self._image_topics.append(topic)
-                        need_to_update = True
-        if need_to_update:
-            with self.lock:
-                self._image_topics = sorted(self._image_topics)
+        # the topics published now, so that the ones which are gone are dropped
+        image_topics = sorted(set(
+            topic for (topic, topic_type) in published_topics
+            if topic_type in ("sensor_msgs/Image", "sensor_msgs/msg/Image")))
+        with self.lock:
+            if image_topics != self._image_topics:
+                self._image_topics = image_topics
                 self._dialog.combo_box.clear()
                 for topic in self._image_topics:
                     self._dialog.combo_box.addItem(topic)
