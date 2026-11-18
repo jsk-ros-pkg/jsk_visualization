@@ -71,6 +71,9 @@
 
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-scipy</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1 and $ROS_PYTHON_VERSION == 3">python3-scipy</exec_depend>
+  <!-- samples/segment_array_sample.py -->
+  <exec_depend condition="$ROS_VERSION == 2">python3-numpy</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">python3-scipy</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>diagnostic_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">dynamic_reconfigure</exec_depend>

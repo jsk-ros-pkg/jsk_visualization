@@ -270,6 +270,12 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     samples/pictogram_all.py
     samples/piechart_sample.py
   )
+  if(jsk_recognition_msgs_FOUND)
+    jsk_ros1_ros2_compat_install_python(PROGRAMS
+      samples/bounding_box_sample.py
+      samples/segment_array_sample.py
+    )
+  endif()
 
   if(BUILD_TESTING)
     # rviz2 with the sample configs; the tests need an X display and skip
@@ -281,6 +287,10 @@ if("$ENV{ROS_VERSION}" EQUAL 2)
     add_launch_test(test/ros2/test_piechart.py TIMEOUT 120)
     add_launch_test(test/ros2/test_service_call_panel.py TIMEOUT 120)
     add_launch_test(test/ros2/test_robot_command_interface.py TIMEOUT 120)
+    if(jsk_recognition_msgs_FOUND)
+      add_launch_test(test/ros2/test_bounding_box.py TIMEOUT 120)
+      add_launch_test(test/ros2/test_segment_array.py TIMEOUT 120)
+    endif()
   endif()
 
   ament_export_dependencies(rosidl_default_runtime)

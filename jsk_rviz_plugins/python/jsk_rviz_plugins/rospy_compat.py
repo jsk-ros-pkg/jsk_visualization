@@ -10,6 +10,7 @@ ROS_VERSION = 1
 
 
 class ros_compat(object):
+    get_param = staticmethod(lambda node, name, default=None: rospy.get_param(name, default))
     init_node = staticmethod(lambda name, anonymous=False, multi_threaded=False: rospy.init_node(name, anonymous=anonymous))
     spin = staticmethod(lambda node: rospy.spin())
     shutdown = staticmethod(lambda node: None)
