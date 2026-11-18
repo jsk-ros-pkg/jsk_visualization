@@ -117,21 +117,23 @@ jobs:
 
       - name: Run jsk_travis
         uses: jsk-ros-pkg/jsk_travis@master
+        env:
+          # indigo predates the ros_environment package, so $ROS_VERSION is never set there, and package.xml tags
+          # conditioned on "$ROS_VERSION == 1" would silently evaluate false (as in jsk_3rdparty)
+          ROS_VERSION: ${{ matrix.ROS_DISTRO == 'indigo' && '1' || '' }}
         with:
           ROS_PARALLEL_JOBS : "-j8"
           CATKIN_PARALLEL_JOBS : "-p8"
           ROS_PARALLEL_TEST_JOBS : "-j8"
           CATKIN_PARALLEL_TEST_JOBS : "-p8"
-          # jsk_common and jsk_common_msgs are built from source (.travis.rosinstall,
-          # which jsk_travis merges only with USE_DEB=false) until jsk_common 3.x
-          # (jsk_ros1_ros2_compat) is released for ROS 1. rosdep skips the packages
-          # jsk_common and this repository (jsk_interactive, jsk_interactive_test)
-          # mark with AMENT_IGNORE (not ported to ROS 2), and so does catkin with a
-          # recent catkin_pkg, so the markers are removed first, as jsk_common's CI does.
-          # BEFORE_SCRIPT runs in the src directory of the workspace, before rosdep.
-          BEFORE_SCRIPT : "find . -name AMENT_IGNORE -delete; ${{ matrix.BEFORE_SCRIPT }}"
+          # jsk_ros1_ros2_compat of jsk_common 3.x is checked out (only it) unless it is released for the
+          # distribution. rosdep skips the packages this repository (jsk_interactive, jsk_interactive_test) marks
+          # with AMENT_IGNORE (not ported to ROS 2), and so does catkin with a recent catkin_pkg, so the markers are
+          # removed first, as jsk_common's CI does. BEFORE_SCRIPT runs in the src directory of the workspace, before
+          # rosdep.
+          BEFORE_SCRIPT : "find . -name AMENT_IGNORE -delete; bash $CI_SOURCE_PATH/.github/tools/checkout_unreleased.sh; ${{ matrix.BEFORE_SCRIPT }}"
           ROS_DISTRO : ${{ matrix.ROS_DISTRO }}
-          USE_DEB :  ${{ matrix.USE_DEB || 'false' }}
+          USE_DEB :  ${{ matrix.USE_DEB }}
           NOT_TEST_INSTALL : ${{ matrix.NOT_TEST_INSTALL }}
           TEST_PKGS : ${{ matrix.TEST_PKGS }}
           EXTRA_DEB : ${{ matrix.EXTRA_DEB }}
@@ -208,14 +210,11 @@ jobs:
               git clone https://github.com/locusrobotics/catkin_virtualenv.git
           fi
           ln -sf $GITHUB_WORKSPACE .
-          # jsk_common and jsk_common_msgs from source until jsk_common 3.x
-          # (jsk_ros1_ros2_compat) is released for ROS-O, see .travis.rosinstall;
-          # rosdep and catkin skip AMENT_IGNORE'd packages, which are the
-          # ROS 1 only ones, of jsk_common and of this repository
-          # (jsk_interactive, jsk_interactive_test)
-          PIP_BREAK_SYSTEM_PACKAGES=1 pip3 install vcstool
-          vcs import --input $GITHUB_WORKSPACE/.travis.rosinstall .
-          find jsk-ros-pkg $GITHUB_WORKSPACE -name AMENT_IGNORE -delete
+          # jsk_ros1_ros2_compat of jsk_common 3.x (only it) unless it is released for ROS-O; rosdep and catkin skip
+          # AMENT_IGNORE'd packages, which are the ROS 1 only ones of this repository (jsk_interactive,
+          # jsk_interactive_test)
+          bash $GITHUB_WORKSPACE/.github/tools/checkout_unreleased.sh
+          find $GITHUB_WORKSPACE -name AMENT_IGNORE -delete
           rosdep install -qq -r -y --from-path . --ignore-src || echo "OK"
           # check all system packages are able to install, because ROS-O build deb files that needs all packages
           PIP_BREAK_SYSTEM_PACKAGES=1 rosdep install -qq --simulate -y --from-path . --ignore-src -t exec -t buildtool_export -t buildtool -t build -t build_export | tee rosdep-install.sh
