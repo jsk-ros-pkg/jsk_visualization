@@ -35,9 +35,12 @@
        TransformableMarkerOperator rviz panel), moveit_msgs, roseus (euslisp/), dynamic_tf_publisher,
        urdf and tf_conversions (urdf_model_marker, urdf_control_marker,
        interactive_marker_interface), actionlib and message_filters.
-       jsk_recognition_msgs is not released for ROS 2, so it is not a ROS 2
-       dependency here; the ROS 2 build uses it when it is found
+       jsk_recognition_msgs is not released for ROS 2, so it is a ROS 2
+       dependency only with JSK_RECOGNITION_MSGS_FROM_SOURCE=1 (as in
+       jsk_rviz_plugins), for rosdep to take it from the workspace and colcon to
+       build it first; the ROS 2 build uses it when it is found
        (bounding_box_marker, srv/IndexRequest.srv). -->
+  <depend condition="$ROS_VERSION == 2 and $JSK_RECOGNITION_MSGS_FROM_SOURCE == 1">jsk_recognition_msgs</depend>
   <depend condition="$ROS_VERSION == 1">roseus</depend>
   <depend condition="$ROS_VERSION == 1">dynamic_tf_publisher</depend>
   <depend condition="$ROS_VERSION == 1">dynamic_reconfigure</depend>
