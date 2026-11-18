@@ -27,8 +27,8 @@
   <build_depend>jsk_footstep_msgs</build_depend>
   <build_depend>jsk_gui_msgs</build_depend>
   <build_depend>jsk_hark_msgs</build_depend>
-  <build_depend condition="$ROS_VERSION == 1">jsk_recognition_msgs</build_depend>
-  <build_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</build_depend>
+  <build_depend>jsk_recognition_msgs</build_depend>
+  <build_depend>jsk_recognition_utils</build_depend>
   <build_depend condition="$ROS_VERSION == 1">jsk_topic_tools</build_depend>
   <build_depend condition="$ROS_VERSION == 1">message_generation</build_depend>
   <build_depend condition="$ROS_VERSION == 1">mk</build_depend>
@@ -39,16 +39,10 @@
   <build_depend condition="$ROS_VERSION == 1">urdfdom_py</build_depend>
   <build_depend condition="$ROS_VERSION == 1">view_controller_msgs</build_depend>
   <!-- ROS 2: the plugins are built against rviz_common/rviz_rendering/rviz_default_plugins;
-       the jsk_recognition_msgs, people_msgs and view_controller_msgs based plugins
-       are ROS 1 only, see CMakeLists.txt -->
+       the people_msgs and view_controller_msgs based plugins are ROS 1 only, and the
+       jsk_recognition_msgs/utils based ones are built only when they are found, see
+       CMakeLists.txt -->
   <build_depend condition="$ROS_VERSION == 2">jsk_ros1_ros2_compat</build_depend>
-  <!-- the displays of jsk_recognition_msgs, and PolygonArray which needs
-       jsk_recognition_utils as well, are built only when they are found
-       (CMakeLists.txt) -->
-  <build_depend condition="$ROS_VERSION == 2">jsk_recognition_msgs</build_depend>
-  <exec_depend condition="$ROS_VERSION == 2">jsk_recognition_msgs</exec_depend>
-  <build_depend condition="$ROS_VERSION == 2">jsk_recognition_utils</build_depend>
-  <exec_depend condition="$ROS_VERSION == 2">jsk_recognition_utils</exec_depend>
   <!-- header only boost (mutex, circular_buffer, format) and Eigen, shared with the ROS 1 code -->
   <build_depend condition="$ROS_VERSION == 2">boost</build_depend>
   <build_depend condition="$ROS_VERSION == 2">eigen</build_depend>
@@ -69,10 +63,9 @@
   <depend condition="$ROS_VERSION == 2">visualization_msgs</depend>
 
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-scipy</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1 and $ROS_PYTHON_VERSION == 3">python3-scipy</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-scipy</exec_depend>
   <!-- samples/segment_array_sample.py -->
   <exec_depend condition="$ROS_VERSION == 2">python3-numpy</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 2">python3-scipy</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>diagnostic_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">dynamic_reconfigure</exec_depend>
@@ -82,8 +75,8 @@
   <exec_depend>jsk_footstep_msgs</exec_depend>
   <exec_depend>jsk_gui_msgs</exec_depend>
   <exec_depend>jsk_hark_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">jsk_recognition_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</exec_depend>
+  <exec_depend>jsk_recognition_msgs</exec_depend>
+  <exec_depend>jsk_recognition_utils</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">jsk_topic_tools</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">message_generation</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">people_msgs</exec_depend>

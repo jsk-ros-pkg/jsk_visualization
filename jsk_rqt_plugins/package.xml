@@ -24,9 +24,6 @@
   <exec_depend>rqt_gui</exec_depend>
   <exec_depend>rqt_gui_py</exec_depend>
   <exec_depend>rqt_plot</exec_depend>
-  <exec_depend>rqt_gui</exec_depend>
-  <exec_depend>rqt_gui_py</exec_depend>
-  <exec_depend>rqt_plot</exec_depend>
   <!-- rqt_image_view and image_publisher are used by the samples of the
        plugins which are ROS 1 only. -->
   <exec_depend condition="$ROS_VERSION == 1">rqt_image_view</exec_depend>
@@ -38,13 +35,12 @@
   <exec_depend version_gte="4.3.0" >jsk_gui_msgs</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-sklearn</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1 and $ROS_PYTHON_VERSION == 3">python3-sklearn</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-sklearn</exec_depend>
   <!-- hist.py and plot_2d.py (HistogramPlot, Plot2D) need
        jsk_recognition_msgs; on ROS 2 they are installed only when it is found
        at build time (CMakeLists.txt) -->
   <build_depend condition="$ROS_VERSION == 2">jsk_recognition_msgs</build_depend>
   <exec_depend>jsk_recognition_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 2">python3-sklearn</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">message_runtime</exec_depend>
   <!-- rospy_rclpy_compat.py, the ROS 1 / ROS 2 compatibility helpers, of
        src/jsk_rqt_plugins/compat.py, which falls back to rospy without it:

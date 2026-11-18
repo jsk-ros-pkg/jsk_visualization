@@ -35,13 +35,8 @@
        urdf and tf_conversions (urdf_model_marker, urdf_control_marker,
        interactive_marker_interface), actionlib and message_filters.
        The ROS 2 build uses jsk_recognition_msgs when it is found
-       (bounding_box_marker, srv/IndexRequest.srv); jsk_recognition_utils is
-       a dependency on ROS 2 as on ROS 1, for the nodes using it (polygon_marker,
-       footstep_marker, ...) to be ported. -->
-  <build_depend condition="$ROS_VERSION == 2">jsk_recognition_msgs</build_depend>
-  <exec_depend condition="$ROS_VERSION == 2">jsk_recognition_msgs</exec_depend>
-  <build_depend condition="$ROS_VERSION == 2">jsk_recognition_utils</build_depend>
-  <exec_depend condition="$ROS_VERSION == 2">jsk_recognition_utils</exec_depend>
+       (bounding_box_marker, srv/IndexRequest.srv), and not
+       jsk_recognition_utils yet (polygon_marker, footstep_marker, ...). -->
   <depend condition="$ROS_VERSION == 1">roseus</depend>
   <depend condition="$ROS_VERSION == 1">dynamic_tf_publisher</depend>
   <depend condition="$ROS_VERSION == 1">dynamic_reconfigure</depend>
@@ -55,13 +50,12 @@
   <depend condition="$ROS_VERSION == 1">roslib</depend>
   <depend condition="$ROS_VERSION == 1">message_filters</depend>
   <depend condition="$ROS_VERSION == 1">moveit_msgs</depend>
-  <build_depend condition="$ROS_VERSION == 1" version_gte="1.2.0">jsk_recognition_msgs</build_depend>
+  <build_depend version_gte="1.2.0">jsk_recognition_msgs</build_depend>
   <build_export_depend condition="$ROS_VERSION == 1" version_gte="1.0.0">jsk_recognition_msgs</build_export_depend>
-  <exec_depend condition="$ROS_VERSION == 1" version_gte="1.0.0">jsk_recognition_msgs</exec_depend>
-  <!-- not a generic depend, which old catkin_pkg finds redundant with the ROS 2 build/exec_depend above -->
-  <build_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</build_depend>
+  <exec_depend version_gte="1.0.0">jsk_recognition_msgs</exec_depend>
+  <build_depend>jsk_recognition_utils</build_depend>
   <build_export_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</build_export_depend>
-  <exec_depend condition="$ROS_VERSION == 1">jsk_recognition_utils</exec_depend>
+  <exec_depend>jsk_recognition_utils</exec_depend>
   <depend condition="$ROS_VERSION == 1">jsk_topic_tools</depend>
   <depend condition="$ROS_VERSION == 1">rviz</depend>
 
