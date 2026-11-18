@@ -37,8 +37,8 @@ These are the sample launch files (`roslaunch <pkg> <sample>.launch` on ROS 1,
 captured on ROS One (rviz) and on ROS 2 Jazzy (rviz2); in the GIFs of the interactive markers
 and of image_view2 the markers and the image are dragged with the mouse.
 On ROS 2, the plugins of jsk_recognition_msgs (BoundingBoxArray, PolygonArray, SegmentArray,
-HistogramPlot, Plot2D) and their samples are built when jsk_recognition_msgs is found, which is
-not released for ROS 2 yet and has to be built from source in the workspace.
+HistogramPlot, Plot2D) and their samples are built when jsk_recognition_msgs is found, and
+PolygonArray when jsk_recognition_utils is found as well.
 
 ### jsk_rviz_plugins
 
