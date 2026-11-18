@@ -15,6 +15,9 @@ except:
     import roslib; roslib.load_manifest('jsk_rqt_plugins')
     from jsk_rqt_plugins.plot import Plot3D
 
+from jsk_rqt_plugins.compat import init_rqt_ros
+init_rqt_ros()
+
 plugin = 'Plot3D'
 main = Main(filename=plugin)
 sys.exit(main.main(standalone=plugin, plugin_argument_provider=Plot3D.add_arguments))

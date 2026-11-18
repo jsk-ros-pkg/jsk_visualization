@@ -38,3 +38,21 @@ except ImportError:
         sleep = staticmethod(lambda node, seconds: rospy.sleep(seconds))
         is_shutdown = staticmethod(lambda node: rospy.is_shutdown())
         resolve_message_class = staticmethod(_resolve_message_class)
+
+
+def init_rqt_ros():
+    """Initialize rclpy for the bin/rqt_* scripts on ROS 2, before rqt does.
+
+    rqt_gui_py initializes rclpy with its signal handlers, so on SIGINT
+    rclpy shuts the context down at once, from another thread, while the
+    rclpy spinner thread of rqt may be about to wait on it again, which
+    raises RCLError ("failed to initialize wait set: the given context is
+    not valid"). Without the rclpy handlers, SIGINT is left to rqt's own
+    handler, which closes the window, shuts the plugins down, stops the
+    spinner, destroys the node and then shuts rclpy down. Nothing to do on
+    ROS 1 (rospy)."""
+    if ROS_VERSION == 2:
+        import rclpy
+        from rclpy.signals import SignalHandlerOptions
+        if not rclpy.ok():
+            rclpy.init(signal_handler_options=SignalHandlerOptions.NO)

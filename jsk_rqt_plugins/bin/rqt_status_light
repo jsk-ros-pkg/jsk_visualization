@@ -15,6 +15,9 @@ except:
     import roslib; roslib.load_manifest('jsk_rqt_plugins')
     from jsk_rqt_plugins.status_light import StatusLight
 
+from jsk_rqt_plugins.compat import init_rqt_ros
+init_rqt_ros()
+
 plugin = 'StatusLight'
 main = Main(filename=plugin)
 sys.exit(main.main(standalone=plugin))

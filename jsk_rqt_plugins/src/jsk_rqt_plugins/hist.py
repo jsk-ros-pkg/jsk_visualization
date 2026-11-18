@@ -143,6 +143,7 @@ class HistogramPlotWidget(QWidget):
         self._rosdata = None
         if len(topics) != 0:
             self.subscribe_topic(topics)
+        self._is_shutdown = False
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.update_plot)
         self._update_plot_timer.start(self._redraw_interval)
@@ -201,6 +202,7 @@ class HistogramPlotWidget(QWidget):
     def shutdown(self):
         # The Qt timer outlives the rclpy context otherwise (ROS 2)
         self._update_plot_timer.stop()
+        self._is_shutdown = True
 
     def enable_timer(self, enabled=True):
         if enabled:
@@ -267,7 +269,16 @@ class HistogramPlotWidget(QWidget):
         else:
             iscolor = cv2.IMREAD_COLOR
         img = cv2.imdecode(img_array, iscolor)
-        self.pub_image.publish(self.cv_bridge.cv2_to_imgmsg(img, "bgr8"))
+        # rqt's SIGINT handler may run while the plot is drawn above, and
+        # shut the plugin down and destroy the node (and pub_image) before
+        # update_plot() goes on (InvalidHandle on ROS 2)
+        if self._is_shutdown:
+            return
+        try:
+            self.pub_image.publish(self.cv_bridge.cv2_to_imgmsg(img, "bgr8"))
+        except Exception:
+            if not self._is_shutdown:
+                raise
 
 
 class MatHistogramPlot(QWidget):
