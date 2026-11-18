@@ -28,9 +28,11 @@ Samples
 - [polygon_array_sample](#polygon_array_sample): PolygonArray
 - [segment_array_sample](#segment_array_sample): SegmentArray
 
-Each sample starts rviz / rviz2 with a config of its own and the nodes that
-publish the sample data. The ROS 2 launch files take `gui:=false` to start
-without rviz2.
+Each sample starts rviz / rviz2 with a config of its own. The data-display
+samples also start nodes that publish the sample data; their ROS 2 launch
+files take `gui:=false` to start without rviz2. The panel samples
+(`robot_command_interface_sample` and `service_call_panel`) always start
+rviz2 and do not provide sample publishers.
 
 ### overlay_sample
 
