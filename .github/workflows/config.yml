@@ -200,6 +200,12 @@ jobs:
         shell: bash
 
       - name: Setup Workspace
+
+        # usually 3 - 8 minutes; it hung for hours when apt or pip did not answer, so it fails instead and can be
+
+        # rerun (the job timeout of GitHub is 6 hours)
+
+        timeout-minutes: 30
         run: |
           source /opt/ros/one/setup.bash
           set -x
