@@ -1,0 +1,155 @@
+name: ABI compatibility
+
+on:
+  pull_request:
+  push:
+    branches: [ master ]
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  build-artifacts:
+    name: Build base & head (Jammy/ROS-O)
+    runs-on: ubuntu-latest
+    container: ubuntu:22.04
+
+    steps:
+      - name: Install git for checkout
+        run: |
+          set -eux
+          apt-get update -qq
+          apt-get install -y -qq git ca-certificates
+      
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Setup ROS-O repository (Jammy)
+        run: |
+          set -eux
+          apt-get update -qq
+          apt-get install -y -qq ca-certificates curl git python3-rosdep2
+          echo "deb [trusted=yes] https://raw.githubusercontent.com/v4hn/ros-o-builder/jammy-one/repository ./" \
+            > /etc/apt/sources.list.d/ros-o-builder.list
+          apt-get update -qq
+          mkdir -p /etc/ros/rosdep/sources.list.d
+          echo "yaml https://raw.githubusercontent.com/v4hn/ros-o-builder/jammy-one/repository/local.yaml debian" \
+            > /etc/ros/rosdep/sources.list.d/1-ros-o-builder.list
+          rosdep update
+
+      - name: Setup build tools
+        run: |
+          set -eux
+          apt-get install -y -qq cmake build-essential catkin ros-one-rosbash python3-pip
+          pip3 install --no-cache-dir catkin-tools==0.9.4
+
+      - name: Build base (BASE_SHA) and head with debug info
+        shell: bash
+        run: |
+          set -eux
+          source /opt/ros/one/setup.bash
+          cd "$GITHUB_WORKSPACE"
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_SHA="$(git rev-parse HEAD^)"
+          fi
+          echo "BASE_SHA=$BASE_SHA"
+
+          # Base worktree
+          git worktree add --force "$GITHUB_WORKSPACE/../base" "$BASE_SHA"
+
+          # Build HEAD
+          mkdir -p ~/ws_head/src
+          ln -sf "$GITHUB_WORKSPACE" ~/ws_head/src/this
+          cd ~/ws_head
+          rosdep install -qq -r -y --from-path . --ignore-src || true
+          catkin build --no-status -sv \
+            --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+
+          # Build BASE
+          mkdir -p ~/ws_base/src
+          ln -sf "$GITHUB_WORKSPACE/../base" ~/ws_base/src/this
+          cd ~/ws_base
+          rosdep install -qq -r -y --from-path . --ignore-src || true
+          catkin build --no-status -sv \
+            --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_ENABLE_TESTING=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+
+      - name: Upload built libs (BASE)
+        uses: actions/upload-artifact@v4
+        with:
+          name: abi-base-libs
+          path: ~/ws_base/devel/
+
+      - name: Upload built libs (HEAD)
+        uses: actions/upload-artifact@v4
+        with:
+          name: abi-head-libs
+          path: ~/ws_head/devel/
+
+  compare:
+    name: ABI compare (Noble tools)
+    runs-on: ubuntu-latest
+    needs: build-artifacts
+    container: ubuntu:24.04
+
+    steps:
+      - name: Download base libs
+        uses: actions/download-artifact@v4
+        with:
+          name: abi-base-libs
+          path: /opt/base
+
+      - name: Download head libs
+        uses: actions/download-artifact@v4
+        with:
+          name: abi-head-libs
+          path: /opt/head
+
+      - name: Run abi-compliance-checker
+        shell: bash
+        run: |
+          set -euo pipefail
+          apt-get update -qq
+          apt-get install -y -qq abi-compliance-checker abi-dumper binutils
+
+          mkdir -p /tmp/abi
+          mapfile -t HEAD_LIBS < <(find /opt/head -type f \( -name 'lib*.so' -o -name 'lib*.so.*' \) | sort -u)
+
+          ret=0
+          for hl in "${HEAD_LIBS[@]}"; do
+            bn="$(basename "$hl")"
+            bl="$(find /opt/base -type f -name "$bn" | head -n1 || true)"
+            if [ -z "$bl" ]; then
+              echo "skip(no base): $bn"
+              continue
+            fi
+
+            v1="/tmp/abi/${bn}_v1.abi"
+            v2="/tmp/abi/${bn}_v2.abi"
+            log1="/tmp/abi/${bn}_dump_base.log"
+            log2="/tmp/abi/${bn}_dump_head.log"
+            rpt="/tmp/abi/${bn}_report"
+
+            # Create ABI dumps (DWARF required; built with RelWithDebInfo)
+            abi-dumper "$bl" -o "$v1" -lver v1 >"$log1" 2>&1 || true
+            abi-dumper "$hl" -o "$v2" -lver v2 >"$log2" 2>&1 || true
+
+            if ! abi-compliance-checker -l "${bn%.so*}" -v1 "$v1" -v2 "$v2" -report-path "$rpt" >"/tmp/abi/${bn}_acc.log" 2>&1; then
+              echo "::error title=ABI break::${bn} incompatible change detected. See abi-acc-reports artifact."
+              ret=1
+            fi
+          done
+
+          exit $ret
+
+      - name: Upload ABI reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abi-acc-reports
+          path: /tmp/abi/
