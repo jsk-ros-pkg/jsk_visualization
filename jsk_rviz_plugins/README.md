@@ -217,3 +217,6 @@ roslaunch jsk_rviz_plugins segment_array_sample.launch
 # ROS 2 (needs jsk_recognition_msgs)
 ros2 launch jsk_rviz_plugins segment_array_sample.launch.py
 ```
+
+Document:
+<http://jsk-visualization.readthedocs.org/en/latest/jsk_rviz_plugins/index.html>
