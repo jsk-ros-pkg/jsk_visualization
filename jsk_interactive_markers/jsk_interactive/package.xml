@@ -4,7 +4,7 @@
   <description>jsk_interactive</description>
   <maintainer email="furua@jsk.imi.i.u-tokyo.ac.jp">Yusuke Furuta</maintainer>
 
-  <license>BSD</license>
+  <license>BSD-3-Clause</license>
 
   <url type="website">http://ros.org/wiki/jsk_interactive</url>
 

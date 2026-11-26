@@ -4,7 +4,7 @@
   <version>3.0.1</version>
   <description>The jsk_rviz_plugins package</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
-  <license>BSD</license>
+  <license>BSD-3-Clause</license>
   <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
   <author email="youhei@jsk.t.u-tokyo.ac.jp">Yohei Kakiuchi</author>
   <author email="s-fujii@jsk.t.u-tokyo.ac.jp">Shohei Fujii</author>
