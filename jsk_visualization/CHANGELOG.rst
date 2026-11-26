@@ -2,6 +2,11 @@
 Changelog for package jsk_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add LICENSE files (BSD 3-Clause) and use the SPDX identifier BSD-3-Clause in package.xml (`#910 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/910>`_)
+* Contributors: Kei Okada
+
 3.0.1 (2026-11-19)
 ------------------
 * [jsk_visualization] a package which depends on the others, not a metapackage
