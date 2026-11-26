@@ -2,8 +2,8 @@
 Changelog for package jsk_interactive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.2 (2026-11-26)
+------------------
 * Add LICENSE files (BSD 3-Clause) and use the SPDX identifier BSD-3-Clause in package.xml (`#910 <https://github.com/jsk-ros-pkg/jsk_visualization/issues/910>`_)
 * Contributors: Kei Okada
 
