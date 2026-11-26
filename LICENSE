@@ -27,3 +27,9 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+--------------------------------------------------------------------------------
+
+jsk_rviz_plugins bundles third-party fonts (Entypo and Font Awesome Free) under
+the SIL Open Font License 1.1, CC BY-SA 3.0 and CC BY 4.0; see
+jsk_rviz_plugins/LICENSE for them.
