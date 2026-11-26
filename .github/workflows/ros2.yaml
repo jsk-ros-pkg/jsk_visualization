@@ -15,16 +15,15 @@ jobs:
       # jsk_recognition_msgs and jsk_recognition_utils are not released for ROS 2
       # yet, so only these packages are checked out (sparse, shallow) into the
       # workspace, where industrial_ci builds them with the target packages.
-      # TODO: switch to jsk-ros-pkg/jsk_recognition master after
-      # jsk-ros-pkg/jsk_recognition#2903 and #2906 are merged, and drop this step
-      # once they are released for ROS 2.
+      # TODO: drop this step once they are released for ROS 2
+      # (ros/rosdistro#55693).
       - name: Check out jsk_recognition_msgs and jsk_recognition_utils of jsk_recognition
         run: |
           git init -q ros2_deps/jsk_recognition
           cd ros2_deps/jsk_recognition
-          git remote add origin https://github.com/k-okada/jsk_recognition.git
+          git remote add origin https://github.com/jsk-ros-pkg/jsk_recognition.git
           git sparse-checkout set jsk_recognition_msgs jsk_recognition_utils
-          git fetch -q --depth 1 origin recognition-utils-ros2
+          git fetch -q --depth 1 origin master
           git checkout -q FETCH_HEAD
       - uses: ros-industrial/industrial_ci@master
         env:
