@@ -2,7 +2,7 @@
 <package format="3">
   <name>jsk_interactive_marker</name>
   <description>jsk interactive markers</description>
-  <version>3.0.1</version>
+  <version>3.0.2</version>
   <author email="furuta@jsk.t.u-tokyo.ac.jp">furuta</author>
   <maintainer email="furuta@jsk.t.u-tokyo.ac.jp">furuta</maintainer>
   <license>BSD-3-Clause</license>
